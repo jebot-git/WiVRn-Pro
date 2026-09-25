@@ -157,10 +157,6 @@ if (WIVRN_BUILD_SERVER)
         include(CheckQsv)
     endif()
 
-    if (WIVRN_USE_PIPEWIRE)
-        pkg_check_modules(libpipewire REQUIRED IMPORTED_TARGET libpipewire-0.3)
-    endif()
-
     pkg_check_modules(AVAHI REQUIRED IMPORTED_TARGET avahi-client avahi-glib)
     find_package(Eigen3 REQUIRED)
     find_package(nlohmann_json REQUIRED)
@@ -180,6 +176,10 @@ endif()
 
 if (WIVRN_BUILD_CLIENT)
     find_package(Gettext REQUIRED)
+endif()
+
+if (WIVRN_USE_PIPEWIRE AND (WIVRN_BUILD_SERVER OR (WIVRN_BUILD_CLIENT AND NOT ANDROID)))
+    pkg_check_modules(libpipewire REQUIRED IMPORTED_TARGET libpipewire-0.3)
 endif()
 
 if (WIVRN_BUILD_CLIENT)
