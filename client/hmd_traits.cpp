@@ -203,6 +203,7 @@ void hmd_traits::init()
 		if (panel_width_override > 0)
 			break;
 	}
+
 #endif
 
 	spdlog::info("HMD traits initialized");
