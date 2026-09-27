@@ -64,3 +64,69 @@ jobs:
         with:
           name: quest-pro-debug
           path: build/android/outputs/apk/debug/*.apk
+
+  build-steam-frame:
+    name: Steam Frame
+    runs-on: ubuntu-26.04-arm
+    if: ${{ vars.APK_ONLY == '' }}
+    container:
+      image: registry.gitlab.steamos.cloud/steamrt/steamrt4/sdk/arm64:4.0.20260805.254769
+      volumes:
+        - ${{github.workspace}}/install:/tmp/install
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Apt dependencies
+      uses: awalsh128/cache-apt-pkgs-action@v1.6.1
+      with:
+        packages: librsvg2-bin npm
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2.23
+      with:
+        key: steam-frame
+        job-summary: ""
+
+    - uses: actions/cache@v5
+      with:
+        key: cmake-frame
+        path: |
+          ${{github.workspace}}/cmake-fetch/*-subbuild/*-populate-prefix/src/*.tar.*
+          ${{github.workspace}}/cmake-fetch/*-subbuild/*-populate-prefix/src/*.zip
+          ${{github.workspace}}/cmake-fetch/*.tar.*
+          ${{github.workspace}}/cmake-fetch/*.tgz
+          ${{github.workspace}}/cmake-fetch/*-src/.git
+
+    - name: Install dependencies
+      run: |
+        wget https://github.com/KhronosGroup/KTX-Software/releases/download/v4.4.2/KTX-Software-4.4.2-Linux-arm64.deb
+        sudo dpkg --install KTX-Software-4.4.2-Linux-arm64.deb
+        npm install --global @gltf-transform/cli@4.1.1
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{github.workspace}}/build
+        -DCMAKE_BUILD_TYPE=Release
+        -DFETCHCONTENT_BASE_DIR=${{github.workspace}}/cmake-fetch
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        -DCMAKE_INSTALL_PREFIX=/usr
+        --preset frame
+
+    - name: Build
+      run: |
+        git config --global --add safe.directory $(pwd)
+        cd ${{github.workspace}}/build
+        DESTDIR=/tmp/install ninja install
+
+    - name: Archive
+      uses: actions/upload-artifact@v7
+      with:
+        name: wivrn-frame-client.zip
+        path: ${{github.workspace}}/*/usr
+        if-no-files-found: error
+        retention-days: 30
