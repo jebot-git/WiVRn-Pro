@@ -20,16 +20,12 @@
 
 #ifdef __ANDROID__
 #include "decoder/android/android_decoder.h"
-#else
-#ifdef WIVRN_USE_V4L2
+#elif WIVRN_USE_V4L2
 #include "decoder/v4l2/v4l2_decoder.h"
 #else
 #include "decoder/ffmpeg/ffmpeg_decoder.h"
 #endif
-#endif
 #include <stdexcept>
-#include "spdlog/spdlog.h"
-#include <algorithm>
 
 wivrn::decoder::~decoder() = default;
 
@@ -54,7 +50,7 @@ std::shared_ptr<wivrn::decoder> wivrn::decoder::make(
 			        stream_index,
 			        scene,
 			        acc);
-#elifdef WIVRN_USE_V4L2
+#elif WIVRN_USE_V4L2
 			return std::make_shared<wivrn::v4l2::decoder>(
 			        device, phys_dev, vk_queue_family_index, description, stream_index, scene, acc);
 #else
@@ -73,7 +69,7 @@ static std::vector<wivrn::video_codec> supported_codecs_()
 	std::vector<wivrn::video_codec> res;
 #ifdef __ANDROID__
 	wivrn::android::decoder::supported_codecs(res);
-#elifdef WIVRN_USE_V4L2
+#elif WIVRN_USE_V4L2
 	wivrn::v4l2::decoder::supported_codecs(res);
 #else
 	wivrn::ffmpeg::decoder::supported_codecs(res);
