@@ -68,7 +68,6 @@ enum class gpu_track
 	vulkan_image_copy,
 	vulkan_host_copy,
 	vulkan_host_copy_overflow,
-	nvenc_copy,
 	va_copy,
 };
 void gpu_slice(gpu_track which, const char * slice_name, int64_t begin_ns, int64_t end_ns, uint64_t frame, uint8_t stream);

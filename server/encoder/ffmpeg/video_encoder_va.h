@@ -34,10 +34,12 @@ struct encoder_settings;
 class video_encoder_va : public video_encoder_ffmpeg
 {
 	vk_bundle & vk;
+	bool use_qsv;
 	vk::raii::CommandPool cmd_pool;
 	struct in_t
 	{
 		av_frame_ptr va_frame;
+		av_frame_ptr qsv_frame;
 		av_frame_ptr drm_frame;
 		vk::raii::Fence fence = nullptr;
 		vk::raii::CommandBuffer cmd = nullptr;

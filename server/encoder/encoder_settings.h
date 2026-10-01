@@ -36,7 +36,7 @@ struct encoder_settings
 	uint16_t height;
 	video_codec codec; // left, right, alpha
 	float fps;
-	// encoder identifier, such as nvenc, vaapi or x264
+	// encoder identifier, vaapi, vulkan or optional qsv
 	std::string encoder_name;
 	uint64_t bitrate;                           // bit/s
 	double bitrate_multiplier;                  // encoder bitrate / global bitrate

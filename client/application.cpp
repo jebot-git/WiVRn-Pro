@@ -591,10 +591,7 @@ static std::vector<interaction_profile> interaction_profiles{
         },
         interaction_profile{
                 .profile_name = "/interaction_profiles/htc/vive_xr_tracker",
-                .required_extensions = {
-                        XR_HTC_VIVE_XR_TRACKER_INTERACTION_EXTENSION_NAME,
-                        XR_HTC_PATH_ENUMERATION_EXTENSION_NAME,
-                },
+                .required_extensions = {},
         },
         interaction_profile{
                 .profile_name = "/interaction_profiles/ext/eye_gaze_interaction",
@@ -1302,10 +1299,6 @@ void application::initialize()
 	        XR_EXT_PERFORMANCE_SETTINGS_EXTENSION_NAME,
 	        XR_EXT_USER_PRESENCE_EXTENSION_NAME,
 
-	        XR_ANDROID_FACE_TRACKING_EXTENSION_NAME,
-
-	        XR_BD_BODY_TRACKING_EXTENSION_NAME,
-
 	        XR_FB_BODY_TRACKING_EXTENSION_NAME,
 	        XR_FB_COMPOSITION_LAYER_DEPTH_TEST_EXTENSION_NAME,
 	        XR_FB_COMPOSITION_LAYER_SETTINGS_EXTENSION_NAME,
@@ -1317,11 +1310,6 @@ void application::initialize()
 	        XR_FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME,
 	        XR_FB_SCENE_EXTENSION_NAME,
 	        XR_FB_SWAPCHAIN_UPDATE_STATE_EXTENSION_NAME,
-
-	        XR_HTC_PASSTHROUGH_EXTENSION_NAME,
-	        XR_HTC_PATH_ENUMERATION_EXTENSION_NAME,
-	        XR_HTC_FACIAL_TRACKING_EXTENSION_NAME,
-	        XR_HTC_VIVE_XR_TRACKER_INTERACTION_EXTENSION_NAME,
 
 	        XR_META_BODY_TRACKING_FIDELITY_EXTENSION_NAME,
 	        XR_META_BODY_TRACKING_FULL_BODY_EXTENSION_NAME,
@@ -1412,7 +1400,6 @@ void application::initialize()
 	default_config.emplace(xr_system_id, xr_session);
 
 #ifdef __ANDROID__
-	set_usb_networking(config->usb_network);
 #endif
 
 	// HTC face tracker fails if created later
@@ -1837,38 +1824,6 @@ void application::push_scene(std::shared_ptr<scene> s)
 	std::unique_lock _{instance().scene_stack_lock};
 	instance().scene_stack.push_back(std::move(s));
 }
-
-#ifdef __ANDROID__
-void application::set_usb_networking(bool enabled)
-{
-	jni::object<""> act(app_info.native_app->activity->clazz);
-	auto app = act.call<jni::object<"android/app/Application">>("getApplication");
-	auto ctx = app.call<jni::object<"android/content/Context">>("getApplicationContext");
-	auto system_service = ctx.call<jni::object<"java/lang/Object">>("getSystemService", jni::string("connectivity"));
-
-	auto cb = act.field<jni::object<"android/net/ConnectivityManager$NetworkCallback">>("netcb");
-	try
-	{
-		if (enabled)
-		{
-			auto req = jni::new_object<"android/net/NetworkRequest$Builder">()
-			                   .call<jni::object<"android/net/NetworkRequest$Builder">>("removeCapability", jni::Int(12) /*NET_CAPABILITY_INTERNET*/)
-			                   .call<jni::object<"android/net/NetworkRequest$Builder">>("removeCapability", jni::Int(14) /*NET_CAPABILITY_TRUSTED*/)
-			                   .call<jni::object<"android/net/NetworkRequest$Builder">>("addTransportType", jni::Int(8) /*TRANSPORT_USB*/)
-			                   .call<jni::object<"android/net/NetworkRequest">>("build");
-
-			// system_service.call<void>("requestNetwork", req, jni::new_object<"org/meumeu/wivrn/NetworkInfoCallback">());
-			system_service.call<void>("requestNetwork", req, cb);
-		}
-		else
-		{
-			system_service.call<void>("unregisterNetworkCallback", cb);
-		}
-	}
-	catch (...)
-	{}
-}
-#endif
 
 void application::poll_actions()
 {

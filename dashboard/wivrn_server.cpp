@@ -39,7 +39,7 @@ using namespace std::chrono_literals;
 
 static QString server_path()
 {
-	return QCoreApplication::applicationDirPath() + "/wivrn-server";
+	return QCoreApplication::applicationDirPath() + "/wivrn-pro-server";
 }
 
 wivrn_server::wivrn_server(QObject * parent) :

@@ -312,10 +312,6 @@ public:
 		return *instance().wifi;
 	}
 
-#ifdef __ANDROID__
-	void set_usb_networking(bool enabled);
-#endif
-
 	static void ignore_debug_reports_for(void * object)
 	{
 #ifndef NDEBUG

@@ -256,8 +256,6 @@ void start_server(configuration config)
 		if (do_fork)
 			setsid();
 
-		setenv("AMD_DEBUG", "lowlatencyenc", false);
-
 		// https://github.com/WiVRn/WiVRn/issues/695
 		// something is broken with Intel CCS under vaapi
 		setenv("INTEL_DEBUG", "noccs", false);
@@ -1062,9 +1060,9 @@ int main(int argc, char * argv[])
 		runtime_setter.emplace();
 	}
 	else
-		do_active_runtime = not *no_active_runtime;
+		do_active_runtime = not * no_active_runtime;
 
-	do_fork = not *no_fork;
+	do_fork = not * no_fork;
 	if (*no_encrypt)
 		enc_state = wivrn_connection::encryption_state::disabled;
 
@@ -1079,7 +1077,7 @@ int main(int argc, char * argv[])
 
 	try
 	{
-		return inner_main(argc, argv, not *no_instructions);
+		return inner_main(argc, argv, not*no_instructions);
 	}
 	catch (std::system_error & e)
 	{

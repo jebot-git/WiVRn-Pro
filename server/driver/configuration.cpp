@@ -49,8 +49,8 @@ static auto resolve_path(std::filesystem::path path)
 }
 
 static std::filesystem::path config_file;
-static std::filesystem::path known_keys_file = resolve_path(xdg_config_home() / "wivrn" / "known_keys.json");
-static std::filesystem::path cookie_file = resolve_path(xdg_config_home() / "wivrn" / "cookie");
+static std::filesystem::path known_keys_file = resolve_path(xdg_config_home() / "wivrn-pro" / "known_keys.json");
+static std::filesystem::path cookie_file = resolve_path(xdg_config_home() / "wivrn-pro" / "cookie");
 
 namespace wivrn
 {
@@ -83,7 +83,7 @@ void configuration::set_config_file(const std::filesystem::path & path)
 std::filesystem::path configuration::get_config_file()
 {
 	if (config_file.empty())
-		return resolve_path(xdg_config_home() / "wivrn" / "config.json");
+		return resolve_path(xdg_config_home() / "wivrn-pro" / "config.json");
 	return config_file;
 }
 
@@ -98,7 +98,7 @@ nlohmann::json configuration::read_configuration()
 		             xdg_config_home(),
 		     })
 		{
-			auto path = resolve_path(prefix / "wivrn" / "config.json");
+			auto path = resolve_path(prefix / "wivrn-pro" / "config.json");
 			if (std::filesystem::exists(path))
 			{
 				try

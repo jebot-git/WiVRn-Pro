@@ -21,9 +21,10 @@
 
 #include "app_pacer.h"
 #include "clock_offset.h"
-#include "spatial_bridge.h"
 #include "compositor/compositor.h"
 #include "inplace_vector.hpp"
+#include "shora_bridge.h"
+#include "spatial_bridge.h"
 #include "tracking_control.h"
 #include "utils/thread_safe.h"
 #include "wivrn_android_face_tracker.h"
@@ -70,6 +71,7 @@ class wivrn_session : public xrt_system_devices
 	// run-time editable settings
 	thread_safe<from_headset::settings_changed> settings;
 
+	shora_bridge shora;
 	wivrn::compositor compositor;
 	pacing_app_factory app_pacers;
 

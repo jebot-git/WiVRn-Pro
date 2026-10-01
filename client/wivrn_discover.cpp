@@ -1,4 +1,5 @@
 #include "wivrn_discover.h"
+#include "fork_policy.h"
 
 #include "application.h"
 #include "mdns.h"
@@ -80,6 +81,8 @@ std::set<if_addr> get_if_addrs(int port)
 	for (ifaddrs * i = addresses.get(); i; i = i->ifa_next)
 	{
 		spdlog::debug("interface {}, address {} flags 0x{:x} required 0x{:x} forbidden 0x{:x}", i->ifa_name, uintptr_t(i->ifa_addr), i->ifa_flags, required_flags, forbidden_flags);
+		if (!wivrn::fork_policy::wifi_interface(i->ifa_name))
+			continue; // Quest Pro Wi-Fi only; no USB tether interfaces.
 		if (i->ifa_addr == nullptr)
 			continue;
 
@@ -168,7 +171,7 @@ namespace
 static std::strong_ordering operator<=>(const if_addr & a, const if_addr & b) noexcept
 {
 	// Sort by interface name first
-	// We'll get eth < usb < wlan
+	// Compare Wi-Fi interface names deterministically.
 	if (auto comp = a.if_name <=> b.if_name; comp != std::strong_ordering::equal)
 		return comp;
 	return a.addr <=> b.addr;

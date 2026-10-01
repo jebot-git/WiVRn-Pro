@@ -273,6 +273,8 @@ void wivrn::wivrn_connection::init(std::stop_token stop_token, std::function<voi
 	control.send(to_headset::handshake{.stream_port = port});
 
 	info_packet = std::get<from_headset::headset_info_packet>(receive(10s).first);
+	if (info_packet.client_model != "seacliff")
+		throw std::runtime_error("WiVRn Pro accepts only Quest Pro clients");
 
 	active = true;
 

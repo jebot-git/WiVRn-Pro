@@ -2,8 +2,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python3 fork/check-policy.py
+python3 -m unittest discover -s fork/tests -p "test_*.py"
 mkdir -p build/native-tests
 cxx=${CXX:-c++}
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Icommon fork/tests/policy_test.cpp -o build/native-tests/policy-test
+build/native-tests/policy-test
 "$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -Wno-missing-field-initializers -pthread \
   -Icommon -Iserver/driver fork/tests/bridge_test.cpp \
   server/driver/spatial_bridge.cpp -o build/native-tests/bridge-test

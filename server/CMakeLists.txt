@@ -1,3 +1,6 @@
+if(WIVRN_BUILD_SERVER)
+    add_subdirectory(shora)
+endif()
 set(U_GIT_TAG_CPP "${CMAKE_BINARY_DIR}/u_git_tag.cpp")
 
 set(XRT_BUILD_DRIVER_ARDUINO            OFF)
@@ -114,11 +117,11 @@ if (WIVRN_BUILD_SERVER)
 			encoder/encoder_settings.cpp
 			encoder/idr_handler.cpp
 			encoder/video_encoder.cpp
-			encoder/video_encoder_raw.cpp
 
 			driver/app_pacer.cpp
 			driver/clock_offset.cpp
 			driver/spatial_bridge.cpp
+			driver/shora_bridge.cpp
 			driver/configuration.cpp
 			driver/hand_joints_list.cpp
 			driver/pose_list.cpp
@@ -148,7 +151,7 @@ if (WIVRN_BUILD_SERVER)
 	target_include_directories(wivrn-server SYSTEM PRIVATE ${monado_SOURCE_DIR}/src/xrt/compositor/)
 	target_include_directories(wivrn-server PRIVATE .)
 
-	target_link_libraries(wivrn-server PRIVATE CLI11::CLI11 xrt-external-renderdoc)
+	target_link_libraries(wivrn-server PRIVATE CLI11::CLI11 xrt-external-renderdoc wivrn-shora ${CMAKE_DL_LIBS} m)
 
 	if (WIVRN_FEATURE_STEAMVR_LIGHTHOUSE)
 		target_include_directories(wivrn-server SYSTEM PRIVATE ${monado_SOURCE_DIR}/src/xrt/drivers/steamvr_lh/)
@@ -160,15 +163,8 @@ if (WIVRN_BUILD_SERVER)
 		target_link_libraries(wivrn-server PRIVATE drv_solarxr)
 	endif()
 
-	if(WIVRN_USE_NVENC)
-		target_sources(
-			wivrn-server
-			PRIVATE encoder/video_encoder_nvenc.cpp
-				encoder/video_encoder_nvenc_shared_state.cpp
-			)
-	endif()
 
-	if(WIVRN_USE_VAAPI)
+	if(WIVRN_USE_VAAPI OR WIVRN_USE_QSV)
 		target_sources(
 			wivrn-server
 			PRIVATE encoder/ffmpeg/video_encoder_ffmpeg.cpp
@@ -186,10 +182,6 @@ if (WIVRN_BUILD_SERVER)
 			)
 	endif()
 
-	if(WIVRN_USE_X264)
-		target_sources(wivrn-server PRIVATE encoder/video_encoder_x264.cpp)
-		target_link_libraries(wivrn-server PRIVATE PkgConfig::X264)
-	endif()
 
 	if(WIVRN_USE_PERFETTO)
 		find_path(PERFETTO_SDK_DIR
@@ -277,9 +269,24 @@ if (WIVRN_BUILD_SERVER)
 
 	target_compile_definitions(wivrn-server PRIVATE JSON_DIAGNOSTICS=1)
 
-	configure_file(dist/wivrn.service.in wivrn.service)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/wivrn.service
-		DESTINATION lib/systemd/user/)
+	set_target_properties(wivrn-server PROPERTIES OUTPUT_NAME wivrn-pro-server)
+    set(WIVRN_SHORA_BACKEND /usr/bin/slimevr-server-rs CACHE FILEPATH "Shora tracking backend executable")
+    set(WIVRN_SHORA_INIT /usr/libexec/slimevr-server-rs/init-profile CACHE FILEPATH "Shora profile initializer")
+    set(WIVRN_PRO_RUNTIME_MANIFEST openxr_wivrn_pro.json)
+    if(WIVRN_OPENXR_MANIFEST_ABI)
+        if(CMAKE_C_COMPILER_ARCHITECTURE_ID MATCHES "i.86")
+            set(WIVRN_PRO_RUNTIME_MANIFEST openxr_wivrn_pro.i686.json)
+        else()
+            set(WIVRN_PRO_RUNTIME_MANIFEST openxr_wivrn_pro.${CMAKE_C_COMPILER_ARCHITECTURE_ID}.json)
+        endif()
+    endif()
+    foreach(unit wivrn-pro wivrn-pro-shora)
+        configure_file(dist/${unit}.service.in ${unit}.service @ONLY)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${unit}.service DESTINATION lib/systemd/user/)
+    endforeach()
+    install(PROGRAMS ../fork/wait-shora.py DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/wivrn-pro)
+    install(PROGRAMS ../fork/subscribe.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME wivrn-pro-spatial)
+    install(FILES shora/LICENSE-APACHE shora/LICENSE-MIT DESTINATION share/licenses/wivrn-pro/shora)
 
 	install(FILES dist/firewalld-wivrn.xml
 		RENAME wivrn.xml
@@ -305,12 +312,12 @@ if (WIVRN_BUILD_SERVER_LIBRARY)
 
 	if (WIVRN_OPENXR_MANIFEST_ABI)
 		if (CMAKE_C_COMPILER_ARCHITECTURE_ID MATCHES "i.86")
-			set(_filename openxr_wivrn.i686.json)
+			set(_filename openxr_wivrn_pro.i686.json)
 		else()
-			set(_filename openxr_wivrn.${CMAKE_C_COMPILER_ARCHITECTURE_ID}.json)
+			set(_filename openxr_wivrn_pro.${CMAKE_C_COMPILER_ARCHITECTURE_ID}.json)
 		endif()
 	else()
-		set(_filename openxr_wivrn.json)
+		set(_filename openxr_wivrn_pro.json)
 	endif()
 
 	generate_openxr_runtime_manifest_at_install(
@@ -330,4 +337,5 @@ if (WIVRN_BUILD_SERVER_LIBRARY)
 endif()
 
 # Input validation must retain IEEE NaN/Inf checks despite the renderer fast-math default.
-set_source_files_properties(driver/spatial_bridge.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math")
+set_source_files_properties(driver/spatial_bridge.cpp
+			driver/shora_bridge.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math")

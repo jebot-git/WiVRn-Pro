@@ -1,0 +1,24 @@
+[Unit]
+Description=Shora tracking backend for WiVRn Pro
+Conflicts=shora-server.service shora-proxy.service
+
+[Service]
+Type=simple
+Environment=XR_RUNTIME_JSON=@CMAKE_INSTALL_PREFIX@/share/openxr/1/@WIVRN_PRO_RUNTIME_MANIFEST@
+Environment=XDG_RUNTIME_DIR=%t
+WorkingDirectory=-%h/.config/shora-rust
+RuntimeDirectory=wivrn-pro
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
+ExecStartPre=@WIVRN_SHORA_INIT@
+ExecStart=@WIVRN_SHORA_BACKEND@ --config %h/.config/shora-rust/server.toml --solarxr-socket %t/wivrn-pro/ShoraRpc.backend --feeder-socket %t/wivrn-pro/ShoraInput.backend --control-socket %t/wivrn-pro/ShoraControl
+ExecStartPost=@CMAKE_INSTALL_FULL_LIBEXECDIR@/wivrn-pro/wait-shora.py %t/wivrn-pro/ShoraRpc.backend %t/wivrn-pro/ShoraInput.backend %t/wivrn-pro/ShoraControl
+TimeoutStartSec=20
+UMask=0077
+NoNewPrivileges=true
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=15
+
+[Install]
+WantedBy=default.target

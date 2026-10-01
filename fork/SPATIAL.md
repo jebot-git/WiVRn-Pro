@@ -2,10 +2,9 @@
 
 This is the `wivrn-native` branch. Room capture runs in the WiVRn Quest client;
 localization, transport, stage alignment and PC subscriptions use the same WiVRn
-session. The standalone implementation remains on `main`; its original files and
-[documentation](STANDALONE.md) are retained here as reference and test fixtures.
+session. The standalone implementation remains on `main`. This branch is a root-level
+WiVRn fork with capture in `client/` and the PC bridge in `server/driver/`.
 
-The integrated implementation is under [`wivrn/`](wivrn/) (WiVRn 26.9).
 No Godot runtime, separate Quest capture application, Python broker, or controller
 calibration is required for the native path. Python is only used by the optional
 subscriber example. This branch changes WiVRn's protocol: **build both peers from
@@ -47,11 +46,10 @@ identities. A fresh native capture will be needed when hardware testing resumes.
 
 ## Server alignment and PC clients
 
-Set `WIVRN_SPATIAL_BRIDGE=1` in the environment of this branch's server. The native
-API starts with the WiVRn runtime session and listens at:
+The native API is integral and starts with the WiVRn runtime session and listens at:
 
 ```
-$XDG_RUNTIME_DIR/wivrn-spatial/bridge.sock
+$XDG_RUNTIME_DIR/wivrn-pro/bridge.sock
 ```
 
 The fallback runtime directory is `/run/user/UID`. The bridge creates its own
@@ -102,69 +100,30 @@ it does not persist a live PC pose or calibrated transform across sessions.
 A dependency-free reader example reconnects automatically:
 
 ```sh
-python3 native/subscribe.py
-python3 native/subscribe.py --once
+python3 fork/subscribe.py
+python3 fork/subscribe.py --once
 ```
 
 ## Build and service integration
 
-Host requirements follow [WiVRn's upstream build instructions](wivrn/README.md).
-The checked build uses CMake/Ninja, C++23, system OpenXR/Boost/OpenSSL/nlohmann-json,
-and VAAPI/Vulkan encoders. The APK additionally needs JDK 21, Android SDK 34,
-NDK 29.0.14206865, and WiVRn's host asset tools. Build scripts never deploy:
-
-```sh
-native/build-server.sh
-native/build-client.sh
-```
-
-Pass extra CMake arguments to the server script for dependencies or installation
-prefix, and Gradle options to the client script. For a populated dependency cache,
-use `native/build-client.sh --offline -Pwivrn_offline=1
--Pfetchcontent_base_dir=/absolute/path/to/cache` on one line. The offline property
-also disables CMake FetchContent downloads; all source archives and host tools
-must already be available. SDK downloads are a build prerequisite, not part of
-the spatial bridge runtime.
-
-Outputs:
-
-- `build/native-server/server/wivrn-server`
-- `build/native-server/_deps/monado-build/src/xrt/targets/openxr/libopenxr_wivrn.so`
-- `build/native-server/openxr_wivrn-dev.json` (matching build-tree runtime)
-- `wivrn/build/outputs/apk/debug/wivrn-debug.apk` (separate `.spatial` package)
-
-The native bridge runs **inside the WiVRn service**. After installing this branch
-to a separate prefix or selecting its server, add the supplied
-[`native/wivrn-spatial.conf`](native/wivrn-spatial.conf) as a drop-in for the service
-that starts that binary. No separate `spatial-bridge.service` or Python process
-is needed for native clients. Do not run two WiVRn servers against the same
-runtime/ports. The existing standalone service may remain for its existing
-clients. This work does not install a service, change the selected OpenXR runtime,
-restart WiVRn, or install the APK.
+See [build/service setup](../docs/building.md). The native spatial API and Shora
+bridge run inside `wivrn-pro-server`; neither needs a Python broker or a separate
+bridge service. The reader example is also installed as `wivrn-pro-spatial`.
 
 ## Offline verification
 
 ```sh
-native/test-offline.sh
+fork/test-offline.sh
+python3 fork/check-android-protocol.py .cxx/Debug/BUILD_ID/arm64-v8a/compile_commands.json
 ```
 
-The tests use mocked OpenXR dispatch and isolated temporary Unix sockets, not
-an HMD or the running WiVRn server. They cover anchor lifecycle, guided scanning
-and reload verification, rigid transforms, multiple/late/slow readers, expiry,
-tracking loss, invalid numbers, replay/generation handling, maximum geometry,
-socket ownership, wire round trips, truncated packets, and matching protocol
-hashes with signed/unsigned `char` defaults. To compare actual PC and Android
-compiler output without running either binary, use:
+The tests use mocked OpenXR dispatch and isolated temporary Unix sockets. They
+cover anchor lifecycle, guided scanning/reload verification, rigid transforms,
+multiple/late/slow readers, expiry, tracking loss, invalid numbers, replay and
+generation handling, maximum geometry, socket ownership, wire round trips and
+truncated packets. Actual PC/ARM compiler constants are compared without running
+either compiled artifact. See [validation record](VALIDATION.md).
 
-```sh
-python3 native/check-android-protocol.py wivrn/.cxx/Debug/BUILD_ID/arm64-v8a/compile_commands.json
-```
-
-Verified offline on 2026-10-02: the PC server/runtime and Quest debug APK build
-successfully; 69 anchor checks, 707 capture checks and 126 transform/IPC checks
-pass. Wire round trips and truncation checks pass (30,617 bytes per snapshot),
-and the actual PC and ARM64 compiler outputs agree on protocol `8597902ca6ad42b4`.
-
-**Live HMD tests are suspended until explicitly requested.** Offline builds do
-not establish capture UX, spatial accuracy, headset performance, or scene API
+**Live HMD tests remain suspended until explicitly requested.** Offline checks do
+not establish capture UX, spatial accuracy, headset performance or scene API
 behavior on the device. See [source provenance](PROVENANCE.md).

@@ -337,7 +337,7 @@ void settings_streaming(const settings_context & ctx)
 			case wivrn::h265:
 				return _C("Codec", "HEVC (H.265)");
 			case wivrn::av1:
-				return _C("Codec", "AV1");
+				break;
 			case wivrn::raw:
 				break;
 		}
@@ -346,7 +346,7 @@ void settings_streaming(const settings_context & ctx)
 
 	std::vector<wivrn::video_codec> codecs;
 	for (auto c: wivrn::decoder::supported_codecs())
-		if (c != wivrn::raw)
+		if (c == wivrn::h264 || c == wivrn::h265)
 			codecs.push_back(c);
 
 	list.push_back({
@@ -375,7 +375,7 @@ void settings_streaming(const settings_context & ctx)
 		list.push_back({
 		        .id = "##ten_bit",
 		        .label = _C("setting name", "10-bit color"),
-		        .description = _("Higher color precision, supported by HEVC and AV1."),
+		        .description = _("Higher color precision, supported by HEVC."),
 		        .ui = ui_kind::toggle,
 		        .get_bool = [&config] { return config.bit_depth == 10; },
 		        .set_bool = [&config](bool v) { config.bit_depth = v ? 10 : 8; config.save(); },
@@ -718,19 +718,6 @@ void settings_system(const settings_context & ctx)
 	        .title = _("Language"),
 	        .default_int = language_index(default_config),
 	});
-
-#ifdef __ANDROID__
-	if (application::get_hmd_traits().usb_net)
-		list.push_back({
-		        .id = "##usbnet",
-		        .label = _C("setting name", "USB networking"),
-		        .description = _("Enables connection by USB without ADB or developer mode.\nMake sure the server allows IPv6 link-local only connections."),
-		        .ui = ui_kind::toggle,
-		        .get_bool = [&config] { return config.usb_network; },
-		        .set_bool = [&config](bool v) { config.usb_network = v;config.save(); application::instance().set_usb_networking(v); },
-		        .default_bool = default_config.usb_network,
-		});
-#endif
 
 	list.push_back({
 	        .id = "##extended",

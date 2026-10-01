@@ -27,7 +27,7 @@ def checked(record):
 def main():
     runtime = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--socket", type=Path, default=runtime / "wivrn-spatial/bridge.sock")
+    parser.add_argument("--socket", type=Path, default=runtime / "wivrn-pro/bridge.sock")
     parser.add_argument("--once", action="store_true", help="print one snapshot and exit")
     args = parser.parse_args()
     while True:

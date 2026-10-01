@@ -302,6 +302,7 @@ struct settings_changed
 
 struct headset_info_packet
 {
+	std::string client_model; // Fork handshake: Quest Pro Android device codename.
 	uint16_t render_eye_width;
 	uint16_t render_eye_height;
 	uint16_t stream_eye_width;

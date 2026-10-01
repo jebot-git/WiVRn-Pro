@@ -29,20 +29,13 @@
 
 #include <string>
 
-#if WIVRN_USE_NVENC
-#include "video_encoder_nvenc.h"
-#endif
-#if WIVRN_USE_VAAPI
+#if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 #include "ffmpeg/video_encoder_va.h"
-#endif
-#if WIVRN_USE_X264
-#include "video_encoder_x264.h"
 #endif
 #if WIVRN_USE_VULKAN_ENCODE
 #include "video_encoder_vulkan_h264.h"
 #include "video_encoder_vulkan_h265.h"
 #endif
-#include "video_encoder_raw.h"
 
 namespace wivrn
 {
@@ -128,34 +121,13 @@ std::unique_ptr<video_encoder> video_encoder::create(
 		throw std::runtime_error("Vulkan video encode not enabled");
 #endif
 	}
-	if (settings.encoder_name == encoder_x264)
+	if (settings.encoder_name == encoder_vaapi || settings.encoder_name == encoder_qsv)
 	{
-#if WIVRN_USE_X264
-		res = std::make_unique<video_encoder_x264>(wivrn_vk, settings, stream_idx);
-#else
-		throw std::runtime_error("x264 encoder not enabled");
-#endif
-	}
-	if (settings.encoder_name == encoder_nvenc)
-	{
-#if WIVRN_USE_NVENC
-		res = std::make_unique<video_encoder_nvenc>(wivrn_vk, settings, stream_idx);
-#else
-		throw std::runtime_error("nvenc support not enabled");
-#endif
-	}
-	if (settings.encoder_name == encoder_vaapi)
-	{
-#if WIVRN_USE_VAAPI
+#if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 		res = std::make_unique<video_encoder_va>(wivrn_vk, settings, stream_idx);
 #else
 		throw std::runtime_error("vaapi support not enabled");
 #endif
-	}
-
-	if (settings.encoder_name == encoder_raw)
-	{
-		res = std::make_unique<video_encoder_raw>(wivrn_vk, settings, stream_idx);
 	}
 
 	if (not res)

@@ -1,3 +1,5 @@
+#include "fork_policy.h"
+#include <stdexcept>
 /*
  * WiVRn VR streaming
  * Copyright (C) 2023  Guillaume Meunier <guillaume.meunier@centraliens.net>
@@ -158,157 +160,14 @@ void hmd_traits::init()
 
 	permissions[feature::microphone] = "android.permission.RECORD_AUDIO";
 
-	if (manufacturer == "Oculus")
-	{
-		permissions[feature::eye_gaze] = "com.oculus.permission.EYE_TRACKING";
-		permissions[feature::face_tracking] = "com.oculus.permission.FACE_TRACKING";
-
-		// Quest hand tracking creates a fake khr/simple_controller when hand tracking
-		// is enabled, this messes with native hand tracking
-		bind_simple_controller = false;
-
-		// Quest breaks spec and does not support grip_surface for ext/hand_interaction_ext
-		hand_interaction_grip_surface = false;
-
-		if (device == "monterey") // Quest 1
-		{
-			panel_width_override = 1440;
-			controller_profile = "oculus-touch-v2";
-			vk_debug_ext_allowed = false; // Quest 1 lies, the extension won't load
-		}
-		else if (device == "hollywood") // Quest 2
-		{
-			panel_width_override = 1832;
-			controller_profile = "oculus-touch-v3";
-		}
-		else if (device == "seacliff")
-		{
-			panel_width_override = 1800; // Quest pro
-			controller_profile = "meta-quest-touch-pro";
-		}
-		else if (device == "eureka")
-		{
-			panel_width_override = 2064; // Quest 3
-			controller_profile = "meta-quest-touch-plus";
-			usb_net = true;
-		}
-		else if (device == "panther") // Quest 3S
-		{
-			panel_width_override = 1832;
-			controller_profile = "meta-quest-touch-plus";
-		}
-
-		if (auto v = get_property("ro.hzos.build.display_name"))
-		{
-			auto digits = utils::split(*v, ".");
-			try
-			{
-				auto major = std::stoi(digits.at(0));
-				auto minor = std::stoi(digits.at(1));
-				usb_net = major > 2 or (major == 2 and minor >= 6);
-			}
-			catch (...)
-			{
-				spdlog::warn("Failed to parse Horizon OS version {}", *v);
-			}
-		}
-	}
-
-	else if (model == "Lynx-R1")
-	{
-		needs_srgb_conversion = false;
-	}
-
-	else if (manufacturer == "Play For Dream" and model == "PFDM MR")
-	{
-		controller_profile = "yvr-touch-v2";
-	}
-
-	else if (manufacturer == "Pico")
-	{
-		permissions[feature::eye_gaze] = "com.picovr.permission.EYE_TRACKING";
-		permissions[feature::face_tracking] = "com.picovr.permission.FACE_TRACKING";
-		view_locate = false;
-		discard_frame = false;
-		const auto pico_model = get_property("pxr.vendorhw.product.model");
-		spdlog::info("    pxr.vendorhw.product.model = \"{}\":", pico_model.value_or("<unset>"));
-
-		if (pico_model == "Pico Neo 3")
-		{
-			panel_width_override = 1832;
-			controller_profile = "pico-neo3";
-		}
-
-		else if (pico_model and pico_model->starts_with("PICO 4"))
-		{
-			panel_width_override = 2160;
-			if (pico_model == "PICO 4 Ultra")
-				controller_profile = "pico-4u";
-			else
-				controller_profile = "pico-4";
-
-			if (pico_model == "PICO 4 Pro" or pico_model == "PICO 4 Enterprise")
-				pico_face_tracker = true;
-		}
-	}
-	if (manufacturer == "HTC")
-	{
-		// Accepts OpenXR 1.1 but doesn't actually implement it
-		max_openxr_api_version = XR_API_VERSION_1_0;
-
-		// Doesn't handle additive blend, so needs specific ray model
-		// Fixed in XR elite firmware version 2.0
-		bool need_htc_ray = true;
-		const auto version = get_property("ro.product.version");
-		if (version)
-		{
-			auto digits = utils::split(*version, ".");
-			if (not digits.empty())
-			{
-				try
-				{
-					auto major = std::stoi(digits[0]);
-					if (major >= 2 and model == "VIVE XR Series")
-						need_htc_ray = false;
-				}
-				catch (...)
-				{}
-			}
-		}
-		if (need_htc_ray)
-			override_shader = {
-			        {"ray.frag", "ray_htc.frag"},
-			        {"ray_skinned.vert", "ray_skinned_htc.vert"},
-			        {"ray.vert", "ray_htc.vert"},
-			};
-
-		controller_profile = "htc-vive-focus-3";
-
-		if (model == "VIVE Focus 3")
-		{
-			panel_width_override = 2448;
-
-			// Reports VK_EXT_debug_utils but does not expose vkSetDebugUtilsObjectNameEXT
-			vk_debug_ext_allowed = false;
-		}
-
-		if (model == "VIVE Focus Vision")
-			panel_width_override = 2448;
-
-		if (model == "VIVE XR Series")
-			panel_width_override = 1920;
-	}
-	if (manufacturer == "samsung")
-	{
-		if (model == "SM-I610") // Galaxy XR
-		{
-			panel_width_override = 3552;
-			controller_profile = "samsung-galaxyxr";
-			permissions[feature::hand_tracking] = "android.permission.HAND_TRACKING";
-			permissions[feature::eye_gaze] = "android.permission.EYE_TRACKING_FINE";
-			permissions[feature::face_tracking] = "android.permission.FACE_TRACKING";
-		}
-	}
+	if (!wivrn::fork_policy::quest_pro(device.value_or(""), manufacturer.value_or("")))
+		throw std::runtime_error("WiVRn Pro supports only Meta Quest Pro (seacliff)");
+	permissions[feature::eye_gaze] = "com.oculus.permission.EYE_TRACKING";
+	permissions[feature::face_tracking] = "com.oculus.permission.FACE_TRACKING";
+	bind_simple_controller = false;
+	hand_interaction_grip_surface = false;
+	panel_width_override = 1800;
+	controller_profile = "meta-quest-touch-pro";
 #endif
 
 	spdlog::info("HMD traits initialized");

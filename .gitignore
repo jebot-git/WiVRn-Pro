@@ -27,3 +27,5 @@ compile_commands.json
 .state/
 evidence/
 *.log
+
+/server/shora/target/

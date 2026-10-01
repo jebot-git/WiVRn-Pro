@@ -1,0 +1,49 @@
+--- a/src/xrt/drivers/solarxr/solarxr_ipc_socket.c
++++ b/src/xrt/drivers/solarxr/solarxr_ipc_socket.c
+@@ -116,7 +116,7 @@
+ 	}
+ 
+ 	const ssize_t runtime_dir_len =
+-	    u_file_get_path_in_runtime_dir("", addr.sun_path, sizeof(addr.sun_path) - 1 - filename_len);
++	    u_file_get_path_in_runtime_dir("wivrn-pro/", addr.sun_path, sizeof(addr.sun_path) - 1 - filename_len);
+ 	if (runtime_dir_len <= 0 || (size_t)runtime_dir_len >= sizeof(addr.sun_path) - 1 - filename_len) {
+ 		U_LOG_IFL_E(log_level, "u_file_get_path_in_runtime_dir() failed");
+ 		return (struct sockaddr_un){0};
+@@ -128,34 +128,9 @@
+ 		return addr;
+ 	}
+ 
+-	// try path used by SlimeVR flatpak
+-	static const char flatpak_runtime_dir[] = ".flatpak/" SLIMEVR_IDENTIFIER "/xdg-run/";
+-	if (sizeof(addr.sun_path) - 1 - filename_len - runtime_dir_len >= sizeof(flatpak_runtime_dir) - 1) {
+-		memcpy(&addr.sun_path[runtime_dir_len], flatpak_runtime_dir, sizeof(flatpak_runtime_dir) - 1);
+-		memcpy(&addr.sun_path[runtime_dir_len + (sizeof(flatpak_runtime_dir) - 1)], filename, filename_len + 1);
+-		if (check_socket_path(log_level, addr.sun_path)) {
+-			return addr;
+-		}
+-	}
+-
+-	// try fallback path in SlimeVR data dir
+-	const char *env;
+-	int path_len = 0;
+-	if ((env = getenv("XDG_DATA_HOME")) != NULL) {
+-		path_len =
+-		    snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/" SLIMEVR_IDENTIFIER "/%s", env, filename);
+-	} else if ((env = getenv("HOME")) != NULL) {
+-		path_len = snprintf(addr.sun_path, sizeof(addr.sun_path), "%s/.local/share/" SLIMEVR_IDENTIFIER "/%s",
+-		                    env, filename);
+-	}
+-
+-	if (path_len <= 0 || (unsigned)path_len >= sizeof(addr.sun_path) ||
+-	    !check_socket_path(log_level, addr.sun_path)) {
+-		U_LOG_IFL_E(log_level, "failed to resolve socket path");
+-		return (struct sockaddr_un){0};
+-	}
+-
+-	return addr;
++	// This fork owns the bridge in-process; never attach to a stock/global proxy.
++	U_LOG_IFL_E(log_level, "WiVRn Pro Shora bridge socket missing");
++	return (struct sockaddr_un){0};
+ }
+ 
+ bool

@@ -23,8 +23,6 @@ add_executable(wivrn-dashboard
     escape_string.cpp
     settings.cpp
     steam.cpp
-    adb.cpp
-    apk_installer.cpp
     firewall.cpp
     vulkan_info.cpp
 )
@@ -45,16 +43,13 @@ qt_add_qml_module(wivrn-dashboard
     QML_FILES
         qml/Main.qml
         qml/About.qml
-        qml/ApkInstallPage.qml
         qml/DashboardSettings.qml
         qml/SettingsPage.qml
         qml/HeadsetsPage.qml
         qml/HeadsetStatsPage.qml
         qml/WizardPage.qml
         qml/WizardStep.qml
-        qml/DeviceCard.qml
         qml/BetterLabel.qml
-        qml/ConnectUsbDialog.qml
         qml/SelectGame.qml
         qml/SteamLaunchOptions.qml
         qml/TroubleshootPage.qml

@@ -1,130 +1,91 @@
-# Building
+# Build and install WiVRn Pro
 
-# Server (PC)
+Build both peers from this fork. The Android package is `org.meumeu.wivrn.spatial`.
+No Godot runtime is required anywhere. Build helpers do not deploy, launch apps,
+connect to a headset or change running services.
 
-## Compile
+## PC
 
-From your checkout directory, with automatic detection of encoders
-```bash
-cmake -B build-server . -GNinja -DWIVRN_BUILD_CLIENT=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo
-cmake --build build-server
+Requires CMake 3.28+, Ninja, a C++23 compiler, Vulkan headers 1.4.304+, OpenXR
+headers, Boost (locale/url/iostreams), OpenSSL, Eigen3, nlohmann-json, CLI11,
+Avahi, GLib, libnotify, librsvg, libarchive, libdrm, FFmpeg development libraries,
+shader tools, Python 3 and Rust/Cargo. Cargo.lock pins the embedded Shora dependencies.
+Monado's revision and patches remain managed by WiVRn CMake. See CI for an
+Ubuntu dependency list. Native installation is supported; old distro/container
+release recipes are deliberately absent.
+
+```sh
+fork/build-server.sh -DCMAKE_INSTALL_PREFIX="$HOME/.local/opt/wivrn-pro" \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo
+# Reconfigure with QSV when wanted:
+fork/build-server.sh -DWIVRN_USE_QSV=ON
 ```
 
-It is possible to disable specific encoders, by adding options
-```
--DWIVRN_USE_NVENC=OFF
--DWIVRN_USE_VAAPI=OFF
--DWIVRN_USE_VULKAN_ENCODE=OFF
--DWIVRN_USE_X264=OFF
-```
+QSV defaults OFF. Enabling it checks FFmpeg for `h264_qsv`, `hevc_qsv` and a QSV
+hardware context without opening a GPU. Runtime also needs a compatible Intel
+media driver and oneVPL dispatcher/implementation. Encoding uses VAAPI surfaces
+on the same Arc as Vulkan. An explicit `qsv` selection fails if QSV is unavailable;
+it never silently selects a different backend. See [configuration](configuration.md).
+`WIVRN_SHORA_OFFLINE=ON` uses only cached Cargo crates. At least one of VAAPI,
+Vulkan Video and QSV must be enabled. NVENC/x264/Lighthouse ON is a configure error.
 
-Force specific audio backends
-```
--DWIVRN_USE_PIPEWIRE=ON
-```
+Artifacts: `build/server/server/wivrn-pro-server`,
+`build/server/openxr_wivrn-dev.json`, the corresponding runtime shared libraries,
+and `build/server/server/wivrn-pro*.service`.
 
-Systemd service and pretty hostname support
-```
--DWIVRN_USE_SYSTEMD=ON
-```
+For the optional Qt6/Kirigami dashboard, add `-DWIVRN_BUILD_DASHBOARD=ON` and build
+`wivrn-dashboard`. It uses the fork server next to its executable. USB installer
+and connection controls have been removed. The dashboard is not needed for the
+systemd service. WiVRn's D-Bus interface and network port remain shared with
+stock WiVRn, so run only one server at a time.
 
-Lighthouse driver support for use with lighthouse-tracked devices
-```
--DWIVRN_FEATURE_STEAMVR_LIGHTHOUSE=ON
-```
+## Quest Pro APK
 
-Additionally, if your environment requires absolute paths inside the OpenXR runtime manifest, you can add `-DWIVRN_OPENXR_MANIFEST_TYPE=absolute` to the build configuration.
+Requires JDK 21, Android SDK 34, NDK 29.0.14206865, Android CMake 3.31.5,
+`glslangValidator`, `spirv-opt`, `rsvg-convert`, gettext and KTX-Software's `ktx`.
+Set `JAVA_HOME` and `ANDROID_HOME`, then:
 
-## Profiling / tracing build
-
-To build the server with Perfetto tracing for local profiling, use the `server-tracing` preset (it is the `server` preset plus `WIVRN_USE_PERFETTO=ON`):
-
-```bash
-cmake --preset server-tracing
-cmake --build build-server-tracing
+```sh
+fork/build-client.sh
 ```
 
-This requires the Perfetto amalgamated SDK installed where CMake looks for it (`/usr/share/perfetto/sdk/perfetto.{h,cc}`, override with `-DPERFETTO_SDK_DIR=<dir>`). Tracing is gated at runtime by the `WIVRN_TRACING` env var, so a tracing-enabled build has no cost until you set it.
+The debug APK is under `build/android/outputs/apk/debug/` and is debug-signed.
+For cached builds pass `--offline -Pwivrn_offline=1
+-Pfetchcontent_base_dir=/absolute/cache/path` on the same command line.
+Release signing follows the Gradle signing configuration; keep keys untracked.
+No store release or installation is performed by the build.
 
-To also instrument Monado under the same switch, use the `server-tracing-monado` preset (adds `WIVRN_TRACE_MONADO=ON`); this requires [percetto](https://github.com/olvaffe/percetto/) to be discoverable at configure time.
+## User services
 
-See [profiling](profiling.md) for how to run the server with tracing and capture/analyse traces.
+The Shora tracking backend must already be installed. Defaults are
+`/usr/bin/slimevr-server-rs` and `/usr/libexec/slimevr-server-rs/init-profile`;
+override `WIVRN_SHORA_BACKEND` and `WIVRN_SHORA_INIT` at configure time if needed.
+It retains the user's existing `~/.config/shora-rust/server.toml` profile.
 
-# Dashboard
+After reviewing the build, installation and activation are explicit operations:
 
-The WiVRn dashboard requires Qt6, and the WiVRn server.
-
-## Compile
-
-From your checkout directory, compile both the server and the dashboard:
-```bash
-cmake -B build-dashboard . -GNinja -DWIVRN_BUILD_CLIENT=OFF -DWIVRN_BUILD_SERVER=ON -DWIVRN_BUILD_DASHBOARD=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo
-cmake --build build-dashboard
+```sh
+cmake --install build/server
+mkdir -p "$HOME/.config/systemd/user"
+ln -sfn "$HOME/.local/opt/wivrn-pro/lib/systemd/user/wivrn-pro.service" \
+  "$HOME/.config/systemd/user/wivrn-pro.service"
+ln -sfn "$HOME/.local/opt/wivrn-pro/lib/systemd/user/wivrn-pro-shora.service" \
+  "$HOME/.config/systemd/user/wivrn-pro-shora.service"
+systemctl --user daemon-reload
+systemctl --user enable --now wivrn-pro.service
 ```
 
-See [Server](#server-pc) for the server compile options.
+Adjust paths if configured with another prefix. Starting the fork conflicts
+with `wivrn.service`; its backend conflicts with `shora-server.service` and
+`shora-proxy.service`. This prevents two tracking backends from competing for
+trackers. It does not disable those units permanently. Stop their boot activation
+separately if making this the default installation. Stop both fork units to end
+both processes; restarting the backend alone leaves WiVRn and its bridge running.
 
-# Client (headset)
+The fork runtime manifest is `<prefix>/share/openxr/1/openxr_wivrn_pro.json`.
+Shora's unit uses it explicitly. WiVRn retains upstream's runtime selection
+behavior for VR applications when the service is started. No runtime selection
+or service activation is performed while building or testing offline.
 
-#### Build dependencies
-As Arch package names: git pkgconf glslang cmake jdk17-openjdk librsvg cli11 ktx-software-bin ([AUR](https://aur.archlinux.org/packages/ktx-software-bin))
-
-OpenSSL build dependencies are also needed, as described [here](https://github.com/openssl/openssl/blob/master/INSTALL.md#prerequisites), in particular perl 5.
-
-#### Android environment
-Download [sdkmanager](https://developer.android.com/tools/sdkmanager) commandline tool and extract it to any directory.
-Create your `ANDROID_HOME` directory, for instance `~/Android`.
-
-Review and accept the licenses with
-```bash
-sdkmanager --sdk_root="${HOME}/Android" --licenses
-```
-
-Install the correct cmake version with
-```bash
-sdkmanager --install "cmake;3.31.5"
-```
-
-#### Apk signing
-Your device may refuse to install an unsigned apk, so you must create signing keys before building the client
-```
-# Create key, then enter the password and other information that the tool asks for
-keytool -genkey -v -keystore ks.keystore -alias default_key -keyalg RSA -keysize 2048 -validity 10000
-
-# Substitute your password that you entered in the command above instead of YOUR_PASSWORD
-echo signingKeyPassword="YOUR_PASSWORD" > gradle.properties
-```
-Once you have generated the keys, the apk will be automatically signed at build time
-
-#### Client build
-From the main directory.
-```bash
-export ANDROID_HOME=~/Android
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk/
-
-./gradlew assembleRelease
-```
-
-Outputs will be in `build/outputs/apk/release/WiVRn-release.apk`
-
-#### Install apk with adb
-Before using adb you must enable usb debugging on your device:
- * Pico - https://developer.picoxr.com/document/unity-openxr/set-up-the-development-environment/ (see first step)
- * Quest - https://developer.oculus.com/documentation/unity/unity-env-device-setup/#headset-setup (see "Set Up Meta Headset" and "Test an App on Headset" until step 4)
-
-Also add your device in udev rules: https://wiki.archlinux.org/title/Android_Debug_Bridge#Adding_udev_rules
-
-Then connect the device via usb to your computer and execute the following commands
-```
-# Start adb server
-adb start-server
-
-# Check if the device is connected
-adb devices
-
-# Install apk
-adb install build/outputs/apk/release/WiVRn-release.apk
-
-# When you're done, you can stop the adb server
-adb kill-server
-```
+For a review-only install use `DESTDIR=/absolute/staging cmake --install build/server`.
+Validate generated units with `systemd-analyze --user verify`; this does not start them.

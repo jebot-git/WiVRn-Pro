@@ -46,10 +46,10 @@ namespace wivrn
 std::vector<std::filesystem::path> active_runtime::manifest_path()
 {
 	const std::filesystem::path location = "share/openxr/1";
-	const std::filesystem::path prefix = "openxr_wivrn";
+	const std::filesystem::path prefix = "openxr_wivrn_pro";
 	// Check if in a flatpak
 	if (auto path = flatpak_key(flatpak::section::instance, "app-path"))
-		return {*path / location / "openxr_wivrn.json"};
+		return {*path / location / "openxr_wivrn_pro.json"};
 
 	// Check if running from build directory
 	auto exe = std::filesystem::read_symlink("/proc/self/exe");

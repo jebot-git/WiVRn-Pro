@@ -148,7 +148,7 @@ android {
                           '-DWIVRN_ADDRESS_SANITIZER=' + asan,
                           ] +
                           fetchcontentBaseDir + (project.hasProperty('wivrn_offline') ? ['-DFETCHCONTENT_FULLY_DISCONNECTED=ON'] : [])
-                resValue "string", "app_name", project.hasProperty('wivrn_app_name') ? project.wivrn_app_name : "WiVRn Local"
+                resValue "string", "app_name", project.hasProperty('wivrn_app_name') ? project.wivrn_app_name : "WiVRn Pro"
                 abiFilters 'arm64-v8a'//, 'x86_64'
             }
 
@@ -180,8 +180,8 @@ android {
         }
 
         release {
-            manifestPlaceholders.ComOculusSupportedDevices = "all"
-            applicationIdSuffix = project.hasProperty('suffix') ? suffix: ".local"
+            manifestPlaceholders.ComOculusSupportedDevices = "questpro"
+            applicationIdSuffix = ".spatial"
         }
 
         releaseDebuggable {
@@ -200,13 +200,13 @@ android {
         oculus
         {
             initWith release
-            applicationIdSuffix = project.hasProperty('suffix') ? suffix: ""
-            manifestPlaceholders.ComOculusSupportedDevices = "quest2|quest3|questpro"
+            applicationIdSuffix = ".spatial"
+            manifestPlaceholders.ComOculusSupportedDevices = "questpro"
         }
 
         debug {
-            applicationIdSuffix = project.hasProperty('suffix') ? suffix: ".local"
-            manifestPlaceholders.ComOculusSupportedDevices = "all"
+            applicationIdSuffix = ".spatial"
+            manifestPlaceholders.ComOculusSupportedDevices = "questpro"
         }
 
         debugWithValidationLayer {

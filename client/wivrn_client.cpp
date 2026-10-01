@@ -19,6 +19,7 @@
 
 #include "wivrn_client.h"
 #include "application.h"
+#include "fork_policy.h"
 #include "protocol_version.h"
 #include "secrets.h"
 #include "smp.h"
@@ -26,8 +27,11 @@
 #include "utils/i18n.h"
 #include "wivrn_packets.h"
 #include <arpa/inet.h>
+#include <array>
+#include <cstring>
 #include <ifaddrs.h>
 #include <linux/ipv6.h>
+#include <memory>
 #include <net/if.h>
 #include <netinet/ip.h>
 #include <poll.h>
@@ -54,9 +58,48 @@ handshake_error::handshake_error(std::string_view message) :
 
 namespace
 {
+// Check the connected route before sending handshake/key material. This also
+// rejects ADB reverse/loopback connections and manual USB/Ethernet addresses.
+std::array<uint8_t, 16> address_bytes(const sockaddr * address)
+{
+	std::array<uint8_t, 16> result{};
+	if (address->sa_family == AF_INET)
+	{
+		result[10] = result[11] = 0xff;
+		std::memcpy(result.data() + 12, &reinterpret_cast<const sockaddr_in *>(address)->sin_addr, 4);
+	}
+	else if (address->sa_family == AF_INET6)
+	{
+		std::memcpy(result.data(), &reinterpret_cast<const sockaddr_in6 *>(address)->sin6_addr, 16);
+	}
+	return result;
+}
+void require_wifi(int fd)
+{
+	sockaddr_storage local{};
+	socklen_t length = sizeof(local);
+	if (getsockname(fd, reinterpret_cast<sockaddr *>(&local), &length) != 0)
+		throw std::system_error(errno, std::system_category(), "Cannot identify network route");
+	ifaddrs * raw = nullptr;
+	if (getifaddrs(&raw) != 0)
+		throw std::system_error(errno, std::system_category(), "Cannot enumerate Wi-Fi interfaces");
+	std::unique_ptr<ifaddrs, decltype(&freeifaddrs)> interfaces(raw, freeifaddrs);
+	auto connected = address_bytes(reinterpret_cast<const sockaddr *>(&local));
+	for (auto * interface = raw; interface; interface = interface->ifa_next)
+	{
+		if (interface->ifa_addr && wivrn::fork_policy::wifi_interface(interface->ifa_name) &&
+		    (interface->ifa_flags & IFF_UP) && !(interface->ifa_flags & IFF_LOOPBACK) &&
+		    (interface->ifa_addr->sa_family == AF_INET || interface->ifa_addr->sa_family == AF_INET6) &&
+		    address_bytes(interface->ifa_addr) == connected)
+			return;
+	}
+	throw std::runtime_error("WiVRn Pro requires a Wi-Fi route; USB and loopback connections are unsupported");
+}
+
 template <typename T>
 void init_stream(T & stream)
 {
+	require_wifi(stream.get_fd());
 	stream.set_receive_buffer_size(1024 * 1024 * 5);
 }
 
@@ -73,6 +116,7 @@ auto & port(sockaddr_in6 & sa)
 template <typename T>
 void wivrn_session::handshake(T address, bool tcp_only, crypto::key & headset_keypair, std::function<std::string(int fd)> pin_enter)
 {
+	require_wifi(control.get_fd());
 	// FIXME this comment
 	// Wait for handshake on control socket,
 	// then send ours on stream or control socket,

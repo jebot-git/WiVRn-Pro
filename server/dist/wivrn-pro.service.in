@@ -1,0 +1,21 @@
+[Unit]
+Description=WiVRn Pro (Quest Pro, Intel Arc, spatial and Shora bridges)
+Conflicts=wivrn.service
+Wants=wivrn-pro-shora.service
+After=wivrn-pro-shora.service
+
+[Service]
+Type=simple
+ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/wivrn-pro-server
+Environment=XDG_RUNTIME_DIR=%t
+RuntimeDirectory=wivrn-pro
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
+UMask=0077
+NoNewPrivileges=true
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+
+[Install]
+WantedBy=default.target

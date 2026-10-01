@@ -1,93 +1,38 @@
-# Configurable items
+# WiVRn Pro configuration
 
-Configuration is done on server side.
-Files are read from
-- `/usr/share/wivrn/config.json` (where `/usr` is selected at configure time with `CMAKE_INSTALL_PREFIX`)
-- `/etc/wivrn/config.json`
-- `$XDG_CONFIG_HOME/wivrn/config.json` or if `$XDG_CONFIG_HOME` is not set, `$HOME/.config/wivrn/config.json`.
+Server configuration merges `<prefix>/share/wivrn-pro/config.json`,
+`/etc/wivrn-pro/config.json` and `$XDG_CONFIG_HOME/wivrn-pro/config.json`
+(default `~/.config/wivrn-pro/config.json`), in that order. Stock WiVRn config
+is not imported. All values are optional.
 
-Files later in the list replace top-level values from previous ones.
+## Encoding
 
-If you installed WiVRn from a flatpack, the config is in `$HOME/.var/app/io.github.wivrn.wivrn/config/wivrn/config.json`.
+`encoder` accepts `vulkan`, `vaapi`, or `qsv` (requires `WIVRN_USE_QSV=ON`).
+When omitted, the server probes Vulkan Video, then VAAPI, then QSV if built.
+Explicit selections have no fallback to another backend. Every backend uses the
+selected Intel Arc GPU. Unknown/removed encoders and AV1/raw codecs fail.
 
-All elements are optional and have default values.
+`codec` accepts `h264` or `h265` (HEVC). Automatic codec choice follows the
+Quest Pro decoder's supported preference order. `bit-depth` defaults to 8;
+HEVC may use 10 bits when supported by both peers and the selected encoder.
 
-## `bit-depth`
-Default value: `8` (bits)
-
-Bit depth of the video. 8-bit is supported by all encoders. 10-bit is supported by `vaapi` and `nvenc` encoders using `h265` or `av1`.
-
-## `encoder`
-The encoder to use, either a single string or object applied to all streams, or a list of string or objects with values for left, right and alpha.
-When a string it is used, it is equivalent to the `encoder` item of the object.
-
-WiVRn encodes each eye separately, and the alpha channel as one for both eyes. Each stream is processed independently, this may use resources more effectively and reduce latency.
-
-### `encoder`
-Default value: `nvenc` if Nvidia GPU and compiled with nvenc, `vaapi` for all other GPU when compiled with ffmpeg, else `x264`.
-
-Identifier of the encoder, one of
-* `x264`: software encoding
-* `nvenc`: Nvidia hardware encoding
-* `vaapi`: AMD/Intel hardware encoding
-* `vulkan`: experimental, for any GPU that supports vulkan video encode
-
-### `codec`
-Default value: best supported by both headset and encoder of `av1`, `h264`, `h265`.
-
-One of `h264`, `h265`, `av1`, `raw`.
-
-Not all encoders support every codec:
-- `x264` encoder only supports `h264` codec
-- `vulkan` encoder supports `h264` and `h265` codecs
-- `raw` encoder only supports `raw` codec
-- `nvenc` and `vaapi` support all codecs, except `raw`
-
-If `nvenc` encoder is in use, you can refer to [nvidia website](https://developer.nvidia.com/video-encode-decode-support-matrix) to make sure that your GPU supports encoding with the desired codec.
-
-### Examples
-1. Simple configuration
 ```json
 {
-	"encoder": {
-		"encoder": "vaapi",
-		"codec": "h265"
-	}
+  "encoder": { "encoder": "qsv", "codec": "h265" },
+  "bit-depth": 8
 }
 ```
-Use vaapi hardware encoding, h265 video codec (HEVC).
 
-2. Hardware + software encoder
-```json
-{
-	"encoder": [
-		{
-			"encoder": "vaapi",
-			"codec": "h265",
-		},
-		{
-			"encoder": "x264",
-			"codec": "h264",
-		},
-		{
-			"encoder": "vaapi",
-			"codec": "h265",
-		},
-	]
-}
-```
-Creates a hardware encoder for left eye and transparency, and a software encoder for right eye.
+The encoder object applies to all eye/alpha streams. A three-element list may
+specify each stream independently. `device` for VAAPI/QSV, if set, must resolve
+to the same DRM render node as the selected Arc; cross-GPU offload is rejected.
+The compositor chooses the first explicitly supported Arc. The optional
+`XRT_COMPOSITOR_FORCE_GPU_INDEX` override also rejects non-Arc devices.
 
-### `device`, only for vaapi
-Default value: unset
-
-Manually specify the device for encoding, can be used to offload encode to an iGPU. Device shall be in the form "/dev/dri/renderD128".
-
-
-### `options` (very advanced), only for vaapi
-Default value: unset
-
-Json object of additional options to pass directly to ffmpeg `avcodec_open2`'s `option` parameter.
+Advanced `options` in VAAPI/QSV objects pass string values to FFmpeg. QSV defaults
+to async depth 1, no B frames/lookahead, forced IDR, a veryfast preset and low-delay
+rate control. Overrides can affect latency and compatibility. Runtime capability
+errors are reported instead of choosing a software encoder.
 
 ## `application`
 Default value: unset
@@ -152,26 +97,6 @@ Only available when built with `WIVRN_FEATURE_DEBUG_GUI`.
 
 Enables the Monado debug gui.
 
-## `use-steamvr-lh`
-Default value: `false`
-
-Only available when built with `WIVRN_FEATURE_STEAMVR_LIGHTHOUSE`.
-
-Enables the driver to load SteamVR Lighthouse devices.
-
-## `lh-max-extrapolation`
-Default value: unset
-
-Only available when built with `WIVRN_FEATURE_STEAMVR_LIGHTHOUSE`.
-
-Maximum time in milliseconds that poses may be extrapolated ahead for SteamVR Lighthouse devices.
-
-## `lh-stick-deadzone`
-Default value: `0`
-
-Only available when built with `WIVRN_FEATURE_STEAMVR_LIGHTHOUSE`
-
-Applies a deadzone to joysticks on SteamVR controllers (e.g. Index).
 
 ## `port`
 Default value: `9757`

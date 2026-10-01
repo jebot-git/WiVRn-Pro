@@ -1,3 +1,4 @@
+#include "fork_policy.h"
 /*
  * WiVRn VR streaming
  * Copyright (C) 2024  Guillaume Meunier <guillaume.meunier@centraliens.net>
@@ -67,25 +68,6 @@ struct strless
 		return strcmp(a, b) < 0;
 	}
 };
-
-int device_type_priority(vk::PhysicalDeviceType device_type)
-{
-	switch (device_type)
-	{
-		case vk::PhysicalDeviceType::eDiscreteGpu:
-			return 4;
-		case vk::PhysicalDeviceType::eIntegratedGpu:
-			return 3;
-		case vk::PhysicalDeviceType::eVirtualGpu:
-			return 2;
-		case vk::PhysicalDeviceType::eCpu:
-			return 1;
-		case vk::PhysicalDeviceType::eOther:
-			return 0;
-	}
-	assert(false);
-	return 0;
-}
 
 uint32_t select_queue(const std::vector<vk::QueueFamilyProperties> & queues, vk::QueueFlags flags)
 {
@@ -190,21 +172,25 @@ wivrn::vk_bundle::vk_bundle() :
 		if (phys_devices.empty())
 			throw std::runtime_error("No Vulkan device");
 		auto index = debug_get_num_option_force_gpu_index();
+		auto supported = [](const auto & device) {
+			const auto p = device.getProperties();
+			return fork_policy::intel_arc(p.vendorID, p.deviceID);
+		};
 		if (index < 0)
 		{
-			std::vector<vk::PhysicalDeviceType> types;
-			for (const auto & dev: phys_devices)
-				types.push_back(dev.getProperties().deviceType);
-			index = 0;
-			// Select the first device of the highest priority
-			for (auto [i, t]: std::ranges::enumerate_view(types))
-			{
-				if (device_type_priority(t) > device_type_priority(types[index]))
-					index = i;
-			}
+			for (size_t i = 0; i < phys_devices.size(); ++i)
+				if (supported(phys_devices[i]))
+				{
+					index = int(i);
+					break;
+				}
+			if (index < 0)
+				throw std::runtime_error("No supported Intel Arc GPU found (this fork does not support Intel UHD, AMD, NVIDIA or software GPUs)");
 		}
-		else if (index > phys_devices.size())
-			throw std::runtime_error(std::format("Invalid GPU index {}, must be in range 0..{}", index, phys_devices.size() - 1));
+		if (size_t(index) >= phys_devices.size())
+			throw std::runtime_error("Forced Intel Arc GPU index is outside the device list");
+		if (!supported(phys_devices[index]))
+			throw std::runtime_error("Selected GPU is not a supported Intel Arc device");
 		physical_device = std::move(phys_devices[index]);
 	}
 

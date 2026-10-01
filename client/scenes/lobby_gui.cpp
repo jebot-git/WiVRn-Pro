@@ -432,8 +432,6 @@ void scenes::lobby::gui_server_list()
 				if (not service.addresses.empty())
 				{
 					const auto & interface = service.addresses.front().interface;
-					if (interface.starts_with("usb"))
-						return ICON_FA_USB;
 					if (interface.starts_with("w"))
 						return ICON_FA_TOWER_BROADCAST;
 				}

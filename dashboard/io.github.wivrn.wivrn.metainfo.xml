@@ -1,35 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
 	<id>io.github.wivrn.wivrn</id>
-	<name>WiVRn server</name>
+	<name>WiVRn Pro</name>
 	<metadata_license>FSFAP</metadata_license>
 	<project_license>GPL-3.0-or-later</project_license>
 	<summary>Play your PC VR games on a standalone headset</summary>
 	<description>
-		<p>WiVRn allows you to run your VR games from your PC and play them from a standalone headset.</p>
-
-		<p>Works with the WiVRn client app on standalone headsets, available as an APK and on the Meta Store.</p>
-
-		<p>Features:</p>
-		<ul>
-			<li>Supports OpenXR and OpenVR applications through xrizer or OpenComposite</li>
-			<li>Controller tracking, hand tracking, eye gaze tracking, body tracking as supported by the headset</li>
-			<li>Audio streaming and microphone</li>
-			<li>Low latency video streaming with H264 / HEVC / AV1 compression</li>
-			<li>Hardware accelerated compression with Vulkan video encode, VAAPI or NVENC</li>
-			<li>Software compression with x264</li>
-		</ul>
-
-		<p>Supported headsets:</p>
-		<ul>
-			<li>Meta Quest 1, 2, 3, 3S, pro</li>
-			<li>Pico Neo 4</li>
-			<li>HTC Vive Focus 3, XR Elite</li>
-			<li>Samsung Galaxy XR</li>
-		</ul>
-
-		<p>For desktop streaming, check out WayVR.</p>
-	</description>
+        <p>WiVRn Pro streams PC VR from Intel Arc to Meta Quest Pro over Wi-Fi.</p>
+        <p>Includes guided room capture, a local spatial API and the Shora reconnect bridge.</p>
+        <p>Supports H.264 and HEVC through Vulkan Video, VAAPI and optional QSV.</p>
+        <p>Requires the matching fork APK; stock WiVRn and Meta Store clients are incompatible.</p>
+    </description>
 	<developer id="io.github.wivrn.wivrn">
 		<name>Guillaume Meunier, Patrick Nicolas et al</name>
 	</developer>

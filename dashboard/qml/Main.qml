@@ -11,9 +11,6 @@ Kirigami.ApplicationWindow {
     id: root
     title: i18n("WiVRn dashboard")
 
-    ConnectUsbDialog {
-        id: select_usb_device
-    }
 
     SystemTrayIcon {
         id: systray
@@ -121,8 +118,8 @@ Kirigami.ApplicationWindow {
         if (WivrnServer.serverStatus == WivrnServer.Stopped)
             WivrnServer.start_server();
 
-        if (DashboardSettings.last_run_version != ApkInstaller.currentVersion) {
-            DashboardSettings.last_run_version = ApkInstaller.currentVersion;
+        if (DashboardSettings.last_run_version != Qt.application.version) {
+            DashboardSettings.last_run_version = Qt.application.version;
         }
     }
 
@@ -360,30 +357,7 @@ Kirigami.ApplicationWindow {
                         }
                     }
 
-                    // USB mode
-                    Controls.Button {
-                        Kirigami.FormData.label: i18nc("label for USB status or connect button", "USB")
-                        text: i18nc("usb connect button", "Connect (wired)")
-                        onClicked: select_usb_device.connect()
-                        enabled: root.server_started && !WivrnServer.headsetConnected
-                        visible: Adb.adbInstalled && select_usb_device.connected_headset_count > 0
-                    }
 
-                    Controls.Label {
-                        Kirigami.FormData.label: i18nc("label for USB status or connect button", "USB")
-                        visible: !Adb.adbInstalled && !WivrnServer.headsetConnected
-                        enabled: root.server_started
-                        text: i18n("ADB is not installed")
-                    }
-
-                    Controls.Label {
-                        Kirigami.FormData.label: i18nc("label for USB status or connect button", "USB")
-                        visible: Adb.adbInstalled && select_usb_device.connected_headset_count == 0 && !WivrnServer.headsetConnected
-                        enabled: root.server_started
-                        text: i18n("No headset is connected or your headset is not in developer mode");
-                        Layout.fillWidth: true
-                        wrapMode: Text.Wrap
-                    }
                 }
                 Item {
                     // spacer item
@@ -423,19 +397,6 @@ Kirigami.ApplicationWindow {
                 enabled: root.server_started
             },
             Kirigami.Action {
-                text: i18n("Install the app")
-                icon.name: "install-symbolic"
-                onTriggered: root.pageStack.push(Qt.createComponent("ApkInstallPage.qml").createObject())
-                enabled: root.server_started && Adb.adbInstalled
-                tooltip: {
-                    if (!root.server_started)
-                        return "";
-                    if (!Adb.adbInstalled)
-                        return i18n("ADB is not installed");
-                    return "";
-                }
-            },
-            Kirigami.Action {
                 text: i18n("Headsets")
                 icon.name: "item-symbolic"
                 onTriggered: root.pageStack.push(Qt.createComponent("HeadsetsPage.qml").createObject())
@@ -460,7 +421,7 @@ Kirigami.ApplicationWindow {
         ]
 
         footer: Controls.Label {
-            text: i18n("Version %1", ApkInstaller.currentVersion)
+            text: i18n("Version %1", Qt.application.version)
             horizontalAlignment: Text.AlignHCenter
             opacity: 0.6
             padding: Kirigami.Units.smallSpacing

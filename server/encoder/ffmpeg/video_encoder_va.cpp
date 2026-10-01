@@ -1,3 +1,4 @@
+#include "wivrn_config.h"
 /*
  * WiVRn VR streaming
  * Copyright (C) 2022-2024  Guillaume Meunier <guillaume.meunier@centraliens.net>
@@ -47,6 +48,7 @@ extern "C"
 
 // Added in ffmpeg 6
 #ifndef AV_PROFILE_H264_CONSTRAINED_BASELINE
+#define AV_PROFILE_H264_MAIN FF_PROFILE_H264_MAIN
 #define AV_PROFILE_H264_CONSTRAINED_BASELINE FF_PROFILE_H264_CONSTRAINED_BASELINE
 #define AV_PROFILE_HEVC_MAIN_10 FF_PROFILE_HEVC_MAIN_10
 #define AV_PROFILE_HEVC_MAIN FF_PROFILE_HEVC_MAIN
@@ -58,16 +60,16 @@ namespace wivrn
 
 namespace
 {
-const char * encoder(video_codec codec)
+const char * encoder(video_codec codec, bool qsv)
 {
 	switch (codec)
 	{
 		case video_codec::h264:
-			return "h264_vaapi";
+			return qsv ? "h264_qsv" : "h264_vaapi";
 		case video_codec::h265:
-			return "hevc_vaapi";
+			return qsv ? "hevc_qsv" : "hevc_vaapi";
 		case video_codec::av1:
-			return "av1_vaapi";
+			throw std::runtime_error("AV1 is not supported by Quest Pro");
 		case video_codec::raw:
 			break;
 	}
@@ -108,15 +110,17 @@ get_render_device(vk::raii::PhysicalDevice & physical_device)
 	std::filesystem::path path = "/dev/dri/renderD" + std::to_string(drm_props.renderMinor);
 	if (not std::filesystem::exists(path))
 	{
-		U_LOG_W("DRI device %s does not exist, reverting to default", path.c_str());
-		return std::nullopt;
+		throw std::runtime_error("Selected Intel Arc DRM render node does not exist");
 	}
 	return path;
 }
 
 av_buffer_ptr make_drm_hw_ctx(vk::raii::PhysicalDevice & physical_device, const std::optional<std::string> & device)
 {
-	const auto render_device = device ? *device : get_render_device(physical_device);
+	const auto render_device = get_render_device(physical_device);
+	// Vulkan and the media engine must be the SAME Arc, even with a device override.
+	if (!render_device || (device && !std::filesystem::equivalent(*device, *render_device)))
+		throw std::runtime_error("Encoder device must be the selected Intel Arc DRM render node");
 	AVBufferRef * hw_ctx;
 	int err = av_hwdevice_ctx_create(&hw_ctx, AV_HWDEVICE_TYPE_DRM, render_device ? render_device->c_str() : NULL, NULL, 0);
 	if (err)
@@ -174,8 +178,17 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
                                    uint8_t stream_idx) :
         video_encoder_ffmpeg(vk, stream_idx, settings),
         vk{vk},
+        use_qsv{settings.encoder_name == encoder_qsv},
         cmd_pool{make_cmd_pool(vk, stream_idx)}
 {
+#if !WIVRN_USE_QSV
+	if (use_qsv)
+		throw std::runtime_error("QSV encoding was not built");
+#endif
+#if !WIVRN_USE_VAAPI
+	if (!use_qsv)
+		throw std::runtime_error("VAAPI encoding was not built");
+#endif
 	auto command_buffers = vk.device.allocateCommandBuffers(
 	        {.commandPool = *cmd_pool,
 	         .commandBufferCount = num_slots});
@@ -218,6 +231,22 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 
 	auto vaapi_frame_ctx = make_hwframe_ctx(vaapi_hw_ctx.get(), AV_PIX_FMT_VAAPI, sw_format, extent.width, extent.height);
 	assert(av_pix_fmt_count_planes(sw_format) == 2);
+	// Derive QSV from the same VAAPI device/pool used by Vulkan DMA-BUF import.
+	// This keeps GPU selection deterministic and avoids CPU pixel readback.
+	av_buffer_ptr qsv_device, qsv_frames;
+	if (use_qsv)
+	{
+		tmp = nullptr;
+		err = av_hwdevice_ctx_create_derived(&tmp, AV_HWDEVICE_TYPE_QSV, vaapi_hw_ctx.get(), 0);
+		if (err < 0)
+			throw std::system_error(err, av_error_category(), "Cannot derive QSV device from selected Arc VAAPI device");
+		qsv_device.reset(tmp);
+		tmp = nullptr;
+		err = av_hwframe_ctx_create_derived(&tmp, AV_PIX_FMT_QSV, qsv_device.get(), vaapi_frame_ctx.get(), AV_HWFRAME_MAP_READ | AV_HWFRAME_MAP_DIRECT);
+		if (err < 0)
+			throw std::system_error(err, av_error_category(), "Cannot derive QSV frames from Arc VAAPI pool");
+		qsv_frames.reset(tmp);
+	}
 
 	err = av_hwframe_ctx_create_derived(&tmp,
 	                                    AV_PIX_FMT_DRM_PRIME,
@@ -230,7 +259,7 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 	}
 	drm_frame_ctx = av_buffer_ptr(tmp);
 
-	const char * encoder_name = encoder(settings.codec);
+	const char * encoder_name = encoder(settings.codec, use_qsv);
 	const AVCodec * codec = avcodec_find_encoder_by_name(encoder_name);
 	if (codec == nullptr)
 	{
@@ -248,9 +277,11 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 	switch (settings.codec)
 	{
 		case video_codec::h264:
-			encoder_ctx->profile = AV_PROFILE_H264_CONSTRAINED_BASELINE;
-			av_dict_set(&opts, "coder", "cavlc", 0);
-			av_dict_set(&opts, "rc_mode", "CBR", 0);
+			encoder_ctx->profile = use_qsv ? AV_PROFILE_H264_MAIN : AV_PROFILE_H264_CONSTRAINED_BASELINE;
+			if (!use_qsv)
+				av_dict_set(&opts, "coder", "cavlc", 0);
+			if (!use_qsv)
+				av_dict_set(&opts, "rc_mode", "CBR", 0);
 			break;
 		case video_codec::h265:
 			// bit_depth is either 8 or 10 here
@@ -261,6 +292,15 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 			break;
 		case video_codec::raw:
 			throw std::runtime_error("raw codec not supported");
+	}
+	if (use_qsv)
+	{
+		av_dict_set(&opts, "look_ahead_depth", "0", 0);
+		if (settings.codec == video_codec::h264)
+			av_dict_set(&opts, "look_ahead", "0", 0);
+		av_dict_set(&opts, "forced_idr", "1", 0);
+		av_dict_set(&opts, "preset", "veryfast", 0);
+		av_dict_set(&opts, "low_delay_brc", "1", 0);
 	}
 	for (auto option: settings.options)
 	{
@@ -273,15 +313,17 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 	                          std::chrono::steady_clock::duration::period::den};
 	encoder_ctx->framerate = AVRational{(int)settings.fps * 1000, 1000};
 	encoder_ctx->sample_aspect_ratio = AVRational{1, 1};
-	encoder_ctx->pix_fmt = AV_PIX_FMT_VAAPI;
+	encoder_ctx->pix_fmt = use_qsv ? AV_PIX_FMT_QSV : AV_PIX_FMT_VAAPI;
 	encoder_ctx->color_range = AVCOL_RANGE_JPEG;
 	encoder_ctx->colorspace = AVCOL_SPC_BT709;
 	encoder_ctx->color_trc = AVCOL_TRC_BT709;
 	encoder_ctx->color_primaries = AVCOL_PRI_BT709;
 	encoder_ctx->max_b_frames = 0;
 	encoder_ctx->bit_rate = settings.bitrate;
-	encoder_ctx->gop_size = std::numeric_limits<decltype(encoder_ctx->gop_size)>::max();
-	encoder_ctx->hw_frames_ctx = av_buffer_ref(vaapi_frame_ctx.get());
+	encoder_ctx->gop_size = use_qsv ? 240 : std::numeric_limits<decltype(encoder_ctx->gop_size)>::max();
+	encoder_ctx->hw_frames_ctx = av_buffer_ref(use_qsv ? qsv_frames.get() : vaapi_frame_ctx.get());
+	encoder_ctx->rc_max_rate = settings.bitrate;
+	encoder_ctx->rc_buffer_size = int(settings.bitrate / settings.fps);
 
 	err = avcodec_open2(encoder_ctx.get(), codec, &opts);
 	av_dict_free(&opts);
@@ -311,6 +353,15 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 		if (err < 0)
 		{
 			throw std::system_error(err, av_error_category(), "Cannot create vaapi frame");
+		}
+		if (use_qsv)
+		{
+			slot.qsv_frame = make_av_frame();
+			slot.qsv_frame->format = AV_PIX_FMT_QSV;
+			slot.qsv_frame->hw_frames_ctx = av_buffer_ref(qsv_frames.get());
+			err = av_hwframe_map(slot.qsv_frame.get(), va_frame.get(), AV_HWFRAME_MAP_READ | AV_HWFRAME_MAP_DIRECT);
+			if (err < 0)
+				throw std::system_error(err, av_error_category(), "Cannot map Arc VA surface for QSV");
 		}
 		drm_frame = make_av_frame();
 		err = av_hwframe_get_buffer(drm_frame_ctx.get(), drm_frame.get(), 0);
@@ -572,7 +623,7 @@ void video_encoder_va::push_frame(bool idr, uint8_t slot)
 		                        stream_idx);
 	}
 
-	auto & va_frame = in[slot].va_frame;
+	auto & va_frame = use_qsv ? in[slot].qsv_frame : in[slot].va_frame;
 	va_frame->pict_type = idr ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_P;
 	int err = avcodec_send_frame(encoder_ctx.get(), va_frame.get());
 	if (err)

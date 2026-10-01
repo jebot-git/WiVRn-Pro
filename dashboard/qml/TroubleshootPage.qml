@@ -34,7 +34,7 @@ Kirigami.ScrollablePage {
         }
         TroubleshootCard {
             title: i18n("I have an \"Incompatible WiVRn server\" error on my headset")
-            details: i18n("<p>The version of the headset app and the server on your computer must match.</p><ul><li>The headset app version is in the \"About\" page</li><li>The server version is <b>%1</b></li></ul>", ApkInstaller.currentVersion)
+            details: i18n("<p>The version of the headset app and the server on your computer must match.</p><ul><li>The headset app version is in the \"About\" page</li><li>The server version is <b>%1</b></li></ul>", Qt.application.version)
         }
         TroubleshootCard {
             title: i18n("I have a \"Pairing is disabled\" error")

@@ -1,0 +1,22 @@
+[package]
+name = "wivrn-shora-bridge"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+[dependencies]
+anyhow = "1"
+flatbuffers = "22.10.26"
+libc = "0.2"
+prost = "0.12"
+solarxr_protocol = { path = "vendor/solarxr-protocol" }
+tokio = { version = "1", features = ["rt", "net", "io-util", "sync", "time", "macros"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[build-dependencies]
+prost-build = "0.12"
+protoc-bin-vendored = "3"

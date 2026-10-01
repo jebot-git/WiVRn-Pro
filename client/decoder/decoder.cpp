@@ -23,7 +23,7 @@
 #else
 #include "decoder/ffmpeg/ffmpeg_decoder.h"
 #endif
-#include "decoder/raw_decoder.h"
+#include <stdexcept>
 
 wivrn::decoder::~decoder() = default;
 
@@ -40,7 +40,6 @@ std::shared_ptr<wivrn::decoder> wivrn::decoder::make(
 	{
 		case h264:
 		case h265:
-		case av1:
 #ifdef __ANDROID__
 			return std::make_shared<wivrn::android::decoder>(
 			        device,
@@ -58,15 +57,9 @@ std::shared_ptr<wivrn::decoder> wivrn::decoder::make(
 			        scene,
 			        acc);
 #endif
+		case av1:
 		case raw:
-			return std::make_shared<wivrn::raw_decoder>(
-			        device,
-			        phys_dev,
-			        vk_queue_family_index,
-			        description,
-			        stream_index,
-			        scene,
-			        acc);
+			throw std::runtime_error("WiVRn Pro supports only H.264 and HEVC");
 	}
 	__builtin_unreachable();
 }
@@ -79,7 +72,6 @@ static std::vector<wivrn::video_codec> supported_codecs_()
 #else
 	wivrn::ffmpeg::decoder::supported_codecs(res);
 #endif
-	res.push_back(wivrn::video_codec::raw);
 	return res;
 }
 

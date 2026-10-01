@@ -65,7 +65,6 @@
 #endif
 
 #ifdef __ANDROID__
-#include "android/usb.h"
 #endif
 
 using namespace std::chrono_literals;
@@ -359,11 +358,6 @@ void scenes::lobby::update_server_list()
 {
 	if (not discover)
 		return;
-
-#ifdef __ANDROID__
-	if (usb_link_properties_changed())
-		discover.emplace();
-#endif
 
 	std::vector<wivrn_discover::service> discovered_services = discover->get_services();
 

@@ -44,9 +44,7 @@
     <uses-permission android:name="com.magicleap.permission.HAND_TRACKING" />
     <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
     <uses-permission android:name="com.oculus.permission.EYE_TRACKING" />
-    <uses-permission android:name="com.picovr.permission.EYE_TRACKING" />
     <uses-permission android:name="com.oculus.permission.FACE_TRACKING" />
-    <uses-permission android:name="com.picovr.permission.FACE_TRACKING" />
     <uses-permission android:name="com.oculus.permission.BODY_TRACKING" />
     <uses-permission android:name="android.permission.EYE_TRACKING_FINE" />
     <uses-permission android:name="android.permission.FACE_TRACKING" />
@@ -89,15 +87,11 @@
 
         <meta-data android:name="pvr.app.type" android:value="vr" />
         <meta-data android:name="pvr.sdk.version" android:value="OpenXR" />
-        <meta-data android:name="picovr.software.eye_tracking" android:value="true" />
-        <meta-data android:name="picovr.software.face_tracking" android:value="true" />
         <meta-data android:name="com.oculus.intent.category.VR" android:value="vr_only"/>
-        <meta-data android:name="com.oculus.supportedDevices" android:value="${ComOculusSupportedDevices}"/> <!-- "quest2|questpro|quest3" on Oculus Store, "all" otherwise -->
+        <meta-data android:name="com.oculus.supportedDevices" android:value="${ComOculusSupportedDevices}"/>
         <meta-data android:name="com.oculus.vr.focusaware" android:value="true"/>
 
         <!-- See https://hub.vive.com/storage/docs/en-us/ConfigureAppCapabilities.html -->
-        <meta-data android:name="com.htc.vr.content.NumDoFHmd" android:value="6DoF"/>
-        <meta-data android:name="com.htc.vr.content.NumDoFController" android:value="6DoF"/>
 
         <meta-data android:name="handtracking" android:value="1" />
         <meta-data android:name="eyetracking_calibration" android:value="true" />
@@ -139,7 +133,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="com.oculus.intent.category.VR" />
-                <category android:name="com.htc.intent.category.VRAPP" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
             </intent-filter>

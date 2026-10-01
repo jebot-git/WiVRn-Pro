@@ -346,7 +346,6 @@ const std::vector<config_field> & configuration::config_fields()
 	        scalar("stream_scale", &configuration::stream_scale),
 	        scalar("codec", &configuration::codec),
 	        scalar("bit_depth", &configuration::bit_depth),
-	        scalar("usb_network", &configuration::usb_network),
 	};
 	return fields;
 }

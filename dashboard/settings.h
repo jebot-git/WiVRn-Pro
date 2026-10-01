@@ -44,9 +44,8 @@ public:
 	enum encoder_name
 	{
 		EncoderAuto,
-		Nvenc,
+		Qsv,
 		Vaapi,
-		X264,
 		Vulkan,
 	};
 	Q_ENUM(encoder_name)
@@ -56,7 +55,6 @@ public:
 		CodecAuto,
 		H264,
 		H265,
-		Av1,
 	};
 	Q_ENUM(video_codec)
 

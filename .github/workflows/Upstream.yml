@@ -1,0 +1,19 @@
+name: Check WiVRn upstream
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 7 * * 1'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Report upstream fixes awaiting review
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 fork/sync-upstream.py check --fail-if-behind | tee -a "$GITHUB_STEP_SUMMARY"

@@ -1,3 +1,4 @@
+#include "fork_policy.h"
 /*
  * WiVRn VR streaming
  * Copyright (C) 2022  Guillaume Meunier <guillaume.meunier@centraliens.net>
@@ -31,10 +32,7 @@
 
 #include "wivrn_config.h"
 
-#if WIVRN_USE_NVENC
-#include "video_encoder_nvenc.h"
-#endif
-#if WIVRN_USE_VAAPI
+#if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 #include "ffmpeg/video_encoder_va.h"
 #include <libavutil/ffversion.h>
 #endif
@@ -87,32 +85,19 @@ void print_encoders(const std::array<wivrn::encoder_settings, 3> & encoders)
 	U_LOG_I("%s", str.str().c_str());
 }
 
-static void check_video_size(std::string_view encoder_name, video_codec codec, uint16_t & width, uint16_t & height)
-{
-#if WIVRN_USE_NVENC
-	if (encoder_name == encoder_nvenc)
-	{
-		auto max = video_encoder_nvenc::get_max_size(codec);
-		width = std::min<uint16_t>(max[0], width);
-		height = std::min<uint16_t>(max[1], height);
-	}
-#endif
-}
-
 namespace
 {
 class prober
 {
 	wivrn::vk_bundle & vk;
 	const from_headset::headset_info_packet & info;
-	const bool nvidia;
 
-#if WIVRN_USE_VAAPI
-	std::unordered_map<video_codec, bool> vaapi_support;
+#if WIVRN_USE_VAAPI || WIVRN_USE_QSV
+	std::map<std::pair<video_codec, bool>, bool> vaapi_support;
 
-	bool check_vaapi(video_codec codec)
+	bool check_vaapi(video_codec codec, bool qsv = false)
 	{
-		if (auto it = vaapi_support.find(codec); it != vaapi_support.end())
+		if (auto it = vaapi_support.find({codec, qsv}); it != vaapi_support.end())
 			return it->second;
 		try
 		{
@@ -123,59 +108,22 @@ class prober
 			                .height = 800,
 			                .codec = codec,
 			                .fps = 60,
+			                .encoder_name = qsv ? encoder_qsv : encoder_vaapi,
 			                .bitrate = 50'000'000,
 			                .bit_depth = 8,
 			        },
 			        0);
-			vaapi_support[codec] = true;
+			vaapi_support[{codec, qsv}] = true;
 			return true;
 		}
 		catch (std::exception & e)
 		{
-			vaapi_support[codec] = false;
-			U_LOG_I("vaapi not supported for %s", std::string(magic_enum::enum_name(codec)).c_str());
+			vaapi_support[{codec, qsv}] = false;
+			U_LOG_I("%s not supported for %s: %s", qsv ? "QSV" : "VAAPI", std::string(magic_enum::enum_name(codec)).c_str(), e.what());
 			return false;
 		}
 	}
 #endif
-
-#if WIVRN_USE_NVENC
-	std::unordered_map<video_codec, bool> nvenc_support;
-
-	bool check_nvenc(video_codec codec)
-	{
-		if (auto it = nvenc_support.find(codec); it != nvenc_support.end())
-			return it->second;
-		try
-		{
-			video_encoder_nvenc test(
-			        vk,
-			        encoder_settings{
-			                .width = 800,
-			                .height = 800,
-			                .codec = codec,
-			                .fps = 60,
-			                .bitrate = 50'000'000,
-			                .bit_depth = 8,
-			        },
-			        0);
-			nvenc_support[codec] = true;
-			return true;
-		}
-		catch (std::exception & e)
-		{
-			nvenc_support[codec] = false;
-			U_LOG_I("nvenc not supported for %s", std::string(magic_enum::enum_name(codec)).c_str());
-			return false;
-		}
-	}
-#endif
-
-	static bool is_nvidia(vk::raii::PhysicalDevice & physical_device)
-	{
-		auto props = physical_device.getProperties();
-		return props.vendorID == 0x10DE;
-	}
 
 #if WIVRN_USE_VULKAN_ENCODE
 
@@ -216,52 +164,46 @@ class prober
 
 public:
 	prober(wivrn::vk_bundle & vk, const from_headset::headset_info_packet & info) :
-	        vk(vk), info(info), nvidia(is_nvidia(vk.physical_device)) {}
+	        vk(vk), info(info) {}
 
 	std::pair<std::string, video_codec> select_encoder(const configuration::encoder & config)
 	{
-		if (config.codec == video_codec::raw or config.name == encoder_raw)
-			return {encoder_raw, video_codec::raw};
-
-#if WIVRN_USE_NVENC
-		if ((nvidia and config.name.empty()) or config.name == encoder_nvenc)
-		{
-			for (auto codec: config.codec ? std::vector{*config.codec} : info.supported_codecs)
-			{
-				if (check_nvenc(codec))
-					return {encoder_nvenc, codec};
-			}
-		}
+		if (!fork_policy::encoder(config.name))
+			throw std::runtime_error("Encoder removed from this fork: " + config.name);
+		if (config.codec && *config.codec != h264 && *config.codec != h265)
+			throw std::runtime_error("Quest Pro supports only H.264 / HEVC in this fork");
+		auto codecs = config.codec ? std::vector{*config.codec} : info.supported_codecs;
+		std::erase_if(codecs, [&](auto codec) {
+			return (codec != h264 && codec != h265) || !std::ranges::contains(info.supported_codecs, codec);
+		});
+#if WIVRN_USE_QSV
+		if (config.name == encoder_qsv)
+			for (auto codec: codecs)
+				if (check_vaapi(codec, true))
+					return {encoder_qsv, codec};
+#else
+		if (config.name == encoder_qsv)
+			throw std::runtime_error("QSV was not built; configure WIVRN_USE_QSV=ON");
 #endif
-
 #if WIVRN_USE_VULKAN_ENCODE
-		if (config.name.empty() or config.name == encoder_vulkan)
-		{
-			for (auto codec: config.codec ? std::vector{*config.codec} : info.supported_codecs)
-			{
+		if (config.name.empty() || config.name == encoder_vulkan)
+			for (auto codec: codecs)
 				if (has_vk(codec))
 					return {encoder_vulkan, codec};
-			}
-		}
 #endif
-
 #if WIVRN_USE_VAAPI
-		if (config.name.empty() or config.name == encoder_vaapi)
-		{
-			for (auto codec: config.codec ? std::vector{*config.codec} : info.supported_codecs)
-			{
+		if (config.name.empty() || config.name == encoder_vaapi)
+			for (auto codec: codecs)
 				if (check_vaapi(codec))
 					return {encoder_vaapi, codec};
-			}
-		}
 #endif
-		U_LOG_W("No suitable hardware accelerated codec found");
-#if WIVRN_USE_X264
-		if (config.name.empty() or config.name == encoder_x264)
-			return {encoder_x264, video_codec::h264};
+#if WIVRN_USE_QSV
+		if (config.name.empty())
+			for (auto codec: codecs)
+				if (check_vaapi(codec, true))
+					return {encoder_qsv, codec};
 #endif
-
-		throw std::runtime_error("Failed to find a suitable video encoder");
+		throw std::runtime_error("No usable Intel Arc hardware encoder for the requested Quest Pro codec");
 	}
 };
 } // namespace
@@ -292,9 +234,6 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 
 	auto width = align(info.stream_eye_width, 64);
 	auto height = align(info.stream_eye_height, 64);
-	// Ensure we don't try to encode too large images (only for left/right, ignore alpha)
-	for (size_t i = 0; i < 2; ++i)
-		check_video_size(res[i].encoder_name, res[i].codec, width, height);
 
 	for (auto [i, dst]: std::ranges::enumerate_view(res))
 	{
@@ -309,8 +248,7 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 	if (bit_depth and bit_depth != 8 and bit_depth != 10)
 		throw std::runtime_error("invalid bit-depth setting. supported values: 8, 10");
 
-	if (std::ranges::contains(res, video_codec::h264, &encoder_settings::codec) or
-	    std::ranges::contains(res, video_codec::raw, &encoder_settings::codec))
+	if (std::ranges::contains(res, video_codec::h264, &encoder_settings::codec))
 		bit_depth = 8;
 	else if (not bit_depth)
 		bit_depth = 10;
@@ -334,11 +272,11 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 		}
 	};
 
-#if WIVRN_USE_VAAPI
+#if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 	auto check_vaapi = [&](int bit_depth) {
 		for (const auto & encoder: res)
 		{
-			if (encoder.encoder_name == encoder_vaapi)
+			if (encoder.encoder_name == encoder_vaapi || encoder.encoder_name == encoder_qsv)
 			{
 				try
 				{
@@ -349,6 +287,7 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 					                .height = 800,
 					                .codec = encoder.codec,
 					                .fps = 60,
+					                .encoder_name = encoder.encoder_name,
 					                .bitrate = 50'000'000,
 					                .bit_depth = bit_depth,
 					        },

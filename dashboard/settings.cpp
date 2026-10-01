@@ -34,9 +34,8 @@
 namespace
 {
 const std::vector<std::pair<Settings::encoder_name, std::string>> encoder_ids{
-        {Settings::encoder_name::Nvenc, "nvenc"},
         {Settings::encoder_name::Vaapi, "vaapi"},
-        {Settings::encoder_name::X264, "x264"},
+        {Settings::encoder_name::Qsv, "qsv"},
         {Settings::encoder_name::Vulkan, "vulkan"},
 };
 
@@ -45,8 +44,6 @@ const std::vector<std::tuple<Settings::video_codec, std::string>> codec_ids{
         {Settings::video_codec::H264, "avc"},
         {Settings::video_codec::H265, "h265"},
         {Settings::video_codec::H265, "hevc"},
-        {Settings::video_codec::Av1, "av1"},
-        {Settings::video_codec::Av1, "AV1"},
 };
 
 bool can10bit(Settings::video_codec c)
@@ -57,7 +54,6 @@ bool can10bit(Settings::video_codec c)
 		case Settings::H264:
 			return false;
 		case Settings::H265:
-		case Settings::Av1:
 			return true;
 	}
 	return false;
@@ -229,9 +225,8 @@ void Settings::set_encoder(const encoder_name & value)
 		case EncoderAuto:
 			m_jsonSettings.erase("encoder");
 			break;
-		case Nvenc:
 		case Vaapi:
-		case X264:
+		case Qsv:
 		case Vulkan:
 			m_jsonSettings["encoder"] = encoder_from_id(value);
 	}
@@ -550,23 +545,18 @@ QList<Settings::video_codec> Settings::allowedCodecs() const
 	{
 		case encoder_name::EncoderAuto:
 			return {video_codec::CodecAuto};
-		case encoder_name::Nvenc:
+		case encoder_name::Qsv:
 		case encoder_name::Vaapi:
 			return {
 			        video_codec::CodecAuto,
 			        video_codec::H264,
 			        video_codec::H265,
-			        video_codec::Av1,
 			};
 		case encoder_name::Vulkan:
 			return {
 			        video_codec::CodecAuto,
 			        video_codec::H264,
 			        video_codec::H265,
-			};
-		case encoder_name::X264:
-			return {
-			        video_codec::H264,
 			};
 	}
 	return {video_codec::CodecAuto};

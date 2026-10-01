@@ -42,26 +42,10 @@ Kirigami.ScrollablePage {
                 Controls.ComboBox {
                     id: encoder_combo
                     model: [
-                        {
-                            label: i18nc("automatic encoder setup", "Auto"),
-                            encoder: Settings.EncoderAuto
-                        },
-                        {
-                            label: i18n("nvenc (NVIDIA GPUs)"),
-                            encoder: Settings.Nvenc
-                        },
-                        {
-                            label: i18n("vaapi (AMD and Intel GPUs)"),
-                            encoder: Settings.Vaapi
-                        },
-                        {
-                            label: i18n("Vulkan (Any modern GPU)"),
-                            encoder: Settings.Vulkan
-                        },
-                        {
-                            label: i18n("x264 (software encoding)"),
-                            encoder: Settings.X264
-                        }
+                        { label: i18n("Auto (Intel Arc)"), encoder: Settings.EncoderAuto },
+                        { label: i18n("VAAPI (Intel Arc)"), encoder: Settings.Vaapi },
+                        { label: i18n("Vulkan Video (Intel Arc)"), encoder: Settings.Vulkan },
+                        { label: i18n("QSV (requires QSV build)"), encoder: Settings.Qsv }
                     ]
                     onCurrentIndexChanged: if (settings.allowUpdates) {Settings.encoder = model[currentIndex].encoder}
                     textRole: "label"
@@ -89,10 +73,6 @@ Kirigami.ScrollablePage {
                 Kirigami.FormData.label: i18n("Autostart application:")
             }
 
-            Controls.CheckBox {
-                id: auto_connect_usb
-                text: i18n("Auto connect from USB")
-            }
 
             Kirigami.Separator {
                 Kirigami.FormData.isSection: true
@@ -175,35 +155,6 @@ Kirigami.ScrollablePage {
                 }
                 Kirigami.ContextualHelpButton {
                     toolTipText: i18n("Deadzone to apply to joysticks on lighthouse-tracked controllers, such as Index.\nFor standalone controllers, deadzones may be adjusted via the headset's system settings.")
-                }
-            }
-
-            Controls.CheckBox {
-                id: adb_custom
-                Layout.row: 0
-                Layout.column: 0
-                text: i18n("Custom adb location")
-            }
-
-            Dialogs.FileDialog {
-                id: adb_browse
-                onAccepted: {
-                    adb_location.text = WivrnServer.host_path(new URL(selectedFile).pathname);
-                }
-            }
-
-            RowLayout {
-                Kirigami.FormData.label: i18n("Adb location:")
-                Layout.fillWidth: true
-                enabled: adb_custom.checked
-                Controls.TextField {
-                    id: adb_location
-                    placeholderText: DashboardSettings.adb_location
-                    Layout.fillWidth: true
-                }
-                Controls.Button {
-                    text: i18nc("browse a file to choose the adb binary", "Browse")
-                    onClicked: adb_browse.open()
                 }
             }
 
@@ -326,9 +277,6 @@ Kirigami.ScrollablePage {
         } else {
             Settings.openvr = openvr.value
         }
-        DashboardSettings.adb_custom = adb_custom.checked;
-        DashboardSettings.adb_location = adb_location.text;
-        Adb.setPath(adb_custom.checked ? adb_location.text : "adb");
 
         DashboardSettings.show_system_checks = show_system_checks.checked;
 
@@ -342,7 +290,6 @@ Kirigami.ScrollablePage {
         Settings.lhStickDeadzone = lh_stick_deadzone.value;
         Settings.hidForwarding = hid_forwarding.checked;
 
-        DashboardSettings.auto_connect_usb = auto_connect_usb.checked;
     }
 
     function load() {
@@ -354,12 +301,9 @@ Kirigami.ScrollablePage {
         lh_stick_deadzone.value = Settings.lhStickDeadzone;
         hid_forwarding.checked = Settings.hidForwarding;
 
-        auto_connect_usb.checked = DashboardSettings.auto_connect_usb;
 
         openvr_combobox.load()
 
-        adb_custom.checked = DashboardSettings.adb_custom;
-        adb_location.text = DashboardSettings.adb_location;
 
         show_system_checks.checked = DashboardSettings.show_system_checks;
     }
