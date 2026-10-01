@@ -16,6 +16,7 @@ allprojects {
 }
 
 apply plugin: 'com.android.application'
+layout.buildDirectory = layout.projectDirectory.dir('build/android')
 
 
 import javax.inject.Inject

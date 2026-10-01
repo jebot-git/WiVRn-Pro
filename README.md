@@ -1,170 +1,229 @@
-# Spatial bridge inside WiVRn
+<h1 align="center"> WiVRn </h1>
 
-This is the `wivrn-native` branch. Room capture runs in the WiVRn Quest client;
-localization, transport, stage alignment and PC subscriptions use the same WiVRn
-session. The standalone implementation remains on `main`; its original files and
-[documentation](STANDALONE.md) are retained here as reference and test fixtures.
+<div align="center">
+  
+[![License: GPL v3](images/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![CI](https://github.com/WiVRn/WiVRn/workflows/Build/badge.svg) ![Format](https://github.com/WiVRn/WiVRn/workflows/Format/badge.svg)
+  
+</div>
+<p align="center"><img src="images/wivrn.svg" width="180"></p>
+<h3 align="center">Fully FOSS PCVR streamer</h3>
 
-The integrated implementation is under [`wivrn/`](wivrn/) (WiVRn 26.9).
-No Godot runtime, separate Quest capture application, Python broker, or controller
-calibration is required for the native path. Python is only used by the optional
-subscriber example. This branch changes WiVRn's protocol: **build both peers from
-this branch**, rather than mixing it with stock WiVRn or the old anchor prototype.
+# About
 
-## Client behavior
+WiVRn is an application that wirelessly streams a virtual reality game to a standalone VR headset from a <b>Linux</b> computer.
 
-After connecting to the matching server and starting a streamed VR application,
-open WiVRn's in-stream window (both thumbsticks), then **Settings → Room capture**.
-**Start / recheck 12 markers** enables passthrough and hides streamed video while
-keeping the stream connection and feedback running. The guidance panel follows
-your head. Turn through four directions, hold steady for three markers in each,
-and complete the reload verification pass. **Retry / recheck**, **Skip**, and
-**Return to streaming** are panel buttons. Marker axes use WiVRn's Vulkan renderer
-and share one projection layer with controller rays.
+WiVRn support a wide range of VR devices:
 
-The workflow requires tracking, stable head/anchor poses, and successful local
-anchor persistence. Reload verification rejects shifts above 3 cm or 3 degrees.
-**12 is the configured budget, not a claimed Quest hardware limit or a new
-hardware-validated maximum.** Partial capture remains explicitly partial. This
-native UI has not yet been tested in a headset.
+| Headset | Supported | Notes |
+|:--------:|:--------:|:--------:|
+| Quest 1 | ✓ |  |
+| Quest 2 | ✓ |  |
+| Quest 3 | ✓ |  |
+| Quest 3s | ✓ |  |
+| Quest Pro | ✓ |  |
+| Pico Neo 3 | ✓ |  |
+| Pico 4 | ✓ |  |
+| HTC Vive Focus 3 | ✓ | Laggy | 
+| HTC Vive XR Elite | ✓ | Laggy |
+| Samsung Galaxy XR | ✓ |  |
+| Other Android VR | ? | Cannot know |
+| Play for Dream | ✖ | https://github.com/WiVRn/WiVRn/issues/465 |
+| Non-Android VR | ✖ | Not Android |
+| Non-VR Android | ✖ | VR required |
 
-Returning to streaming keeps saved markers localizing at five snapshots per
-second. WiVRn remains the foreground XR application: there is no second Quest
-background service and no cross-app SLAM alignment. Loss of focus/tracking and
-pending reference-space changes invalidate published poses and reset capture
-dwell. Saved UUIDs are in WiVRn's private `spatial-bridge-v1/` directory.
+<sup>A Linux client does exist, only for debugging. It has no audio or hardware decoding.</sup>
 
-**Allow room scene access** requests the Quest scene permission. Existing room
-entities are queried from the runtime; this does not run Meta Room Setup. Export
-is bounded at 64 entities, 128 bytes of labels each, and 32 boundary vertices per
-entity. Oversized boundaries are omitted and flagged, not silently simplified.
-Available boxes and semantic labels remain. **Reload room scene** refreshes a
-completed query. STAGE bounds are a rectangle, never a Guardian polygon.
+# Getting started
 
-The APK is **`org.meumeu.wivrn.spatial`**, with its own saved anchors and permissions.
-Anchors from the standalone capture app do not automatically migrate across app
-identities. A fresh native capture will be needed when hardware testing resumes.
 
-## Server alignment and PC clients
+## PC Server/Dashboard
 
-Set `WIVRN_SPATIAL_BRIDGE=1` in the environment of this branch's server. The native
-API starts with the WiVRn runtime session and listens at:
+We recommend using native packages if available for your distribution:
+- [Arch User Repository](https://aur.archlinux.org/packages/wivrn-dashboard)
+- [Fedora](https://packages.fedoraproject.org/pkgs/wivrn/wivrn/)
+- [Gentoo Guru](https://gitweb.gentoo.org/repo/proj/guru.git/tree/media-libs/wivrn)
+- [NixOS](https://search.nixos.org/packages?show=wivrn)
 
-```
-$XDG_RUNTIME_DIR/wivrn-spatial/bridge.sock
-```
+For OpenVR and Steam compatibility, you also need a compatibility library such as [xrizer](https://github.com/Supreeeme/xrizer/) or [OpenComposite](https://gitlab.com/znixian/OpenOVR/).
 
-The fallback runtime directory is `/run/user/UID`. The bridge creates its own
-0700 directory and 0600 Unix `SOCK_SEQPACKET` socket, checks peer UID, and holds an
-exclusive lock against a second publisher. It supports **32 simultaneous PC
-readers of one WiVRn headset session**. This does not add simultaneous HMD streams
-to WiVRn. Slow readers are disconnected; they cannot block XR or other readers.
-There is no command or remote capture interface on this socket.
+A Flatpak is available on Flathub for all distributions:
 
-Snapshots travel through WiVRn's reliable control channel and use WiVRn clock
-synchronization. For each snapshot, the server composes:
+[![Flathub](https://flathub.org/api/badge)](https://flathub.org/apps/io.github.wivrn.wivrn)
 
-```
-PC_STAGE_from_Quest_STAGE = PC_STAGE_from_runtime_root × tracking_origin_offset
-```
+The Flatpak contains both xrizer and OpenComposite.
 
-The runtime spaces are located at the mapped sample timestamp. This uses the
-same tracking origin as WiVRn's HMD and automatically includes runtime offsets;
-it does not assume two applications have identical STAGE origins. Alignment is
-unavailable until clock synchronization and the runtime spaces are valid.
+Note that due to Flatpak sandboxing, some features such as support for SteamVR tracked (Lighthouse) devices, or virtual gamepad/keyboard/input devices forwarded from the headset, may not be available.
 
-The JSON schema is `wivrn.spatial.v1` (separate from the standalone TCP protocol).
-One socket record contains one JSON object, at most 128 KiB. Important fields:
+## Headset Client/App
 
-| Field | Meaning |
-| --- | --- |
-| `live`, `status` | Whether this snapshot can provide current poses |
-| `source_session`, `sequence`, `generation` | Client scene epoch, monotonic sequence, reference-space generation |
-| `sample_monotonic_ns`, `ttl_ns`, `age_ns` | PC `CLOCK_MONOTONIC` sample time; 750 ms pose TTL |
-| `alignment` | Pose of Quest STAGE in PC STAGE; null when unavailable |
-| `markers[].pose`, `scene.entities[].pose`, `head` | `valid`, `flags`, raw `quest_stage`, aligned `pc_stage` |
-| `capture` | Anchor support, capture activity, accepted and verified counts |
-| `scene.entities[].boundary_2d`, `box` | Geometry in that entity's local coordinates |
-| `boundary` | Quest STAGE rectangle; apply `alignment` to place it on PC |
+Follow the wizard in the PC dashboard to install the client on your VR headset.
 
-Positions are metres and quaternion order is `[x,y,z,w]`. Use the full rigid
-transform, including orientation, for geometry. The PC coordinate system is the
-runtime's semantic STAGE; applications using LOCAL must apply their own
-STAGE-to-LOCAL transform.
+It should either lead you to the [Meta Store](https://www.meta.com/experiences/7959676140827574/) (for Meta Quest headsets) or to download the correct APK (for other headsets).
 
-Clients must check `live`, each pose's `valid`, and freshness **when consuming**
-the record, including time spent in their receive queue. Accept no more than
-100 ms of future prediction and expire after 750 ms. The server clears all poses
-on disconnect, expiry, or unavailable alignment, while retaining geometry and
-UUID metadata as explicitly non-live data in memory. It sends idle heartbeats;
-it does not persist a live PC pose or calibrated transform across sessions.
+> [!WARNING]
+> The VR client and PC server need to be on the same version of WiVRn
 
-A dependency-free reader example reconnects automatically:
+> [!TIP]
+> If the headset fails to connect to the computer, see [troubleshooting](#troubleshooting).
 
-```sh
-python3 native/subscribe.py
-python3 native/subscribe.py --once
+
+
+# Usage
+
+## Running
+
+### Prerequisites
+Avahi must be running:
+```bash
+systemctl enable --now avahi-daemon
 ```
 
-## Build and service integration
+On SteamOS, the Avahi configuration needs to be modified to allow user services such as WiVRn to publish services on the network; see https://github.com/WiVRn/WiVRn/issues/1001#issuecomment-4940906113 for instructions on how to do so.
 
-Host requirements follow [WiVRn's upstream build instructions](wivrn/README.md).
-The checked build uses CMake/Ninja, C++23, system OpenXR/Boost/OpenSSL/nlohmann-json,
-and VAAPI/Vulkan encoders. The APK additionally needs JDK 21, Android SDK 34,
-NDK 29.0.14206865, and WiVRn's host asset tools. Build scripts never deploy:
+- If a firewall is installed, open port 5353/UDP for Avahi and ports 9757/UDP+TCP for WiVRn.
+- For example, if using UFW run `ufw allow 5353/udp` and `ufw allow 9757`.
 
-```sh
-native/build-server.sh
-native/build-client.sh
+### Start the PC server process
+The graphical frontend is listed as "WiVRn server" in the application list, and is `wivrn-dashboard` on command line. On first start, a wizard will guide you through the initial steps.
+
+The actual server for headless usage is `wivrn-server`. When installed through your distribution's package manager, a systemd user service named `wivrn` is also installed, which can be enabled to automatically start on login with `systemctl --user enable --now wivrn`.
+
+For Steam games, depending on the installation method, you may need to set launch options in the Steam properties for each game you want to run. Either the dashboard or command line output will display the launch command if it is required.
+
+### Start the headset application
+On the headset, when installed from the store, simply start `WiVRn`. If you installed the app via the dashboard, or manually via `adb`, it will be in an "unknown sources" section.
+
+On first start, it will ask if you want to enable some features such as microphone, hand tracking, eye tracking, etc., as they will require permissions to be granted. It is possible to grant those later from the Settings tab.
+
+It is highly recommended to use default settings and only tweak them if you experience issues.
+
+### Connect to the server
+The headset application will start on a server list. Your computer should be visible and have a connect button. Simply click it to start streaming.
+
+When the headset is connected, wivrn-server sets the OpenXR and OpenVR configuration to use WiVRn. Thus, applications will only be able to run in VR once the headset connection is established. The configuration is reverted once the connection ends and all running VR applications are closed. 
+
+The headset connection also triggers the creation of a virtual speaker and, if enabled in the headset app settings, a microphone. You will have to set them as the default output and input devices in your system audio configuration. This setting persists to future sessions until you change the defaults to other devices.
+
+### Start an application
+When the headset is connected and no XR application is running, it will show an application launcher. Applications in that list are sourced from:
+- Steam games that are flagged as VR. Steam may need to be restarted for the list to be updated when new games are installed.
+- .desktop files that contain `X-WiVRn-VR` in the `Categories` section. Files are searched in [standard locations](https://specifications.freedesktop.org/desktop-entry/latest/file-naming.html#desktop-file-id) which usually include `~/.local/share/applications` and `/usr/share/applications/`.
+
+You can set an application to be started automatically when your headset is connected, in the dashboard settings or [manually](docs/configuration.md#application).
+
+## Steam Flatpak
+Flatpak applications are only able to access the Flatpak version of WiVRn.
+
+If you're using the Steam Flatpak, you'll need to grant read only access to the following paths:
+
+```bash
+flatpak override \
+  --filesystem=xdg-run/wivrn:ro \
+  --filesystem=xdg-data/flatpak/app/io.github.wivrn.wivrn:ro \
+  --filesystem=/var/lib/flatpak/app/io.github.wivrn.wivrn:ro \
+  --filesystem=xdg-config/openxr:ro \
+  --filesystem=xdg-config/openvr:ro \
+  com.valvesoftware.Steam
 ```
 
-Pass extra CMake arguments to the server script for dependencies or installation
-prefix, and Gradle options to the client script. For a populated dependency cache,
-use `native/build-client.sh --offline -Pwivrn_offline=1
--Pfetchcontent_base_dir=/absolute/path/to/cache` on one line. The offline property
-also disables CMake FetchContent downloads; all source archives and host tools
-must already be available. SDK downloads are a build prerequisite, not part of
-the spatial bridge runtime.
+When using a user installation of flatpak Steam, use `override --user` instead of `override`.
 
-Outputs:
+The same overrides should work for other VR applications distributed as Flatpaks.
 
-- `build/native-server/server/wivrn-server`
-- `build/native-server/_deps/monado-build/src/xrt/targets/openxr/libopenxr_wivrn.so`
-- `build/native-server/openxr_wivrn-dev.json` (matching build-tree runtime)
-- `wivrn/build/outputs/apk/debug/wivrn-debug.apk` (separate `.spatial` package)
+# Building
 
-The native bridge runs **inside the WiVRn service**. After installing this branch
-to a separate prefix or selecting its server, add the supplied
-[`native/wivrn-spatial.conf`](native/wivrn-spatial.conf) as a drop-in for the service
-that starts that binary. No separate `spatial-bridge.service` or Python process
-is needed for native clients. Do not run two WiVRn servers against the same
-runtime/ports. The existing standalone service may remain for its existing
-clients. This work does not install a service, change the selected OpenXR runtime,
-restart WiVRn, or install the APK.
+See [building](docs/building.md) for building the [dashboard](docs/building.md#dashboard), [server (PC)](docs/building.md#server-pc), and [client (headset)](docs/building.md#client-headset)
 
-## Offline verification
 
-```sh
-native/test-offline.sh
-```
+# Configuration
+Most settings are controlled through the headset app, while the server has configuration for items that are specific to the server. Use the dashboard to edit the latter, or see [configuration](docs/configuration.md) for editing it manually.
 
-The tests use mocked OpenXR dispatch and isolated temporary Unix sockets, not
-an HMD or the running WiVRn server. They cover anchor lifecycle, guided scanning
-and reload verification, rigid transforms, multiple/late/slow readers, expiry,
-tracking loss, invalid numbers, replay/generation handling, maximum geometry,
-socket ownership, wire round trips, truncated packets, and matching protocol
-hashes with signed/unsigned `char` defaults. To compare actual PC and Android
-compiler output without running either binary, use:
+# Troubleshooting
+<details><summary>My computer is not seen by the headset</summary>
 
-```sh
-python3 native/check-android-protocol.py wivrn/.cxx/Debug/BUILD_ID/arm64-v8a/compile_commands.json
-```
+If the server list is empty in the headset app:
+- Make sure your computer is connected on the same network as your headset
+- Check that avahi is running with `systemctl status avahi-daemon`, if it is not, enable it with `systemctl enable --now avahi-daemon`
+- If you have a firewall, check that port 5353 (UDP) is open</details>
 
-Verified offline on 2026-10-02: the PC server/runtime and Quest debug APK build
-successfully; 69 anchor checks, 707 capture checks and 126 transform/IPC checks
-pass. Wire round trips and truncation checks pass (30,617 bytes per snapshot),
-and the actual PC and ARM64 compiler outputs agree on protocol `8597902ca6ad42b4`.
+<details><summary>My headset does not connect to my computer</summary>
+  
+- If you have a firewall, check that port 9757 (UDP and TCP) is open
+- The server and client must be the same version.</details>
 
-**Live HMD tests are suspended until explicitly requested.** Offline builds do
-not establish capture UX, spatial accuracy, headset performance, or scene API
-behavior on the device. See [source provenance](PROVENANCE.md).
+<details><summary>How do I use a wired connection manually?</summary>
+
+- Make sure the WiVRn Server is installed and running on your computer
+- Make sure you have the WiVRn app installed on your headset
+- After starting the "WiVRn Server" on your computer and ensuring your device is connected to your PC via cable, run the following in your terminal (Note: using `adb` on some devices may require developer mode to be enabled):
+   - ```bash
+      adb reverse tcp:9757 tcp:9757
+      adb shell am start -a android.intent.action.VIEW -d "wivrn+tcp://localhost" org.meumeu.wivrn
+      ```
+   - Depending on your install type, you may need to replace `org.meumeu.wivrn` (Meta Store install) with:
+      - `org.meumeu.wivrn.github` for [releases](https://github.com/WiVRn/WiVRn/releases) on Github
+      - `org.meumeu.wivrn.github.nighly` for Github nightlies (wirvn-apk [repository](https://github.com/WiVRn/WiVRn-APK/releases))
+      - `org.meumeu.wivrn.github.testing` for Github CI builds
+      - `org.meumeu.wivrn.local` for developer builds
+- You can now continue the pairing process as documented in the running section.</details>
+
+<details><summary>How do I see server logs when using the dashboard?</summary>
+
+- Click **Troubleshoot > Open server logs**
+- Or, navigate to `${XDG_STATE_HOME}/wivrn/wivrn-dashboard`
+  - In other words, on common setups, the dashboard writes logs to `~/.local/state/wivrn/wivrn-dashboard`
+  - For WiVRn Flatpak, the dashboard writes logs to `~/.var/app/io.github.wivrn.wivrn/.local/state/wivrn/wivrn-dashboard`</details>
+
+<details><summary>My NVIDIA GPU P-State is limited to P2 instead of reaching the highest P0 while using the NVIDIA NVENC encoder</summary>
+    
+- See [nvenc](docs/nvenc.md) for troubleshooting.</details>
+
+<details><summary>I have high motion latency, black borders following my view, hear corrupted audio or see a corrupted, pixelated image</summary>
+
+- When connecting through USB, make sure the headset isn't connected through WiFi (switch off WiFi)
+- Reset the settings using the button at the bottom of the settings tab
+- Try switching to software encoding
+- Decrease the bitrate
+- Decrease the resolution in the WiVRn app
+- Connect through USB or use a better WiFi router.
+
+Note: WiVRn isn't properly optimized for NVIDIA GPUs due to the lack of developers with NVIDIA hardware. Motion latency may be significantly worse at rendering resolutions higher than default.</details>
+
+# Community Support
+
+We are available on either **Discord** or **Matrix space**:
+
+[![LVRA Discord](https://img.shields.io/discord/1065291958328758352?style=for-the-badge&logo=discord)](https://discord.gg/EHAYe3tTYa) [![LVRA Matrix](https://img.shields.io/matrix/linux-vr-adventures:matrix.org?logo=matrix&style=for-the-badge)](https://matrix.to/#/#linux-vr-adventures:matrix.org)
+
+Please use the `wivrn` chat room for questions or issues specific to WiVRn.
+
+
+# Contributing
+
+## Translations
+
+See [translating](docs/translating.md) for procedure.
+
+
+# Credits
+WiVRn uses the following software:
+- [ambientCG](https://ambientcg.com/)
+- [Avahi](https://www.avahi.org/)
+- [Boost.Locale](https://github.com/boostorg/locale)
+- [Boost.PFR](https://github.com/boostorg/pfr)
+- [CLI11](https://github.com/CLIUtils/CLI11)
+- [Dear ImGui](https://github.com/ocornut/imgui)
+- [fastgltf](https://github.com/spnda/fastgltf)
+- [ffmpeg](https://ffmpeg.org/) optional, for hardware encoding on AMD/Intel
+- [FreeType](https://freetype.org/)
+- [glm](http://glm.g-truc.net/)
+- [HarfBuzz](https://harfbuzz.github.io/)
+- [librsvg](https://wiki.gnome.org/Projects/LibRsvg)
+- [Monado](https://monado.freedesktop.org/)
+- [nvenc](https://developer.nvidia.com/nvidia-video-codec-sdk) optional, for hardware encoding on NVIDIA
+- [qCoro](https://qcoro.dev/)
+- [Qt 6](https://www.qt.io/) optional, for the dashboard
+- [spdlog](https://github.com/gabime/spdlog)
+- [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+- [WebXR input profiles](https://www.npmjs.com/package/@webxr-input-profiles/motion-controllers)
+- [x264](https://www.videolan.org/developers/x264.html) optional, for software encoding

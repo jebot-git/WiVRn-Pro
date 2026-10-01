@@ -32,7 +32,7 @@ with tempfile.TemporaryDirectory(prefix="spatial-protocol-") as tmp:
     source = directory / "hash.cpp"
     source.write_text('#include "protocol_version.h"\nextern "C" const uint64_t spatial_hash '
                       '__attribute__((section(".spatial_protocol_hash"))) = wivrn::protocol_version;\n')
-    common = ["-std=c++23", f"-I{root / 'wivrn/common'}", f"-I{root / 'wivrn/external'}"]
+    common = ["-std=c++23", f"-I{root / 'common'}", f"-I{root / 'external'}"]
     subprocess.run(["c++", *common, "-c", str(source), "-o", str(directory / "pc.o")], check=True)
     subprocess.run([*command, "-fno-lto", "-c", str(source), "-o", str(directory / "arm.o")],
                    cwd=entry["directory"], check=True)

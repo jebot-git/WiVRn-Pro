@@ -3,11 +3,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # Extra arguments permit encoder choices, dependency caches, and install prefix.
-cmake -S wivrn -B build/native-server -G Ninja \
+cmake -S . -B build/server -G Ninja \
   -DWIVRN_BUILD_CLIENT=OFF -DWIVRN_BUILD_SERVER=ON \
   -DWIVRN_BUILD_SERVER_LIBRARY=ON -DWIVRN_BUILD_DASHBOARD=OFF \
   -DWIVRN_BUILD_WIVRNCTL=OFF -DWIVRN_USE_VAAPI=ON \
   -DWIVRN_USE_X264=OFF -DWIVRN_USE_PIPEWIRE=OFF -DWIVRN_USE_NVENC=OFF \
   -DWIVRN_USE_VULKAN_ENCODE=ON -DWIVRN_OPTIMIZE_SHADERS=OFF -DWIVRN_WERROR=ON \
   -DGIT_DESC=v26.9-spatial1 -DGIT_COMMIT=v26.9-spatial1 "$@"
-cmake --build build/native-server --target wivrn-server openxr_wivrn --parallel "${BUILD_JOBS:-6}"
+cmake --build build/server --target wivrn-server openxr_wivrn --parallel "${BUILD_JOBS:-6}"
