@@ -35,6 +35,7 @@
 
 #include "packed_quaternion.h"
 #include "smp.h"
+#include "spatial_protocol.h"
 #include "wivrn_serialization_types.h"
 
 namespace wivrn
@@ -721,7 +722,8 @@ using packets = std::variant<
         get_running_applications,
         set_active_application,
         hid::input,
-        stop_application>;
+        stop_application,
+        spatial::snapshot>;
 } // namespace from_headset
 
 namespace to_headset

@@ -118,6 +118,7 @@ if (WIVRN_BUILD_SERVER)
 
 			driver/app_pacer.cpp
 			driver/clock_offset.cpp
+			driver/spatial_bridge.cpp
 			driver/configuration.cpp
 			driver/hand_joints_list.cpp
 			driver/pose_list.cpp
@@ -327,3 +328,6 @@ if (WIVRN_BUILD_SERVER_LIBRARY)
 		DESTINATION ${CMAKE_INSTALL_LIBDIR}/wivrn
 		COMPONENT Runtime)
 endif()
+
+# Input validation must retain IEEE NaN/Inf checks despite the renderer fast-math default.
+set_source_files_properties(driver/spatial_bridge.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math")

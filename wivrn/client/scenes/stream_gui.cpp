@@ -429,6 +429,9 @@ void scenes::stream::gui_settings(float)
 
 	switch (current_settings_page)
 	{
+		case settings_page::spatial:
+			if (spatial) spatial->draw_controls(system.passthrough_supported() != xr::passthrough_type::none);
+			break;
 		case settings_page::video:
 			wivrn::gui::settings_video(ctx);
 			break;
@@ -756,6 +759,11 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 		}
 	}
 
+    if (head_position && spatial && spatial->capture_active()) {
+        imgui_ctx->layers()[0].orientation = head_position->second;
+        imgui_ctx->layers()[0].position = head_position->first + glm::mat3_cast(head_position->second) * glm::vec3{0, -0.25f, -1.2f};
+    }
+
 	// popup layer floats in front of the main panel so combos and modals pop as their own quad
 	imgui_ctx->place_layer_relative(2, 0, constants::gui::popup_position);
 
@@ -1032,6 +1040,7 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 			settings_item(ICON_FA_WAND_MAGIC_SPARKLES, _cS("tab label", "Post-processing"), settings_page::post_processing);
 			settings_item(ICON_FA_KEYBOARD, _cS("tab label", "Devices"), settings_page::devices);
 			settings_item(ICON_FA_LOCATION_CROSSHAIRS, _cS("tab label", "Tracking"), settings_page::tracking);
+			settings_item(ICON_FA_LOCATION_CROSSHAIRS, "Room capture", settings_page::spatial);
 			settings_item(ICON_FA_GEARS, _cS("tab label", "System"), settings_page::system);
 			settings_item(ICON_FA_PALETTE, _cS("tab label", "Theme"), settings_page::theme);
 
@@ -1140,6 +1149,8 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 			set_color_scale_bias({alpha, alpha, alpha, alpha}, {});
 	}
 
+    // All room markers share one native projection layer with the controller rays.
+    const uint32_t room_layer = spatial && spatial->capture_active() ? layer_spatial : 0;
 	// Display the controller rays
 	if (interactable)
 	{
@@ -1149,7 +1160,7 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 		             width,
 		             height,
 		             composition_layer_depth_test_supported,
-		             composition_layer_depth_test_supported ? layer_rays : layer_controllers | layer_rays,
+		             (composition_layer_depth_test_supported ? layer_rays : layer_controllers | layer_rays) | room_layer,
 		             {});
 		if (composition_layer_depth_test_supported)
 			set_depth_test(true, XR_COMPARE_OP_LESS_FB);

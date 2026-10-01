@@ -583,6 +583,7 @@ void scenes::stream::on_focused()
 
 void scenes::stream::on_unfocused()
 {
+	spatial_markers.clear();
 	renderer->wait_idle(); // Must be before the scene data because the renderer uses its descriptor sets;
 	world.clear();
 	input.reset();
@@ -830,6 +831,36 @@ void scenes::stream::render(const XrFrameState & frame_state)
 	display_time_period = frame_state.predictedDisplayPeriod;
 	real_display_period = last_display_time ? frame_state.predictedDisplayTime - last_display_time : frame_state.predictedDisplayPeriod;
 	last_display_time = frame_state.predictedDisplayTime;
+
+	if (state_ != state::shutdown) {
+        if (!spatial)
+            spatial = std::make_unique<wivrn::spatial_source>(instance, session,
+                application::space(xr::spaces::world), application::space(xr::spaces::view),
+                application::get_config_path() / "spatial-bridge-v1",
+                instance.has_extension(XR_FB_SPATIAL_ENTITY_EXTENSION_NAME) &&
+                instance.has_extension(XR_FB_SPATIAL_ENTITY_STORAGE_EXTENSION_NAME) &&
+                instance.has_extension(XR_FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME),
+                instance.has_extension(XR_FB_SCENE_EXTENSION_NAME));
+        if (auto packet = spatial->tick(frame_state.predictedDisplayTime,
+                application::get_session_state() == XR_SESSION_STATE_FOCUSED && frame_state.shouldRender))
+            network_session->send_control(std::move(*packet));
+        if (spatial->capture_active()) {
+            if (spatial_markers.empty())
+                for (size_t i = 0; i < wivrn::spatial::marker_count; ++i)
+                    spatial_markers.push_back(add_gltf("assets://xyz-arrows.glb", layer_spatial).first);
+            for (size_t i = 0; i < spatial_markers.size(); ++i) {
+                auto & node = world.get<components::node>(spatial_markers[i]);
+                const auto & marker = spatial->sample().markers[i].pose;
+                node.visible = (marker.flags & 3) == 3;
+                node.position = {marker.pose.position.x, marker.pose.position.y, marker.pose.position.z};
+                const auto & q = marker.pose.orientation;
+                node.orientation = {q.w, q.x, q.y, q.z};
+                node.scale = glm::vec3(.3f);
+            }
+            next_gui_status = stream_tab::settings;
+            current_settings_page = settings_page::spatial;
+        }
+    }
 
 	std::shared_lock lock(decoder_mutex);
 	if (not frame_state.shouldRender or decoders[0].empty() or decoders[1].empty() or state_ == state::shutdown)
@@ -1084,12 +1115,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
 #endif
 		swapchain.release();
 
-		if (use_alpha)
+		const bool room_capture = spatial && spatial->capture_active();
+		if (use_alpha || room_capture)
 			session.enable_passthrough(system);
 		else
 			session.disable_passthrough();
 
-		render_start(use_alpha, frame_state.predictedDisplayTime);
+		render_start(use_alpha || room_capture, frame_state.predictedDisplayTime);
 
 		// Add the layer with the streamed content
 		std::array<XrCompositionLayerProjectionView, view_count> layer_view;
@@ -1111,13 +1143,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
 			                },
 			        };
 		}
-		add_projection_layer(
+		if (!room_capture) add_projection_layer(
 		        use_alpha ? XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT : 0,
 		        application::space(xr::spaces::world),
 		        layer_view);
 
 		if (const configuration::openxr_post_processing_settings openxr_post_processing = application::get_config().openxr_post_processing;
-		    (openxr_post_processing.sharpening | openxr_post_processing.super_sampling) > 0)
+		    !room_capture && (openxr_post_processing.sharpening | openxr_post_processing.super_sampling) > 0)
 			set_layer_settings(openxr_post_processing.sharpening | openxr_post_processing.super_sampling);
 
 		accumulate_metrics(frame_state.predictedDisplayTime, current_blit_handles, timestamps);
@@ -1348,6 +1380,7 @@ std::optional<std::string> scenes::stream::pop_stream_error()
 
 void scenes::stream::on_xr_event(const xr::event & event)
 {
+	if (spatial) spatial->event(event.header);
 	switch (event.header.type)
 	{
 		case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:

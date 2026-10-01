@@ -21,6 +21,7 @@
 
 #include "app_pacer.h"
 #include "clock_offset.h"
+#include "spatial_bridge.h"
 #include "compositor/compositor.h"
 #include "inplace_vector.hpp"
 #include "tracking_control.h"
@@ -74,7 +75,8 @@ class wivrn_session : public xrt_system_devices
 
 	b_system & xrt_system;
 	ipc_server * mnd_ipc_server;
-	xrt_space_overseer * space_overseer;
+	xrt_space_overseer * space_overseer = nullptr;
+	spatial::bridge spatial_bridge;
 	xrt_system_compositor * system_compositor;
 
 	std::mutex roles_mutex;
@@ -189,6 +191,7 @@ public:
 	void operator()(const from_headset::set_active_application &);
 	void operator()(const from_headset::stop_application &);
 	void operator()(audio_data &&);
+	void operator()(const spatial::snapshot &);
 
 	void operator()(to_monado::stop &&);
 	void operator()(to_monado::disconnect &&);

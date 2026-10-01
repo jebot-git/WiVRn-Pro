@@ -72,6 +72,9 @@
     <uses-feature android:name="android.hardware.xr.input.hand_tracking" android:required="false" />
     <uses-feature android:name="android.hardware.xr.input.eye_tracking" android:required="false" />
 
+    <uses-permission android:name="com.oculus.permission.USE_ANCHOR_API" />
+    <uses-permission android:name="com.oculus.permission.USE_SCENE" />
+
     <application
         android:allowBackup="false"
         android:hasCode="true"

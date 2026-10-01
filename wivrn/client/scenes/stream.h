@@ -24,6 +24,7 @@
 #include "decoder/shard_accumulator.h"
 #include "render/imgui_impl.h"
 #include "scene.h"
+#include "spatial_source.h"
 #include "scenes/input_profile.h"
 #include "stream_defoveator.h"
 #include "utils/thread_safe.h"
@@ -74,6 +75,7 @@ private:
 	std::mutex frames_mutex;
 	std::array<std::shared_ptr<wivrn::shard_accumulator::blit_handle>, decoder_count> common_frame(XrTime display_time);
 
+	std::unique_ptr<wivrn::spatial_source> spatial;
 	std::unique_ptr<wivrn_session> network_session;
 	std::thread network_thread;
 	thread_safe<to_headset::tracking_control> tracking_control{};
@@ -126,6 +128,8 @@ private:
 	std::optional<input_profile> input;
 	static inline const uint32_t layer_controllers = 1 << 0;
 	static inline const uint32_t layer_rays = 1 << 1;
+	static inline const uint32_t layer_spatial = 1 << 2;
+	std::vector<entt::entity> spatial_markers;
 
 	// Size of the composition layer used for the controllers
 	uint32_t width;
@@ -151,6 +155,7 @@ private:
 		post_processing,
 		devices,
 		tracking,
+		spatial,
 		theme,
 		system,
 	};
