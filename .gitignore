@@ -1,0 +1,9 @@
+build/
+quest/build/
+quest/.deps/
+.state/
+evidence/
+__pycache__/
+*.log
+*.keystore
+.worktrees/
