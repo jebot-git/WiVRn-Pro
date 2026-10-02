@@ -98,9 +98,9 @@ impl ThumbPad {
         } else {
             gun_grip
         };
-        // Both sizes are supported by the last index segment. Release input
-        // when that segment is no longer tracked.
-        if [9, 10].iter().any(|&i| {
+        // Release input when the supporting index segment is no longer tracked.
+        let support = if mount_index { [9, 10] } else { [8, 9] };
+        if support.iter().any(|&i| {
             !j[i]
                 .location_flags
                 .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
@@ -114,22 +114,22 @@ impl ThumbPad {
         } else {
             let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
             let curled = (p(8) + p(13) + p(18) + p(23)) * 0.25;
-            // Place the large pad on the fleshy, inside surface of the last
+            // Place the large pad on the fleshy, inside surface of the middle
             // segment, toward the index base in the finger's curl plane.
-            let distal = p(10) - p(9);
-            if distal.length_squared() < 0.005_f32.powi(2) {
+            let segment = p(9) - p(8);
+            if segment.length_squared() < 0.005_f32.powi(2) {
                 self.reset();
                 return None;
             }
-            let distal = distal.normalize();
-            let middle = (p(9) + p(10)) * 0.5;
+            let segment = segment.normalize();
+            let middle = (p(8) + p(9)) * 0.5;
             let inward = p(7) - middle;
-            let inward = inward - distal * inward.dot(distal);
+            let inward = inward - segment * inward.dot(segment);
             if inward.length_squared() < 0.005_f32.powi(2) {
                 self.reset();
                 return None;
             }
-            let radius = (j[9].radius + j[10].radius) * 0.5;
+            let radius = (j[8].radius + j[9].radius) * 0.5;
             let clearance = if radius.is_finite() {
                 radius.clamp(0.004, 0.012) + 0.002
             } else {
@@ -190,7 +190,7 @@ impl ThumbPad {
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
             // Preserve the accepted tilt, but put index pads on the fingertip
-            // itself; the larger pad sits inside the curled last segment.
+            // itself; the larger pad sits inside the curled middle segment.
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
             let center = origin;
@@ -555,7 +555,7 @@ mod tests {
         }
     }
     #[test]
-    fn inside_distal_mount_ignores_thumb_height_and_allows_full_axis_travel() {
+    fn inside_middle_mount_ignores_thumb_height_and_allows_full_axis_travel() {
         for mirror in [1.0, -1.0] {
             for direction in [Vec2::X, Vec2::NEG_X, Vec2::Y, Vec2::NEG_Y] {
                 let mut j = joints();
@@ -573,9 +573,9 @@ mod tests {
                 assert!(
                     (alternate_pad.frame.translation - pad.frame.translation).length() < 0.0001
                 );
-                // Fixture's distal segment runs along +Z; its fleshy side
-                // faces +Y toward the palm, identically for either hand.
-                let expected = Vec3::new(0.04 * mirror, -0.038, -0.0025);
+                // The middle segment's inside normal points toward +Y/+Z,
+                // identically for either hand (12 mm surface clearance).
+                let expected = Vec3::new(0.04 * mirror, -0.02963344, -0.01176687);
                 assert!((Vec3::from(pad.frame.translation) - expected).length() < 0.0001);
                 let neutral = pad.frame.transform_point3(Vec3::Z * 0.012);
                 j[5].pose.position = xr::Vector3f {
@@ -611,11 +611,11 @@ mod tests {
         }
     }
     #[test]
-    fn large_pad_follows_curled_last_segment_and_releases_on_tracking_loss() {
+    fn large_pad_follows_curled_middle_segment_and_releases_on_tracking_loss() {
         let mut j = joints();
         let mut p = ThumbPad::default();
         let pad = activate(&mut p, &j);
-        for i in [9, 10] {
+        for i in [8, 9] {
             j[i].pose.position.y += 0.005;
         }
         let flexed = p

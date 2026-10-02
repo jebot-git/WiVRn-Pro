@@ -491,3 +491,13 @@ live comfort or reach.
 Mac Desktop Relay now uses a light bitten-apple silhouette on a dark rounded
 square. The SVG was rendered and inspected at 128, 64, 32 and 24 pixels, installed
 in its independent application prefix, and KDE's menu cache was refreshed.
+
+### Inside middle-segment pad
+
+Moved the large pad to the inside of the index finger's middle (second)
+segment, between PIP and DIP joints. Surface clearance uses those joints'
+radii, and loss of their tracking releases input. The small fingertip pad,
+angle, size and deadzone are unchanged. Seven joystick tests pass, including
+middle-segment placement and movement on the synthetic curled-hand fixture.
+The release worker built successfully and was installed with a WayVR restart;
+the WiVRn session remains active. Live comfort still needs user confirmation.
