@@ -2,7 +2,7 @@
 Name=WiVRn Pro
 Comment=Quest Pro streaming and Shora tracking
 Exec="@CMAKE_INSTALL_FULL_BINDIR@/wivrn-pro-dashboard"
-Icon=wivrn-pro
+Icon=wivrn-pro-menu
 Type=Application
 Categories=Settings;Game;
 Terminal=false

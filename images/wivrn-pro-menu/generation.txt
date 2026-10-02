@@ -1,0 +1,8 @@
+WiVRn-Pro KDE application icon
+
+Generated with the built-in image_gen tool, 2026-10-02.
+source.png preserves the generated image and transparency. The numbered PNGs
+are resized hicolor application icons. No runtime image tools are required.
+
+Prompt:
+Use case: logo-brand. Asset type: KDE Plasma application launcher icon for WiVRn-Pro, a wireless PC VR server for Quest Pro. Create one polished square app icon, transparent background. A bold, front-facing dark graphite VR visor with a distinctive curved brow and a simple cyan-blue illuminated face; above it a compact pair of wireless signal arcs, integrated into one coherent silhouette. Restrained modern desktop icon aesthetic, clean precise geometry, subtle dimensional shading, strong light/dark contrast, generous transparent outer padding, centered composition. It must read clearly at 32 and 48 pixels: broad shapes, minimal detail. No letters, no words, no watermark, no surrounding scene, no mockup, no multiple variants, no drop shadow extending far outside the silhouette. Deliver the actual icon on genuine transparency.
