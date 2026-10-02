@@ -10,12 +10,15 @@ pub struct Pad {
     pub frame: Affine3A,
     pub radius: f32,
     pub axes: Vec2,
+    pub cursor: Vec2,
+    pub armed: bool,
 }
 #[derive(Default)]
 pub struct ThumbPad {
     since: Option<Duration>,
     local: Option<Affine3A>,
     axes: Vec2,
+    armed: bool,
     radius: f32,
     last: Option<Duration>,
 }
@@ -114,12 +117,14 @@ impl ThumbPad {
             let normal = head.transform_vector3(Vec3::Y).normalize();
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
-            // Tilt the pad's local X axis toward the viewer. Offset along
-            // the tilted normal so the initial thumb still projects to zero.
+            // Mount above the thumb-side knuckles, independently of the raised
+            // thumb. Freeze this frame relative to the wrist until the hand opens.
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
+            let fist_top = (p(7) + p(12)) * 0.5;
+            let clearance = (width * 0.25).clamp(0.015, 0.025);
             let frame =
-                Affine3A::from_rotation_translation(rotation, p(5) - (rotation * Vec3::Z) * 0.012);
+                Affine3A::from_rotation_translation(rotation, fist_top + normal * clearance);
             self.local = Some(wrist.inverse() * frame);
             self.radius = (width * 0.35).clamp(0.025, 0.04);
             self.axes = Vec2::ZERO;
@@ -128,7 +133,10 @@ impl ThumbPad {
         let tip = frame.inverse().transform_point3(p(5));
         let raw = Vec2::new(tip.x, tip.y) / self.radius;
         let length = raw.length();
-        let target = if length <= 0.12 {
+        // A thumbs-up starts beyond the pad centre. Require one centre entry
+        // before sending axes; do not calibrate neutral to that extended pose.
+        self.armed |= length <= 0.25;
+        let target = if !self.armed || length <= 0.12 {
             Vec2::ZERO
         } else {
             raw / length * ((length - 0.12) / 0.88).min(1.0)
@@ -138,6 +146,8 @@ impl ThumbPad {
             frame,
             radius: self.radius,
             axes: self.axes,
+            cursor: raw.clamp_length_max(1.0),
+            armed: self.armed,
         })
     }
 }
@@ -346,8 +356,19 @@ mod tests {
                 v.pose.position.x *= mirror;
             }
             let mut p = ThumbPad::default();
-            let original = activate(&mut p, &j);
-            assert!(original.axes.length() < 0.001);
+            let spawned = activate(&mut p, &j);
+            assert_eq!(spawned.axes, Vec2::ZERO);
+            assert!(!spawned.armed);
+            let neutral = spawned.frame.transform_point3(Vec3::Z * 0.012);
+            j[5].pose.position = xr::Vector3f {
+                x: neutral.x,
+                y: neutral.y,
+                z: neutral.z,
+            };
+            let original = p
+                .update(Duration::from_millis(155), Some(&j), Affine3A::IDENTITY)
+                .unwrap();
+            assert!(original.armed && original.axes.length() < 0.001);
             for v in &mut j {
                 v.pose.position.x += 0.2;
                 v.pose.position.y += 0.1;
@@ -379,6 +400,58 @@ mod tests {
                     .is_none()
             );
             assert!(!p.owns_hand());
+        }
+    }
+    #[test]
+    fn fixed_fist_mount_allows_full_forward_back_and_side_travel() {
+        for mirror in [1.0, -1.0] {
+            for direction in [Vec2::X, Vec2::NEG_X, Vec2::Y, Vec2::NEG_Y] {
+                let mut j = joints();
+                for v in &mut j {
+                    v.pose.position.x *= mirror;
+                }
+                let mut alternate = j;
+                for v in &mut alternate[2..6] {
+                    v.pose.position.y += 0.025;
+                }
+                let mut other = ThumbPad::default();
+                let alternate_pad = activate(&mut other, &alternate);
+                let mut p = ThumbPad::default();
+                let pad = activate(&mut p, &j);
+                assert!(
+                    (pad.frame.translation - alternate_pad.frame.translation).length() < 0.0001
+                );
+                let neutral = pad.frame.transform_point3(Vec3::Z * 0.012);
+                j[5].pose.position = xr::Vector3f {
+                    x: neutral.x,
+                    y: neutral.y,
+                    z: neutral.z,
+                };
+                assert!(
+                    p.update(Duration::from_millis(160), Some(&j), Affine3A::IDENTITY)
+                        .unwrap()
+                        .armed
+                );
+                let target = pad.frame.transform_point3(Vec3::new(
+                    direction.x * pad.radius,
+                    direction.y * pad.radius,
+                    0.012,
+                ));
+                j[5].pose.position = xr::Vector3f {
+                    x: target.x,
+                    y: target.y,
+                    z: target.z,
+                };
+                let mut moved = pad;
+                for time in [190, 220, 250, 280, 310] {
+                    moved = p
+                        .update(Duration::from_millis(time), Some(&j), Affine3A::IDENTITY)
+                        .unwrap();
+                    assert!((moved.frame.translation - pad.frame.translation).length() < 0.0001);
+                }
+                assert!(moved.axes.dot(direction) > 0.99);
+                assert!((moved.cursor - direction).length() < 0.001);
+            }
         }
     }
     #[test]

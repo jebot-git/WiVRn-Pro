@@ -74,8 +74,12 @@ impl HandPads {
                     .into_iter()
                     .next()
                     .unwrap();
-                surface.uniform.write()?[..4]
-                    .copy_from_slice(&[pad.axes.x, pad.axes.y, i as f32, 0.0]);
+                surface.uniform.write()?[..4].copy_from_slice(&[
+                    pad.cursor.x,
+                    pad.cursor.y,
+                    i as f32,
+                    f32::from(pad.armed),
+                ]);
                 let mut cmd = app
                     .gfx
                     .create_gfx_command_buffer(CommandBufferUsage::OneTimeSubmit)?;

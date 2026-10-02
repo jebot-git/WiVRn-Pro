@@ -324,3 +324,14 @@ the user's viewpoint at activation. The centre remains below the thumb along
 the tilted normal, keeping initial axes neutral; the whole frame remains
 wrist-relative. Both joystick regression tests pass and the release worker
 build succeeds. Installed by restarting only WayVR.
+
+Thumb-pad mounting now uses the index/middle knuckles with 15–25 mm clearance
+above the fist, captured relative to the wrist. The accepted 60-degree tilt is
+preserved. Neither thumb position at activation nor subsequent thumb travel
+moves the pad centre. The projected thumb position drives the pad indicator
+and, after entering the centre once, the standard joystick axes. A white
+centre target indicates this initial arming step, avoiding immediate movement
+from the fully extended activation pose. Opening or tracking loss resets it.
+All three joystick regression tests pass, including both hands, full travel
+in all four directions, mount independence from the activation thumb position,
+whole-hand movement, and loss/release behaviour.

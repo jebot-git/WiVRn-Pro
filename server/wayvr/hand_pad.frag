@@ -10,6 +10,9 @@ void main() {
     vec3 color = params.data.z < 0.5 ? vec3(0.1, 0.85, 1.0) : vec3(0.8, 0.4, 1.0);
     float grid = 1.0 - smoothstep(0.015, 0.035, min(abs(p.x), abs(p.y)));
     float ring = smoothstep(0.93, 0.96, r);
-    float dot = 1.0 - smoothstep(0.08, 0.11, length(p - params.data.xy * 0.85));
+    float dot = 1.0 - smoothstep(0.08, 0.11, length(p - params.data.xy));
+    // A white centre target indicates the initial neutral-entry requirement.
+    float target = (1.0 - params.data.w) * (1.0 - smoothstep(0.20, 0.25, r));
+    color = mix(color, vec3(1.0), target);
     out_color = vec4(mix(color * 0.22, color, max(max(grid * 0.6, ring), dot)), edge * (0.48 + 0.5 * max(ring, dot)));
 }
