@@ -18,6 +18,7 @@
  */
 
 #include "application.h"
+#include "spatial_source.h"
 
 #include "openxr/openxr.h"
 #include "scene.h"
@@ -1659,6 +1660,7 @@ void application::cleanup()
 {
 	// Remove all scenes before destroying the allocator
 	scene_stack.clear();
+	spatial.reset(); // Anchor/scene spaces must be released before the XR session.
 
 	// Empty the meta objects while the OpenXR instance still exists
 	for (auto i: scene::scene_registry)
@@ -1684,6 +1686,14 @@ application::~application()
 	utils::write_whole_file(cache_path / "pipeline_cache", pipeline_cache_bytes);
 
 	cleanup();
+}
+
+wivrn::spatial_source & application::get_spatial_source()
+{
+	auto & app = instance();
+	if (!app.spatial)
+		app.spatial = std::make_unique<wivrn::spatial_source>(app.xr_instance, app.xr_session, space(xr::spaces::world), space(xr::spaces::view), get_config_path() / "spatial-bridge-v1", app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_STORAGE_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME), app.xr_instance.has_extension(XR_FB_SCENE_EXTENSION_NAME));
+	return *app.spatial;
 }
 
 void application::loop()
@@ -1977,6 +1987,9 @@ void application::poll_events()
 	xr::event e;
 	while (xr_instance.poll_event(e))
 	{
+		// Dispatch once even if the scene changed while an anchor request was pending.
+		if (spatial)
+			spatial->event(e.header);
 		switch (e.header.type)
 		{
 			case XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {

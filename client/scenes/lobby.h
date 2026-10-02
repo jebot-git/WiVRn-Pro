@@ -87,6 +87,8 @@ class lobby : public scene_impl<lobby>
 	static inline const uint32_t layer_lobby = 1 << 0;
 	static inline const uint32_t layer_controllers = 1 << 1;
 	static inline const uint32_t layer_rays = 1 << 2;
+	static inline const uint32_t layer_spatial = 1 << 3;
+	std::vector<entt::entity> spatial_markers;
 
 	uint32_t width;
 	uint32_t height;
@@ -125,6 +127,7 @@ class lobby : public scene_impl<lobby>
 		post_processing,
 		devices,
 		tracking,
+		spatial,
 		system,
 		customize,
 		theme,

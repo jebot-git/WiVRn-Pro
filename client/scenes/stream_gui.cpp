@@ -688,6 +688,16 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 		case stream_tab::application_launcher:
 			break;
 	}
+	// Preview remains visible after closing the panel, including its fade-out return.
+	if (!interactable && spatial && spatial->markers_visible())
+		render_world(XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT,
+		             world_space,
+		             views,
+		             width,
+		             height,
+		             composition_layer_depth_test_supported,
+		             layer_spatial,
+		             {});
 	imgui_ctx->set_controllers_enabled(interactable and not recentering_context);
 	if (interactable)
 	{
@@ -1149,8 +1159,8 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 			set_color_scale_bias({alpha, alpha, alpha, alpha}, {});
 	}
 
-    // All room markers share one native projection layer with the controller rays.
-    const uint32_t room_layer = spatial && spatial->capture_active() ? layer_spatial : 0;
+	// All room markers share one native projection layer with the controller rays.
+	const uint32_t room_layer = spatial && spatial->markers_visible() ? layer_spatial : 0;
 	// Display the controller rays
 	if (interactable)
 	{

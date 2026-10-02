@@ -12,14 +12,21 @@ this branch**, rather than mixing it with stock WiVRn or the old anchor prototyp
 
 ## Client behavior
 
-After connecting to the matching server and starting a streamed VR application,
-open WiVRn's in-stream window (both thumbsticks), then **Settings → Room capture**.
-**Start / recheck 12 markers** enables passthrough and hides streamed video while
-keeping the stream connection and feedback running. The guidance panel follows
+Open **Room capture** in the Quest WiVRn lobby to capture or check markers before
+connecting to a PC. During a stream, the same controls are available in WiVRn's
+window (both thumbsticks), under **Settings → Room capture**.
+**Start / recheck 12 markers** temporarily enables passthrough; in a stream it also
+hides video while keeping the connection and feedback running. The lobby defers
+automatic connections while this page is open and defers entering a ready stream
+while capture is active. Finish capture before connecting. The guidance panel follows
 your head. Turn through four directions, hold steady for three markers in each,
 and complete the reload verification pass. **Retry / recheck**, **Skip**, and
-**Return to streaming** are panel buttons. Marker axes use WiVRn's Vulkan renderer
-and share one projection layer with controller rays.
+**Finish room capture** (lobby) / **Return to streaming** are panel buttons. Marker axes use WiVRn's Vulkan renderer
+and share one projection layer with controller rays when the panel is open.
+**Show marker axes** keeps a preview visible after capture. **Saved marker helper**
+shows each slot's saved UUID, current localization and runtime result; **Reload**
+retries that saved identity without creating a replacement. It is disabled during
+capture or a pending operation; failed localization can be retried.
 
 The workflow requires tracking, stable head/anchor poses, and successful local
 anchor persistence. Reload verification rejects shifts above 3 cm or 3 degrees.
@@ -27,8 +34,12 @@ anchor persistence. Reload verification rejects shifts above 3 cm or 3 degrees.
 hardware-validated maximum.** Partial capture remains explicitly partial. This
 native UI has not yet been tested in a headset.
 
-Returning to streaming keeps saved markers localizing at five snapshots per
-second. WiVRn remains the foreground XR application: there is no second Quest
+The application owns anchors for its entire OpenXR session, independently of the
+lobby/stream scenes. Pending asynchronous requests, localized anchors, capture
+progress and room entities survive stream disconnects/reconnects. Events are
+forwarded once centrally; scene teardown only destroys visual marker nodes.
+Saved UUIDs auto-load again on the next application launch. Streaming publishes
+snapshots at five per second; the lobby localizes without publishing to a PC. WiVRn remains the foreground XR application: there is no second Quest
 background service and no cross-app SLAM alignment. Loss of focus/tracking and
 pending reference-space changes invalidate published poses and reset capture
 dwell. Saved UUIDs are in WiVRn's private `spatial-bridge-v1/` directory.
@@ -77,7 +88,7 @@ One socket record contains one JSON object, at most 128 KiB. Important fields:
 | Field | Meaning |
 | --- | --- |
 | `live`, `status` | Whether this snapshot can provide current poses |
-| `source_session`, `sequence`, `generation` | Client scene epoch, monotonic sequence, reference-space generation |
+| `source_session`, `sequence`, `generation` | Client OpenXR-session epoch, monotonic sequence, reference-space generation |
 | `sample_monotonic_ns`, `ttl_ns`, `age_ns` | PC `CLOCK_MONOTONIC` sample time; 750 ms pose TTL |
 | `alignment` | Pose of Quest STAGE in PC STAGE; null when unavailable |
 | `markers[].pose`, `scene.entities[].pose`, `head` | `valid`, `flags`, raw `quest_stage`, aligned `pc_stage` |
@@ -118,7 +129,8 @@ python3 fork/check-android-protocol.py .cxx/Debug/BUILD_ID/arm64-v8a/compile_com
 ```
 
 The tests use mocked OpenXR dispatch and isolated temporary Unix sockets. They
-cover anchor lifecycle, guided scanning/reload verification, rigid transforms,
+cover anchor lifecycle, application-owned capture/late events and saved-marker reloads,
+guided scanning/reload verification, rigid transforms,
 multiple/late/slow readers, expiry, tracking loss, invalid numbers, replay and
 generation handling, maximum geometry, socket ownership, wire round trips and
 truncated packets. Actual PC/ARM compiler constants are compared without running

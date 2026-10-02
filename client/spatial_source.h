@@ -7,7 +7,7 @@
 #include <optional>
 
 namespace wivrn {
-// Render/event thread only. Lives in the streaming scene, sharing its STAGE.
+// Render/event thread only. Owned by application for the XR session, sharing its STAGE.
 class spatial_source {
     XrInstance instance;
     XrSession session;
@@ -22,7 +22,9 @@ class spatial_source {
     uint64_t request = 0;
     XrAsyncRequestIdFB scene_request = 0;
     bool capturing = false, retry_requested = false, skip_requested = false;
-    bool scene_started = false;
+    bool scene_started = false, preview_markers = false;
+    XrTime last_tick = 0;
+    static bool scene_permission();
     PFN_xrGetSpaceSemanticLabelsFB labels{};
     PFN_xrGetSpaceBoundary2DFB boundary{};
     PFN_xrGetSpaceBoundingBox3DFB box{};
@@ -34,7 +36,12 @@ public:
     ~spatial_source();
     void event(const XrEventDataBuffer &);
     std::optional<spatial::snapshot> tick(XrTime, bool focused);
-    void draw_controls(bool passthrough_available);
+    void draw_controls(bool passthrough_available, const char * finish_label = "Return to streaming");
+    bool start_capture(bool passthrough_available);
+    void stop_capture();
+    bool saved_marker(size_t slot) const;
+    bool reload_marker(size_t slot);
+    bool markers_visible() const { return capturing || preview_markers; }
     bool capture_active() const { return capturing; }
     const spatial::snapshot & sample() const { return current; }
 };

@@ -836,12 +836,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
 
 	if (state_ != state::shutdown)
 	{
-		if (!spatial)
-			spatial = std::make_unique<wivrn::spatial_source>(instance, session, application::space(xr::spaces::world), application::space(xr::spaces::view), application::get_config_path() / "spatial-bridge-v1", instance.has_extension(XR_FB_SPATIAL_ENTITY_EXTENSION_NAME) && instance.has_extension(XR_FB_SPATIAL_ENTITY_STORAGE_EXTENSION_NAME) && instance.has_extension(XR_FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME), instance.has_extension(XR_FB_SCENE_EXTENSION_NAME));
+		spatial = &application::get_spatial_source();
 		if (auto packet = spatial->tick(frame_state.predictedDisplayTime,
 		                                application::get_session_state() == XR_SESSION_STATE_FOCUSED && frame_state.shouldRender))
 			network_session->send_control(std::move(*packet));
-		if (spatial->capture_active())
+		if (spatial->markers_visible())
 		{
 			if (spatial_markers.empty())
 				for (size_t i = 0; i < wivrn::spatial::marker_count; ++i)
@@ -856,6 +855,9 @@ void scenes::stream::render(const XrFrameState & frame_state)
 				node.orientation = {q.w, q.x, q.y, q.z};
 				node.scale = glm::vec3(.3f);
 			}
+		}
+		if (spatial->capture_active())
+		{
 			next_gui_status = stream_tab::settings;
 			current_settings_page = settings_page::spatial;
 		}
@@ -1380,8 +1382,6 @@ std::optional<std::string> scenes::stream::pop_stream_error()
 
 void scenes::stream::on_xr_event(const xr::event & event)
 {
-	if (spatial)
-		spatial->event(event.header);
 	switch (event.header.type)
 	{
 		case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:

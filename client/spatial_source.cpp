@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "spatial_source.h"
-#include "imgui.h"
 #include <algorithm>
 #include <cstring>
 #include <random>
+#include <utility>
 #ifdef __ANDROID__
 #include "android/permissions.h"
 #endif
@@ -15,13 +15,13 @@ template<typename T> T function(XrInstance instance, const char * name) {
     xrGetInstanceProcAddr(instance, name, reinterpret_cast<PFN_xrVoidFunction *>(&result));
     return result;
 }
-bool scene_permission() {
+}
+bool spatial_source::scene_permission() {
 #ifdef __ANDROID__
     return check_permission("com.oculus.permission.USE_SCENE");
 #else
     return true;
 #endif
-}
 }
 spatial_source::spatial_source(XrInstance instance, XrSession session, XrSpace stage,
         XrSpace view, std::filesystem::path directory, bool supported, bool scene_supported) :
@@ -139,6 +139,7 @@ void spatial_source::event(const XrEventDataBuffer & event) {
     }
 }
 std::optional<spatial::snapshot> spatial_source::tick(XrTime now, bool focused) {
+    last_tick = now;
     bool active = focused && now >= change_at;
     if (active != current.active) last_sent = 0;
     current.active = active;
@@ -187,40 +188,27 @@ std::optional<spatial::snapshot> spatial_source::tick(XrTime now, bool focused) 
     last_sent = now;
     return current;
 }
-void spatial_source::draw_controls(bool passthrough_available) {
-    ImGui::TextWrapped("Capture saved room markers in WiVRn. Look around all four directions, then hold still for each marker. Keep the playspace clear.");
-    if (!current.supported) { ImGui::TextWrapped("Spatial anchor extensions are unavailable on this headset."); return; }
-    if (!passthrough_available) ImGui::TextWrapped("Passthrough is required to start room capture.");
-    if (!capturing) {
-        ImGui::BeginDisabled(!passthrough_available);
-        if (ImGui::Button("Start / recheck 12 markers")) { guide = {}; capturing = true; }
-        ImGui::EndDisabled();
-    } else {
-        ImGui::TextWrapped("%s", guide.instruction.c_str());
-        ImGui::TextWrapped("%s", guide.detail.c_str());
-        ImGui::ProgressBar(guide.progress);
-        ImGui::Text("Saved: %d / 12   Verified: %d / 12", guide.accepted_count(), guide.verified_count());
-        if (ImGui::Button("Retry / recheck")) retry_requested = true;
-        ImGui::SameLine();
-        if (ImGui::Button("Skip")) skip_requested = true;
-        ImGui::SameLine();
-        if (ImGui::Button("Return to streaming")) { capturing = false; guide.suspend(); }
-    }
-    ImGui::TextWrapped("Saved markers continue to localize while streaming. PC alignment comes from WiVRn's runtime spaces; no app switch or controller calibration is needed.");
-    if (labels && !scene_permission()) {
-#ifdef __ANDROID__
-        if (ImGui::Button("Allow room scene access")) request_permission("com.oculus.permission.USE_SCENE", [](bool) {});
-#endif
-    } else if (labels) {
-        ImGui::Text("Room entities: %u / 64   Query result: %d", current.entity_count, current.scene_result);
-        if (current.scene_complete && ImGui::Button("Reload room scene")) {
-            for (auto & space : scene_spaces) { if (space) xrDestroySpace(space); space = XR_NULL_HANDLE; }
-            current.entities = {};
-            current.entity_count = 0;
-            current.scene_complete = false;
-            scene_request = 0;
-            scene_started = false;
-        }
-    }
+bool spatial_source::start_capture(bool passthrough_available) {
+    if (!current.supported || !passthrough_available || capturing) return false;
+    guide = {};
+    retry_requested = skip_requested = false;
+    capturing = true;
+    return true;
+}
+void spatial_source::stop_capture() {
+    capturing = false;
+    retry_requested = skip_requested = false;
+    guide.suspend();
+}
+bool spatial_source::saved_marker(size_t slot) const {
+    if (slot >= anchors.size()) return false;
+    std::error_code error;
+    return std::filesystem::exists(directory / ("marker-" + std::to_string(slot) + ".uuid"), error);
+}
+bool spatial_source::reload_marker(size_t slot) {
+    if (!current.supported || capturing || slot >= anchors.size() || anchors[slot]->busy()) return false;
+    if (!saved_marker(slot)) return false;
+    anchors[slot]->execute({++request, anchor::operation::load}, last_tick);
+    return true;
 }
 }

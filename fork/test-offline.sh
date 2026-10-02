@@ -21,6 +21,9 @@ build/native-tests/wire-test > build/native-tests/wire-host.txt
 build/native-tests/wire-unsigned-char-test > build/native-tests/wire-arm-char.txt
 diff -u build/native-tests/wire-host.txt build/native-tests/wire-arm-char.txt
 cat build/native-tests/wire-host.txt
+"$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -Wno-missing-field-initializers \
+  -Iclient -Icommon fork/tests/spatial_source_test.cpp client/spatial_source.cpp client/anchor_manager.cpp -o build/native-tests/spatial-source-test
+build/native-tests/spatial-source-test
 build/native-tests/anchors-test
 build/native-tests/capture-test
 build/native-tests/bridge-test

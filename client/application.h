@@ -53,6 +53,10 @@
 #include <openxr/openxr_reflection.h>
 
 class scene;
+namespace wivrn
+{
+class spatial_source;
+}
 
 #ifdef __ANDROID__
 extern "C" void Java_org_meumeu_wivrn_MainActivity_onNewIntent(JNIEnv * env, jobject instance, jobject intent_obj);
@@ -125,6 +129,8 @@ private:
 	XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;
 
 	std::array<xr::space, size_t(xr::spaces::count)> spaces;
+	// Render/event-thread owner, shared across lobby and all streaming scenes.
+	std::unique_ptr<wivrn::spatial_source> spatial;
 	xr::actionset xr_actionset;
 	std::vector<std::tuple<XrAction, XrActionType, std::string>> actions;
 
@@ -435,6 +441,8 @@ public:
 		assert(instance().default_config);
 		return *instance().default_config;
 	}
+
+	static wivrn::spatial_source & get_spatial_source();
 
 	static XrSessionState get_session_state()
 	{

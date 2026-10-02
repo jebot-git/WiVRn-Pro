@@ -27,6 +27,7 @@
 #include "render/ui_theme.h"
 #include "render/ui_widgets.h"
 #include "scenes/stream.h" // IWYU pragma: keep
+#include "spatial_source.h"
 #include "utils/async.h"
 #include "utils/i18n.h"
 #include "utils/mapped_file.h"
@@ -1201,6 +1202,11 @@ std::vector<std::pair<int, XrCompositionLayerQuad>> scenes::lobby::draw_gui(XrTi
 				gui_tracking();
 				break;
 
+			case tab::spatial:
+				ImGui::TextWrapped("Capture or check anchors here without connecting to a PC. The same markers remain available when streaming starts.");
+				application::get_spatial_source().draw_controls(system.passthrough_supported() != xr::passthrough_type::none, "Finish room capture");
+				break;
+
 			case tab::system:
 				gui_system();
 				break;
@@ -1262,6 +1268,8 @@ std::vector<std::pair<int, XrCompositionLayerQuad>> scenes::lobby::draw_gui(XrTi
 				current_tab = tab::devices;
 			if (wivrn::ui::nav_item(ICON_FA_LOCATION_CROSSHAIRS, _cS("tab label", "Tracking"), current_tab == tab::tracking))
 				current_tab = tab::tracking;
+			if (wivrn::ui::nav_item(ICON_FA_LOCATION_CROSSHAIRS, "Room capture", current_tab == tab::spatial))
+				current_tab = tab::spatial;
 			if (wivrn::ui::nav_item(ICON_FA_GEARS, _cS("tab label", "System"), current_tab == tab::system))
 				current_tab = tab::system;
 

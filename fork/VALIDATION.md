@@ -8,8 +8,9 @@ changing installed services, selecting an OpenXR runtime or accessing tracker ha
 | Linux server and OpenXR runtime, QSV OFF | Built successfully with warnings treated as errors |
 | Linux server and OpenXR runtime, QSV ON | Built successfully with warnings treated as errors |
 | FFmpeg QSV configure probe | H.264/HEVC encoders and QSV device type present; no GPU opened |
-| Quest Pro ARM64 debug APK | Gradle build successful, including final Wi-Fi route and decoder restrictions |
+| Quest Pro ARM64 debug APK | Offline Gradle rebuild passed with lobby capture, application-owned anchors and marker helper |
 | Actual PC/ARM64 protocol constants | Match: `7227f7ce3e454c1d` |
+| Application-owned spatial source | 114 checks passed: capture/late completion, reload retry after failed localization, preserved epoch, fresh-launch restore, focus/tracking loss, reference changes and publication throttling |
 | Anchor manager | 69 checks passed |
 | Guided capture | 706 checks passed |
 | Spatial transform/multi-client IPC | 126 checks passed |
@@ -32,8 +33,12 @@ Build artifacts remain under ignored `build/`. The integrated packages are stage
 under `build/package-integrated-off` and `build/package-integrated-on` for QSV OFF
 and ON respectively, never into the live prefix. Older package directories predate
 the full Shora integration. The final build is configured with QSV ON and the Qt6
-dashboard enabled. The existing Quest Pro debug APK was validated in the preceding
-fork change; this integration changes host code only, so it was not rebuilt here.
+dashboard enabled. The Quest Pro APK was rebuilt offline for the subsequent native
+anchor/helper integration at `build/android/outputs/apk/debug/wivrn-native-debug.apk`.
+The full `fork/test-offline.sh` passed again (16 Python tests plus native checks),
+and the actual PC/ARM64 protocol constants still match. No installed service or
+headset state was changed. UI rendering/interaction and reconnect behavior on the
+Quest remain untested; the spatial lifetime tests use mocked OpenXR calls.
 
 The official upstream check found 53 commits after the imported v26.9 baseline
 at fetched master `0d9e6e121a180f7dc9b806e9f04284f89bea6bb8`. These were reported,

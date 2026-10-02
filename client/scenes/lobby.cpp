@@ -28,6 +28,7 @@
 #include "protocol_version.h"
 #include "render/animation.h"
 #include "render/scene_components.h"
+#include "spatial_source.h"
 #include "stream.h"
 #include "utils/files.h"
 #include "utils/glm_cast.h"
@@ -863,6 +864,13 @@ static void stick_finger_to_gui(std::array<xr::hand_tracker::joint, XR_HAND_JOIN
 
 void scenes::lobby::render(const XrFrameState & frame_state)
 {
+	auto & spatial = application::get_spatial_source();
+	// Localization/capture work before a PC connection and survive scene changes.
+	spatial.tick(frame_state.predictedDisplayTime,
+	             application::get_session_state() == XR_SESSION_STATE_FOCUSED && frame_state.shouldRender);
+	if (spatial.capture_active())
+		current_tab = tab::spatial;
+
 	if (async_session.valid() && async_session.poll() == utils::future_status::ready)
 	{
 		try
@@ -888,11 +896,13 @@ void scenes::lobby::render(const XrFrameState & frame_state)
 		switch (next_scene->current_state())
 		{
 			case scenes::stream::state::streaming:
-				application::push_scene(next_scene);
+				if (!spatial.capture_active())
+					application::push_scene(next_scene);
 				break;
 
 			case scenes::stream::state::shutdown:
-				current_tab = tab::server_list;
+				if (!spatial.capture_active())
+					current_tab = tab::server_list;
 				break;
 
 			default:
@@ -903,7 +913,7 @@ void scenes::lobby::render(const XrFrameState & frame_state)
 	update_server_list();
 
 	imgui_ctx->set_current();
-	if (!async_session.valid() && !next_scene && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup))
+	if (!spatial.capture_active() && current_tab != tab::spatial && !async_session.valid() && !next_scene && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopup))
 	{
 		if (auto intent = application::get_intent())
 		{
@@ -986,6 +996,9 @@ void scenes::lobby::render(const XrFrameState & frame_state)
 			new_gui_position = check_recenter_gesture(xr::spaces::palm_right, right, *head_position);
 	}
 
+	if (head_position && spatial.capture_active())
+		new_gui_position = head_position->first + glm::mat3_cast(head_position->second) * glm::vec3{0, -0.25f, -1.2f};
+
 	if (head_position and new_gui_position)
 	{
 		move_gui(head_position->first, *new_gui_position);
@@ -1063,11 +1076,31 @@ void scenes::lobby::render(const XrFrameState & frame_state)
 
 	renderer::animate(world, frame_state.predictedDisplayPeriod * 1.0e-9);
 
-	world.get<components::node>(lobby_entity).visible = not application::get_config().passthrough_enabled;
-
-	render_start(application::get_config().passthrough_enabled, frame_state.predictedDisplayTime);
-
-	const XrColor4f clear_color = application::get_config().passthrough_enabled ? XrColor4f{0, 0, 0, 0} : constants::lobby::sky_color;
+	if (spatial.markers_visible())
+	{
+		if (spatial_markers.empty())
+			for (size_t i = 0; i < wivrn::spatial::marker_count; ++i)
+				spatial_markers.push_back(add_gltf("assets://xyz-arrows.glb", layer_spatial).first);
+		for (size_t i = 0; i < spatial_markers.size(); ++i)
+		{
+			auto & node = world.get<components::node>(spatial_markers[i]);
+			const auto & marker = spatial.sample().markers[i].pose;
+			node.visible = (marker.flags & 3) == 3;
+			node.position = {marker.pose.position.x, marker.pose.position.y, marker.pose.position.z};
+			const auto & q = marker.pose.orientation;
+			node.orientation = {q.w, q.x, q.y, q.z};
+			node.scale = glm::vec3(.3f);
+		}
+	}
+	const bool passthrough = application::get_config().passthrough_enabled || spatial.capture_active();
+	world.get<components::node>(lobby_entity).visible = !passthrough;
+	// Capture temporarily enables passthrough without changing the user's environment preference.
+	if (passthrough)
+		session.enable_passthrough(system);
+	else
+		session.disable_passthrough();
+	render_start(passthrough, frame_state.predictedDisplayTime);
+	const XrColor4f clear_color = passthrough ? XrColor4f{0, 0, 0, 0} : constants::lobby::sky_color;
 	render_world(
 	        XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT,
 	        world_space,
@@ -1100,7 +1133,8 @@ void scenes::lobby::render(const XrFrameState & frame_state)
 	        width,
 	        height,
 	        composition_layer_depth_test_supported,
-	        composition_layer_depth_test_supported ? layer_rays : layer_rays | layer_controllers,
+	        (composition_layer_depth_test_supported ? layer_rays : layer_rays | layer_controllers) |
+	                (spatial.markers_visible() ? layer_spatial : 0),
 	        {0, 0, 0, 0});
 
 	if (composition_layer_depth_test_supported)
@@ -1364,6 +1398,7 @@ void scenes::lobby::setup_passthrough()
 
 void scenes::lobby::on_unfocused()
 {
+	spatial_markers.clear();
 	discover.reset();
 
 	renderer->wait_idle(); // Must be before the scene data because the renderer uses its descriptor sets

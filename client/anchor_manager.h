@@ -6,7 +6,7 @@
 
 namespace wivrn::anchor
 {
-// Owned and called exclusively by the stream's render/event thread.
+// Owned and called exclusively by the application's render/event thread.
 class manager
 {
 public:
