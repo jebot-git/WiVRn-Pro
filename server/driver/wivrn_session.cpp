@@ -593,11 +593,6 @@ void wivrn_session::operator()(const from_headset::tracking & tracking)
 	joystick_emulation.poll(os_monotonic_get_ns(),
 	                        (get_name(tracking.interaction_profiles[0]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 1u : 0u) |
 	                                (get_name(tracking.interaction_profiles[1]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 2u : 0u));
-	if (joystick_emulation.consume_menu_request(os_monotonic_get_ns()))
-	{
-		U_LOG_I("Opening WiVRn menu from both emulated thumbstick clicks");
-		send_control(to_headset::stream_tab_change{.tab = stream_tab::applications});
-	}
 	if (left == XRT_DEVICE_EXT_HAND_INTERACTION && emulated_joystick(0))
 		left = XRT_DEVICE_TOUCH_CONTROLLER;
 	if (right == XRT_DEVICE_EXT_HAND_INTERACTION && emulated_joystick(1))

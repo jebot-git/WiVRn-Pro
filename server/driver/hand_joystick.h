@@ -26,8 +26,6 @@ class hand_joystick
 	uint32_t hands = 0;
 	joystick_command command;
 	int64_t received = 0;
-	bool menu_armed = true;
-	int64_t menu_released_at = 0;
 	void disconnect();
 	void cleanup();
 
@@ -43,6 +41,5 @@ public:
 	~hand_joystick();
 	void poll(int64_t now, uint32_t hand_mask);
 	std::optional<value> get(unsigned hand, int64_t now) const;
-	bool consume_menu_request(int64_t now);
 };
 } // namespace wivrn

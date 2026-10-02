@@ -21,7 +21,8 @@ pub struct Pad {
 pub struct ThumbPad {
     since: Option<Duration>,
     local: Option<Affine3A>,
-    click_since: Option<Duration>,
+    click_touch: crate::hand_touch::TouchPress,
+    touch_clock: Option<Instant>,
     click_frame: Option<Affine3A>,
     clicked: bool,
     axes: Vec2,
@@ -104,14 +105,6 @@ impl ThumbPad {
         } else {
             0.82
         };
-        let thumb_length = (2..5).map(|i| p(i).distance(p(i + 1))).sum::<f32>();
-        let thumb_extended = thumb_length > 0.025
-            && p(5).distance(p(2)) / thumb_length
-                > if self.click_since.is_some() {
-                    0.65
-                } else {
-                    0.75
-                };
         let pointing = extension[0] > index_threshold
             && extension[1..].iter().filter(|v| **v < 0.65).count() >= 2;
         if pointing {
@@ -123,19 +116,12 @@ impl ThumbPad {
                 self.reset();
                 return None;
             }
-            // The circle is a button cue only. Extending the thumb debounces
-            // the click; relaxing it releases to the translucent pointing cue.
+            // Pointing only displays the button. Actual thumb contact with
+            // the displayed disc drives the click through touch hysteresis.
             self.local = None;
             self.since = None;
             self.armed = false;
             self.axes = Vec2::ZERO;
-            if thumb_extended {
-                let at = *self.click_since.get_or_insert(now);
-                self.clicked = now.saturating_sub(at) >= Duration::from_millis(150);
-            } else {
-                self.click_since = None;
-                self.clicked = false;
-            }
             let across = (p(7) - p(22)) / width;
             let along = p(10) - p(9);
             let along = along - across * along.dot(across);
@@ -161,9 +147,23 @@ impl ThumbPad {
                 self.click_frame =
                     Some(mount.inverse() * Affine3A::from_rotation_translation(rotation, p(10)));
             }
+            let frame = mount * self.click_frame.unwrap();
+            let radius = (width * 0.24).clamp(0.014, 0.020);
+            let tip = frame.inverse().transform_point3(p(5));
+            let thumb_radius = if j[5].radius.is_finite() {
+                j[5].radius.clamp(0.004, 0.014)
+            } else {
+                0.008
+            };
+            // Sphere-to-disc clearance includes both radial bounds and depth:
+            // merely projecting onto the circle from far away cannot click it.
+            let outside = (Vec2::new(tip.x, tip.y).length() - radius).max(0.0);
+            let clearance = Vec2::new(outside, tip.z).length() - thumb_radius;
+            let clock = *self.touch_clock.get_or_insert_with(Instant::now);
+            self.clicked = self.click_touch.update(clock + now, clearance.min(0.035));
             return Some(Pad {
-                frame: mount * self.click_frame.unwrap(),
-                radius: (width * 0.24).clamp(0.014, 0.020),
+                frame,
+                radius,
                 axes: Vec2::ZERO,
                 cursor: Vec2::ZERO,
                 armed: false,
@@ -171,7 +171,8 @@ impl ThumbPad {
             });
         }
         self.click_frame = None;
-        self.click_since = None;
+        self.click_touch = Default::default();
+        self.touch_clock = None;
         self.clicked = false;
         let tracked = |i: usize| {
             j[i].location_flags
@@ -776,84 +777,93 @@ mod tests {
         }
         j
     }
+    fn put_thumb(j: &mut xr::HandJointLocations, frame: Affine3A, local: Vec3) {
+        let v = frame.transform_point3(local);
+        j[5].pose.position = xr::Vector3f {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        };
+    }
     #[test]
-    fn finger_gun_cue_matches_click_and_never_sends_axes() {
+    fn finger_gun_requires_thumb_contact_and_releases_with_translucent_cue() {
         for mirror in [1.0, -1.0] {
             let mut j = gun_joints();
             for v in &mut j {
                 v.pose.position.x *= mirror;
             }
             let mut p = ThumbPad::default();
-            for ms in [0, 100, 149] {
-                assert!(
-                    p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY)
-                        .is_some_and(|pad| pad.button == Some(false) && pad.axes == Vec2::ZERO)
-                );
-                assert!(p.owns_hand() && !p.clicked());
+            let cue = p
+                .update(Duration::ZERO, Some(&j), Affine3A::IDENTITY)
+                .unwrap();
+            for ms in [100, 200, 300] {
+                let idle = p
+                    .update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY)
+                    .unwrap();
+                assert_eq!(idle.button, Some(false)); // Pose alone never clicks.
             }
-            for ms in [150, 200, 250, 350] {
-                assert!(
-                    p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY)
-                        .is_some_and(|pad| pad.button == Some(true) && pad.axes == Vec2::ZERO)
-                );
-                assert!(p.clicked() && p.axes == Vec2::ZERO);
-            }
-            p.update(
-                Duration::from_millis(370),
-                Some(&joints()),
-                Affine3A::IDENTITY,
-            );
-            assert!(!p.clicked());
-            // Re-entering the gun pose must debounce afresh.
-            p.update(Duration::from_millis(380), Some(&j), Affine3A::IDENTITY);
-            assert!(!p.clicked());
-            p.update(Duration::from_millis(480), Some(&j), Affine3A::IDENTITY);
-            p.update(Duration::from_millis(530), Some(&j), Affine3A::IDENTITY);
+            put_thumb(&mut j, cue.frame, Vec3::Z * 0.013);
+            let approaching = p
+                .update(Duration::from_millis(310), Some(&j), Affine3A::IDENTITY)
+                .unwrap();
+            assert_eq!(approaching.button, Some(false));
+            let pressed = p
+                .update(Duration::from_millis(335), Some(&j), Affine3A::IDENTITY)
+                .unwrap();
+            assert_eq!(pressed.button, Some(true));
+            assert!(p.clicked() && pressed.axes == Vec2::ZERO);
+            put_thumb(&mut j, cue.frame, Vec3::Z * 0.019); // Contact jitter.
+            p.update(Duration::from_millis(350), Some(&j), Affine3A::IDENTITY);
             assert!(p.clicked());
-            j[10].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
-            p.update(Duration::from_millis(550), Some(&j), Affine3A::IDENTITY);
+            put_thumb(&mut j, cue.frame, Vec3::Z * 0.04);
+            let released = p
+                .update(Duration::from_millis(370), Some(&j), Affine3A::IDENTITY)
+                .unwrap();
+            assert_eq!(released.button, Some(false));
+            assert!(!p.clicked() && released.axes == Vec2::ZERO);
+            // Aligned in depth but outside the disc is not a press.
+            put_thumb(&mut j, cue.frame, Vec3::new(cue.radius + 0.04, 0.0, 0.01));
+            for ms in [400, 450] {
+                p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY);
+                assert!(!p.clicked());
+            }
+            // A second touch gives a new press, then tracking loss releases it.
+            put_thumb(&mut j, cue.frame, Vec3::Z * 0.013);
+            p.update(Duration::from_millis(470), Some(&j), Affine3A::IDENTITY);
+            p.update(Duration::from_millis(495), Some(&j), Affine3A::IDENTITY);
+            assert!(p.clicked());
+            j[5].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
+            assert!(
+                p.update(Duration::from_millis(510), Some(&j), Affine3A::IDENTITY)
+                    .is_none()
+            );
             assert!(!p.clicked() && !p.owns_hand());
         }
     }
     #[test]
-    fn pad_to_click_clears_axes_and_stale_click_must_rearm() {
-        let mut p = ThumbPad::default();
-        activate(&mut p, &joints());
-        let j = gun_joints();
-        for ms in [160, 260, 310] {
-            assert!(
-                p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY)
-                    .is_some_and(|pad| pad.button.is_some() && pad.axes == Vec2::ZERO)
-            );
-        }
-        assert!(p.clicked() && p.local.is_none() && p.axes == Vec2::ZERO);
-        p.update(Duration::from_millis(500), Some(&j), Affine3A::IDENTITY);
-        assert!(!p.clicked());
-        p.update(Duration::from_millis(600), Some(&j), Affine3A::IDENTITY);
-        p.update(Duration::from_millis(650), Some(&j), Affine3A::IDENTITY);
-        assert!(p.clicked());
-        p.update(Duration::from_millis(660), None, Affine3A::IDENTITY);
-        assert!(!p.clicked() && !p.owns_hand());
-    }
-    #[test]
-    fn click_cue_returns_translucent_on_thumb_release() {
-        let mut p = ThumbPad::default();
+    fn contact_at_spawn_or_after_stream_gap_cannot_press() {
         let mut j = gun_joints();
-        for ms in [0, 100, 150] {
-            p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY);
-        }
-        assert!(p.clicked());
-        j[5].pose.position = j[2].pose.position;
+        let mut p = ThumbPad::default();
         let cue = p
-            .update(Duration::from_millis(170), Some(&j), Affine3A::IDENTITY)
+            .update(Duration::ZERO, Some(&j), Affine3A::IDENTITY)
             .unwrap();
-        assert_eq!(cue.button, Some(false));
-        assert!(!p.clicked() && cue.axes == Vec2::ZERO);
-        assert_eq!(
-            command_flags(true, [cue.button.is_none(), false], [p.clicked(), false]),
-            1
-        );
-        p.reset(); // Disabling Sticks/focus loss removes the cue and click.
+        put_thumb(&mut j, cue.frame, Vec3::Z * 0.01);
+        p.reset();
+        for ms in [10, 50, 100] {
+            p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY);
+            assert!(!p.clicked());
+        }
+        put_thumb(&mut j, cue.frame, Vec3::Z * 0.04);
+        p.update(Duration::from_millis(120), Some(&j), Affine3A::IDENTITY);
+        put_thumb(&mut j, cue.frame, Vec3::Z * 0.01);
+        p.update(Duration::from_millis(140), Some(&j), Affine3A::IDENTITY);
+        p.update(Duration::from_millis(165), Some(&j), Affine3A::IDENTITY);
+        assert!(p.clicked());
+        p.update(Duration::from_millis(400), Some(&j), Affine3A::IDENTITY);
+        assert!(!p.clicked());
+        p.update(Duration::from_millis(440), Some(&j), Affine3A::IDENTITY);
+        assert!(!p.clicked());
+        p.reset();
         assert!(!p.clicked() && !p.owns_hand());
     }
     #[test]
@@ -897,10 +907,12 @@ mod tests {
                 Affine3A::IDENTITY,
             );
             if pads[side].clicked() {
-                counts[side] += 1;
                 assert!(pad.is_some_and(|p| p.button == Some(true) && p.axes == Vec2::ZERO));
             }
             if let Some(pad) = pad {
+                if pad.button.is_some() {
+                    counts[side] += 1;
+                }
                 assert!(pad.axes.is_finite() && pad.axes.length() <= 1.0001);
                 if !pad.armed {
                     assert!(pad.axes.length() < 0.0001);
@@ -909,7 +921,7 @@ mod tests {
                 ranges[side][1] = ranges[side][1].max(pad.axes);
             }
         }
-        eprintln!("Gun-click replay samples {counts:?}, large-pad axis ranges {ranges:?}");
+        eprintln!("Finger-button cue replay samples {counts:?}, large-pad axis ranges {ranges:?}");
         assert!(
             counts.iter().all(|n| *n > 20),
             "trace must include both gun poses"

@@ -581,3 +581,28 @@ the Quest client and verified SessionRunning=true. The live gesture subsequently
 logged "Opening WiVRn menu from both emulated thumbstick clicks"; ClientTab
 changed to applications and the client reported XR_SESSION_STATE_VISIBLE,
 confirming the menu command reached and opened the headset UI.
+
+### Application-only thumb contact clicks (menu shortcut removed)
+
+Removed the two-click menu chord and all of its server state/tests at the user's
+request: the Quest menu retained simulated-controller mode and could not be
+closed with hands. Emulated clicks now only feed the running application; they
+never send a stream-tab/menu command. The stuck client menu was closed remotely.
+
+Extending the index now only displays its translucent circle. The thumb presses
+it through actual sphere-to-disc contact, accounting for both radial bounds and
+depth, using the tracked thumb radius. It reuses TouchPress from the watch and
+keyboard: 25 ms contact debounce, 4 mm press clearance and 14 mm release
+clearance. Appearing already in contact or recovering tracking requires a fresh
+withdrawal/approach. Opacity uses the resulting button state; axes remain zero.
+
+Thirty hand-input tests pass with saved-motion replay, including no click from
+pose alone, contact/hold/release on both hands, outside-disc rejection, tracking
+loss and contact-at-spawn/stale-input protection. The native application-click
+socket test also passes. The old recording verifies state invariants, not live
+comfort of thumb contact.
+
+Server and release-worker builds passed using the existing local libinput
+sysroot. Installed both and restarted the unified service; the Quest reconnected
+with SessionRunning=true and ClientTab=hidden. Live contact feel remains to be
+confirmed by the user.
