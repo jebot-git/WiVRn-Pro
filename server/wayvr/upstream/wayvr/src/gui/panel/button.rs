@@ -520,6 +520,14 @@ pub(super) fn setup_custom_button<S: 'static>(
                         Ok(EventResult::Consumed)
                     })
                 }
+                "::HandJoysticksToggle" => Box::new(move |common, data, app, _| {
+                    if !test_button(data) || !test_duration(&button, app) {
+                        return Ok(EventResult::Pass);
+                    }
+                    app.input_state.joysticks_enabled = !app.input_state.joysticks_enabled;
+                    button.set_sticky_state(common, app.input_state.joysticks_enabled);
+                    Ok(EventResult::Consumed)
+                }),
                 "::EditToggle" => Box::new(move |_common, data, app, _| {
                     if !test_button(data) || !test_duration(&button, app) {
                         return Ok(EventResult::Pass);

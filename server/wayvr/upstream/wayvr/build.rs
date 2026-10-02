@@ -4,6 +4,7 @@ use std::path::PathBuf;
 const SHADERS: &[(&str, ShaderKind)] = &[
     ("quad.vert", ShaderKind::Vertex),
     ("color.frag", ShaderKind::Fragment),
+    ("hand_pad.frag", ShaderKind::Fragment),
     ("grid.frag", ShaderKind::Fragment),
     ("screen.frag", ShaderKind::Fragment),
     ("simple.frag", ShaderKind::Fragment),
@@ -38,7 +39,11 @@ fn compile_shaders() {
     options.set_target_env(TargetEnv::Vulkan, EnvVersion::Vulkan1_3 as u32);
 
     for (name, kind) in SHADERS {
-        let path = shader_dir.join(name);
+        let path = if *name == "hand_pad.frag" {
+            PathBuf::from("../../hand_pad.frag")
+        } else {
+            shader_dir.join(name)
+        };
         println!("cargo:rerun-if-changed={}", path.display());
 
         let source = std::fs::read_to_string(&path)

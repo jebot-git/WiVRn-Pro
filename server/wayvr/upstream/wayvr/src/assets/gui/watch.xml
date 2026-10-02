@@ -129,7 +129,7 @@
             <Clock />
           </div>
 
-          <!-- Four buttons -->
+          <!-- Interaction buttons -->
           <div flex_direction="column" gap="8">
             <div gap="8">
               <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
@@ -147,6 +147,9 @@
                 <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
               </Button>
             </div>
+            <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
+              <label text="Sticks" size="22" weight="bold" />
+            </Button>
           </div>
         </rectangle>
 

@@ -277,3 +277,44 @@ Headset capture confirmed the reference was visible. The user confirmed it moves
 relative to the real room during the chord and stops correctly on release.
 The temporary reference application was stopped afterward; WiVRn-Pro remains
 running. The temporary application and capture are not included in the fork.
+
+### Mouse priority, hand joysticks and double-pinch reset
+
+Physical mouse or touchpad motion, wheel input and held buttons suppress hand
+ray/touch clicks and window manipulation. Cursor control returns after 1500 ms
+of inactivity and all physical buttons are released; held hand pinches must
+return to neutral before clicking again. Reading devices is passive, with no
+new grabs. WayVR's own virtual mouse is excluded. If device monitoring is
+unavailable, hand cursor input stays suppressed and the worker logs the reason.
+The existing input-group access on this machine provides device access.
+
+The built-in wrist has a **Sticks** toggle (off on worker startup). Hold a
+thumbs-up pose for 150 ms to create that hand's wrist-relative touchpad below
+the thumb. Thumb travel controls the corresponding standard Touch thumbstick
+axes; moving the whole wrist carries the pad without deflecting the stick.
+Opening two fingers, invalid tracking, loss of focus, disabling the toggle or
+worker exit releases input. A 150 ms server lease bounds stale axes. Physical
+controllers retain their input profile. Hand mode uses a private same-user
+SEQPACKET endpoint and raw hand-profile acknowledgements to avoid switching
+itself out of hand tracking when the runtime advertises virtual Touch sticks.
+Custom watch XML remains untouched; it can add `::HandJoysticksToggle`.
+
+Two short offhand thumb–index–middle pinches reset the playspace to the saved
+centre using WayVR's existing reset action. Each tap may last up to 300 ms,
+with up to 350 ms between the first release and second press. Movement over
+3 cm invalidates the tap, so ordinary space dragging does not reset the stage.
+
+All 30 WayVR release tests and the native joystick protocol/socket test pass,
+covering mouse button/idle ownership, capture loss, pad activation and carrying,
+axis bounds, both hands, opening, tracking loss, invalid samples, double taps,
+server lease expiry, physical-controller exclusion and disconnect/disable.
+The complete host build passes. New gesture ergonomics still need headset
+confirmation; prior successful gesture tests are recorded separately above.
+
+Installed to the existing WiVRn-Pro prefix and restarted the core service.
+The Quest reconnected; `SessionRunning` is true. WayVR reached FOCUSED and
+logged three readable passive pointer devices, both hand trackers and the
+connected joystick channel. Existing monitor-capture tokens, keyboard and
+OpenXR action configuration loaded, and Shora battery reports resumed. The
+full offline suite also passed (19 Python tests plus native geometry, wire,
+bridge, configuration and worker-supervisor tests).

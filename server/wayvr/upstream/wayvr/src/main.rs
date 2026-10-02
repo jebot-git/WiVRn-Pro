@@ -23,9 +23,24 @@ mod backend;
 mod config;
 mod graphics;
 mod gui;
+#[cfg(feature = "openxr")]
+#[path = "../../../hand_double_tap.rs"]
+mod hand_double_tap;
+#[cfg(feature = "openxr")]
+#[path = "../../../hand_input.rs"]
+mod hand_input;
+#[cfg(feature = "openxr")]
+#[path = "../../../hand_joystick.rs"]
+mod hand_joystick;
+#[path = "../../../hand_touch.rs"]
+mod hand_touch;
 mod ipc;
+#[path = "../../../mouse_priority.rs"]
+mod mouse_priority;
 mod overlays;
 mod shaders;
+#[path = "../../../shora_battery.rs"]
+mod shora_battery;
 mod state;
 mod subsystem;
 mod test;
@@ -33,13 +48,6 @@ mod windowing;
 #[cfg(test)]
 #[path = "../../../wivrn_tests.rs"]
 mod wivrn_tests;
-#[path = "../../../shora_battery.rs"]
-mod shora_battery;
-#[cfg(feature = "openxr")]
-#[path = "../../../hand_input.rs"]
-mod hand_input;
-#[path = "../../../hand_touch.rs"]
-mod hand_touch;
 
 use std::{
     path::PathBuf,

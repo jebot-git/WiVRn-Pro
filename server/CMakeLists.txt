@@ -121,6 +121,7 @@ if (WIVRN_BUILD_SERVER)
 
 			driver/app_pacer.cpp
 			driver/clock_offset.cpp
+			driver/hand_joystick.cpp
 			driver/spatial_bridge.cpp
 			driver/shora_bridge.cpp
 			tracking_worker.cpp
@@ -336,6 +337,7 @@ if (WIVRN_BUILD_SERVER_LIBRARY)
 endif()
 
 # Input validation must retain IEEE NaN/Inf checks despite the renderer fast-math default.
-set_source_files_properties(driver/spatial_bridge.cpp
+set_source_files_properties(driver/hand_joystick.cpp
+			driver/spatial_bridge.cpp
 			driver/shora_bridge.cpp
 			tracking_worker.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math")

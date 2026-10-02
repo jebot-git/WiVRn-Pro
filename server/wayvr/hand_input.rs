@@ -19,6 +19,7 @@ pub enum Gesture {
 #[derive(Default)]
 pub struct HandInput {
     space_drag_enabled: bool,
+    double_tap: crate::hand_double_tap::DoubleTap,
     gesture: Gesture,
     armed: bool,
     neutral_since: Option<Duration>,
@@ -35,6 +36,7 @@ pub struct Sample {
     pub wrist: Affine3A,
     pub ray: Option<Affine3A>,
     pub gesture: Gesture,
+    pub reset_space: bool,
 }
 
 fn position(p: xr::Vector3f) -> Vec3 {
@@ -81,7 +83,14 @@ impl HandInput {
             self.reset();
             return None;
         };
-        let result = self.sample(now, joints, native_aim, head, left);
+        let mut result = self.sample(now, joints, native_aim, head, left);
+        if let Some(sample) = result.as_mut() {
+            sample.reset_space = self.double_tap.update(
+                now,
+                sample.gesture == Gesture::SpaceDrag,
+                sample.wrist.translation.into(),
+            );
+        }
         if result.is_none() {
             self.reset();
         }
@@ -132,6 +141,7 @@ impl HandInput {
                 wrist,
                 ray: None,
                 gesture: Gesture::Neutral,
+                reset_space: false,
             });
         }
         let palm = head.inverse().transform_point3(p(0));
@@ -143,6 +153,7 @@ impl HandInput {
                 wrist,
                 ray: None,
                 gesture: Gesture::Neutral,
+                reset_space: false,
             });
         }
         let dt = self.last_sample.map_or(0.05, |at| {
@@ -208,6 +219,7 @@ impl HandInput {
             wrist,
             ray: Some(ray),
             gesture: self.gesture,
+            reset_space: false,
         })
     }
     fn update_gesture(&mut self, now: Duration, ratios: [f32; 3], extension: [f32; 4]) {

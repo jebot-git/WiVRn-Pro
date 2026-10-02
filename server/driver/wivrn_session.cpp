@@ -590,6 +590,13 @@ void wivrn_session::operator()(const from_headset::tracking & tracking)
 
 	auto left = (roles.left == -1 || roles.left == left_controller_index || roles.left == left_hand_interaction_index) ? get_name(tracking.interaction_profiles[0]) : XRT_DEVICE_INVALID;
 	auto right = (roles.right == -1 || roles.right == right_controller_index || roles.right == right_hand_interaction_index) ? get_name(tracking.interaction_profiles[1]) : XRT_DEVICE_INVALID;
+	joystick_emulation.poll(os_monotonic_get_ns(),
+	                        (get_name(tracking.interaction_profiles[0]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 1u : 0u) |
+	                                (get_name(tracking.interaction_profiles[1]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 2u : 0u));
+	if (left == XRT_DEVICE_EXT_HAND_INTERACTION && emulated_joystick(0))
+		left = XRT_DEVICE_TOUCH_CONTROLLER;
+	if (right == XRT_DEVICE_EXT_HAND_INTERACTION && emulated_joystick(1))
+		right = XRT_DEVICE_TOUCH_CONTROLLER;
 	if (left != roles.left_profile or right != roles.right_profile)
 	{
 		U_LOG_I("Updating interaction profiles: from \n"

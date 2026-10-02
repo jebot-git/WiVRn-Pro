@@ -38,6 +38,8 @@ pub(super) struct OpenXrInputSource {
     handsfree_pointer: OpenXrPointer,
     hand_trackers: [Option<xr::HandTracker>; 2],
     hand_input: [crate::hand_input::HandInput; 2],
+    thumb_pads: [crate::hand_joystick::ThumbPad; 2],
+    joystick_link: crate::hand_joystick::Link,
     hand_paths: [xr::Path; 2],
     started: Instant,
 }
@@ -326,6 +328,8 @@ impl OpenXrInputSource {
                 }
             }),
             hand_input: Default::default(),
+            thumb_pads: Default::default(),
+            joystick_link: Default::default(),
             hand_paths: [
                 xr.instance.string_to_path("/user/hand/left")?,
                 xr.instance.string_to_path("/user/hand/right")?,
@@ -335,6 +339,10 @@ impl OpenXrInputSource {
     }
 
     pub fn reset_hands(&mut self) {
+        self.joystick_link.disconnect();
+        for pad in &mut self.thumb_pads {
+            pad.reset();
+        }
         for hand in &mut self.hand_input {
             hand.reset();
         }
@@ -415,7 +423,8 @@ impl OpenXrInputSource {
                 let hand_mode = self.hand_trackers[i].is_some()
                     && (name.is_empty()
                         || name == "/interaction_profiles/ext/hand_interaction_ext"
-                        || name == "/interaction_profiles/khr/simple_controller");
+                        || name == "/interaction_profiles/khr/simple_controller"
+                        || self.joystick_link.native_hands() & (1 << i) != 0);
                 if pointer.hand_tracking != hand_mode {
                     log::info!(
                         "WayVR {} input: {}",
@@ -432,6 +441,8 @@ impl OpenXrInputSource {
                 pointer.hand_tracking = hand_mode;
                 pointer.wrist_pose = None;
                 pointer.index_tip = None;
+                pointer.joystick_pad = None;
+                pointer.joystick_owned = false;
                 if hand_mode {
                     let joints = if xr.focused && hmd_tracked {
                         xr.stage
@@ -453,6 +464,19 @@ impl OpenXrInputSource {
                     } else {
                         None
                     };
+                    if app.input_state.joysticks_enabled {
+                        pointer.joystick_pad = self.thumb_pads[i].update(
+                            self.started.elapsed(),
+                            joints.as_ref(),
+                            app.input_state.hmd,
+                        );
+                        pointer.joystick_owned = self.thumb_pads[i].owns_hand();
+                    } else {
+                        self.thumb_pads[i].reset();
+                    }
+                    if pointer.joystick_owned {
+                        self.hand_input[i].reset();
+                    }
                     let sample = self.hand_input[i].update(
                         self.started.elapsed(),
                         joints.as_ref(),
@@ -465,6 +489,7 @@ impl OpenXrInputSource {
                     pointer.tracked = false;
                     if let Some(sample) = sample {
                         pointer.wrist_pose = Some(sample.wrist);
+                        pointer.now.space_reset = sample.reset_space;
                         pointer.index_tip = joints.as_ref().and_then(|j| {
                             let tip = j[10];
                             let pos = glam::Vec3A::new(
@@ -499,7 +524,18 @@ impl OpenXrInputSource {
                         }
                     }
                 }
+                if pointer.joystick_owned {
+                    self.hand_input[i].reset();
+                    pointer.now = PointerState::default();
+                    pointer.index_tip = None;
+                }
+                if !hand_mode {
+                    self.thumb_pads[i].reset();
+                }
                 if !xr.focused || pointer.cancel_interaction {
+                    pointer.joystick_pad = None;
+                    pointer.joystick_owned = false;
+                    self.thumb_pads[i].reset();
                     pointer.now = PointerState::default();
                     pointer.tracked = false;
                 }
@@ -520,6 +556,8 @@ impl OpenXrInputSource {
                 pointer.handsfree = false;
                 pointer.wrist_pose = None;
                 pointer.index_tip = None;
+                pointer.joystick_pad = None;
+                pointer.joystick_owned = false;
             }
             for hand in &mut self.hand_input {
                 hand.reset();
@@ -548,6 +586,13 @@ impl OpenXrInputSource {
             )?;
         }
 
+        if !picking_focus.is_none() {
+            self.reset_hands();
+        }
+        self.joystick_link.exchange(
+            app.input_state.joysticks_enabled && xr.focused && picking_focus.is_none(),
+            app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
+        );
         app.session.config.handsfree_pointer = old_handsfree;
 
         Ok(())

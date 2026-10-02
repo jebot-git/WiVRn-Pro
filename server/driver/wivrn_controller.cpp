@@ -733,6 +733,24 @@ xrt_result_t wivrn_controller::update_inputs()
 {
 	std::lock_guard _{mutex};
 	inputs_array = inputs_staging;
+	if (name != XRT_DEVICE_EXT_HAND_INTERACTION)
+	{
+		if (auto value = cnx->emulated_joystick(joints.hand_id))
+		{
+			auto & stick = inputs_array[WIVRN_CONTROLLER_THUMBSTICK];
+			stick.active = true;
+			stick.timestamp = value->time;
+			stick.value.vec2 = {value->axes[0], value->axes[1]};
+			auto & touch = inputs_array[WIVRN_CONTROLLER_THUMBSTICK_TOUCH];
+			touch.active = true;
+			touch.timestamp = value->time;
+			touch.value.boolean = value->touched;
+			auto & click = inputs_array[WIVRN_CONTROLLER_THUMBSTICK_CLICK];
+			click.active = true;
+			click.timestamp = value->time;
+			click.value.boolean = false;
+		}
+	}
 	return XRT_SUCCESS;
 }
 

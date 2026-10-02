@@ -77,6 +77,8 @@ pub struct InputState {
     disable_lerp_until: Instant,
     /// The watch hand is the offhand for the hand-tracked space-drag chord.
     pub space_drag_hand: usize,
+    pub mouse_priority: crate::mouse_priority::MousePriority,
+    pub joysticks_enabled: bool,
     pub head_yaw_total: f64,
     head_last_yaw: Option<f64>,
 }
@@ -94,6 +96,8 @@ impl InputState {
             picking_focus: FocusPickState::None,
             disable_lerp_until: Instant::now(),
             space_drag_hand: 0,
+            mouse_priority: Default::default(),
+            joysticks_enabled: false,
             head_yaw_total: 0.0,
             head_last_yaw: None,
         }
@@ -355,6 +359,9 @@ pub struct Pointer {
     pub hand_tracking: bool,
     pub wrist_pose: Option<Affine3A>,
     pub index_tip: Option<Vec3A>,
+    #[cfg(feature = "openxr")]
+    pub joystick_pad: Option<crate::hand_joystick::Pad>,
+    pub joystick_owned: bool,
     touch_hit: Option<RayHit>,
     touch_press: crate::hand_touch::TouchPress,
     touch_needs_neutral: bool,
@@ -380,6 +387,9 @@ impl Pointer {
             hand_tracking: false,
             wrist_pose: None,
             index_tip: None,
+            #[cfg(feature = "openxr")]
+            joystick_pad: None,
+            joystick_owned: false,
             touch_hit: None,
             touch_press: Default::default(),
             touch_needs_neutral: false,
@@ -675,7 +685,10 @@ where
     }
     handle_no_hit(idx, hovered, overlays, app);
     if let Some(server) = app.wvr_server.as_mut() {
-        server.clear_dnd_focus(idx);
+        if !(app.input_state.pointers[idx].hand_tracking && app.input_state.mouse_priority.active())
+        {
+            server.clear_dnd_focus(idx);
+        }
     }
     app.input_state.pointers[idx].before = PointerState::default();
 }
@@ -694,6 +707,13 @@ where
         release_pointer(idx, overlays, app);
         app.input_state.pointers[idx].now.space_drag = true;
         app.input_state.pointers[idx].tracked = true;
+        return (None, None);
+    }
+    if app.input_state.pointers[idx].joystick_owned
+        || (app.input_state.pointers[idx].hand_tracking && app.input_state.mouse_priority.active())
+    {
+        release_pointer(idx, overlays, app);
+        app.input_state.pointers[idx].touch_needs_neutral = true;
         return (None, None);
     }
     if !app.input_state.pointers[idx].cancel_interaction {

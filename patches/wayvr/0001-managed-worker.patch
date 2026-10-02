@@ -33,7 +33,7 @@
  }
 --- a/wayvr/build.rs
 +++ b/wayvr/build.rs
-@@ -1,6 +1,5 @@
+@@ -1,10 +1,10 @@
 -use regex::Regex;
  use shaderc::{Compiler, EnvVersion, ShaderKind, TargetEnv};
 -use std::{path::PathBuf, process::Command};
@@ -41,7 +41,12 @@
 
  const SHADERS: &[(&str, ShaderKind)] = &[
      ("quad.vert", ShaderKind::Vertex),
-@@ -16,7 +15,7 @@
+     ("color.frag", ShaderKind::Fragment),
++    ("hand_pad.frag", ShaderKind::Fragment),
+     ("grid.frag", ShaderKind::Fragment),
+     ("screen.frag", ShaderKind::Fragment),
+     ("simple.frag", ShaderKind::Fragment),
+@@ -16,7 +16,7 @@
  fn main() {
      compile_shaders();
 
@@ -50,7 +55,20 @@
 
      match std::env::var("GITHUB_JOB").as_deref() {
          Ok("make_release") => {
-@@ -51,26 +50,3 @@
+@@ -39,7 +39,11 @@
+     options.set_target_env(TargetEnv::Vulkan, EnvVersion::Vulkan1_3 as u32);
+
+     for (name, kind) in SHADERS {
+-        let path = shader_dir.join(name);
++        let path = if *name == "hand_pad.frag" {
++            PathBuf::from("../../hand_pad.frag")
++        } else {
++            shader_dir.join(name)
++        };
+         println!("cargo:rerun-if-changed={}", path.display());
+
+         let source = std::fs::read_to_string(&path)
+@@ -51,26 +55,3 @@
              .unwrap_or_else(|e| panic!("failed to write compiled shader {name}: {e}"));
      }
  }
@@ -88,32 +106,58 @@
        <!-- All other elements inside the container -->
        <div flex_direction="column" gap="8" min_width="300">
          <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
+@@ -127,7 +129,7 @@
+             <Clock />
+           </div>
+
+-          <!-- Four buttons -->
++          <!-- Interaction buttons -->
+           <div flex_direction="column" gap="8">
+             <div gap="8">
+               <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
+@@ -145,6 +147,9 @@
+                 <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
+               </Button>
+             </div>
++            <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
++              <label text="Sticks" size="22" weight="bold" />
++            </Button>
+           </div>
+         </rectangle>
+
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
-@@ -75,6 +75,8 @@
+@@ -75,6 +75,10 @@
      pub picking_focus: FocusPickState,
      processes: Vec<Child>,
      disable_lerp_until: Instant,
 +    /// The watch hand is the offhand for the hand-tracked space-drag chord.
 +    pub space_drag_hand: usize,
++    pub mouse_priority: crate::mouse_priority::MousePriority,
++    pub joysticks_enabled: bool,
      pub head_yaw_total: f64,
      head_last_yaw: Option<f64>,
  }
-@@ -91,6 +93,7 @@
+@@ -91,6 +95,9 @@
              handsfree_state: PointerState::default(),
              picking_focus: FocusPickState::None,
              disable_lerp_until: Instant::now(),
 +            space_drag_hand: 0,
++            mouse_priority: Default::default(),
++            joysticks_enabled: false,
              head_yaw_total: 0.0,
              head_last_yaw: None,
          }
-@@ -349,6 +352,13 @@
+@@ -349,6 +356,16 @@
      pub(super) interaction: InteractionState,
      pub tracked: bool,
      pub handsfree: bool,
 +    pub hand_tracking: bool,
 +    pub wrist_pose: Option<Affine3A>,
 +    pub index_tip: Option<Vec3A>,
++    #[cfg(feature = "openxr")]
++    pub joystick_pad: Option<crate::hand_joystick::Pad>,
++    pub joystick_owned: bool,
 +    touch_hit: Option<RayHit>,
 +    touch_press: crate::hand_touch::TouchPress,
 +    touch_needs_neutral: bool,
@@ -121,13 +165,16 @@
      /// distance of the most recent ray hit on a wayland client window, used for drag n drop
      pub last_wvr_hit_distance: Option<f32>,
  }
-@@ -367,8 +377,32 @@
+@@ -367,8 +384,35 @@
              interaction: InteractionState::default(),
              tracked: false,
              handsfree: false,
 +            hand_tracking: false,
 +            wrist_pose: None,
 +            index_tip: None,
++            #[cfg(feature = "openxr")]
++            joystick_pad: None,
++            joystick_owned: false,
 +            touch_hit: None,
 +            touch_press: Default::default(),
 +            touch_needs_neutral: false,
@@ -154,7 +201,7 @@
      }
 
      pub const fn hand(&self) -> Option<LeftRight> {
-@@ -451,6 +485,9 @@
+@@ -451,6 +495,9 @@
      maybe_hit: Option<(PointerHit, RayHit)>,
      hmd: &Affine3A,
  ) {
@@ -164,7 +211,7 @@
      let Some((hit, raw_hit)) = maybe_hit else {
          return;
      };
-@@ -523,6 +560,126 @@
+@@ -523,6 +570,129 @@
      [hits[0].1, hits[1].1]
  }
 
@@ -283,7 +330,10 @@
 +    }
 +    handle_no_hit(idx, hovered, overlays, app);
 +    if let Some(server) = app.wvr_server.as_mut() {
-+        server.clear_dnd_focus(idx);
++        if !(app.input_state.pointers[idx].hand_tracking && app.input_state.mouse_priority.active())
++        {
++            server.clear_dnd_focus(idx);
++        }
 +    }
 +    app.input_state.pointers[idx].before = PointerState::default();
 +}
@@ -291,7 +341,7 @@
  fn interact_hand<O>(
      idx: usize,
      overlays: &mut OverlayWindowManager<O>,
-@@ -531,15 +688,23 @@
+@@ -531,15 +701,30 @@
  where
      O: Default,
  {
@@ -301,6 +351,13 @@
 +        release_pointer(idx, overlays, app);
 +        app.input_state.pointers[idx].now.space_drag = true;
 +        app.input_state.pointers[idx].tracked = true;
++        return (None, None);
++    }
++    if app.input_state.pointers[idx].joystick_owned
++        || (app.input_state.pointers[idx].hand_tracking && app.input_state.mouse_priority.active())
++    {
++        release_pointer(idx, overlays, app);
++        app.input_state.pointers[idx].touch_needs_neutral = true;
 +        return (None, None);
 +    }
 +    if !app.input_state.pointers[idx].cancel_interaction {
@@ -322,7 +379,7 @@
 
      // already grabbing, ignore everything else
      if let Some(grab_data) = pointer.interaction.grabbed {
-@@ -689,6 +854,9 @@
+@@ -689,6 +874,9 @@
      if let Some(hovered_id) = hovered_id
          && let Some(hovered) = overlays.mut_by_id(hovered_id)
      {
@@ -332,7 +389,7 @@
          log::debug!("{} on_left (no hit)", hovered.config.name);
          hovered.config.backend.on_left(app, pointer_idx);
          hovered.hover_pointers[pointer_idx] = false;
-@@ -799,9 +967,19 @@
+@@ -799,9 +987,19 @@
      let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
 
      for (id, overlay) in overlays.iter() {
@@ -352,7 +409,7 @@
          if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
              continue;
          }
-@@ -817,6 +995,9 @@
+@@ -817,6 +1015,9 @@
          }
      }
 
@@ -362,7 +419,7 @@
      hits.sort_by(|a, b| a.dist.total_cmp(&b.dist));
 
      for hit in hits {
-@@ -1135,3 +1316,77 @@
+@@ -1135,3 +1336,77 @@
          dist,
      })
  }
@@ -461,18 +518,20 @@
      } else {
 --- a/wayvr/src/backend/openxr/input.rs
 +++ b/wayvr/src/backend/openxr/input.rs
-@@ -36,6 +36,10 @@
+@@ -36,6 +36,12 @@
      physical_inputs: Vec<PhysicalInput>,
      pointers: [OpenXrPointer; 2],
      handsfree_pointer: OpenXrPointer,
 +    hand_trackers: [Option<xr::HandTracker>; 2],
 +    hand_input: [crate::hand_input::HandInput; 2],
++    thumb_pads: [crate::hand_joystick::ThumbPad; 2],
++    joystick_link: crate::hand_joystick::Link,
 +    hand_paths: [xr::Path; 2],
 +    started: Instant,
  }
 
  pub(super) struct OpenXrPointer {
-@@ -264,7 +268,25 @@
+@@ -264,7 +270,25 @@
          let mut right_source = OpenXrHandSource::new(&mut action_set, "right")?;
          let mut fallback_source = OpenXrHandSource::new(&mut action_set, "handsfree")?;
 
@@ -499,7 +558,7 @@
          let (physical_inputs, physical_input_map) =
              create_physical_inputs(&action_set, &xr.instance, &profiles)?;
 
-@@ -288,7 +310,34 @@
+@@ -288,7 +312,40 @@
                  OpenXrPointer::new(xr, right_source)?,
              ],
              handsfree_pointer: OpenXrPointer::new(xr, fallback_source)?,
@@ -519,6 +578,8 @@
 +                }
 +            }),
 +            hand_input: Default::default(),
++            thumb_pads: Default::default(),
++            joystick_link: Default::default(),
 +            hand_paths: [
 +                xr.instance.string_to_path("/user/hand/left")?,
 +                xr.instance.string_to_path("/user/hand/right")?,
@@ -528,13 +589,17 @@
 +    }
 +
 +    pub fn reset_hands(&mut self) {
++        self.joystick_link.disconnect();
++        for pad in &mut self.thumb_pads {
++            pad.reset();
++        }
 +        for hand in &mut self.hand_input {
 +            hand.reset();
 +        }
      }
 
      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
-@@ -348,6 +397,7 @@
+@@ -348,6 +405,7 @@
          if picking_focus.is_none() {
              let should_disable_lerp = app.input_state.should_disable_lerp();
              for i in 0..2 {
@@ -542,7 +607,7 @@
                  let pointer = &mut app.input_state.pointers[i];
                  self.pointers[i].update(
                      pointer,
-@@ -356,6 +406,103 @@
+@@ -356,6 +414,131 @@
                      !should_disable_lerp,
                      physical_inputs,
                  )?;
@@ -555,7 +620,8 @@
 +                let hand_mode = self.hand_trackers[i].is_some()
 +                    && (name.is_empty()
 +                        || name == "/interaction_profiles/ext/hand_interaction_ext"
-+                        || name == "/interaction_profiles/khr/simple_controller");
++                        || name == "/interaction_profiles/khr/simple_controller"
++                        || self.joystick_link.native_hands() & (1 << i) != 0);
 +                if pointer.hand_tracking != hand_mode {
 +                    log::info!(
 +                        "WayVR {} input: {}",
@@ -572,6 +638,8 @@
 +                pointer.hand_tracking = hand_mode;
 +                pointer.wrist_pose = None;
 +                pointer.index_tip = None;
++                pointer.joystick_pad = None;
++                pointer.joystick_owned = false;
 +                if hand_mode {
 +                    let joints = if xr.focused && hmd_tracked {
 +                        xr.stage
@@ -593,6 +661,19 @@
 +                    } else {
 +                        None
 +                    };
++                    if app.input_state.joysticks_enabled {
++                        pointer.joystick_pad = self.thumb_pads[i].update(
++                            self.started.elapsed(),
++                            joints.as_ref(),
++                            app.input_state.hmd,
++                        );
++                        pointer.joystick_owned = self.thumb_pads[i].owns_hand();
++                    } else {
++                        self.thumb_pads[i].reset();
++                    }
++                    if pointer.joystick_owned {
++                        self.hand_input[i].reset();
++                    }
 +                    let sample = self.hand_input[i].update(
 +                        self.started.elapsed(),
 +                        joints.as_ref(),
@@ -605,6 +686,7 @@
 +                    pointer.tracked = false;
 +                    if let Some(sample) = sample {
 +                        pointer.wrist_pose = Some(sample.wrist);
++                        pointer.now.space_reset = sample.reset_space;
 +                        pointer.index_tip = joints.as_ref().and_then(|j| {
 +                            let tip = j[10];
 +                            let pos = glam::Vec3A::new(
@@ -639,14 +721,25 @@
 +                        }
 +                    }
 +                }
++                if pointer.joystick_owned {
++                    self.hand_input[i].reset();
++                    pointer.now = PointerState::default();
++                    pointer.index_tip = None;
++                }
++                if !hand_mode {
++                    self.thumb_pads[i].reset();
++                }
 +                if !xr.focused || pointer.cancel_interaction {
++                    pointer.joystick_pad = None;
++                    pointer.joystick_owned = false;
++                    self.thumb_pads[i].reset();
 +                    pointer.now = PointerState::default();
 +                    pointer.tracked = false;
 +                }
                  any_tracked |= pointer.tracked;
              }
          } else {
-@@ -371,10 +518,25 @@
+@@ -371,10 +554,27 @@
                  pointer.now = PointerState::default();
                  pointer.tracked = false;
                  pointer.handsfree = false;
@@ -656,6 +749,8 @@
 -        if !picking_focus.is_none() || !any_tracked {
 +                pointer.wrist_pose = None;
 +                pointer.index_tip = None;
++                pointer.joystick_pad = None;
++                pointer.joystick_owned = false;
 +            }
 +            for hand in &mut self.hand_input {
 +                hand.reset();
@@ -676,9 +771,32 @@
              self.handsfree_pointer.update_handsfree(
                  &mut app.input_state.pointers[0],
                  xr,
+@@ -386,6 +586,13 @@
+             )?;
+         }
+
++        if !picking_focus.is_none() {
++            self.reset_hands();
++        }
++        self.joystick_link.exchange(
++            app.input_state.joysticks_enabled && xr.focused && picking_focus.is_none(),
++            app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
++        );
+         app.session.config.handsfree_pointer = old_handsfree;
+
+         Ok(())
 --- a/wayvr/src/backend/openxr/mod.rs
 +++ b/wayvr/src/backend/openxr/mod.rs
-@@ -55,6 +55,7 @@
+@@ -39,6 +39,8 @@
+ };
+
+ mod blocker;
++#[path = "../../../../../hand_pad.rs"]
++mod hand_pad;
+ mod helpers;
+ mod input;
+ mod lines;
+@@ -55,6 +57,7 @@
      session: xr::Session<xr::Vulkan>,
      predicted_display_time: xr::Time,
      fps: f32,
@@ -686,7 +804,7 @@
      stage: Arc<xr::Space>,
      view: Arc<xr::Space>,
      extra_exts: ExtraExts,
-@@ -147,6 +148,7 @@
+@@ -147,6 +150,7 @@
          session,
          predicted_display_time: xr::Time::from_nanos(0),
          fps: 30.0,
@@ -694,7 +812,15 @@
          stage: Arc::new(stage),
          view: Arc::new(view),
          extra_exts,
-@@ -203,6 +205,15 @@
+@@ -154,6 +158,7 @@
+
+     let mut skybox: Option<Skybox> = None;
+
++    let mut hand_pads = hand_pad::HandPads::new(&xr_state, &app)?;
+     let pointer_lines = [
+         lines.allocate(&xr_state, &app)?,
+         lines.allocate(&xr_state, &app)?,
+@@ -203,6 +208,17 @@
                      // Session state change is where we can begin and end sessions, as well as
                      // find quit messages!
                      log::info!("entered state {:?}", e.state());
@@ -705,12 +831,14 @@
 +                            crate::backend::input::release_pointer(i, &mut overlays, &mut app);
 +                            app.input_state.pointers[i].wrist_pose = None;
 +                            app.input_state.pointers[i].index_tip = None;
++                            app.input_state.pointers[i].joystick_pad = None;
++                            app.input_state.pointers[i].joystick_owned = false;
 +                        }
 +                    }
                      match e.state() {
                          xr::SessionState::READY => {
                              xr_state.session.begin(VIEW_TYPE)?;
-@@ -291,6 +302,12 @@
+@@ -291,6 +307,14 @@
          };
 
          if !xr_frame_state.should_render {
@@ -719,13 +847,17 @@
 +                crate::backend::input::release_pointer(i, &mut overlays, &mut app);
 +                app.input_state.pointers[i].wrist_pose = None;
 +                app.input_state.pointers[i].index_tip = None;
++                app.input_state.pointers[i].joystick_pad = None;
++                app.input_state.pointers[i].joystick_owned = false;
 +            }
              log::trace!("xrEndFrame");
              frame_stream.end(
                  xr_frame_state.predicted_display_time,
-@@ -301,6 +318,25 @@
+@@ -300,7 +324,27 @@
+             continue 'main_loop;
          }
 
++        app.input_state.mouse_priority.poll();
          app.input_state.pre_update();
 +        app.input_state.space_drag_hand = overlays
 +            .iter()
@@ -749,6 +881,82 @@
          input_source.update(&xr_state, &mut app)?;
          app.input_state.post_update(&app.session);
 
+@@ -452,6 +496,7 @@
+         }
+
+         lines.render(&app, &mut futures)?;
++        hand_pads.render(&app, &mut futures)?;
+         futures.wait()?;
+         // End rendering
+
+@@ -485,7 +530,11 @@
+             }
+         }
+
+-        for layer in lines.present(&xr_state)? {
++        for layer in hand_pads
++            .present(&xr_state)?
++            .into_iter()
++            .chain(lines.present(&xr_state)?)
++        {
+             layers.push((0.0, layer));
+         }
+         // End layer composition
+--- a/wayvr/src/backend/wayvr/mod.rs
++++ b/wayvr/src/backend/wayvr/mod.rs
+@@ -915,6 +915,7 @@
+                     }
+                 }
+                 input_capture::CapturedEvent::PointerButton { button, pressed } => {
++                    input_state.mouse_priority.button(button as u16, pressed);
+                     let Some(mouse_index) = Self::button_to_mouse_index(button) else {
+                         continue;
+                     };
+@@ -942,6 +943,9 @@
+                     dx_raw,
+                     dy_raw,
+                 } => {
++                    if dx != 0.0 || dy != 0.0 {
++                        input_state.mouse_priority.activity();
++                    }
+                     mouse_delta += DVec2 { x: dx, y: dy };
+                     mouse_delta_raw += DVec2 {
+                         x: dx_raw,
+@@ -952,6 +956,9 @@
+                     horizontal_v120,
+                     vertical_v120,
+                 } => {
++                    if horizontal_v120 != 0 || vertical_v120 != 0 {
++                        input_state.mouse_priority.activity();
++                    }
+                     let mut delta = WheelDelta {
+                         x: horizontal_v120 as f32,
+                         y: vertical_v120 as f32,
+@@ -974,6 +981,7 @@
+                     }
+                 }
+                 input_capture::CapturedEvent::Ungrabbed => {
++                    input_state.mouse_priority.clear_capture();
+                     hid_wrapper.inner.send_key(hid::VirtualKey::LSuper, false);
+                     hid_wrapper.inner.send_key(hid::VirtualKey::RSuper, false);
+                     self.manager.release_all_keys();
+--- a/wayvr/src/gui/panel/button.rs
++++ b/wayvr/src/gui/panel/button.rs
+@@ -520,6 +520,14 @@
+                         Ok(EventResult::Consumed)
+                     })
+                 }
++                "::HandJoysticksToggle" => Box::new(move |common, data, app, _| {
++                    if !test_button(data) || !test_duration(&button, app) {
++                        return Ok(EventResult::Pass);
++                    }
++                    app.input_state.joysticks_enabled = !app.input_state.joysticks_enabled;
++                    button.set_sticky_state(common, app.input_state.joysticks_enabled);
++                    Ok(EventResult::Consumed)
++                }),
+                 "::EditToggle" => Box::new(move |_common, data, app, _| {
+                     if !test_button(data) || !test_duration(&button, app) {
+                         return Ok(EventResult::Pass);
 --- a/wayvr/src/gui/panel/label.rs
 +++ b/wayvr/src/gui/panel/label.rs
 @@ -52,6 +52,13 @@
@@ -767,24 +975,39 @@
                  log_missing_attrib(parser_state, TAG, "_device");
 --- a/wayvr/src/main.rs
 +++ b/wayvr/src/main.rs
-@@ -30,6 +30,16 @@
+@@ -23,13 +23,31 @@
+ mod config;
+ mod graphics;
+ mod gui;
++#[cfg(feature = "openxr")]
++#[path = "../../../hand_double_tap.rs"]
++mod hand_double_tap;
++#[cfg(feature = "openxr")]
++#[path = "../../../hand_input.rs"]
++mod hand_input;
++#[cfg(feature = "openxr")]
++#[path = "../../../hand_joystick.rs"]
++mod hand_joystick;
++#[path = "../../../hand_touch.rs"]
++mod hand_touch;
+ mod ipc;
++#[path = "../../../mouse_priority.rs"]
++mod mouse_priority;
+ mod overlays;
+ mod shaders;
++#[path = "../../../shora_battery.rs"]
++mod shora_battery;
+ mod state;
  mod subsystem;
  mod test;
  mod windowing;
 +#[cfg(test)]
 +#[path = "../../../wivrn_tests.rs"]
 +mod wivrn_tests;
-+#[path = "../../../shora_battery.rs"]
-+mod shora_battery;
-+#[cfg(feature = "openxr")]
-+#[path = "../../../hand_input.rs"]
-+mod hand_input;
-+#[path = "../../../hand_touch.rs"]
-+mod hand_touch;
 
  use std::{
      path::PathBuf,
-@@ -184,6 +194,9 @@
+@@ -184,6 +202,9 @@
 
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
@@ -840,13 +1063,22 @@
              && (!app.session.config.focus_follows_mouse_mode
                  || app.input_state.pointers[hit.pointer].now.move_mouse)
          {
-@@ -328,18 +328,16 @@
+@@ -328,18 +328,20 @@
          }
 
          if pressed {
 -            set_next_move(app.session.config.click_freeze_time_ms as _);
 -        }
 -
+-        app.hid_provider.inner.send_button(btn, pressed);
+-
+-        if !pressed {
+-            return;
+-        }
+-        let pos = self.mouse_transform.transform_point2(hit.uv);
+-        app.hid_provider
+-            .inner
+-            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
 +            if !app.input_state.pointers[hit.pointer].hand_tracking {
 +                set_next_move(app.session.config.click_freeze_time_ms as _);
 +            }
@@ -856,21 +1088,42 @@
 +                .inner
 +                .mouse_move(DVec2::new(pos.x as _, pos.y as _));
 +        }
-         app.hid_provider.inner.send_button(btn, pressed);
--
--        if !pressed {
--            return;
--        }
--        let pos = self.mouse_transform.transform_point2(hit.uv);
--        app.hid_provider
--            .inner
--            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
++        // Captured physical events share this virtual device. An ordinary
++        // physical mouse has its own device, so always release our own button.
++        if pressed || !app.input_state.mouse_priority.captured_button_held(btn) {
++            app.hid_provider.inner.send_button(btn, pressed);
++        }
      }
 
      fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {
 --- a/wayvr/src/overlays/wayvr.rs
 +++ b/wayvr/src/overlays/wayvr.rs
-@@ -1020,7 +1020,11 @@
+@@ -1003,6 +1003,24 @@
+             return;
+         };
+
++        let physical_button = match hit.mode {
++            input::PointerMode::Right => 0x111,
++            input::PointerMode::Middle => 0x112,
++            _ => 0x110,
++        };
++        if !pressed
++            && app.input_state.pointers[hit.pointer].hand_tracking
++            && app.input_state.mouse_priority.active()
++        {
++            self.popup_outside_button = None;
++            if let Some(server) = app.wvr_server.as_mut() {
++                server.set_vr_pointer_button(hit.pointer, false);
++                if !app.input_state.mouse_priority.button_held(physical_button) {
++                    server.send_dnd_release(index);
++                }
++            }
++            return;
++        }
+         if let Some(wvr_server) = app.wvr_server.as_mut() {
+             if wvr_server.dnd_active() && !wvr_server.dnd_active_for_pointer(hit.pointer) {
+                 return;
+@@ -1020,7 +1038,11 @@
 
          let target = ctx.hit_target(hit);
          let outside_pos = ctx.unclamped_client_pos_from_hit(hit);
@@ -883,7 +1136,7 @@
 
          // if the press was consumed to dismiss a popup, consume the matching release too.
          if !pressed && self.popup_outside_button == Some(index) {
-@@ -1051,7 +1055,11 @@
+@@ -1051,7 +1073,11 @@
                  self.popup_outside_button = Some(index);
              }
 
@@ -896,7 +1149,7 @@
              app.wvr_server.as_mut().unwrap().send_mouse_button(
                  PointerFocusTarget::None,
                  outside_pos,
-@@ -1094,7 +1102,11 @@
+@@ -1094,7 +1120,11 @@
              }
 
              Some(WvrHitTarget::Toplevel { pos }) => {
@@ -909,6 +1162,33 @@
                  let wvr_server = app.wvr_server.as_mut().unwrap();
 
                  wvr_server.send_mouse_button(
+--- a/wayvr/src/shaders/mod.rs
++++ b/wayvr/src/shaders/mod.rs
+@@ -31,6 +31,24 @@
+         super::load(
+             gfx,
+             include_bytes!(concat!(env!("OUT_DIR"), "/color.frag.spv")),
++            ShaderStage::Fragment,
++            &[DescriptorBinding::new(
++                0,
++                0,
++                DescriptorType::UniformBuffer,
++                ShaderStage::Fragment,
++            )],
++        )
++    }
++}
++
++pub mod frag_hand_pad {
++    use super::{Arc, DescriptorBinding, DescriptorType, ShaderModule, ShaderStage, WGfx};
++
++    pub fn load(gfx: &WGfx) -> anyhow::Result<Arc<ShaderModule>> {
++        super::load(
++            gfx,
++            include_bytes!(concat!(env!("OUT_DIR"), "/hand_pad.frag.spv")),
+             ShaderStage::Fragment,
+             &[DescriptorBinding::new(
+                 0,
 --- a/wayvr/src/state.rs
 +++ b/wayvr/src/state.rs
 @@ -55,6 +55,7 @@

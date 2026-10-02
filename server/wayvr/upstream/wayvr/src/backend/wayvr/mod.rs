@@ -915,6 +915,7 @@ impl WvrServerState {
                     }
                 }
                 input_capture::CapturedEvent::PointerButton { button, pressed } => {
+                    input_state.mouse_priority.button(button as u16, pressed);
                     let Some(mouse_index) = Self::button_to_mouse_index(button) else {
                         continue;
                     };
@@ -942,6 +943,9 @@ impl WvrServerState {
                     dx_raw,
                     dy_raw,
                 } => {
+                    if dx != 0.0 || dy != 0.0 {
+                        input_state.mouse_priority.activity();
+                    }
                     mouse_delta += DVec2 { x: dx, y: dy };
                     mouse_delta_raw += DVec2 {
                         x: dx_raw,
@@ -952,6 +956,9 @@ impl WvrServerState {
                     horizontal_v120,
                     vertical_v120,
                 } => {
+                    if horizontal_v120 != 0 || vertical_v120 != 0 {
+                        input_state.mouse_priority.activity();
+                    }
                     let mut delta = WheelDelta {
                         x: horizontal_v120 as f32,
                         y: vertical_v120 as f32,
@@ -974,6 +981,7 @@ impl WvrServerState {
                     }
                 }
                 input_capture::CapturedEvent::Ungrabbed => {
+                    input_state.mouse_priority.clear_capture();
                     hid_wrapper.inner.send_key(hid::VirtualKey::LSuper, false);
                     hid_wrapper.inner.send_key(hid::VirtualKey::RSuper, false);
                     self.manager.release_all_keys();

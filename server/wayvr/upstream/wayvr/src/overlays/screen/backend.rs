@@ -337,7 +337,11 @@ impl OverlayBackend for ScreenBackend {
                 .inner
                 .mouse_move(DVec2::new(pos.x as _, pos.y as _));
         }
-        app.hid_provider.inner.send_button(btn, pressed);
+        // Captured physical events share this virtual device. An ordinary
+        // physical mouse has its own device, so always release our own button.
+        if pressed || !app.input_state.mouse_priority.captured_button_held(btn) {
+            app.hid_provider.inner.send_button(btn, pressed);
+        }
     }
 
     fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {

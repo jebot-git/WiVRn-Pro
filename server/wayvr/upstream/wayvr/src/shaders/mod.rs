@@ -42,6 +42,24 @@ pub mod frag_color {
     }
 }
 
+pub mod frag_hand_pad {
+    use super::{Arc, DescriptorBinding, DescriptorType, ShaderModule, ShaderStage, WGfx};
+
+    pub fn load(gfx: &WGfx) -> anyhow::Result<Arc<ShaderModule>> {
+        super::load(
+            gfx,
+            include_bytes!(concat!(env!("OUT_DIR"), "/hand_pad.frag.spv")),
+            ShaderStage::Fragment,
+            &[DescriptorBinding::new(
+                0,
+                0,
+                DescriptorType::UniformBuffer,
+                ShaderStage::Fragment,
+            )],
+        )
+    }
+}
+
 pub mod frag_grid {
     use super::{Arc, ShaderModule, ShaderStage, WGfx};
 

@@ -56,3 +56,12 @@ is distributed under GPL-3.0-only alongside WayVR. It reuses the normalized pinc
 thresholds, debounce, neutral rearming, interaction zone, shoulder ray and
 smoothing. KWin's gaze-priority policy is not used: WayVR uses independent hand
 pointers and its existing window interaction pipeline.
+
+The mouse-priority state in `server/wayvr/mouse_priority.rs` adapts KWin's
+`VrMousePriorityState`: motion, scroll and buttons suspend hand cursor input,
+held buttons retain priority, and the last release starts a 1500 ms idle period.
+The local source hashes above now also cover `vrmousepriority.*`,
+`kwinvrmousepriority.*` and `kwinvrinputdevice.cpp`. WayVR reads evdev passively
+without grabbing devices and incorporates its existing captured input events;
+its own virtual pointer is excluded. The two compositor paths retain their
+respective button ownership when cancelling synthetic clicks.

@@ -39,6 +39,8 @@ use crate::{
 };
 
 mod blocker;
+#[path = "../../../../../hand_pad.rs"]
+mod hand_pad;
 mod helpers;
 mod input;
 mod lines;
@@ -156,6 +158,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
 
     let mut skybox: Option<Skybox> = None;
 
+    let mut hand_pads = hand_pad::HandPads::new(&xr_state, &app)?;
     let pointer_lines = [
         lines.allocate(&xr_state, &app)?,
         lines.allocate(&xr_state, &app)?,
@@ -212,6 +215,8 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
                             crate::backend::input::release_pointer(i, &mut overlays, &mut app);
                             app.input_state.pointers[i].wrist_pose = None;
                             app.input_state.pointers[i].index_tip = None;
+                            app.input_state.pointers[i].joystick_pad = None;
+                            app.input_state.pointers[i].joystick_owned = false;
                         }
                     }
                     match e.state() {
@@ -307,6 +312,8 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
                 crate::backend::input::release_pointer(i, &mut overlays, &mut app);
                 app.input_state.pointers[i].wrist_pose = None;
                 app.input_state.pointers[i].index_tip = None;
+                app.input_state.pointers[i].joystick_pad = None;
+                app.input_state.pointers[i].joystick_owned = false;
             }
             log::trace!("xrEndFrame");
             frame_stream.end(
@@ -317,6 +324,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
             continue 'main_loop;
         }
 
+        app.input_state.mouse_priority.poll();
         app.input_state.pre_update();
         app.input_state.space_drag_hand = overlays
             .iter()
@@ -488,6 +496,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
         }
 
         lines.render(&app, &mut futures)?;
+        hand_pads.render(&app, &mut futures)?;
         futures.wait()?;
         // End rendering
 
@@ -521,7 +530,11 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
             }
         }
 
-        for layer in lines.present(&xr_state)? {
+        for layer in hand_pads
+            .present(&xr_state)?
+            .into_iter()
+            .chain(lines.present(&xr_state)?)
+        {
             layers.push((0.0, layer));
         }
         // End layer composition

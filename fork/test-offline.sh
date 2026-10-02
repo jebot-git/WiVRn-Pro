@@ -38,3 +38,7 @@ build/native-tests/tracking-supervisor-test
 
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/wayvr_supervisor_test.cpp server/wayvr_worker.cpp $(pkg-config --cflags --libs gio-2.0) -o build/native-tests/wayvr-supervisor-test
 build/native-tests/wayvr-supervisor-test
+
+"$cxx" -std=c++23 -Wall -Wextra -Werror -fno-fast-math -Iserver/driver \
+  fork/tests/hand_joystick_test.cpp server/driver/hand_joystick.cpp -o build/native-tests/hand-joystick-test
+build/native-tests/hand-joystick-test

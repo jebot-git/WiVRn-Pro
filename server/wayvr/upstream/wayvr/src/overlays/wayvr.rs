@@ -1003,6 +1003,24 @@ impl OverlayBackend for WvrWindowBackend {
             return;
         };
 
+        let physical_button = match hit.mode {
+            input::PointerMode::Right => 0x111,
+            input::PointerMode::Middle => 0x112,
+            _ => 0x110,
+        };
+        if !pressed
+            && app.input_state.pointers[hit.pointer].hand_tracking
+            && app.input_state.mouse_priority.active()
+        {
+            self.popup_outside_button = None;
+            if let Some(server) = app.wvr_server.as_mut() {
+                server.set_vr_pointer_button(hit.pointer, false);
+                if !app.input_state.mouse_priority.button_held(physical_button) {
+                    server.send_dnd_release(index);
+                }
+            }
+            return;
+        }
         if let Some(wvr_server) = app.wvr_server.as_mut() {
             if wvr_server.dnd_active() && !wvr_server.dnd_active_for_pointer(hit.pointer) {
                 return;

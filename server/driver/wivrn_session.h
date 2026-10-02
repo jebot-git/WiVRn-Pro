@@ -25,6 +25,7 @@
 #include "inplace_vector.hpp"
 #include "shora_bridge.h"
 #include "spatial_bridge.h"
+#include "hand_joystick.h"
 #include "tracking_control.h"
 #include "utils/thread_safe.h"
 #include "wivrn_android_face_tracker.h"
@@ -79,6 +80,7 @@ class wivrn_session : public xrt_system_devices
 	ipc_server * mnd_ipc_server;
 	xrt_space_overseer * space_overseer = nullptr;
 	spatial::bridge spatial_bridge;
+	hand_joystick joystick_emulation;
 	xrt_system_compositor * system_compositor;
 
 	std::mutex roles_mutex;
@@ -126,6 +128,10 @@ class wivrn_session : public xrt_system_devices
 	wivrn_session(std::unique_ptr<wivrn_connection> connection, b_system &);
 
 public:
+	std::optional<hand_joystick::value> emulated_joystick(unsigned hand) const
+	{
+		return joystick_emulation.get(hand, os_monotonic_get_ns());
+	}
 	using base_t = xrt_system_devices;
 	~wivrn_session();
 

@@ -2,10 +2,18 @@
   "source": "local KWin hand-tracking prototype",
   "source_directory": "/home/blux/kwin/fedora-vr/eye-prototype/kwin/src/plugins/vr",
   "license": "GPL-2.0-or-later",
-  "adaptation": "server/wayvr/hand_input.rs",
+  "adaptation": [
+    "server/wayvr/hand_input.rs",
+    "server/wayvr/mouse_priority.rs"
+  ],
   "sha256": {
     "vrhandpointer.cpp": "8575210bf3585a487b8580660a324cebac531fb694deed53ee9b3c2c55ef447f",
     "vrhandpointer.h": "702c5932ab7212198ed23d08901d10c0959420a30f5bc19ae06b458e1363c87a",
-    "qml/HandInput.qml": "755f679fb8e7f5257fd6bb89bfec85c8414afa865f0ca6300e671a3ec1fcd1d5"
+    "qml/HandInput.qml": "755f679fb8e7f5257fd6bb89bfec85c8414afa865f0ca6300e671a3ec1fcd1d5",
+    "vrmousepriority.cpp": "4a3043fed2e9128b3607667609ead3008f5626db4427c3cf2a1c544a3cac053a",
+    "vrmousepriority.h": "d0da3c2be37d4c9909118cf9261823a7d6b10cf764e96413c2e983cc55dd73b9",
+    "kwinvrmousepriority.cpp": "0e20b5c5d3c7fa1bc846a9ea1011de214649e97ccc12d4fbb9ef564f92fa2782",
+    "kwinvrmousepriority.h": "ae81b045b66b45ccfdb81fa854e79434121e6aeb45aec8202c296c6bf6cfa5a5",
+    "kwinvrinputdevice.cpp": "12a96ea465df6b87219bca8153e030da7a49c4bb88b68a6302b6d45c11fdf44e"
   }
 }
