@@ -35,6 +35,9 @@ mod windowing;
 mod wivrn_tests;
 #[path = "../../../shora_battery.rs"]
 mod shora_battery;
+#[cfg(feature = "openxr")]
+#[path = "../../../hand_input.rs"]
+mod hand_input;
 
 use std::{
     path::PathBuf,

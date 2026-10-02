@@ -16,7 +16,7 @@ add_custom_command(OUTPUT "${wayvr_binary}" "${wayvrctl_binary}"
         ${CARGO_EXECUTABLE} build ${wayvr_args} --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/upstream/Cargo.toml"
     COMMAND ${CMAKE_COMMAND} -E env "CARGO_TARGET_DIR=${WIVRN_WAYVR_TARGET_DIR}" "CARGO_BUILD_JOBS=4"
         ${CARGO_EXECUTABLE} build ${wayvrctl_args} --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/upstream/Cargo.toml"
-    DEPENDS ${wayvr_sources} wivrn_tests.rs shora_battery.rs
+    DEPENDS ${wayvr_sources} wivrn_tests.rs shora_battery.rs hand_input.rs
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/upstream"
     VERBATIM)
 add_custom_target(wivrn-wayvr ALL DEPENDS "${wayvr_binary}" "${wayvrctl_binary}")

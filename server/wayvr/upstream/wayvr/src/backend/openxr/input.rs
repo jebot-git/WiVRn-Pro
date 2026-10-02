@@ -36,6 +36,10 @@ pub(super) struct OpenXrInputSource {
     physical_inputs: Vec<PhysicalInput>,
     pointers: [OpenXrPointer; 2],
     handsfree_pointer: OpenXrPointer,
+    hand_trackers: [Option<xr::HandTracker>; 2],
+    hand_input: [crate::hand_input::HandInput; 2],
+    hand_paths: [xr::Path; 2],
+    started: Instant,
 }
 
 pub(super) struct OpenXrPointer {
@@ -264,7 +268,25 @@ impl OpenXrInputSource {
         let mut right_source = OpenXrHandSource::new(&mut action_set, "right")?;
         let mut fallback_source = OpenXrHandSource::new(&mut action_set, "handsfree")?;
 
-        let profiles = load_xr_input_profiles();
+        let mut profiles = load_xr_input_profiles();
+        // Keep saved mappings, filling missing hand aim bindings in memory only.
+        for name in [
+            "/interaction_profiles/ext/hand_interaction_ext",
+            "/interaction_profiles/khr/simple_controller",
+        ] {
+            if !profiles.iter().any(|p| p.profile == name) {
+                profiles.push(OpenXrInputProfile {
+                    profile: name.into(),
+                    ..Default::default()
+                });
+            }
+            let profile = profiles.iter_mut().find(|p| p.profile == name).unwrap();
+            let pose = profile.pose.get_or_insert_with(OpenXrInputAction::default);
+            pose.left
+                .get_or_insert_with(|| OneOrMany::One("/user/hand/left/input/aim/pose".into()));
+            pose.right
+                .get_or_insert_with(|| OneOrMany::One("/user/hand/right/input/aim/pose".into()));
+        }
         let (physical_inputs, physical_input_map) =
             create_physical_inputs(&action_set, &xr.instance, &profiles)?;
 
@@ -288,7 +310,34 @@ impl OpenXrInputSource {
                 OpenXrPointer::new(xr, right_source)?,
             ],
             handsfree_pointer: OpenXrPointer::new(xr, fallback_source)?,
+            hand_trackers: [xr::Hand::LEFT, xr::Hand::RIGHT].map(|hand| {
+                if !xr.extra_exts.ext_hand_tracking {
+                    return None;
+                }
+                match xr.session.create_hand_tracker(hand) {
+                    Ok(tracker) => {
+                        log::info!("WiVRn hand joints enabled: {hand:?}");
+                        Some(tracker)
+                    }
+                    Err(e) => {
+                        log::warn!("Hand joints unavailable for {hand:?}: {e}");
+                        None
+                    }
+                }
+            }),
+            hand_input: Default::default(),
+            hand_paths: [
+                xr.instance.string_to_path("/user/hand/left")?,
+                xr.instance.string_to_path("/user/hand/right")?,
+            ],
+            started: Instant::now(),
         })
+    }
+
+    pub fn reset_hands(&mut self) {
+        for hand in &mut self.hand_input {
+            hand.reset();
+        }
     }
 
     pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
@@ -356,6 +405,84 @@ impl OpenXrInputSource {
                     !should_disable_lerp,
                     physical_inputs,
                 )?;
+                let profile = xr.session.current_interaction_profile(self.hand_paths[i])?;
+                let name = if profile == xr::Path::NULL {
+                    String::new()
+                } else {
+                    xr.instance.path_to_string(profile)?
+                };
+                let hand_mode = self.hand_trackers[i].is_some()
+                    && (name.is_empty()
+                        || name == "/interaction_profiles/ext/hand_interaction_ext"
+                        || name == "/interaction_profiles/khr/simple_controller");
+                if pointer.hand_tracking != hand_mode {
+                    log::info!(
+                        "WayVR {} input: {}",
+                        if i == 0 { "left" } else { "right" },
+                        if hand_mode {
+                            "hand joints"
+                        } else {
+                            "controller"
+                        }
+                    );
+                    pointer.cancel_interaction = true;
+                    self.hand_input[i].reset();
+                }
+                pointer.hand_tracking = hand_mode;
+                pointer.wrist_pose = None;
+                if hand_mode {
+                    let joints = if xr.focused && hmd_tracked {
+                        xr.stage
+                            .locate_hand_joints(
+                                self.hand_trackers[i].as_ref().unwrap(),
+                                xr.predicted_display_time,
+                            )
+                            .ok()
+                            .flatten()
+                    } else {
+                        None
+                    };
+                    let native_aim = if self.pointers[i]
+                        .source
+                        .pose
+                        .is_active(&xr.session, xr::Path::NULL)?
+                    {
+                        self.pointers[i].locate_tracked_pose(xr)?
+                    } else {
+                        None
+                    };
+                    let sample = self.hand_input[i].update(
+                        self.started.elapsed(),
+                        joints.as_ref(),
+                        native_aim,
+                        app.input_state.hmd,
+                        i == 0,
+                    );
+                    // One owner per pointer: never combine synthetic and runtime pinches.
+                    pointer.now = PointerState::default();
+                    pointer.tracked = false;
+                    if let Some(sample) = sample {
+                        pointer.wrist_pose = Some(sample.wrist);
+                        if let Some(ray) = sample.ray {
+                            pointer.pose = ray;
+                            pointer.raw_pose = ray;
+                            pointer.tracked = true;
+                            use crate::hand_input::Gesture;
+                            pointer.now.click =
+                                matches!(sample.gesture, Gesture::Click | Gesture::RightClick);
+                            pointer.now.grab = sample.gesture == Gesture::Grab;
+                            pointer.now.click_modifier_right =
+                                sample.gesture == Gesture::RightClick;
+                        }
+                    }
+                    if !pointer.tracked && (pointer.before.click || pointer.before.grab) {
+                        pointer.cancel_interaction = true;
+                    }
+                }
+                if !xr.focused || pointer.cancel_interaction {
+                    pointer.now = PointerState::default();
+                    pointer.tracked = false;
+                }
                 any_tracked |= pointer.tracked;
             }
         } else {
@@ -371,10 +498,24 @@ impl OpenXrInputSource {
                 pointer.now = PointerState::default();
                 pointer.tracked = false;
                 pointer.handsfree = false;
+                pointer.wrist_pose = None;
+            }
+            for hand in &mut self.hand_input {
+                hand.reset();
             }
         }
 
-        if !picking_focus.is_none() || !any_tracked {
+        // Joint gestures own hand mode, including loss/rearming; do not reintroduce
+        // the old handsfree native pinch bindings as a duplicate input source.
+        if xr.focused
+            && (!picking_focus.is_none()
+                || (!any_tracked
+                    && !app
+                        .input_state
+                        .pointers
+                        .iter()
+                        .any(|p| p.hand_tracking || p.cancel_interaction)))
+        {
             self.handsfree_pointer.update_handsfree(
                 &mut app.input_state.pointers[0],
                 xr,

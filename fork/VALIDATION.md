@@ -200,3 +200,26 @@ The supervisor tests, unit verification, configured desktop launcher validation,
 and host rebuild passed. All six real trackers are active, QSV HEVC 10-bit remains
 selected, both permanent units are enabled/active with zero restarts, and legacy
 RPMs/services are absent. No actual reboot was performed.
+
+## WayVR hand input from WiVRn
+
+Adapted the local KWin gesture/ray algorithm and interaction design into the
+source-built WayVR worker. The hand wrist attachment has its own pose and frame
+conversion; saved offsets remain applied. Pointer cancellation releases the
+original click target and any grabbed window, including on tracking/focus loss.
+The server rejects hand samples older than 150 ms by production timestamp.
+
+The release-mode WayVR suite passes all 14 tests, including pinch debounce and
+hysteresis, ambiguity rejection, neutral rearming, tracking loss/reacquisition,
+NaN rejection, estimated fingers, wrist/aim independence, lowered hands,
+shoulder-ray geometry, smoothing and wrist-panel orientation. Existing battery
+socket tests pass outside the filesystem sandbox. `fork/test-offline.sh` passes,
+including source/patch auditing, policy, protocol, spatial and supervisor tests.
+The host build and installation into `~/.local/opt/wivrn-pro` succeeded. Existing
+upstream Rust dead-code warnings remain; no new dependency or Quest APK is needed.
+
+Live startup with the Quest Pro confirms both OpenXR hand trackers initialize,
+WayVR reaches FOCUSED and both pointers select hand-joint input. QSV HEVC 10-bit
+remains active for all three streams; both installed services remain active with
+zero restarts. Headset capture shows the running overlay session. Final gesture
+usability and wrist placement are awaiting the user's in-headset check.

@@ -46,3 +46,13 @@ notices retained, not an AppImage extraction. Source is under `server/wayvr/upst
 component licenses are installed with the worker. Crates and bundled assets keep
 their respective notices. The profile tests only read temporary local copies;
 no user WayVR configuration or portal tokens are committed.
+
+WayVR's hand gesture and pointing algorithm in `server/wayvr/hand_input.rs` is
+adapted from the local KWin hand-tracking prototype's `vrhandpointer.cpp` and
+`vrhandpointer.h`, with the interaction design from `qml/HandInput.qml`.
+`kwin-hand-input-source.json` records the exact local source hashes, including
+uncommitted prototype changes. The source is GPL-2.0-or-later; the Rust adaptation
+is distributed under GPL-3.0-only alongside WayVR. It reuses the normalized pinch
+thresholds, debounce, neutral rearming, interaction zone, shoulder ray and
+smoothing. KWin's gaze-priority policy is not used: WayVR uses independent hand
+pointers and its existing window interaction pipeline.

@@ -173,3 +173,34 @@ render thread reads a cache; failures clear it and readings older than three
 seconds display `disconnected / stale`. Existing custom wrist XML can override
 the built-in layout; add a label with `_source="shora_batteries"` to such layouts
 to opt into the same feed. User WayVR profiles are preserved.
+
+### Hand input in WayVR
+
+Enable hand tracking in the Quest and WiVRn client settings, then put the
+controllers aside. WayVR requests `XR_EXT_hand_tracking` joints through WiVRn;
+no separate KWin process or additional Quest helper is required. Controller input
+returns when the runtime switches back to the controller interaction profile.
+
+- The wrist panel follows the configured hand's wrist (left by default), on the
+  back of the hand. Turn it toward you and point at it with the other hand.
+- Point using the runtime's hand aim pose, or a shoulder-to-index ray when no
+  aim pose is available.
+- Pinch thumb–index to click. Hold it while moving to drag inside an application.
+- Pinch thumb–middle while pointing at a movable window to move it in 3D; release
+  to drop it using WayVR's existing placement behavior.
+- Pinch thumb–ring to right-click. Open the hand briefly between gestures.
+
+The gesture design comes from the local KWin prototype: pinch distances are
+normalized to hand width, with 0.28 press / 0.42 release thresholds, a 45 ms press
+debounce and 100 ms neutral rearming. Rays use 35 ms smoothing. Lowering the palm
+more than 50 cm below the headset, or bringing it within 12 cm of the headset's
+forward plane, disables pointing while retaining a valid wrist attachment.
+Tracking loss, focus loss and input-source changes release clicks and grabs.
+WiVRn expires hand samples after 150 ms without fresh production timestamps.
+
+Existing action files are preserved; missing hand aim bindings are filled in
+memory. Saved attachment offsets and scale remain applied relative to the wrist
+attachment frame. Hand gestures replace native pinch bindings while in hand mode,
+preventing duplicate clicks; existing controller mappings remain in use otherwise.
+The wrist orientation follows the
+[OpenXR hand-joint convention](https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#convention-of-hand-joints).

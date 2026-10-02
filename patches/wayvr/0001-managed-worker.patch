@@ -1,9 +1,9 @@
 --- a/dash-frontend/assets/gui/tab/home.xml
 +++ b/dash-frontend/assets/gui/tab/home.xml
 @@ -24,6 +24,8 @@
- 
+
        <label id="label_hello" margin_top="24" size="32" weight="bold" color="on_background" />
- 
+
 +      <label id="shora_batteries" size="14" color="on_background" margin_top="8" />
 +
        <!-- main button list -->
@@ -13,7 +13,7 @@
 +++ b/dash-frontend/src/tab/home.rs
 @@ -27,7 +27,18 @@
  }
- 
+
  impl<T> Tab<T> for TabHome<T> {
 -	fn get_type(&self) -> TabType {
 +	fn update(&mut self, frontend: &mut Frontend<T>, _time_ms: u32, data: &mut T) -> anyhow::Result<()> {
@@ -38,16 +38,16 @@
  use shaderc::{Compiler, EnvVersion, ShaderKind, TargetEnv};
 -use std::{path::PathBuf, process::Command};
 +use std::path::PathBuf;
- 
+
  const SHADERS: &[(&str, ShaderKind)] = &[
      ("quad.vert", ShaderKind::Vertex),
 @@ -16,7 +15,7 @@
  fn main() {
      compile_shaders();
- 
+
 -    let mut wlx_build = get_version().unwrap_or(format!("{}-unknown", env!("CARGO_PKG_VERSION")));
 +    let mut wlx_build = String::from("26.8.0-4590371-wivrn-pro");
- 
+
      match std::env::var("GITHUB_JOB").as_deref() {
          Ok("make_release") => {
 @@ -51,26 +50,3 @@
@@ -82,17 +82,422 @@
 @@ -119,6 +119,8 @@
          <Tracker idx="3" />
        </div>
- 
+
 +      <label id="shora_batteries" _source="shora_batteries" size="15" color="primary" />
 +
        <!-- All other elements inside the container -->
        <div flex_direction="column" gap="8" min_width="300">
          <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
+--- a/wayvr/src/backend/input.rs
++++ b/wayvr/src/backend/input.rs
+@@ -349,6 +349,9 @@
+     pub(super) interaction: InteractionState,
+     pub tracked: bool,
+     pub handsfree: bool,
++    pub hand_tracking: bool,
++    pub wrist_pose: Option<Affine3A>,
++    pub cancel_interaction: bool,
+     /// distance of the most recent ray hit on a wayland client window, used for drag n drop
+     pub last_wvr_hit_distance: Option<f32>,
+ }
+@@ -367,8 +370,27 @@
+             interaction: InteractionState::default(),
+             tracked: false,
+             handsfree: false,
++            hand_tracking: false,
++            wrist_pose: None,
++            cancel_interaction: false,
+             last_wvr_hit_distance: None,
+         }
++    }
++
++    pub fn attachment_pose(&self) -> Affine3A {
++        self.wrist_pose.map_or(self.pose, |wrist| {
++            // Map the existing controller attachment frame onto the back of
++            // the wrist, preserving saved offsets and scale in that frame.
++            let watch = Affine3A::from_rotation_translation(
++                crate::overlays::watch::WATCH_ROT,
++                crate::overlays::watch::WATCH_POS,
++            );
++            let on_wrist = Affine3A::from_rotation_translation(
++                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2),
++                glam::Vec3::new(0.0, 0.035, 0.025),
++            );
++            wrist * on_wrist * watch.inverse()
++        })
+     }
+
+     pub const fn hand(&self) -> Option<LeftRight> {
+@@ -523,6 +545,32 @@
+     [hits[0].1, hits[1].1]
+ }
+
++/// Release at the previous pose before switching sources or losing tracking.
++pub fn release_pointer<O>(idx: usize, overlays: &mut OverlayWindowManager<O>, app: &mut AppState)
++where
++    O: Default,
++{
++    let pointer = &mut app.input_state.pointers[idx];
++    pointer.now = PointerState::default();
++    pointer.cancel_interaction = false;
++    pointer.tracked = false;
++    // A lowered hand can still have a valid wrist attachment.
++    pointer.pending_haptics = None;
++    let grabbed = pointer.interaction.grabbed.map(|g| g.grabbed_id);
++    let hovered = pointer.interaction.hovered_id.take();
++    if let Some(id) = grabbed {
++        if let Some(overlay) = overlays.mut_by_id(id) {
++            handle_grabbed(idx, overlay, app);
++        }
++        app.input_state.pointers[idx].interaction.grabbed = None;
++    }
++    handle_no_hit(idx, hovered, overlays, app);
++    if let Some(server) = app.wvr_server.as_mut() {
++        server.clear_dnd_focus(idx);
++    }
++    app.input_state.pointers[idx].before = PointerState::default();
++}
++
+ fn interact_hand<O>(
+     idx: usize,
+     overlays: &mut OverlayWindowManager<O>,
+@@ -531,15 +579,12 @@
+ where
+     O: Default,
+ {
++    if app.input_state.pointers[idx].cancel_interaction || !app.input_state.pointers[idx].tracked {
++        release_pointer(idx, overlays, app);
++        return (None, None);
++    }
+     let mut pointer = &mut app.input_state.pointers[idx];
+     let pending_haptics = pointer.pending_haptics.take();
+-
+-    if !pointer.tracked {
+-        pointer.interaction.should_block_input = false;
+-        pointer.interaction.should_block_poses = false;
+-        pointer.interaction.kbd_block_activated = false;
+-        return (None, pending_haptics); // no hit
+-    }
+
+     // already grabbing, ignore everything else
+     if let Some(grab_data) = pointer.interaction.grabbed {
+@@ -689,6 +734,9 @@
+     if let Some(hovered_id) = hovered_id
+         && let Some(hovered) = overlays.mut_by_id(hovered_id)
+     {
++        if hovered.primary_pointer == Some(pointer_idx) {
++            hovered.primary_pointer = None;
++        }
+         log::debug!("{} on_left (no hit)", hovered.config.name);
+         hovered.config.backend.on_left(app, pointer_idx);
+         hovered.hover_pointers[pointer_idx] = false;
+@@ -802,6 +850,13 @@
+         let Some(overlay_state) = overlay.config.active_state.as_ref() else {
+             continue;
+         };
++        // Use the opposite hand to operate the wrist panel.
++        if pointer.hand_tracking
++            && overlay.config.name.as_ref() == WATCH_NAME
++            && matches!(overlay_state.positioning, Positioning::FollowHand { hand, .. } if hand as usize == pointer_idx)
++        {
++            continue;
++        }
+         if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
+             continue;
+         }
+@@ -1135,3 +1190,34 @@
+         dist,
+     })
+ }
++
++#[cfg(test)]
++mod hand_attachment_tests {
++    use super::*;
++    #[test]
++    fn wrist_attachment_preserves_controller_frame_and_faces_back_of_hand() {
++        let mut pointer = Pointer::new(0);
++        pointer.pose = Affine3A::from_translation(glam::Vec3::X);
++        assert_eq!(pointer.attachment_pose(), pointer.pose);
++        let wrist = Affine3A::from_rotation_translation(
++            Quat::from_rotation_y(0.7),
++            glam::Vec3::new(0.2, 1.1, -0.4),
++        );
++        pointer.wrist_pose = Some(wrist);
++        let panel = pointer.attachment_pose()
++            * Affine3A::from_rotation_translation(
++                crate::overlays::watch::WATCH_ROT,
++                crate::overlays::watch::WATCH_POS,
++            );
++        let local = wrist.inverse() * panel;
++        assert!(
++            glam::Vec3::from(local.translation)
++                .abs_diff_eq(glam::Vec3::new(0.0, 0.035, 0.025), 1e-5)
++        );
++        assert!(
++            local
++                .transform_vector3(glam::Vec3::Z)
++                .abs_diff_eq(glam::Vec3::Y, 1e-5)
++        );
++    }
++}
+--- a/wayvr/src/backend/openxr/helpers.rs
++++ b/wayvr/src/backend/openxr/helpers.rs
+@@ -23,6 +23,7 @@
+ pub(super) struct ExtraExts {
+     pub mndx_composition_layer_alpha_blend_system_ui: bool,
+     pub ext_eye_gaze_interaction: bool,
++    pub ext_hand_tracking: bool,
+ }
+
+ pub(super) fn init_xr() -> Result<(xr::Instance, xr::SystemId, ExtraExts), anyhow::Error> {
+@@ -61,6 +62,8 @@
+     } else {
+         log::warn!("Missing EXT_hp_mixed_reality_controller extension.");
+     }
++    enabled_extensions.ext_hand_tracking = available_extensions.ext_hand_tracking;
++    extra_exts.ext_hand_tracking = available_extensions.ext_hand_tracking;
+     if available_extensions.ext_hand_interaction {
+         enabled_extensions.ext_hand_interaction = true;
+     } else {
+--- a/wayvr/src/backend/openxr/input.rs
++++ b/wayvr/src/backend/openxr/input.rs
+@@ -36,6 +36,10 @@
+     physical_inputs: Vec<PhysicalInput>,
+     pointers: [OpenXrPointer; 2],
+     handsfree_pointer: OpenXrPointer,
++    hand_trackers: [Option<xr::HandTracker>; 2],
++    hand_input: [crate::hand_input::HandInput; 2],
++    hand_paths: [xr::Path; 2],
++    started: Instant,
+ }
+
+ pub(super) struct OpenXrPointer {
+@@ -264,7 +268,25 @@
+         let mut right_source = OpenXrHandSource::new(&mut action_set, "right")?;
+         let mut fallback_source = OpenXrHandSource::new(&mut action_set, "handsfree")?;
+
+-        let profiles = load_xr_input_profiles();
++        let mut profiles = load_xr_input_profiles();
++        // Keep saved mappings, filling missing hand aim bindings in memory only.
++        for name in [
++            "/interaction_profiles/ext/hand_interaction_ext",
++            "/interaction_profiles/khr/simple_controller",
++        ] {
++            if !profiles.iter().any(|p| p.profile == name) {
++                profiles.push(OpenXrInputProfile {
++                    profile: name.into(),
++                    ..Default::default()
++                });
++            }
++            let profile = profiles.iter_mut().find(|p| p.profile == name).unwrap();
++            let pose = profile.pose.get_or_insert_with(OpenXrInputAction::default);
++            pose.left
++                .get_or_insert_with(|| OneOrMany::One("/user/hand/left/input/aim/pose".into()));
++            pose.right
++                .get_or_insert_with(|| OneOrMany::One("/user/hand/right/input/aim/pose".into()));
++        }
+         let (physical_inputs, physical_input_map) =
+             create_physical_inputs(&action_set, &xr.instance, &profiles)?;
+
+@@ -288,7 +310,34 @@
+                 OpenXrPointer::new(xr, right_source)?,
+             ],
+             handsfree_pointer: OpenXrPointer::new(xr, fallback_source)?,
++            hand_trackers: [xr::Hand::LEFT, xr::Hand::RIGHT].map(|hand| {
++                if !xr.extra_exts.ext_hand_tracking {
++                    return None;
++                }
++                match xr.session.create_hand_tracker(hand) {
++                    Ok(tracker) => {
++                        log::info!("WiVRn hand joints enabled: {hand:?}");
++                        Some(tracker)
++                    }
++                    Err(e) => {
++                        log::warn!("Hand joints unavailable for {hand:?}: {e}");
++                        None
++                    }
++                }
++            }),
++            hand_input: Default::default(),
++            hand_paths: [
++                xr.instance.string_to_path("/user/hand/left")?,
++                xr.instance.string_to_path("/user/hand/right")?,
++            ],
++            started: Instant::now(),
+         })
++    }
++
++    pub fn reset_hands(&mut self) {
++        for hand in &mut self.hand_input {
++            hand.reset();
++        }
+     }
+
+     pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
+@@ -356,6 +405,84 @@
+                     !should_disable_lerp,
+                     physical_inputs,
+                 )?;
++                let profile = xr.session.current_interaction_profile(self.hand_paths[i])?;
++                let name = if profile == xr::Path::NULL {
++                    String::new()
++                } else {
++                    xr.instance.path_to_string(profile)?
++                };
++                let hand_mode = self.hand_trackers[i].is_some()
++                    && (name.is_empty()
++                        || name == "/interaction_profiles/ext/hand_interaction_ext"
++                        || name == "/interaction_profiles/khr/simple_controller");
++                if pointer.hand_tracking != hand_mode {
++                    log::info!(
++                        "WayVR {} input: {}",
++                        if i == 0 { "left" } else { "right" },
++                        if hand_mode {
++                            "hand joints"
++                        } else {
++                            "controller"
++                        }
++                    );
++                    pointer.cancel_interaction = true;
++                    self.hand_input[i].reset();
++                }
++                pointer.hand_tracking = hand_mode;
++                pointer.wrist_pose = None;
++                if hand_mode {
++                    let joints = if xr.focused && hmd_tracked {
++                        xr.stage
++                            .locate_hand_joints(
++                                self.hand_trackers[i].as_ref().unwrap(),
++                                xr.predicted_display_time,
++                            )
++                            .ok()
++                            .flatten()
++                    } else {
++                        None
++                    };
++                    let native_aim = if self.pointers[i]
++                        .source
++                        .pose
++                        .is_active(&xr.session, xr::Path::NULL)?
++                    {
++                        self.pointers[i].locate_tracked_pose(xr)?
++                    } else {
++                        None
++                    };
++                    let sample = self.hand_input[i].update(
++                        self.started.elapsed(),
++                        joints.as_ref(),
++                        native_aim,
++                        app.input_state.hmd,
++                        i == 0,
++                    );
++                    // One owner per pointer: never combine synthetic and runtime pinches.
++                    pointer.now = PointerState::default();
++                    pointer.tracked = false;
++                    if let Some(sample) = sample {
++                        pointer.wrist_pose = Some(sample.wrist);
++                        if let Some(ray) = sample.ray {
++                            pointer.pose = ray;
++                            pointer.raw_pose = ray;
++                            pointer.tracked = true;
++                            use crate::hand_input::Gesture;
++                            pointer.now.click =
++                                matches!(sample.gesture, Gesture::Click | Gesture::RightClick);
++                            pointer.now.grab = sample.gesture == Gesture::Grab;
++                            pointer.now.click_modifier_right =
++                                sample.gesture == Gesture::RightClick;
++                        }
++                    }
++                    if !pointer.tracked && (pointer.before.click || pointer.before.grab) {
++                        pointer.cancel_interaction = true;
++                    }
++                }
++                if !xr.focused || pointer.cancel_interaction {
++                    pointer.now = PointerState::default();
++                    pointer.tracked = false;
++                }
+                 any_tracked |= pointer.tracked;
+             }
+         } else {
+@@ -371,10 +498,24 @@
+                 pointer.now = PointerState::default();
+                 pointer.tracked = false;
+                 pointer.handsfree = false;
+-            }
+-        }
+-
+-        if !picking_focus.is_none() || !any_tracked {
++                pointer.wrist_pose = None;
++            }
++            for hand in &mut self.hand_input {
++                hand.reset();
++            }
++        }
++
++        // Joint gestures own hand mode, including loss/rearming; do not reintroduce
++        // the old handsfree native pinch bindings as a duplicate input source.
++        if xr.focused
++            && (!picking_focus.is_none()
++                || (!any_tracked
++                    && !app
++                        .input_state
++                        .pointers
++                        .iter()
++                        .any(|p| p.hand_tracking || p.cancel_interaction)))
++        {
+             self.handsfree_pointer.update_handsfree(
+                 &mut app.input_state.pointers[0],
+                 xr,
+--- a/wayvr/src/backend/openxr/mod.rs
++++ b/wayvr/src/backend/openxr/mod.rs
+@@ -55,6 +55,7 @@
+     session: xr::Session<xr::Vulkan>,
+     predicted_display_time: xr::Time,
+     fps: f32,
++    focused: bool,
+     stage: Arc<xr::Space>,
+     view: Arc<xr::Space>,
+     extra_exts: ExtraExts,
+@@ -147,6 +148,7 @@
+         session,
+         predicted_display_time: xr::Time::from_nanos(0),
+         fps: 30.0,
++        focused: false,
+         stage: Arc::new(stage),
+         view: Arc::new(view),
+         extra_exts,
+@@ -203,6 +205,14 @@
+                     // Session state change is where we can begin and end sessions, as well as
+                     // find quit messages!
+                     log::info!("entered state {:?}", e.state());
++                    xr_state.focused = e.state() == xr::SessionState::FOCUSED;
++                    if !xr_state.focused {
++                        input_source.reset_hands();
++                        for i in 0..2 {
++                            crate::backend::input::release_pointer(i, &mut overlays, &mut app);
++                            app.input_state.pointers[i].wrist_pose = None;
++                        }
++                    }
+                     match e.state() {
+                         xr::SessionState::READY => {
+                             xr_state.session.begin(VIEW_TYPE)?;
+@@ -291,6 +301,11 @@
+         };
+
+         if !xr_frame_state.should_render {
++            input_source.reset_hands();
++            for i in 0..2 {
++                crate::backend::input::release_pointer(i, &mut overlays, &mut app);
++                app.input_state.pointers[i].wrist_pose = None;
++            }
+             log::trace!("xrEndFrame");
+             frame_stream.end(
+                 xr_frame_state.predicted_display_time,
 --- a/wayvr/src/gui/panel/label.rs
 +++ b/wayvr/src/gui/panel/label.rs
 @@ -52,6 +52,13 @@
      };
- 
+
      let callback: EventCallback<AppState, S> = match source {
 +        "shora_batteries" => Box::new(|common, data, app, _| {
 +            let (text, low) = app.shora_battery.text(6);
@@ -106,7 +511,7 @@
                  log_missing_attrib(parser_state, TAG, "_device");
 --- a/wayvr/src/main.rs
 +++ b/wayvr/src/main.rs
-@@ -30,6 +30,11 @@
+@@ -30,6 +30,14 @@
  mod subsystem;
  mod test;
  mod windowing;
@@ -115,11 +520,14 @@
 +mod wivrn_tests;
 +#[path = "../../../shora_battery.rs"]
 +mod shora_battery;
- 
++#[cfg(feature = "openxr")]
++#[path = "../../../hand_input.rs"]
++mod hand_input;
+
  use std::{
      path::PathBuf,
-@@ -184,6 +189,9 @@
- 
+@@ -184,6 +192,9 @@
+
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
 +        if std::env::var_os("WIVRN_MANAGED_WAYVR").is_some() {
@@ -127,13 +535,13 @@
 +        }
          let exe = std::env::current_exe()?;
          let mut args = vec!["--replace", "--show"];
- 
+
 --- a/wayvr/src/overlays/dashboard.rs
 +++ b/wayvr/src/overlays/dashboard.rs
 @@ -85,6 +85,24 @@
              }
          }
- 
+
 +        if let Ok(exec) = std::env::var("WIVRN_DASHBOARD_EXECUTABLE")
 +            && !exec.is_empty()
 +            && app.wvr_server.is_some()
@@ -153,11 +561,11 @@
 +        }
 +
          let tutorial = !app.session.config.tutorial_graduated;
- 
+
          let frontend = frontend::Frontend::new(frontend::InitParams {
 @@ -391,6 +409,7 @@
  }
- 
+
  impl DashInterface<AppState> for DashInterfaceLive {
 +    fn tracking_batteries(&mut self, app: &mut AppState) -> (String, bool) { app.shora_battery.text(16) }
      fn window_list(&mut self, app: &mut AppState) -> anyhow::Result<Vec<WvrWindow>> {
@@ -167,7 +575,7 @@
 +++ b/wayvr/src/state.rs
 @@ -55,6 +55,7 @@
      pub executor: wlx_common::async_executor::AsyncExecutor,
- 
+
      pub input_state: InputState,
 +    pub shora_battery: crate::shora_battery::BatteryFeed,
      pub screens: SmallVec<[ScreenMeta; 8]>,
@@ -181,11 +589,67 @@
              screens: smallvec![],
              anchor: Affine3A::IDENTITY,
              anchor_grabbed: false,
+--- a/wayvr/src/windowing/window.rs
++++ b/wayvr/src/windowing/window.rs
+@@ -270,7 +270,7 @@
+         let (target_transform, lerp) = match state.positioning {
+             Positioning::FollowHead { lerp } => (app.input_state.hmd * cur_transform, lerp),
+             Positioning::FollowHand { hand, lerp } => (
+-                app.input_state.pointers[hand as usize].pose * cur_transform,
++                app.input_state.pointers[hand as usize].attachment_pose() * cur_transform,
+                 lerp,
+             ),
+             Positioning::Anchored => (app.anchor * cur_transform, 1.0),
+@@ -314,7 +314,22 @@
+             return;
+         };
+
++        if self.name.as_ref() == crate::overlays::watch::WATCH_NAME {
++            if let Positioning::FollowHand { hand, .. } = state.positioning {
++                let pointer = &app.input_state.pointers[hand as usize];
++                if (pointer.hand_tracking && pointer.wrist_pose.is_none())
++                    || (!pointer.hand_tracking && (!pointer.tracked || pointer.handsfree))
++                {
++                    state.alpha = 0.0;
++                    self.dirty = true;
++                    return;
++                }
++            }
++        }
+         if !state.angle_fade {
++            if self.name.as_ref() == crate::overlays::watch::WATCH_NAME {
++                state.alpha = 1.0;
++            }
+             return;
+         }
+
+@@ -340,7 +355,9 @@
+
+         let parent_transform = match state.positioning {
+             Positioning::Floating | Positioning::FollowHead { .. } => app.input_state.hmd,
+-            Positioning::FollowHand { hand, .. } => app.input_state.pointers[hand as usize].pose,
++            Positioning::FollowHand { hand, .. } => {
++                app.input_state.pointers[hand as usize].attachment_pose()
++            }
+             Positioning::Anchored => app.anchor,
+             Positioning::Static => {
+                 if hard_reset {
+@@ -431,7 +448,9 @@
+     let parent_transform = match state.positioning {
+         Positioning::Floating => snap_upright(app.input_state.hmd, Vec3A::Y),
+         Positioning::FollowHead { .. } => app.input_state.hmd,
+-        Positioning::FollowHand { hand, .. } => app.input_state.pointers[hand as usize].pose,
++        Positioning::FollowHand { hand, .. } => {
++            app.input_state.pointers[hand as usize].attachment_pose()
++        }
+         Positioning::Anchored => snap_upright(app.anchor, Vec3A::Y),
+         Positioning::Static => Affine3A::IDENTITY,
+     };
 --- a/wlx-common/src/dash_interface.rs
 +++ b/wlx-common/src/dash_interface.rs
 @@ -74,6 +74,7 @@
  }
- 
+
  pub trait DashInterface<T> {
 +	fn tracking_batteries(&mut self, _data: &mut T) -> (String, bool) { (String::new(), false) }
  	fn window_list(&mut self, data: &mut T) -> anyhow::Result<Vec<WvrWindow>>;

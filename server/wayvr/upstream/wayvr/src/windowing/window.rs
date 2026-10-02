@@ -270,7 +270,7 @@ impl OverlayWindowConfig {
         let (target_transform, lerp) = match state.positioning {
             Positioning::FollowHead { lerp } => (app.input_state.hmd * cur_transform, lerp),
             Positioning::FollowHand { hand, lerp } => (
-                app.input_state.pointers[hand as usize].pose * cur_transform,
+                app.input_state.pointers[hand as usize].attachment_pose() * cur_transform,
                 lerp,
             ),
             Positioning::Anchored => (app.anchor * cur_transform, 1.0),
@@ -314,7 +314,22 @@ impl OverlayWindowConfig {
             return;
         };
 
+        if self.name.as_ref() == crate::overlays::watch::WATCH_NAME {
+            if let Positioning::FollowHand { hand, .. } = state.positioning {
+                let pointer = &app.input_state.pointers[hand as usize];
+                if (pointer.hand_tracking && pointer.wrist_pose.is_none())
+                    || (!pointer.hand_tracking && (!pointer.tracked || pointer.handsfree))
+                {
+                    state.alpha = 0.0;
+                    self.dirty = true;
+                    return;
+                }
+            }
+        }
         if !state.angle_fade {
+            if self.name.as_ref() == crate::overlays::watch::WATCH_NAME {
+                state.alpha = 1.0;
+            }
             return;
         }
 
@@ -340,7 +355,9 @@ impl OverlayWindowConfig {
 
         let parent_transform = match state.positioning {
             Positioning::Floating | Positioning::FollowHead { .. } => app.input_state.hmd,
-            Positioning::FollowHand { hand, .. } => app.input_state.pointers[hand as usize].pose,
+            Positioning::FollowHand { hand, .. } => {
+                app.input_state.pointers[hand as usize].attachment_pose()
+            }
             Positioning::Anchored => app.anchor,
             Positioning::Static => {
                 if hard_reset {
@@ -431,7 +448,9 @@ pub fn save_transform(state: &mut OverlayWindowState, app: &mut AppState) {
     let parent_transform = match state.positioning {
         Positioning::Floating => snap_upright(app.input_state.hmd, Vec3A::Y),
         Positioning::FollowHead { .. } => app.input_state.hmd,
-        Positioning::FollowHand { hand, .. } => app.input_state.pointers[hand as usize].pose,
+        Positioning::FollowHand { hand, .. } => {
+            app.input_state.pointers[hand as usize].attachment_pose()
+        }
         Positioning::Anchored => snap_upright(app.anchor, Vec3A::Y),
         Positioning::Static => Affine3A::IDENTITY,
     };

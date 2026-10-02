@@ -349,6 +349,9 @@ pub struct Pointer {
     pub(super) interaction: InteractionState,
     pub tracked: bool,
     pub handsfree: bool,
+    pub hand_tracking: bool,
+    pub wrist_pose: Option<Affine3A>,
+    pub cancel_interaction: bool,
     /// distance of the most recent ray hit on a wayland client window, used for drag n drop
     pub last_wvr_hit_distance: Option<f32>,
 }
@@ -367,8 +370,27 @@ impl Pointer {
             interaction: InteractionState::default(),
             tracked: false,
             handsfree: false,
+            hand_tracking: false,
+            wrist_pose: None,
+            cancel_interaction: false,
             last_wvr_hit_distance: None,
         }
+    }
+
+    pub fn attachment_pose(&self) -> Affine3A {
+        self.wrist_pose.map_or(self.pose, |wrist| {
+            // Map the existing controller attachment frame onto the back of
+            // the wrist, preserving saved offsets and scale in that frame.
+            let watch = Affine3A::from_rotation_translation(
+                crate::overlays::watch::WATCH_ROT,
+                crate::overlays::watch::WATCH_POS,
+            );
+            let on_wrist = Affine3A::from_rotation_translation(
+                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2),
+                glam::Vec3::new(0.0, 0.035, 0.025),
+            );
+            wrist * on_wrist * watch.inverse()
+        })
     }
 
     pub const fn hand(&self) -> Option<LeftRight> {
@@ -523,6 +545,32 @@ where
     [hits[0].1, hits[1].1]
 }
 
+/// Release at the previous pose before switching sources or losing tracking.
+pub fn release_pointer<O>(idx: usize, overlays: &mut OverlayWindowManager<O>, app: &mut AppState)
+where
+    O: Default,
+{
+    let pointer = &mut app.input_state.pointers[idx];
+    pointer.now = PointerState::default();
+    pointer.cancel_interaction = false;
+    pointer.tracked = false;
+    // A lowered hand can still have a valid wrist attachment.
+    pointer.pending_haptics = None;
+    let grabbed = pointer.interaction.grabbed.map(|g| g.grabbed_id);
+    let hovered = pointer.interaction.hovered_id.take();
+    if let Some(id) = grabbed {
+        if let Some(overlay) = overlays.mut_by_id(id) {
+            handle_grabbed(idx, overlay, app);
+        }
+        app.input_state.pointers[idx].interaction.grabbed = None;
+    }
+    handle_no_hit(idx, hovered, overlays, app);
+    if let Some(server) = app.wvr_server.as_mut() {
+        server.clear_dnd_focus(idx);
+    }
+    app.input_state.pointers[idx].before = PointerState::default();
+}
+
 fn interact_hand<O>(
     idx: usize,
     overlays: &mut OverlayWindowManager<O>,
@@ -531,15 +579,12 @@ fn interact_hand<O>(
 where
     O: Default,
 {
+    if app.input_state.pointers[idx].cancel_interaction || !app.input_state.pointers[idx].tracked {
+        release_pointer(idx, overlays, app);
+        return (None, None);
+    }
     let mut pointer = &mut app.input_state.pointers[idx];
     let pending_haptics = pointer.pending_haptics.take();
-
-    if !pointer.tracked {
-        pointer.interaction.should_block_input = false;
-        pointer.interaction.should_block_poses = false;
-        pointer.interaction.kbd_block_activated = false;
-        return (None, pending_haptics); // no hit
-    }
 
     // already grabbing, ignore everything else
     if let Some(grab_data) = pointer.interaction.grabbed {
@@ -689,6 +734,9 @@ fn handle_no_hit<O>(
     if let Some(hovered_id) = hovered_id
         && let Some(hovered) = overlays.mut_by_id(hovered_id)
     {
+        if hovered.primary_pointer == Some(pointer_idx) {
+            hovered.primary_pointer = None;
+        }
         log::debug!("{} on_left (no hit)", hovered.config.name);
         hovered.config.backend.on_left(app, pointer_idx);
         hovered.hover_pointers[pointer_idx] = false;
@@ -802,6 +850,13 @@ where
         let Some(overlay_state) = overlay.config.active_state.as_ref() else {
             continue;
         };
+        // Use the opposite hand to operate the wrist panel.
+        if pointer.hand_tracking
+            && overlay.config.name.as_ref() == WATCH_NAME
+            && matches!(overlay_state.positioning, Positioning::FollowHand { hand, .. } if hand as usize == pointer_idx)
+        {
+            continue;
+        }
         if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
             continue;
         }
@@ -1134,4 +1189,35 @@ fn ray_test(
         local_pos,
         dist,
     })
+}
+
+#[cfg(test)]
+mod hand_attachment_tests {
+    use super::*;
+    #[test]
+    fn wrist_attachment_preserves_controller_frame_and_faces_back_of_hand() {
+        let mut pointer = Pointer::new(0);
+        pointer.pose = Affine3A::from_translation(glam::Vec3::X);
+        assert_eq!(pointer.attachment_pose(), pointer.pose);
+        let wrist = Affine3A::from_rotation_translation(
+            Quat::from_rotation_y(0.7),
+            glam::Vec3::new(0.2, 1.1, -0.4),
+        );
+        pointer.wrist_pose = Some(wrist);
+        let panel = pointer.attachment_pose()
+            * Affine3A::from_rotation_translation(
+                crate::overlays::watch::WATCH_ROT,
+                crate::overlays::watch::WATCH_POS,
+            );
+        let local = wrist.inverse() * panel;
+        assert!(
+            glam::Vec3::from(local.translation)
+                .abs_diff_eq(glam::Vec3::new(0.0, 0.035, 0.025), 1e-5)
+        );
+        assert!(
+            local
+                .transform_vector3(glam::Vec3::Z)
+                .abs_diff_eq(glam::Vec3::Y, 1e-5)
+        );
+    }
 }

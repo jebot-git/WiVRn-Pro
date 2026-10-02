@@ -832,6 +832,10 @@ xrt_result_t wivrn_controller::get_hand_tracking(xrt_input_name name, int64_t de
 			*out_timestamp_ns = desired_timestamp_ns;
 			XrTime production_timestamp;
 			std::tie(production_timestamp, *out_value) = joints.get_at(desired_timestamp_ns);
+			// Do not hold a pinch through a stalled hand-tracking stream. The
+			// generic pose history otherwise retains the last sample for 1 s.
+			if (production_timestamp <= 0 or os_monotonic_get_ns() - production_timestamp > 150'000'000)
+				*out_value = {};
 			cnx->add_tracking_request(joints.hand_id == 0 ? device_id::LEFT_HAND : device_id::RIGHT_HAND, desired_timestamp_ns, production_timestamp);
 			return XRT_SUCCESS;
 		}

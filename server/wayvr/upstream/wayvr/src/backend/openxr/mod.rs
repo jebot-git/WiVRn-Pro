@@ -55,6 +55,7 @@ struct XrState {
     session: xr::Session<xr::Vulkan>,
     predicted_display_time: xr::Time,
     fps: f32,
+    focused: bool,
     stage: Arc<xr::Space>,
     view: Arc<xr::Space>,
     extra_exts: ExtraExts,
@@ -147,6 +148,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
         session,
         predicted_display_time: xr::Time::from_nanos(0),
         fps: 30.0,
+        focused: false,
         stage: Arc::new(stage),
         view: Arc::new(view),
         extra_exts,
@@ -203,6 +205,14 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
                     // Session state change is where we can begin and end sessions, as well as
                     // find quit messages!
                     log::info!("entered state {:?}", e.state());
+                    xr_state.focused = e.state() == xr::SessionState::FOCUSED;
+                    if !xr_state.focused {
+                        input_source.reset_hands();
+                        for i in 0..2 {
+                            crate::backend::input::release_pointer(i, &mut overlays, &mut app);
+                            app.input_state.pointers[i].wrist_pose = None;
+                        }
+                    }
                     match e.state() {
                         xr::SessionState::READY => {
                             xr_state.session.begin(VIEW_TYPE)?;
@@ -291,6 +301,11 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
         };
 
         if !xr_frame_state.should_render {
+            input_source.reset_hands();
+            for i in 0..2 {
+                crate::backend::input::release_pointer(i, &mut overlays, &mut app);
+                app.input_state.pointers[i].wrist_pose = None;
+            }
             log::trace!("xrEndFrame");
             frame_stream.end(
                 xr_frame_state.predicted_display_time,

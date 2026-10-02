@@ -1,0 +1,11 @@
+{
+  "source": "local KWin hand-tracking prototype",
+  "source_directory": "/home/blux/kwin/fedora-vr/eye-prototype/kwin/src/plugins/vr",
+  "license": "GPL-2.0-or-later",
+  "adaptation": "server/wayvr/hand_input.rs",
+  "sha256": {
+    "vrhandpointer.cpp": "8575210bf3585a487b8580660a324cebac531fb694deed53ee9b3c2c55ef447f",
+    "vrhandpointer.h": "702c5932ab7212198ed23d08901d10c0959420a30f5bc19ae06b458e1363c87a",
+    "qml/HandInput.qml": "755f679fb8e7f5257fd6bb89bfec85c8414afa865f0ca6300e671a3ec1fcd1d5"
+  }
+}

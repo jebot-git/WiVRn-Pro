@@ -23,6 +23,7 @@ use crate::state::AppState;
 pub(super) struct ExtraExts {
     pub mndx_composition_layer_alpha_blend_system_ui: bool,
     pub ext_eye_gaze_interaction: bool,
+    pub ext_hand_tracking: bool,
 }
 
 pub(super) fn init_xr() -> Result<(xr::Instance, xr::SystemId, ExtraExts), anyhow::Error> {
@@ -61,6 +62,8 @@ pub(super) fn init_xr() -> Result<(xr::Instance, xr::SystemId, ExtraExts), anyho
     } else {
         log::warn!("Missing EXT_hp_mixed_reality_controller extension.");
     }
+    enabled_extensions.ext_hand_tracking = available_extensions.ext_hand_tracking;
+    extra_exts.ext_hand_tracking = available_extensions.ext_hand_tracking;
     if available_extensions.ext_hand_interaction {
         enabled_extensions.ext_hand_interaction = true;
     } else {
