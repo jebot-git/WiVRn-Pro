@@ -32,6 +32,7 @@ pub struct DriftCompensator {
     samples: VecDeque<(f32, f32)>, // corrective radians/second, interval seconds
     pub(super) since: Option<Instant>,
     rate: f32,
+    held: Option<f32>,
     horizon: f32,
     last_interval: f32,
     last_angle: f32,
@@ -41,7 +42,7 @@ pub struct DriftCompensator {
 impl DriftCompensator {
     pub(super) fn new() -> Self {
         Self { enabled: false, amount: 0.5, samples: VecDeque::new(), since: None,
-            rate: 0.0, horizon: 0.0, last_interval: 0.0, last_angle: 0.0,
+            rate: 0.0, held: None, horizon: 0.0, last_interval: 0.0, last_angle: 0.0,
             last_result: "waiting_for_baseline" }
     }
 
@@ -55,12 +56,18 @@ impl DriftCompensator {
         self.amount = amount;
     }
 
+    pub(super) fn suspend(&mut self) { self.suspend_at(Instant::now()); }
+    fn suspend_at(&mut self, now: Instant) {
+        let held = self.correction_at(now);
+        self.clear(); self.held = Some(held); self.last_result = "reference_suspended";
+    }
     pub(super) fn record(&mut self, before: &UnitQuaternion<f32>, after: &UnitQuaternion<f32>) {
         self.record_at(before, after, Instant::now());
     }
 
     fn record_at(&mut self, before: &UnitQuaternion<f32>, after: &UnitQuaternion<f32>, now: Instant) {
         if !self.enabled { return; }
+        self.held = None;
         let previous = self.since.replace(now);
         let dt = previous.map(|s| now.saturating_duration_since(s).as_secs_f32()).unwrap_or(0.0);
         // Quaternion difference handles +/-180 degree heading wrap correctly.
@@ -91,6 +98,7 @@ impl DriftCompensator {
 
     fn correction_at(&self, now: Instant) -> f32 {
         if !self.enabled { return 0.0; }
+        if let Some(held) = self.held { return held; }
         let elapsed = self.since.map(|s| now.saturating_duration_since(s).as_secs_f32()).unwrap_or(0.0);
         // Preserve bounded compensation: no indefinite extrapolation of an
         // old rate while the tracker warms up or changes fusion behaviour.
@@ -173,4 +181,18 @@ mod tests {
         reset(&mut d, start, 180, 1.0);
         assert!(d.since.is_none());
     }
+    #[test]
+    fn reference_loss_freezes_offset_and_next_reset_only_establishes_baseline() {
+        let start=Instant::now(); let mut d=DriftCompensator::new();d.configure(true,1.0);
+        reset(&mut d,start,0,0.0);reset(&mut d,start,60,-2.0);
+        d.suspend_at(start+Duration::from_secs(90));
+        assert!((d.correction_at(start+Duration::from_secs(900)).to_degrees()+1.0).abs()<1e-4);
+        d.suspend_at(start+Duration::from_secs(901));
+        assert!((d.correction_at(start+Duration::from_secs(902)).to_degrees()+1.0).abs()<1e-4);
+        reset(&mut d,start,1000,15.0);
+        assert_eq!(d.last_result,"baseline");assert!(d.samples.is_empty());assert_eq!(d.rate,0.0);
+        reset(&mut d,start,1060,-1.0);assert_eq!(d.samples.len(),1);
+        assert!((d.rate.to_degrees()*60.0+1.0).abs()<1e-4);
+    }
+
 }

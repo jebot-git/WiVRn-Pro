@@ -93,3 +93,49 @@ They exercise acquisition, calibration, HMD anchoring/expiry, disconnect/reconne
 Qt control and saved-profile reload. A separate isolated D-Bus mock tests streaming
 settings and pairing. The production C++ supervisor is tested with a harmless
 worker to verify automatic restart and shutdown. No live headset tests run.
+
+## Spatial reference protection
+
+The managed worker subscribes read-only to `wivrn-pro/bridge.sock` using the
+supervisor-supplied `WIVRN_SPATIAL_SOCKET`. The subscription checks the peer UID,
+record size, source session/generation, increasing sequence, monotonic sample
+time, tracked head pose and 750 ms freshness. Heartbeats cannot keep an old
+sample alive. Reconnection, expiry and reference changes discard drift-learning
+history and pause Stay Aligned, preserving the correction already applied.
+A fresh HMD feeder sample is also required; losing it pauses correction.
+
+After two seconds of continuous healthy spatial samples, **a deliberate full or
+yaw reset is required** to resume automatic correction. The first reset starts a
+new drift baseline; it does not learn the reference jump as IMU drift. Mounting
+resets do not unlock correction. The shared reset path enforces this for Qt,
+tracker buttons and SolarXR requests, and ignores stale tracker rotations.
+Rejected SolarXR requests are logged and receive no FINISHED response.
+
+With three or more tracked persisted anchors, the guard compares their identities
+and poses in Quest STAGE against the baseline. Fewer than three common anchors,
+more than 5 cm translation or 3 degrees rotation triggers settling and another
+explicit reset. Once anchor validation starts, loss of anchors cannot silently
+fall back to tracking-only mode during that worker's lifetime. Before three
+anchors are available, status explicitly reports `tracking_only_no_anchor_validation`;
+session/generation and freshness protection still apply. These thresholds are
+initial guard thresholds, not a measured accuracy specification. Anchor drift
+below them and common errors shared by the headset and anchors remain unobservable.
+
+Qt shows reference health, anchor count and the reset requirement, blocks resets
+while tracking is unhealthy, and cancels an outstanding calibration countdown on
+reference loss. No room-to-tracker transform is applied: Shora continues using its
+existing HMD feeder frame. This implementation does not directly measure or
+correct individual limb yaw from room anchors. Use the Quest calibration guide
+in [SPATIAL.md](SPATIAL.md) to make deliberate resets more repeatable.
+
+Existing TOML settings are unchanged, including the mutual exclusion between
+Stay Aligned and drift learning. The guard is volatile; standalone workers without
+`WIVRN_SPATIAL_SOCKET` retain their existing behavior. A managed worker with an
+unavailable spatial bridge remains paused rather than learning against an unknown
+reference.
+
+Offline integration test (fake spatial publisher, serial PTY and HMD feeder):
+
+```sh
+python3 fork/tests/spatial_tracking_smoke.py --server build/server/server/wivrn-pro-server
+```

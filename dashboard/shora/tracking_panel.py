@@ -208,10 +208,12 @@ class TrackingPanel(QWidget):
         self.stay_enabled.setEnabled(stay_supported)
         self.clear_stay.setEnabled(stay_supported)
         active = bool(snapshot and any(t.get("active") for t in snapshot.get("trackers", [])))
-        self.calibrate_button.setEnabled(active and self.deadline is None)
+        health = snapshot.get("spatial_reference") if snapshot else None
+        reference_ready = not health or (health.get("ready", False) and snapshot.get("hmd_pose_received", False))
+        self.calibrate_button.setEnabled(active and reference_ready and self.deadline is None)
         self.calibration_type.setEnabled(self.deadline is None)
         self.delay.setEnabled(self.deadline is None)
-        if not active and self.deadline is not None:
+        if (not active or not reference_ready) and self.deadline is not None:
             self.cancel_calibration()
         if not snapshot:
             self.dirty = False
@@ -230,6 +232,11 @@ class TrackingPanel(QWidget):
         else:
             self.stay_status.setText("This server does not support Stay Aligned. Update the server to use it.")
         reference = "HMD reference" if snapshot.get("hmd_pose_received") else "Tracker reference · HMD unavailable"
+        if health:
+            state = health.get("state", "unavailable").replace("_", " ")
+            reference += f" · Room reference: {state} ({health.get('anchors', 0)} anchors)"
+            if snapshot.get("reference_needs_reset"):
+                reference += "\nAutomatic correction paused. When tracking is stable, face the saved Quest guide and perform a yaw or full reset."
         if self.deadline is None:
             self.calibration_status.setText(f"{reference}\n{snapshot.get('calibrated_trackers', 0)} trackers calibrated · {snapshot.get('drift_samples', 0)} with learned drift")
 

@@ -25,6 +25,8 @@ cat build/native-tests/wire-host.txt
 "$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -Wno-missing-field-initializers \
   -Iclient -Icommon fork/tests/spatial_source_test.cpp client/spatial_source.cpp client/anchor_manager.cpp -o build/native-tests/spatial-source-test
 build/native-tests/spatial-source-test
+"$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -Iclient -Icommon fork/tests/room_calibration_test.cpp -o build/native-tests/room-calibration-test
+build/native-tests/room-calibration-test
 build/native-tests/anchors-test
 build/native-tests/capture-test
 build/native-tests/bridge-test

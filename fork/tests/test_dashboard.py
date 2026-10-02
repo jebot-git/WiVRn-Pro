@@ -117,6 +117,29 @@ ports=["/dev/fake"]
             self.assertEqual(saved,original)
             window.close()
 
+    def test_reference_health_blocks_reset_and_cancels_countdown(self):
+        from tracking_panel import TrackingPanel
+        panel = TrackingPanel()
+        snapshot = {"trackers":[{"active":True}], "hmd_pose_received":True,
+                    "spatial_reference":{"ready":False, "state":"reference_settling", "anchors":3},
+                    "reference_needs_reset":True}
+        panel.set_snapshot(snapshot)
+        self.assertFalse(panel.calibrate_button.isEnabled())
+        self.assertIn("Automatic correction paused", panel.calibration_status.text())
+        snapshot["spatial_reference"]["ready"] = True
+        panel.set_snapshot(snapshot)
+        self.assertTrue(panel.calibrate_button.isEnabled())
+        panel.start_calibration()
+        self.assertIsNotNone(panel.deadline)
+        snapshot["spatial_reference"]["ready"] = False
+        panel.set_snapshot(snapshot)
+        self.assertIsNone(panel.deadline)
+        self.assertFalse(panel.timer.isActive())
+        snapshot.pop("spatial_reference")
+        panel.set_snapshot(snapshot)
+        self.assertTrue(panel.calibrate_button.isEnabled()) # Standalone compatibility.
+        panel.close()
+
     def test_window_reuses_tracking_ui_without_starting_service(self):
         with tempfile.TemporaryDirectory() as directory:
             window=Dashboard(self.server, Path(directory)/'shora.toml', Path(directory)/'control', attach=False)

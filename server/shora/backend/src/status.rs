@@ -40,6 +40,8 @@ pub struct StatusSnapshot {
     pub face_output: String,
     pub face_active: bool,
     pub hmd_pose_received: bool,
+    pub spatial_reference: Option<crate::spatial_reference::Health>,
+    pub reference_needs_reset: bool,
     pub bone_count: usize,
     pub bones: Vec<BoneInfo>,
     pub settings: crate::settings::TrackingSettings,

@@ -123,6 +123,29 @@ bridge service. The same service supervises the bundled upstream WayVR overlay
 worker and can open this fork's Qt dashboard in a virtual Wayland display; see
 [worker configuration](../docs/configuration.md#wayvr-worker). The reader example is also installed as `wivrn-pro-spatial`.
 
+## Room-fixed body calibration guide
+
+In the Quest spatial settings, open **Body tracking calibration guide** after
+localizing at least one saved room marker. Stand upright in a clear location,
+face the preferred reset direction, and select **Save calibration spot here**.
+The nearest tracked saved marker owns the standing position and facing direction;
+`calibration-spot-v1.txt` stores the marker UUID and relative pose in the existing
+private `spatial-bridge-v1` directory. It does not replace marker UUID files.
+
+Enable **Show calibration guide** to display floor axes and a facing target
+1.2 metres ahead at the captured head height, in either the lobby or stream.
+Stand at the floor axes, face the raised target, align head/torso/feet, and issue
+the usual full or yaw reset. The panel reports distance and facing difference.
+Nothing resets trackers automatically or treats head direction as limb direction.
+
+The guide resolves its anchor afresh each frame and hides on tracking loss,
+reference-change transitions, or missing/replaced anchor identity. It never
+reuses a saved world pose when localization fails. On app restart the saved spot
+loads, but its overlay remains off until explicitly enabled. Use **Replace
+calibration spot here** to deliberately choose a new location/direction. The
+helper supplies a repeatable visual cue; physical accuracy and usability still
+require the deferred headset tests.
+
 ## Offline verification
 
 ```sh

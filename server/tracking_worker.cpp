@@ -30,6 +30,7 @@ tracking_worker::tracking_worker()
 		throw std::runtime_error("Matching WiVRn OpenXR manifest is missing");
 	manifest = paths.front().string();
 	arguments = {std::filesystem::read_symlink("/proc/self/exe").string(), "--shora-worker", std::to_string(getpid()), "--config", config.string(), "--ui", "headless", "--solarxr-socket", (dir / "ShoraRpc.backend").string(), "--feeder-socket", (dir / "ShoraInput.backend").string(), "--control-socket", (dir / "ShoraControl").string()};
+	spatial_path = (dir / "bridge.sock").string();
 	spawn();
 }
 void tracking_worker::spawn()
@@ -42,6 +43,7 @@ void tracking_worker::spawn()
 	argv.push_back(nullptr);
 	auto env = g_get_environ();
 	env = g_environ_setenv(env, "XR_RUNTIME_JSON", manifest.c_str(), TRUE);
+	env = g_environ_setenv(env, "WIVRN_SPATIAL_SOCKET", spatial_path.c_str(), TRUE);
 	GError * error = nullptr;
 	bool ok = g_spawn_async(nullptr, argv.data(), env, G_SPAWN_DO_NOT_REAP_CHILD, nullptr, nullptr, &pid, &error);
 	g_strfreev(env);

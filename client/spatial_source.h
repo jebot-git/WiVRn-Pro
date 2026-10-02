@@ -2,6 +2,7 @@
 #pragma once
 #include "anchor_manager.h"
 #include "guided_capture.h"
+#include "room_calibration.h"
 #include "spatial_protocol.h"
 #include <memory>
 #include <optional>
@@ -18,6 +19,9 @@ class spatial_source {
     std::array<XrSpace, spatial::entity_limit> scene_spaces{};
     spatial::snapshot current;
     room_capture::guide guide;
+    std::optional<room_calibration::spot> calibration_spot;
+    bool show_calibration = false;
+    std::string calibration_message;
     XrTime last_sent = 0, change_at = 0, scene_deadline = 0;
     uint64_t request = 0;
     XrAsyncRequestIdFB scene_request = 0;
@@ -41,7 +45,10 @@ public:
     void stop_capture();
     bool saved_marker(size_t slot) const;
     bool reload_marker(size_t slot);
-    bool markers_visible() const { return capturing || preview_markers; }
+    bool markers_visible() const { return capturing || preview_markers || show_calibration; }
+    static constexpr size_t visual_marker_count = spatial::marker_count + 2;
+    spatial::location visual_marker(size_t slot) const;
+    bool save_calibration_spot();
     bool capture_active() const { return capturing; }
     const spatial::snapshot & sample() const { return current; }
 };

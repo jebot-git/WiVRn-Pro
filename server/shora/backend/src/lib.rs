@@ -14,6 +14,7 @@ mod settings;
 mod smoothing;
 mod solarxr;
 mod status;
+mod spatial_reference;
 mod stay_aligned;
 mod tracker;
 mod ui;

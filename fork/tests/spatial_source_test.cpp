@@ -98,23 +98,31 @@ int main() {
         check(s.saved_marker(0) && !s.saved_marker(12));
         check(s.sample().stream == source_session && s.sample().sequence > sequence);
         check(s.sample().markers[0].persisted && s.sample().markers[0].pose.flags == 15);
+        check(s.save_calibration_spot() && s.markers_visible());
+        check(s.visual_marker(wivrn::spatial::marker_count).flags == 15);
+        check(s.visual_marker(0).flags == 0); // Guide alone does not enable all marker axes.
+        check(s.visual_marker(wivrn::spatial_source::visual_marker_count).flags == 0);
         check(!s.reload_marker(1) && !s.reload_marker(12));
         check(s.reload_marker(0) && !s.reload_marker(0));
         found = false; queried(s); tick();
         // A saved UUID remains reloadable after an unsuccessful localization.
         check(s.saved_marker(0) && !s.sample().markers[0].persisted);
+        check(s.visual_marker(wivrn::spatial::marker_count).flags == 0);
         check(s.reload_marker(0)); found = true; queried(s); tick();
         check(s.sample().markers[0].pose.flags == 15 && creates == 1);
         auto inactive = s.tick(now + 1, false);
         check(inactive && !inactive->active && inactive->head.flags == 0 && inactive->markers[0].pose.flags == 0);
         XrEventDataReferenceSpaceChangePending change{XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING};
         change.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE; change.changeTime = now + 1'000'000'000; event(s, change);
+        check(s.visual_marker(wivrn::spatial::marker_count).flags == 0 && !s.save_calibration_spot());
         check(!s.tick(now + 200'000'000, true)->active);
         auto after = s.tick(change.changeTime, true);
         check(after && after->active && after->generation == 2 && after->markers[0].pose.flags == 15);
+        check(s.visual_marker(wivrn::spatial::marker_count).flags == 15);
         check(!s.tick(change.changeTime + 1, true)); // Five-Hz publication limit.
         tracked = false; s.tick(change.changeTime + 200'000'000, true);
         check(s.sample().head.flags == 0 && s.sample().markers[0].pose.flags == 0);
+        check(s.visual_marker(wivrn::spatial::marker_count).flags == 0);
         tracked = true;
     }
     {
@@ -123,6 +131,7 @@ int main() {
         auto sample = s.tick(1, true);
         check(sample->stream != source_session && sample->generation == 1);
         check(sample->markers[0].status == uint8_t(wivrn::anchor::state::loading));
+        check(!s.markers_visible()); // Loading a saved guide never enables an overlay implicitly.
         queried(s); s.tick(2, true);
         check(s.sample().markers[0].persisted && s.sample().markers[0].pose.flags == 15);
     }

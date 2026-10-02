@@ -16,13 +16,16 @@ pub fn handle_user_action(
     calib: &mut Calibration,
     hmd: Option<&HmdPose>,
     action: &ActionType,
-) {
+) -> anyhow::Result<()> {
     match action {
         ActionType::Reset | ActionType::ResetYaw | ActionType::ResetMounting => {
+            calib.prepare_reference_reset(hmd.is_some())?;
             let reference = reference_rotation(registry, hmd).unwrap_or_else(UnitQuaternion::identity);
             let mut count = 0;
             for t in registry.iter() {
                 let Some(raw) = t.rotation else { continue };
+                if calib.managed_reference() && !t.rotation_updated_at.is_some_and(|at|
+                    at.elapsed().as_secs_f32() <= crate::stay_aligned::FRESH_SECS) {continue;}
                 let previous_applied_deg = calib.drift_diagnostics(t.id()).map(|d| d.applied_deg).unwrap_or(0.0);
                 let residual_deg = calib.reset_yaw_error(t.id(), raw, reference);
                 let aligned_deg = calib.alignment_diagnostics(t.id()).map(|d| d.correction_deg).unwrap_or(0.0);
@@ -45,10 +48,13 @@ pub fn handle_user_action(
                 }
                 count += 1;
             }
+            anyhow::ensure!(count > 0, "No tracker samples available for calibration");
+            if matches!(action, ActionType::Reset | ActionType::ResetYaw) {calib.confirm_reference_reset();}
             tracing::info!(?action, "calibration applied to {count} trackers");
         }
         _ => {}
     }
+    Ok(())
 }
 
 /// Pick the reference rotation for a reset. The synthetic trackers are emitted

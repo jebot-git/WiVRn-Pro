@@ -143,9 +143,9 @@ mod tests {
                 let reference = yaw(heading);
                 let hmd = [0.0, 1.7, 0.0, reference.i, reference.j, reference.k, reference.w];
                 feed(reference, &mut registry, &mut calibration);
-                crate::reset::handle_user_action(&registry, &mut calibration, Some(&hmd), &ActionType::Reset);
+                crate::reset::handle_user_action(&registry, &mut calibration, Some(&hmd), &ActionType::Reset).unwrap();
                 feed(reference * pitch(ski_pitch), &mut registry, &mut calibration);
-                crate::reset::handle_user_action(&registry, &mut calibration, Some(&hmd), &ActionType::ResetMounting);
+                crate::reset::handle_user_action(&registry, &mut calibration, Some(&hmd), &ActionType::ResetMounting).unwrap();
                 for (turn, bend) in [(0.0, 0.0), (0.0, -0.7), (0.0, 0.8), (0.7, 0.0), (-0.4, 0.5)] {
                     let expected = yaw(heading + turn) * pitch(bend);
                     feed(expected, &mut registry, &mut calibration);

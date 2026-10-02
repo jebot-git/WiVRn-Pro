@@ -10,7 +10,7 @@ changing installed services, selecting an OpenXR runtime or accessing tracker ha
 | FFmpeg QSV configure probe | H.264/HEVC encoders and QSV device type present; no GPU opened |
 | Quest Pro ARM64 debug APK | Offline Gradle rebuild passed with lobby capture, application-owned anchors and marker helper |
 | Actual PC/ARM64 protocol constants | Match: `7227f7ce3e454c1d` |
-| Application-owned spatial source | 114 checks passed: capture/late completion, reload retry after failed localization, preserved epoch, fresh-launch restore, focus/tracking loss, reference changes and publication throttling |
+| Application-owned spatial source | 123 checks passed: capture/late completion, reload retry after failed localization, preserved epoch, fresh-launch restore, focus/tracking loss, reference changes and publication throttling |
 | Anchor manager | 69 checks passed |
 | Guided capture | 706 checks passed |
 | Spatial transform/multi-client IPC | 126 checks passed |
@@ -18,10 +18,10 @@ changing installed services, selecting an OpenXR runtime or accessing tracker ha
 | Arc/Quest Pro/Wi-Fi/codec policy | Compile-time cases and source merge guards passed |
 | Unsupported CMake configurations | NVENC ON, x264 ON, SolarXR OFF, desktop client and all encoders OFF rejected |
 | Upstream merge helper | 5 tests passed: isolated merge, preserved conflict, dirty source, wrong remote, current revision |
-| Bundled native Shora | 98 backend tests, 9 skeletal-model tests, 6 relay tests and 2 skeletal-model doctests passed |
+| Bundled native Shora | 104 backend tests, 9 skeletal-model tests, 6 relay tests and 2 skeletal-model doctests passed |
 | Internal worker | Fake serial acquisition, skeleton, HMD anchoring/expiry, resets, reconnect, ownership, SIGTERM and saved-profile reload passed |
 | C++ worker supervisor | Automatic crash restart, matching manifest environment and bounded clean stop passed |
-| Qt6 dashboard | 13 tests passed; real worker calibration/tuning and attach-only close passed; offscreen streaming/skeleton views inspected |
+| Qt6 dashboard | 14 tests passed; real worker calibration/tuning and attach-only close passed; offscreen streaming/skeleton views inspected |
 | Qt D-Bus | Isolated mock verifies status, paired keys, pairing, config write, stale-editor conflicts and WayVR status/restart |
 | Configuration migration | No-overwrite precedence, private file permissions, malformed input and removed-feature handling passed |
 | Current user profiles | Temporary copies of current WiVRn config/keys/cookie and Shora TOML imported; JSON round-trip and Rust parsing preserve settings; original files unchanged |
@@ -64,3 +64,31 @@ Live HMD tests remain suspended until the user requests them. QSV hardware
 encoding, latency, marker capture accuracy, Quest permissions/UX, Wi-Fi routing
 on-device and real Shora tracking/reconnect behavior remain hardware-unverified.
 The PCI policy includes known discrete Arc IDs; unknown/new IDs need review.
+
+## Initial anchor-assisted calibration protection
+
+The QSV ON Linux server/runtime and Quest Pro APK build passed with the reference
+guard and room-fixed calibration guide. Actual PC/ARM protocol constants remain
+`7227f7ce3e454c1d`; this change adds no network packet fields. The full offline fork
+suite passed (19 Python tests and the native checks), including 123 spatial-source
+checks and a new calibration-spot geometry/persistence test. The Rust workspace
+passed; the backend was also tested with the server's `face-xr` feature (104 tests).
+Existing generated-code/dependency warnings remain; new ignored reset-result
+warnings were fixed in the tests.
+
+The new `spatial_tracking_smoke.py` ran the linked worker against a fake SEQPACKET
+spatial publisher, fake serial PTY and HMD feeder. It verified initial settling,
+explicit reset gating, generation changes, anchor movement, packet expiry,
+HMD-feed loss and socket disconnect. Mounting reset alone did not resume learning.
+Unit tests additionally cover session changes, reversed timestamps, replay,
+duplicate anchors, tracking-only diagnostics, loss of anchor validation, frozen
+drift offsets and discarding drift history across reference changes.
+
+The existing worker/Qt smoke suite passed again, including calibration, settings,
+full-profile persistence and reload. The Qt reference-state panel was inspected
+offscreen, and its test checks disabled reset controls and countdown cancellation.
+The Quest guide was tested with pure pose transforms and mocked XR lifecycle
+calls; its persistence, hidden-on-loss behavior and default-off overlay were
+verified. No deployment, installed service change or live HMD test was performed.
+The new 5 cm / 3 degree / 2 second guard thresholds, calibration-guide usability,
+and actual reduction in body-tracking drift remain hardware-unverified.

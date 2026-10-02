@@ -27,6 +27,7 @@ spatial_source::spatial_source(XrInstance instance, XrSession session, XrSpace s
         XrSpace view, std::filesystem::path directory, bool supported, bool scene_supported) :
     instance(instance), session(session), stage(stage), view(view), directory(std::move(directory)),
     api(supported ? anchor::manager::dispatch::resolve(instance, xrGetInstanceProcAddr) : anchor::manager::dispatch{}) {
+    calibration_spot = room_calibration::spot::load(this->directory / "calibration-spot-v1.txt");
     std::random_device random;
     current.stream = (uint64_t(random()) << 32) | random();
     if (!current.stream) current.stream = 1;
@@ -211,4 +212,23 @@ bool spatial_source::reload_marker(size_t slot) {
     anchors[slot]->execute({++request, anchor::operation::load}, last_tick);
     return true;
 }
+bool spatial_source::save_calibration_spot() {
+    auto candidate = last_tick >= change_at ? room_calibration::spot::capture(current) : std::nullopt;
+    if (!candidate) { calibration_message = "A tracked saved marker and level forward gaze are required."; return false; }
+    if (!candidate->save(directory / "calibration-spot-v1.txt")) { calibration_message = "Could not save the calibration spot."; return false; }
+    calibration_spot = candidate; show_calibration = true;
+    calibration_message = "Calibration spot saved. This does not reset trackers.";
+    return true;
+}
+spatial::location spatial_source::visual_marker(size_t slot) const {
+    if (last_tick < change_at) return {};
+    if (slot < spatial::marker_count) return (capturing || preview_markers) ? current.markers[slot].pose : spatial::location{};
+    if (slot >= visual_marker_count || !show_calibration || !calibration_spot) return {};
+    auto pose = calibration_spot->locate(current);
+    if (!pose) return {};
+    if (slot == spatial::marker_count + 1)
+        *pose = room_calibration::compose(*pose, {{0,0,0,1},{0,calibration_spot->height,-1.2f}});
+    return {*pose, room_capture::tracked};
+}
+
 }

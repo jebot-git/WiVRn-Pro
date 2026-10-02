@@ -187,11 +187,14 @@ pub struct Calibration {
     trackers: HashMap<TrackerId, TrackerCalibration>,
     drift_enabled: bool,
     drift_amount: f32,
+    reference: Option<crate::spatial_reference::Shared>,
+    reference_revision: u64,
+    reference_needs_reset: bool,
     pub stay_aligned: crate::stay_aligned::StayAligned,
 }
 impl Default for Calibration {
     fn default() -> Self {
-        Self { trackers: HashMap::new(), drift_enabled: false, drift_amount: 0.5, stay_aligned: Default::default() }
+        Self { reference: None, reference_revision: 0, reference_needs_reset: false, trackers: HashMap::new(), drift_enabled: false, drift_amount: 0.5, stay_aligned: Default::default() }
     }
 }
 
@@ -200,6 +203,45 @@ impl Calibration {
         Self::default()
     }
 
+    pub fn attach_reference(&mut self, reference: crate::spatial_reference::Shared) {
+        self.reference = Some(reference); self.reference_needs_reset = true;
+    }
+    pub fn reference_health(&self) -> Option<crate::spatial_reference::Health> {
+        self.reference.as_ref().map(|r| r.read().unwrap().health(crate::spatial_reference::now_ns()))
+    }
+    pub fn reference_needs_reset(&self) -> bool { self.reference_needs_reset }
+    pub fn sync_reference(&mut self) {
+        if let Some(health) = self.reference_health() {
+            if health.revision != self.reference_revision || (!health.ready && !self.reference_needs_reset) {
+                for t in self.trackers.values_mut() {t.drift.suspend();}
+                self.stay_aligned.suspend(Instant::now());
+                self.reference_needs_reset = true;
+                self.reference_revision = health.revision;
+            }
+        }
+    }
+    pub fn managed_reference(&self) -> bool { self.reference.is_some() }
+    pub fn check_hmd_reference(&mut self, has_hmd: bool) {
+        self.sync_reference();
+        if self.reference.is_some() && !has_hmd && !self.reference_needs_reset {
+            for t in self.trackers.values_mut() {t.drift.suspend();}
+            self.stay_aligned.suspend(Instant::now());
+            self.reference_needs_reset = true;
+        }
+    }
+    pub fn prepare_reference_reset(&mut self, has_hmd: bool) -> anyhow::Result<()> {
+        self.check_hmd_reference(has_hmd);
+        if let Some(health) = self.reference_health() {
+            anyhow::ensure!(health.ready && has_hmd, "Reference protection: {}. Wait for stable tracking before resetting", health.state);
+        }
+        Ok(())
+    }
+    pub fn confirm_reference_reset(&mut self) {
+        if self.reference.is_some() && self.reference_needs_reset {
+            self.stay_aligned.clear();
+            self.reference_needs_reset = false;
+        }
+    }
     /// The corrected bone rotation for a tracker.
     pub fn adjust(&self, id: TrackerId, raw: UnitQuaternion<f32>) -> UnitQuaternion<f32> {
         self.trackers
@@ -262,6 +304,10 @@ impl Calibration {
     }
 
     pub fn update_alignment(&mut self, trackers: &[crate::tracker::Tracker], hmd: Option<UnitQuaternion<f32>>, now: Instant) {
+        self.sync_reference();
+        if self.reference_needs_reset || self.reference_health().is_some_and(|h| !h.ready) {
+            self.stay_aligned.suspend(now); return;
+        }
         let samples = trackers.iter().filter_map(|t| {
             let calibration = self.trackers.get(&t.id())?;
             if !calibration.full_reset_done || calibration.yaw_reset_since.is_some_and(|s| now.saturating_duration_since(s).as_secs_f32() < YAW_SMOOTH_SECS) { return None; }

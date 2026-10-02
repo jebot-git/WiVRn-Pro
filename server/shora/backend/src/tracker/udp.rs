@@ -130,7 +130,7 @@ async fn serve(
                 let reg = registry.read().unwrap();
                 let mut cal = calib.write().unwrap();
                 let hmd_pose = hmd.read().unwrap();
-                reset::handle_user_action(&reg, &mut cal, hmd_pose.as_ref(), &action);
+                if let Err(error) = reset::handle_user_action(&reg, &mut cal, hmd_pose.as_ref(), &action) { tracing::warn!(%error, "Reset rejected"); }
             }
             _ => {}
         }

@@ -12,7 +12,7 @@ class tracking_worker
 	guint watch = 0, retry = 0;
 	bool stopping = false;
 	std::vector<std::string> arguments;
-	std::string manifest;
+	std::string manifest, spatial_path;
 	void spawn();
 
 public:

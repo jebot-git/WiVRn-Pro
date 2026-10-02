@@ -1079,12 +1079,12 @@ void scenes::lobby::render(const XrFrameState & frame_state)
 	if (spatial.markers_visible())
 	{
 		if (spatial_markers.empty())
-			for (size_t i = 0; i < wivrn::spatial::marker_count; ++i)
+			for (size_t i = 0; i < wivrn::spatial_source::visual_marker_count; ++i)
 				spatial_markers.push_back(add_gltf("assets://xyz-arrows.glb", layer_spatial).first);
 		for (size_t i = 0; i < spatial_markers.size(); ++i)
 		{
 			auto & node = world.get<components::node>(spatial_markers[i]);
-			const auto & marker = spatial.sample().markers[i].pose;
+			const auto marker = spatial.visual_marker(i);
 			node.visible = (marker.flags & 3) == 3;
 			node.position = {marker.pose.position.x, marker.pose.position.y, marker.pose.position.z};
 			const auto & q = marker.pose.orientation;

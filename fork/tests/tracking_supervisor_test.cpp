@@ -48,6 +48,7 @@ int main(int argc, char ** argv)
 		prctl(PR_SET_PDEATHSIG, SIGTERM);
 		assert(getppid() == std::stoi(argv[2]));
 		assert(std::string_view(std::getenv("XR_RUNTIME_JSON")) == "/unused-test-manifest.json");
+		assert(std::filesystem::path(std::getenv("WIVRN_SPATIAL_SOCKET")) == std::filesystem::path(std::getenv("XDG_RUNTIME_DIR")) / "wivrn-pro/bridge.sock");
 		std::signal(SIGTERM, stop);
 		{
 			std::ofstream file(pidfile);

@@ -13,6 +13,11 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
     let registry = Arc::new(RwLock::new(TrackerRegistry::default()));
     let pose = Arc::new(RwLock::new(Pose::default()));
     let calib = Arc::new(RwLock::new(Calibration::new()));
+    let spatial_reference = std::env::var_os("WIVRN_SPATIAL_SOCKET").map(|path| {
+        let shared = Arc::new(RwLock::new(crate::spatial_reference::Reference::default()));
+        calib.write().unwrap().attach_reference(shared.clone());
+        (std::path::PathBuf::from(path), shared)
+    });
     let mut settings = config.tracking_settings();
     calib.write().unwrap().configure_drift(settings.drift_correction, settings.drift_amount);
     calib.write().unwrap().stay_aligned.configure(settings.stay_aligned);
@@ -42,6 +47,7 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
     let mut acquisition = Acquisition::start(config.haritorax.clone())?;
     let mut bridge = Bridge::default();
     let mut services = tokio::task::JoinSet::new();
+    if let Some((path, shared)) = spatial_reference { services.spawn(crate::spatial_reference::run(path, shared)); }
     if let Some(control) = control { services.spawn(control.run(status.clone(), commands.clone())); }
     services.spawn(tracker::udp::run(SocketAddr::from(([0,0,0,0],config.tracker_port)),
         registry.clone(), calib.clone(), hmd.clone(), assignments.clone(), config.ping_interval_secs, config.tracker_timeout_secs));
@@ -81,6 +87,7 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                 .filter(|h| h.at.elapsed().as_secs_f32() <= crate::stay_aligned::FRESH_SECS)
                 .map(|h| h.pose);
         }
+        calib.write().unwrap().check_hmd_reference(hmd.read().unwrap().is_some());
         if let Some(relay) = face_relay.as_mut() { relay.check_health()?; }
         if let Some(tui) = tui.as_mut() { tui.check_health()?; }
         if frame_due {
@@ -142,7 +149,7 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                         Command::FullReset => ActionType::Reset, Command::MountingReset => ActionType::ResetMounting, _ => unreachable!() };
                     let reg = registry.read().unwrap();
                     if reg.iter().all(|t| t.rotation.is_none()) { Err(anyhow::anyhow!("no tracker samples available for calibration")) }
-                    else { reset::handle_user_action(&reg, &mut calib.write().unwrap(), hmd.read().unwrap().as_ref(), &action); Ok(()) }
+                    else { reset::handle_user_action(&reg, &mut calib.write().unwrap(), hmd.read().unwrap().as_ref(), &action) }
                 }
             };
             status.write().unwrap().last_action = match &result {
@@ -178,6 +185,8 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             let calibration = calib.read().unwrap();
             snapshot.refresh_trackers(&reg, &bridge, &calibration);
             snapshot.calibrated_trackers = reg.iter().filter(|t| calibration.is_calibrated(t.id())).count();
+            snapshot.spatial_reference = calibration.reference_health();
+            snapshot.reference_needs_reset = calibration.reference_needs_reset();
             snapshot.drift_samples = reg.iter().filter(|t| calibration.has_drift_sample(t.id())).count();
             snapshot.hmd_pose_received = hmd.read().unwrap().is_some();
             snapshot.face_active = face_relay.as_ref().is_some_and(|relay| relay.active());

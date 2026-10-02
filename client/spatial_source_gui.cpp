@@ -26,6 +26,27 @@ void spatial_source::draw_controls(bool passthrough_available, const char * fini
         if (ImGui::Button(finish_label)) stop_capture();
     }
     ImGui::Checkbox("Show marker axes", &preview_markers);
+    if (ImGui::CollapsingHeader("Body tracking calibration guide")) {
+        ImGui::TextWrapped("Stand upright in a clear spot and face your preferred reset direction. Save the spot using a localized room marker.");
+        ImGui::BeginDisabled(capturing);
+        if (ImGui::Button(calibration_spot ? "Replace calibration spot here" : "Save calibration spot here")) save_calibration_spot();
+        ImGui::EndDisabled();
+        ImGui::BeginDisabled(!calibration_spot);
+        ImGui::Checkbox("Show calibration guide", &show_calibration);
+        ImGui::EndDisabled();
+        if (!calibration_message.empty()) ImGui::TextWrapped("%s", calibration_message.c_str());
+        if (calibration_spot) {
+            auto target = last_tick >= change_at ? calibration_spot->locate(current) : std::nullopt;
+            if (!target) ImGui::TextWrapped("Guide unavailable: its saved anchor must be tracked. Recheck saved markers.");
+            else {
+                auto delta = room_calibration::compose(room_calibration::inverse(*target), current.head.pose);
+                float distance = std::hypot(delta.position.x, delta.position.z);
+                float degrees = room_capture::wrap(room_capture::yaw(delta.orientation)) * 180 / room_capture::pi;
+                ImGui::Text("Spot distance: %.2f m   Facing difference: %.0f degrees", distance, degrees);
+            }
+        }
+        ImGui::TextWrapped("Stand at the floor axes and face the raised axes. Align your head, torso and feet, then use your usual yaw or full reset. The guide never resets trackers automatically. It cannot measure individual tracker drift.");
+    }
     if (ImGui::CollapsingHeader("Saved marker helper")) {
         ImGui::TextWrapped("Reload a saved marker if it cannot be located. Reload keeps its saved identity; it does not replace the anchor.");
         for (size_t i = 0; i < anchors.size(); ++i) {
