@@ -84,8 +84,8 @@ impl HandPads {
                     i as f32,
                     f32::from(pad.armed),
                     DEADZONE,
-                    0.0,
-                    0.0,
+                    f32::from(pad.button.is_some()),
+                    f32::from(pad.button.unwrap_or(false)),
                     0.0,
                 ]);
                 let mut cmd = app

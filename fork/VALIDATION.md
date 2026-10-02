@@ -543,3 +543,21 @@ mask and disconnect checks. The WayVR upstream patch audit passes.
 Server/runtime and release-worker builds completed. Installed the new server
 and worker, restarted the unified service, and verified the headset session
 reconnected. In-headset thumbstick-click behavior awaits a user check.
+
+### Thumbstick-click visual feedback
+
+The finger-gun button now has a fingertip circle using the existing cyan/left
+and purple/right pad colours. It uses 48% opacity before the click registers
+and while the index remains extended with a relaxed thumb, and 100% opacity
+while the thumbstick button is held. Relaxing the thumb immediately releases
+the button and restores translucency; opening the hand or losing tracking
+removes the cue. Initial alignment and fingertip orientation follow the hand.
+
+The visual-only circle has no axis cursor or deadzone. It is excluded from the
+protocol's analogue-pad activity bits and sends zero axes. Eleven joystick
+tests pass with recorded-motion replay, including matching visual/click states,
+release to the translucent cue and reset. The existing large pads retain their
+rendering and input behavior.
+
+Release worker and shader compilation passed. Installed and restarted WayVR;
+the headset session remains running.
