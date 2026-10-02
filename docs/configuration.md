@@ -48,6 +48,55 @@ An application to start when connection with the headset is established, can be 
 ```
 Launch No Man's Sky in VR mode on Steam when connection with headset is established.
 
+## WayVR worker
+
+WayVR runs from the bundled upstream source build, starting with the WiVRn runtime
+and stopping when that runtime ends. The supervisor restarts crashes with a capped
+backoff; normal Quit stays stopped until the next session or **Restart WayVR** in
+the Qt dashboard. WayVR's own Restart returns to this supervisor. A worker failure
+does not restart streaming or Shora. A briefly disconnected headset can leave the
+runtime alive, so WayVR follows the runtime lifetime rather than every Wi-Fi event.
+
+```json
+{
+  "wayvr": {
+    "enabled": true,
+    "dashboard": true,
+    "args": ["--show"]
+  }
+}
+```
+
+Both booleans default to true. `dashboard` opens the unified Qt dashboard in a
+WayVR-owned 1440×1000 virtual Wayland display without changing saved autostart
+settings. `--no-autostart` also suppresses that automatic dashboard launch.
+Allowed arguments are `--show`, `--headless`, `--no-autostart`, `--no-audio`,
+`--openxr` and `--wait`; OpenXR and waiting are always enforced by the supervisor.
+Unsupported arguments fail with a dashboard status message. Existing unrelated
+WiVRn application autostart entries still launch alongside WayVR.
+
+Direct `application` entries naming WayVR, WlxOverlay-S or their recognized
+AppImage filenames are replaced at launch by the bundled worker. Their supported
+arguments carry over unless `wayvr.args` is explicitly set. The saved entry and
+original files are not rewritten, and an explicitly disabled worker does not
+launch the old AppImage. Shell-wrapper commands are not interpreted; remove a
+WayVR launch from such a wrapper if it would also start a duplicate overlay.
+An already running external WayVR is left alone; the bundled worker exits instead
+of using `--replace` or `--multi`.
+
+WayVR continues using `$XDG_CONFIG_HOME/wayvr` (default `~/.config/wayvr`), including
+its `conf.d` settings, window sets, screen-capture tokens, layouts and assets.
+No profile conversion or copy is necessary. Changes made inside WayVR use its
+normal shared configuration files. Desktop portals may require screen access to
+be authorized again for the new executable.
+
+Save settings in the Qt dashboard, then use **Restart WayVR / apply saved overlay
+settings**, or reconnect for the next runtime session. Status reports the worker
+process lifecycle; it does not certify XR/desktop capture readiness. Diagnostics
+are in the service journal and `$XDG_RUNTIME_DIR/wivrn-pro/wayvr.log`.
+Restarting WayVR closes its virtual displays and apps, including a dashboard
+opened inside it; the new worker reopens the dashboard if enabled.
+
 ## `tcp-only`
 Default value: `false`
 

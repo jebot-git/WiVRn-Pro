@@ -3,6 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 fork/check-policy.py
+python3 fork/check-wayvr-source.py
 python3 -m unittest discover -s fork/tests -p "test_*.py"
 mkdir -p build/native-tests
 cxx=${CXX:-c++}
@@ -32,3 +33,6 @@ build/native-tests/bridge-test
 build/native-tests/config-migration-test
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver -Icommon fork/tests/tracking_supervisor_test.cpp server/tracking_worker.cpp $(pkg-config --cflags --libs glib-2.0) -o build/native-tests/tracking-supervisor-test
 build/native-tests/tracking-supervisor-test
+
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/wayvr_supervisor_test.cpp server/wayvr_worker.cpp $(pkg-config --cflags --libs glib-2.0) -o build/native-tests/wayvr-supervisor-test
+build/native-tests/wayvr-supervisor-test

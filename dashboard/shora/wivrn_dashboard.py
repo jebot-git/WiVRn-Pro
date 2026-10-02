@@ -99,7 +99,7 @@ class ServerClient(QObject):
     def refresh(self):
         if self.refreshing: return
         self.refreshing = True
-        names = ['JsonConfiguration', 'SessionRunning', 'SystemName', 'SteamCommand', 'PairingEnabled', 'Pin', 'KnownKeysJson']
+        names = ['JsonConfiguration', 'SessionRunning', 'SystemName', 'SteamCommand', 'PairingEnabled', 'Pin', 'KnownKeysJson', 'WayVRStatus']
         state = {}
         remaining = set(names)
         def receive(name, args):
@@ -174,10 +174,12 @@ class StreamingPanel(QWidget):
         self.tcp = QCheckBox('Use TCP for streaming')
         self.hid = QCheckBox('Forward input devices')
         self.debug = QCheckBox('Enable runtime debug UI')
+        self.wayvr = QCheckBox('Run bundled upstream WayVR with each VR session')
+        self.wayvr_dashboard = QCheckBox('Open this dashboard inside WayVR')
         self.hostname = QLineEdit()
         self.port = QSpinBox(); self.port.setRange(1, 65535); self.port.setValue(9757)
         for label, control in [('Encoder', self.encoder), ('Codec', self.codec), ('Bit depth', self.depth),
-                               ('Hostname', self.hostname), ('Port', self.port), ('', self.tcp), ('', self.hid), ('', self.debug)]:
+                               ('Hostname', self.hostname), ('Port', self.port), ('', self.tcp), ('', self.hid), ('', self.debug), ('', self.wayvr), ('', self.wayvr_dashboard)]:
             form.addRow(label, control)
         layout.addLayout(form)
         layout.addWidget(QLabel('Full configuration JSON (application, OpenVR, custom encoder layouts and other options)'))
@@ -191,6 +193,11 @@ class StreamingPanel(QWidget):
         layout.addLayout(row)
         self.notice = QLabel('Saved options apply to the next streaming session.')
         self.notice.setWordWrap(True); layout.addWidget(self.notice)
+        self.wayvr_status = QLabel('WayVR: waiting for service'); self.wayvr_status.setWordWrap(True)
+        layout.addWidget(self.wayvr_status)
+        self.wayvr_restart = QPushButton('Restart WayVR / apply saved overlay settings')
+        self.wayvr_restart.clicked.connect(lambda: backend.method('RestartWayVR'))
+        layout.addWidget(self.wayvr_restart)
         self.pairing = QLabel(); layout.addWidget(self.pairing)
         pair = QHBoxLayout()
         for text, method, args in [('Pair Quest Pro (2 min)', 'EnablePairing', [120]), ('Disable pairing', 'DisablePairing', []), ('Disconnect headset', 'Disconnect', [])]:
@@ -206,7 +213,7 @@ class StreamingPanel(QWidget):
         backend.saved.connect(self.saved)
         self.raw.textChanged.connect(self.changed)
         for widget in (self.encoder, self.codec, self.depth): widget.currentIndexChanged.connect(self.changed)
-        for widget in (self.tcp, self.hid, self.debug): widget.toggled.connect(self.changed)
+        for widget in (self.tcp, self.hid, self.debug, self.wayvr, self.wayvr_dashboard): widget.toggled.connect(self.changed)
         self.hostname.textEdited.connect(self.changed); self.port.valueChanged.connect(self.changed)
 
     def changed(self, *_):
@@ -218,6 +225,8 @@ class StreamingPanel(QWidget):
 
     def update_state(self, state):
         self.apply.setEnabled(bool(state))
+        self.wayvr_restart.setEnabled(bool(state.get('SessionRunning')))
+        self.wayvr_status.setText('WayVR: ' + state.get('WayVRStatus', 'service unavailable'))
         if not state:
             self.status.setText('WiVRn service is stopped or unavailable')
             self.pairing.setText(''); self.keys.clear()
@@ -250,20 +259,29 @@ class StreamingPanel(QWidget):
         self.tcp.setChecked(self.original.get('tcp-only', False))
         self.hid.setChecked(self.original.get('hid-forwarding', False))
         self.debug.setChecked(self.original.get('debug-gui', False))
+        overlay = self.original.get('wayvr', {})
+        if not isinstance(overlay, dict): overlay = {}
+        self.wayvr.setChecked(overlay.get('enabled', True))
+        self.wayvr_dashboard.setChecked(overlay.get('dashboard', True))
         self.initial_controls = self.controls()
         self.loading = False; self.dirty = False
 
     def controls(self):
         return {'tcp-only': self.tcp.isChecked(), 'hid-forwarding': self.hid.isChecked(),
                 'debug-gui': self.debug.isChecked(), 'hostname': self.hostname.text(),
-                'port': self.port.value(), 'bit-depth': [None, 8, 10][self.depth.currentIndex()]}
+                'port': self.port.value(), 'bit-depth': [None, 8, 10][self.depth.currentIndex()],
+                'wayvr-enabled': self.wayvr.isChecked(), 'wayvr-dashboard': self.wayvr_dashboard.isChecked()}
 
     def configuration(self):
         value = json.loads(self.raw.toPlainText())
         if not isinstance(value, dict): raise ValueError('Configuration must be a JSON object')
         for key, setting in self.controls().items():
             if setting != self.initial_controls[key]:
-                if setting is None: value.pop(key, None)
+                if key.startswith('wayvr-'):
+                    overlay = value.setdefault('wayvr', {})
+                    if not isinstance(overlay, dict): raise ValueError('wayvr must be an object')
+                    overlay[key.removeprefix('wayvr-')] = setting
+                elif setting is None: value.pop(key, None)
                 else: value[key] = setting
         if self.encoder.currentIndex():
             if self.encoder.currentText() == 'auto': value.pop('encoder', None)
@@ -297,7 +315,7 @@ class Dashboard(HubWindow):
         self.backend = backend or ServerClient()
         self.profile_path = Path(profile)
         super().__init__(server='/unused', config=str(profile), socket_path=str(socket_path), attach=False)
-        self.setWindowTitle('WiVRn Pro · Streaming & Shora tracking')
+        self.setWindowTitle('WiVRn Pro · Streaming, Shora & WayVR')
         self.findChild(QLabel, 'brand').setText('WiVRn PRO')
         self.settings.setTitle('Tracking devices and face/eye OSC')
         form = self.settings.layout()

@@ -36,3 +36,13 @@ The existing source licenses and third-party attribution are preserved in
 `server/shora/backend/{LICENSE-*,THIRD_PARTY.md,licenses/}`. Only the public example
 avatar mapping fixture is included, never a user avatar or profile. OpenXR,
 Monado, FFmpeg, Vulkan and other dependency notices remain applicable.
+
+Upstream WayVR is imported from https://github.com/wayvr-org/wayvr at
+`4590371a4c8f6a5b30e2e7a3fdb3b8af15b6d65e`. `wayvr-import.json` records the 723
+source inputs and the hashes of the three adapted files; the source patch is
+kept under `patches/wayvr`. Git metadata and upstream CI/editor configuration are
+excluded. This is a source build, with the original Cargo.lock and GPL-3.0-only
+notices retained, not an AppImage extraction. Source is under `server/wayvr/upstream`;
+component licenses are installed with the worker. Crates and bundled assets keep
+their respective notices. The profile tests only read temporary local copies;
+no user WayVR configuration or portal tokens are committed.

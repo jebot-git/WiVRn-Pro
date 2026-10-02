@@ -1,6 +1,8 @@
 [Unit]
-Description=WiVRn Pro (Quest Pro, Intel Arc, spatial capture and native Shora tracking)
-Conflicts=wivrn.service wivrn-pro-shora.service shora-server.service shora-proxy.service
+Description=WiVRn Pro (Quest Pro, Intel Arc, spatial capture, Shora tracking and WayVR)
+After=graphical-session.target
+PartOf=graphical-session.target
+Conflicts=wayvr.service wlx-overlay-s.service wivrn.service wivrn-pro-shora.service shora-server.service shora-proxy.service
 
 [Service]
 Type=simple
@@ -14,6 +16,7 @@ NoNewPrivileges=true
 Restart=on-failure
 RestartSec=3
 TimeoutStopSec=15
+KillMode=control-group
 
 [Install]
 WantedBy=default.target

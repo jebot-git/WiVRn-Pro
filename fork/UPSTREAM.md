@@ -53,3 +53,17 @@ dirty-source refusal, remote validation and already-merged revisions.
 Shora is vendored separately under `server/shora`; update its source/protocol and
 Cargo.lock as a reviewed change, retain licenses, and rerun replay/reconnect tests.
 There is no automatic overwrite from the local Shora development checkout.
+
+WayVR is pinned separately at the commit in `wayvr-import.json`, with its upstream
+Cargo.lock, under `server/wayvr/upstream`. `patches/wayvr/0001-managed-worker.patch`
+records the small source adaptations (supervised restart, Qt dashboard launch,
+build identity and offline profile test hook). `fork/check-wayvr-source.py` checks
+all 723 imported files against recorded hashes and reverse-checks that patch.
+
+For a WayVR update, use a review branch, export the desired official upstream
+commit into the import directory, apply/rebase the recorded patch, and update the
+upstream/fork hashes and commit pin. Never overwrite the integration patch with a
+fresh source export. Build OpenXR-only, run the supervisor, profile, Qt D-Bus and
+staged-package tests, and record any schema changes before merging. Keep its Cargo
+workspace separate from Shora; the two currently use different OpenXR crate ABIs.
+No AppImage download or replacement is part of this workflow.

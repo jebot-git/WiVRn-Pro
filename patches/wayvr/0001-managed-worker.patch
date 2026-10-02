@@ -1,0 +1,95 @@
+--- a/wayvr/build.rs
++++ b/wayvr/build.rs
+@@ -1,6 +1,5 @@
+-use regex::Regex;
+ use shaderc::{Compiler, EnvVersion, ShaderKind, TargetEnv};
+-use std::{path::PathBuf, process::Command};
++use std::path::PathBuf;
+ 
+ const SHADERS: &[(&str, ShaderKind)] = &[
+     ("quad.vert", ShaderKind::Vertex),
+@@ -16,7 +15,7 @@
+ fn main() {
+     compile_shaders();
+ 
+-    let mut wlx_build = get_version().unwrap_or(format!("{}-unknown", env!("CARGO_PKG_VERSION")));
++    let mut wlx_build = String::from("26.8.0-4590371-wivrn-pro");
+ 
+     match std::env::var("GITHUB_JOB").as_deref() {
+         Ok("make_release") => {
+@@ -51,26 +50,3 @@
+             .unwrap_or_else(|e| panic!("failed to write compiled shader {name}: {e}"));
+     }
+ }
+-
+-fn get_version() -> Result<String, Box<dyn std::error::Error>> {
+-    let re = Regex::new(r"v([0-9.]+)-([0-9]+)-g([a-f0-9]+)").unwrap(); // safe
+-    let output = Command::new("git")
+-        .args(["describe", "--tags", "--abbrev=7", "--dirty"])
+-        .output()?;
+-
+-    let mut output_str = String::from_utf8(output.stdout)?;
+-
+-    if output_str.is_empty() {
+-        let output = Command::new("git")
+-            .args(["describe", "--tags", "--abbrev=7", "--dirty", "--always"])
+-            .output()?;
+-
+-        output_str = format!(
+-            "{}-{}",
+-            env!("CARGO_PKG_VERSION"),
+-            String::from_utf8(output.stdout)?
+-        );
+-    }
+-
+-    Ok(re.replace_all(&output_str, "${1}.r${2}.${3}").into_owned())
+-}
+--- a/wayvr/src/main.rs
++++ b/wayvr/src/main.rs
+@@ -30,6 +30,9 @@
+ mod subsystem;
+ mod test;
+ mod windowing;
++#[cfg(test)]
++#[path = "../../../wivrn_tests.rs"]
++mod wivrn_tests;
+ 
+ use std::{
+     path::PathBuf,
+@@ -184,6 +187,9 @@
+ 
+     if RESTART.load(Ordering::Relaxed) {
+         log::warn!("Restarting...");
++        if std::env::var_os("WIVRN_MANAGED_WAYVR").is_some() {
++            std::process::exit(75);
++        }
+         let exe = std::env::current_exe()?;
+         let mut args = vec!["--replace", "--show"];
+ 
+--- a/wayvr/src/overlays/dashboard.rs
++++ b/wayvr/src/overlays/dashboard.rs
+@@ -82,6 +82,24 @@
+         } else {
+             for p in app.session.config.autostart_apps.clone() {
+                 let _ = interface.process_launch(app, false, p);
++            }
++        }
++
++        if let Ok(exec) = std::env::var("WIVRN_DASHBOARD_EXECUTABLE")
++            && !exec.is_empty()
++            && app.wvr_server.is_some()
++            && !app.session.no_autostart
++            && !app.session.config.autostart_apps.iter().any(|p| p.exec == exec || std::path::Path::new(&p.exec).file_name().is_some_and(|name| name == "wivrn-pro-dashboard"))
++        {
++            let params = WvrProcessLaunchParams {
++                name: "WiVRn Pro".into(), exec, args: String::new(),
++                env: vec!["QT_QPA_PLATFORM=wayland".into()], icon: None,
++                resolution: [1440, 1000],
++                pos_mode: wayvr_ipc::packet_client::PositionMode::Float,
++                userdata: Default::default(),
++            };
++            if let Err(error) = interface.process_launch(app, false, params) {
++                log::warn!("Could not open WiVRn dashboard: {error}");
+             }
+         }
+ 

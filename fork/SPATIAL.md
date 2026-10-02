@@ -119,7 +119,9 @@ python3 fork/subscribe.py --once
 
 See [build/service setup](../docs/building.md). The native spatial API and Shora
 bridge run inside `wivrn-pro-server`; neither needs a Python broker or a separate
-bridge service. The reader example is also installed as `wivrn-pro-spatial`.
+bridge service. The same service supervises the bundled upstream WayVR overlay
+worker and can open this fork's Qt dashboard in a virtual Wayland display; see
+[worker configuration](../docs/configuration.md#wayvr-worker). The reader example is also installed as `wivrn-pro-spatial`.
 
 ## Offline verification
 

@@ -16,7 +16,7 @@ jobs:
       - name: Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build g++ cargo rustc pkg-config libboost-all-dev libssl-dev libvulkan-dev glslang-tools spirv-tools libopenxr-dev libavcodec-dev libavutil-dev libbsd-dev libavahi-client-dev libavahi-glib-dev libeigen3-dev nlohmann-json3-dev librsvg2-dev libdrm-dev libglib2.0-dev-bin libpipewire-0.3-dev libcli11-dev libnotify-dev libarchive-dev libudev-dev libwayland-dev libxrandr-dev libsystemd-dev libvpl2 python3-venv python3-gi dbus-daemon
+          sudo apt-get install -y cmake ninja-build g++ cargo rustc pkg-config libboost-all-dev libssl-dev libvulkan-dev glslang-tools spirv-tools libopenxr-dev libavcodec-dev libavutil-dev libbsd-dev libavahi-client-dev libavahi-glib-dev libeigen3-dev nlohmann-json3-dev librsvg2-dev libdrm-dev libglib2.0-dev-bin libpipewire-0.3-dev libcli11-dev libnotify-dev libarchive-dev libudev-dev libwayland-dev libxrandr-dev libsystemd-dev libvpl2 python3-venv python3-gi dbus-daemon libinput-dev libasound2-dev libfontconfig-dev libxkbcommon-dev libxkbcommon-x11-dev libxcb1-dev libx11-dev libxext-dev
       - name: Qt Python runtime
         run: |
           python3 -m venv --system-site-packages .venv
@@ -29,6 +29,12 @@ jobs:
         run: cargo test --workspace --locked --manifest-path server/shora/Cargo.toml
       - name: Build server and OpenXR runtime
         run: fork/build-server.sh -DWIVRN_USE_QSV=${{ matrix.qsv }} -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - name: Upstream WayVR tests (no XR session)
+        run: cargo test --locked --release --manifest-path server/wayvr/upstream/Cargo.toml -p wayvr --no-default-features --features openxr,wayland,x11
+      - name: Staged combined service package
+        run: |
+          DESTDIR="$PWD/build/package-wayvr" cmake --install build/server
+          python3 fork/tests/wayvr_package.py
       - name: Integrated tracking worker and Qt IPC (simulated only)
         run: |
           python3 fork/tests/tracking_worker_smoke.py --server build/server/server/wivrn-pro-server

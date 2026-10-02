@@ -1,5 +1,6 @@
 if(WIVRN_BUILD_SERVER)
     add_subdirectory(shora)
+    add_subdirectory(wayvr)
 endif()
 set(U_GIT_TAG_CPP "${CMAKE_BINARY_DIR}/u_git_tag.cpp")
 
@@ -123,6 +124,7 @@ if (WIVRN_BUILD_SERVER)
 			driver/spatial_bridge.cpp
 			driver/shora_bridge.cpp
 			tracking_worker.cpp
+			wayvr_worker.cpp
 			driver/configuration.cpp
 			driver/hand_joints_list.cpp
 			driver/pose_list.cpp
@@ -268,7 +270,14 @@ if (WIVRN_BUILD_SERVER)
 			"${CMAKE_CURRENT_SOURCE_DIR}/compositor/shaders/foveation.comp"
 		)
 
-	target_compile_definitions(wivrn-server PRIVATE JSON_DIAGNOSTICS=1)
+    set(wayvr_dashboard "")
+    if(WIVRN_BUILD_DASHBOARD)
+        set(wayvr_dashboard "${CMAKE_INSTALL_FULL_BINDIR}/wivrn-pro-dashboard")
+    endif()
+	target_compile_definitions(wivrn-server PRIVATE JSON_DIAGNOSTICS=1
+        WIVRN_WAYVR_EXECUTABLE="${CMAKE_INSTALL_FULL_LIBEXECDIR}/wivrn-pro/wayvr"
+        WIVRN_DASHBOARD_EXECUTABLE="${wayvr_dashboard}")
+    add_dependencies(wivrn-server wivrn-wayvr)
 
 	set_target_properties(wivrn-server PROPERTIES OUTPUT_NAME wivrn-pro-server)
     configure_file(dist/wivrn-pro.service.in wivrn-pro.service @ONLY)

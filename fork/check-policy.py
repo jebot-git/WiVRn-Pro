@@ -44,6 +44,12 @@ require('RuntimeDirectoryPreserve=yes' in text, 'Private socket directory must s
 require('tracking_worker' in read('server/main.cpp'), 'Integrated tracking worker owner removed')
 require('wivrn-tracking' in read('server/shora/Cargo.toml'), 'Native tracking backend removed')
 require(not (root / 'server/dist/wivrn-pro-shora.service.in').exists(), 'Standalone Shora service returned')
+require('add_subdirectory(wayvr)' in read('server/CMakeLists.txt'), 'Bundled WayVR build removed')
+require('openxr,wayland,x11' in read('server/wayvr/CMakeLists.txt') and '--no-default-features' in read('server/wayvr/CMakeLists.txt'), 'WayVR OpenXR-only build policy removed')
+require('is_wayvr_application(c.application)' in read('server/main.cpp'), 'Duplicate WayVR autostart guard removed')
+require('XR_RUNTIME_JSON' in read('server/wayvr_worker.cpp'), 'WayVR lost matching runtime binding')
+require('WIVRN_MANAGED_WAYVR' in read('server/wayvr/upstream/wayvr/src/main.rs'), 'WayVR restart escaped worker supervisor')
+require('KillMode=control-group' in text, 'Worker descendants must stop with the service')
 if errors:
     sys.exit('\n'.join(errors))
 print('Fork policy checks passed')

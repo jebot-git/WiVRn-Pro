@@ -9,7 +9,11 @@ connect to a headset or change running services.
 Requires CMake 3.28+, Ninja, a C++23 compiler, Vulkan headers 1.4.304+, OpenXR
 headers, Boost (locale/url/iostreams), OpenSSL, Eigen3, nlohmann-json, CLI11,
 Avahi, GLib, libnotify, librsvg, libarchive, libdrm, FFmpeg development libraries,
-shader tools, libudev and OpenXR loader development libraries, Python 3.11+ and Rust/Cargo. Cargo.lock pins the embedded Shora dependencies.
+shader tools, libudev and OpenXR loader development libraries, Python 3.11+ and Rust/Cargo. Separate Cargo.lock files pin Shora and the bundled upstream WayVR worker.
+WayVR additionally needs libinput, ALSA, fontconfig, PipeWire/SPA, Wayland, X11/XCB
+and xkbcommon (including X11) development libraries. Its GLSL shaders use shaderc;
+Cargo can build shaderc from source. Use a current Rust toolchain supporting the
+pinned workspace dependencies.
 Monado's revision and patches remain managed by WiVRn CMake. See CI for an
 Ubuntu dependency list. Native installation is supported; old distro/container
 release recipes are deliberately absent.
@@ -26,7 +30,7 @@ hardware context without opening a GPU. Runtime also needs a compatible Intel
 media driver and oneVPL dispatcher/implementation. Encoding uses VAAPI surfaces
 on the same Arc as Vulkan. An explicit `qsv` selection fails if QSV is unavailable;
 it never silently selects a different backend. See [configuration](configuration.md).
-`WIVRN_SHORA_OFFLINE=ON` uses only cached Cargo crates. At least one of VAAPI,
+`WIVRN_SHORA_OFFLINE=ON` and `WIVRN_WAYVR_OFFLINE=ON` use only cached Cargo dependencies for each component. At least one of VAAPI,
 Vulkan Video and QSV must be enabled. NVENC/x264/Lighthouse ON is a configure error.
 
 Artifacts: `build/server/server/wivrn-pro-server`,
@@ -60,6 +64,11 @@ No store release or installation is performed by the build.
 ## User services
 
 The native Shora backend is bundled in the server binary and supervised by WiVRn.
+WayVR is compiled from pinned upstream source into a separate worker, installed
+at `<prefix>/libexec/wivrn-pro/wayvr`. It is an integral build dependency, uses
+OpenXR/Wayland/X11 without OpenVR or Whisper, and does not use an AppImage.
+Its separate Cargo workspace avoids mixing Shora's and WayVR's OpenXR loader ABIs.
+`WIVRN_WAYVR_TARGET_DIR` optionally selects its Cargo cache directory.
 No separate Shora executable, profile initializer or service is required. Existing
 user configurations are imported once; see [carryover rules](../fork/SHORA.md).
 
@@ -76,12 +85,16 @@ systemctl --user enable --now wivrn-pro.service
 
 Adjust paths if configured with another prefix. The service conflicts with
 `wivrn.service`, the old `wivrn-pro-shora.service`, `shora-server.service` and
-`shora-proxy.service` to prevent competing tracker owners. Starting it does not
+`shora-proxy.service`, `wayvr.service` and `wlx-overlay-s.service` to prevent competing owners. Starting it does not
 disable those units permanently. Stop their boot activation separately when
-making this fork the default. Stopping WiVRn also stops its tracking worker.
+making this fork the default. Stopping WiVRn also stops its workers and their child processes. The service
+follows the graphical session; no separate WayVR service needs enabling.
+The desktop session must export its display/session environment to the user
+service manager (normally done by the desktop). Desktop capture also requires
+its working PipeWire/portal services.
 
 The fork runtime manifest is `<prefix>/share/openxr/1/openxr_wivrn_pro.json`.
-The internal worker uses it explicitly. WiVRn retains upstream's runtime-selection
+Both internal workers use it explicitly. WiVRn retains upstream's runtime-selection
 behavior for VR applications when started. Builds and offline tests do not select
 a runtime or activate an installed service.
 

@@ -16,15 +16,20 @@ xml='''<node><interface name="io.github.wivrn.Server">
 <property name="SessionRunning" type="b" access="read"/>
 <property name="PairingEnabled" type="b" access="read"/>
 <property name="Pin" type="s" access="read"/>
+<property name="WayVRStatus" type="s" access="read"/>
+<method name="RestartWayVR"/>
 <method name="EnablePairing"><arg type="i" direction="in"/><arg type="s" direction="out"/></method>
 </interface></node>'''
-props={'JsonConfiguration': GLib.Variant('s','{"encoder":"vaapi","unknown":{"keep":true}}'),
+props={'WayVRStatus': GLib.Variant('s','Waiting'), 'JsonConfiguration': GLib.Variant('s','{"encoder":"vaapi","unknown":{"keep":true}}'),
  'KnownKeysJson':GLib.Variant('s',json.dumps([['Quest Pro','fake-key',123]])),
  'KnownKeys':GLib.Variant('a(ssx)',[('Quest Pro','fake-key',123)]),
  'SessionRunning':GLib.Variant('b',False),'PairingEnabled':GLib.Variant('b',False),'Pin':GLib.Variant('s','')}
 bus=Gio.bus_get_sync(Gio.BusType.SESSION,None)
 bus.call_sync('org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus','RequestName',GLib.Variant('(su)',('io.github.wivrn.Server',0)),None,Gio.DBusCallFlags.NONE,3000,None)
 def method(connection,sender,path,iface,name,args,invocation):
+    if name == 'RestartWayVR':
+        props['WayVRStatus'] = GLib.Variant('s','Restarting')
+        invocation.return_value(GLib.Variant('()', ())); return
     assert name=='EnablePairing' and args.unpack()==(120,)
     props['PairingEnabled']=GLib.Variant('b',True); props['Pin']=GLib.Variant('s','123456')
     invocation.return_value(GLib.Variant('(s)',('123456',)))
@@ -43,6 +48,7 @@ def wait(check):
     raise AssertionError(('Timed out',errors,panel.status.text(),panel.keys.count()))
 try:
     wait(lambda: panel.original is not None)
+    client.method('RestartWayVR'); wait(lambda:'Restarting' in panel.wayvr_status.text())
     assert panel.keys.count()==1, f'KnownKeys decode failed: {panel.keys.count()}'
     panel.tcp.setChecked(True);panel.save()
     wait(lambda:json.loads(props['JsonConfiguration'].unpack()).get('tcp-only'))

@@ -44,6 +44,8 @@
 #include "utils/overloaded.h"
 #include "utils/xdg_base_directory.h"
 #include "version.h"
+#include "wayvr_options.h"
+#include "wayvr_worker.h"
 #include "wivrn_config.h"
 #include "wivrn_ipc.h"
 #include "wivrn_packets.h"
@@ -208,6 +210,32 @@ pid_t server_pid;
 std::optional<std::jthread> connection_thread;
 
 std::unique_ptr<children_manager> children;
+WivrnServer * dbus_server;
+std::unique_ptr<wayvr_worker> wayvr;
+void start_wayvr(const configuration & config)
+{
+	wayvr.reset();
+	try
+	{
+		wayvr_options options(configuration::read_configuration(), config.application);
+		if (!options.enabled)
+		{
+			wivrn_server_set_way_vrstatus(dbus_server, "Disabled");
+			return;
+		}
+		auto manifests = active_runtime::manifest_path();
+		if (manifests.empty())
+			throw std::runtime_error("Matching OpenXR manifest missing");
+		auto runtime = std::getenv("XDG_RUNTIME_DIR");
+		auto dir = (runtime ? std::filesystem::path(runtime) : std::filesystem::path("/run/user") / std::to_string(getuid())) / "wivrn-pro";
+		wayvr = std::make_unique<wayvr_worker>(WIVRN_WAYVR_EXECUTABLE, manifests.front().string(), options.dashboard ? WIVRN_DASHBOARD_EXECUTABLE : "", (dir / "wayvr.log").string(), options.flags, [](const std::string & state) { wivrn_server_set_way_vrstatus(dbus_server, state.c_str()); });
+	}
+	catch (const std::exception & e)
+	{
+		wivrn_server_set_way_vrstatus(dbus_server, e.what());
+		std::cerr << "WayVR unavailable: " << e.what() << std::endl;
+	}
+}
 
 bool quitting_main_loop;
 bool do_fork;
@@ -228,7 +256,6 @@ NotifyNotification * pin_notification;
 const std::chrono::milliseconds default_delay_next_try = 10ms;
 std::chrono::milliseconds delay_next_try = default_delay_next_try;
 
-WivrnServer * dbus_server;
 
 /* TODO: Document FSM
  */
@@ -387,6 +414,11 @@ void update_fsm()
 {
 	bool server_running = server_watch != 0 or connection_thread;
 	bool app_running = children->running();
+	if (quitting_main_loop || !server_running)
+	{
+		wayvr.reset();
+		wivrn_server_set_way_vrstatus(dbus_server, "Waiting for a WiVRn runtime session");
+	}
 
 	if (quitting_main_loop)
 	{
@@ -447,9 +479,12 @@ gboolean headset_connected_success(void *)
 
 	configuration c;
 	start_server(c);
+	start_wayvr(c);
 	try
 	{
-		children->start_application(c.application);
+		// The managed worker replaces recognized legacy WayVR autostart entries.
+		if (!is_wayvr_application(c.application))
+			children->start_application(c.application);
 	}
 	catch (std::exception & e)
 	{
@@ -854,6 +889,14 @@ void on_name_acquired(GDBusConnection * connection, const gchar * name, gpointer
 	}
 
 	dbus_server = wivrn_server_skeleton_new();
+	wivrn_server_set_way_vrstatus(dbus_server, "Waiting for a WiVRn runtime session");
+	g_signal_connect(dbus_server, "handle-restart-way-vr", G_CALLBACK(+[](WivrnServer * server, GDBusMethodInvocation * invocation, gpointer) -> gboolean {
+		                 if (server_watch)
+			                 start_wayvr(configuration{});
+		                 wivrn_server_complete_restart_way_vr(server, invocation);
+		                 return TRUE;
+	                 }),
+	                 nullptr);
 
 	g_signal_connect(dbus_server,
 	                 "handle-disconnect",
@@ -1023,6 +1066,7 @@ int inner_main(int argc, char * argv[], bool show_instructions)
 	g_main_loop_run(main_loop);
 
 	// Cleanup
+	wayvr.reset();
 	tracking.reset();
 	notify_uninit();
 	runtime_setter.reset();

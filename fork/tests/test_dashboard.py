@@ -58,6 +58,22 @@ class DashboardTests(unittest.TestCase):
         self.server.state.emit({'JsonConfiguration':'{"hostname":"external"}'})
         self.assertEqual(self.panel.hostname.text(), 'local-draft')
         self.assertEqual(self.panel.original, self.config)
+    def test_wayvr_defaults_do_not_rewrite_existing_config(self):
+        self.assertTrue(self.panel.wayvr.isChecked())
+        self.assertTrue(self.panel.wayvr_dashboard.isChecked())
+        self.assertNotIn('wayvr', self.panel.configuration())
+    def test_wayvr_controls_preserve_args_and_legacy_application(self):
+        config = copy.deepcopy(self.config)
+        config['application'] = ['/home/me/WayVR-v26.8.0-x86_64.AppImage', '--show']
+        config['wayvr'] = {'enabled':True, 'args':['--no-audio'], 'future':42}
+        self.server.state.emit({'JsonConfiguration':json.dumps(config), 'SessionRunning':True, 'WayVRStatus':'Worker running'})
+        self.panel.wayvr_dashboard.setChecked(False)
+        result = self.panel.configuration()
+        self.assertEqual(result['wayvr'], {**config['wayvr'], 'dashboard':False})
+        self.assertEqual(result['application'], config['application'])
+        self.assertIn('Worker running', self.panel.wayvr_status.text())
+        self.panel.wayvr_restart.click()
+        self.assertEqual(self.server.calls[-1], ('RestartWayVR',))
     def test_pairing_controls(self):
         self.panel.revoke_key(); self.assertEqual(self.server.calls[-1], ('RevokeKey','test-key'))
     def test_tuning_preserves_devices_osc_and_assignments(self):
