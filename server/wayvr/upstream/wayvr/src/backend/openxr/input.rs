@@ -397,6 +397,7 @@ impl OpenXrInputSource {
         if picking_focus.is_none() {
             let should_disable_lerp = app.input_state.should_disable_lerp();
             for i in 0..2 {
+                self.hand_input[i].set_space_drag_enabled(i == app.input_state.space_drag_hand);
                 let pointer = &mut app.input_state.pointers[i];
                 self.pointers[i].update(
                     pointer,
@@ -478,13 +479,16 @@ impl OpenXrInputSource {
                         });
                         if let Some(ray) = sample.ray {
                             pointer.pose = ray;
-                            pointer.raw_pose = ray;
+                            // Playspace movement uses the wrist, including the release
+                            // frame; switching back to an aim origin would add a jump.
+                            pointer.raw_pose = sample.wrist;
                             pointer.tracked = true;
                             use crate::hand_input::Gesture;
                             pointer.now.click = matches!(
                                 sample.gesture,
                                 Gesture::Click | Gesture::MiddleClick | Gesture::RightClick
                             );
+                            pointer.now.space_drag = sample.gesture == Gesture::SpaceDrag;
                             pointer.now.grab = sample.gesture == Gesture::Grab;
                             pointer.now.grab_float = pointer.now.grab;
                             pointer.now.move_mouse = true;

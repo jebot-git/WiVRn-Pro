@@ -187,6 +187,10 @@ returns when the runtime switches back to the controller interaction profile.
   aim pose is available.
 - Pinch thumb–index to click. Hold it while moving to drag inside an application.
 - Pinch thumb–middle for the middle mouse button.
+- On the offhand (the watch hand, left by default), pinch thumb, index and middle
+  together to space-drag. Move that wrist while holding the chord, then separate
+  either fingertip from the thumb to release. Existing WayVR space-drag axis lock,
+  multiplier, world-offset and gravity settings apply.
 - Point at a movable window, close your hand into a grip, then move it in 3D.
   Open the hand to drop it. The grip moves that window rather than its whole group.
 - Pinch thumb–ring to right-click. Open the hand briefly between gestures.
@@ -224,3 +228,10 @@ back 14 mm. Leaving the target, losing fingertip tracking or penetrating more
 than 20 mm releases the contact. Each hand has independent touch state; appearing
 inside a panel cannot press it. The watch's hand attachment includes the corrected
 90° roll while retaining saved controller-relative offsets.
+
+The offhand space-drag chord debounces for 80 ms and releases after either pinch
+opens for 60 ms. Offhand single-pinches wait 120 ms to allow assembling the chord
+without a premature click; the other hand retains its 45 ms mouse-pinch debounce.
+Release to neutral between gestures. Space drag uses wrist displacement even when
+the aim pose disappears, suppresses that hand's touch/cursor interactions while
+held, and releases on tracking loss. A closed fist still selects window grip.

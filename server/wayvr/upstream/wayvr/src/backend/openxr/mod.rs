@@ -318,6 +318,25 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
         }
 
         app.input_state.pre_update();
+        app.input_state.space_drag_hand = overlays
+            .iter()
+            .find_map(|(_, overlay)| {
+                if overlay.config.name.as_ref() != crate::overlays::watch::WATCH_NAME {
+                    return None;
+                }
+                let state = overlay
+                    .config
+                    .active_state
+                    .as_ref()
+                    .unwrap_or(&overlay.config.default_state);
+                match state.positioning {
+                    wlx_common::windowing::Positioning::FollowHand { hand, .. } => {
+                        Some(hand as usize)
+                    }
+                    _ => None,
+                }
+            })
+            .unwrap_or(0);
         input_source.update(&xr_state, &mut app)?;
         app.input_state.post_update(&app.session);
 

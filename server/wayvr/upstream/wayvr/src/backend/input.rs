@@ -75,6 +75,8 @@ pub struct InputState {
     pub picking_focus: FocusPickState,
     processes: Vec<Child>,
     disable_lerp_until: Instant,
+    /// The watch hand is the offhand for the hand-tracked space-drag chord.
+    pub space_drag_hand: usize,
     pub head_yaw_total: f64,
     head_last_yaw: Option<f64>,
 }
@@ -91,6 +93,7 @@ impl InputState {
             handsfree_state: PointerState::default(),
             picking_focus: FocusPickState::None,
             disable_lerp_until: Instant::now(),
+            space_drag_hand: 0,
             head_yaw_total: 0.0,
             head_last_yaw: None,
         }
@@ -685,6 +688,14 @@ fn interact_hand<O>(
 where
     O: Default,
 {
+    if app.input_state.pointers[idx].hand_tracking && app.input_state.pointers[idx].now.space_drag {
+        // Playspace movement owns this hand; release touch/click/grab targets
+        // and do not move the desktop cursor while dragging the playspace.
+        release_pointer(idx, overlays, app);
+        app.input_state.pointers[idx].now.space_drag = true;
+        app.input_state.pointers[idx].tracked = true;
+        return (None, None);
+    }
     if !app.input_state.pointers[idx].cancel_interaction {
         prepare_touch(idx, overlays, app);
     }

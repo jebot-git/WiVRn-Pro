@@ -11,12 +11,14 @@ pub enum Gesture {
     Neutral,
     Click,
     MiddleClick,
+    SpaceDrag,
     Grab,
     RightClick,
 }
 
 #[derive(Default)]
 pub struct HandInput {
+    space_drag_enabled: bool,
     gesture: Gesture,
     armed: bool,
     neutral_since: Option<Duration>,
@@ -52,7 +54,20 @@ fn pose(p: xr::Posef) -> Option<Affine3A> {
 
 impl HandInput {
     pub fn reset(&mut self) {
-        *self = Self::default();
+        let space_drag_enabled = self.space_drag_enabled;
+        *self = Self {
+            space_drag_enabled,
+            ..Default::default()
+        };
+    }
+    pub fn set_space_drag_enabled(&mut self, enabled: bool) {
+        if self.space_drag_enabled != enabled {
+            self.reset();
+            self.space_drag_enabled = enabled;
+        }
+    }
+    fn moving_space_or_window(&self) -> bool {
+        matches!(self.gesture, Gesture::Grab | Gesture::SpaceDrag)
     }
     pub fn update(
         &mut self,
@@ -107,7 +122,7 @@ impl HandInput {
             && (0.03..=0.13).contains(&p(7).distance(p(22)));
         if fingers_valid {
             self.last_fingers = Some(now);
-        } else if self.gesture != Gesture::Grab
+        } else if !self.moving_space_or_window()
             || !self
                 .last_fingers
                 .is_some_and(|at| now.saturating_sub(at) <= Duration::from_millis(120))
@@ -122,7 +137,7 @@ impl HandInput {
         let palm = head.inverse().transform_point3(p(0));
         // Once grabbed, allow moving below the pointing zone. A fresh tracked
         // wrist is always required; only finger occlusion gets a short grace.
-        if self.gesture != Gesture::Grab && (palm.y < -0.50 || palm.z > -0.12) {
+        if !self.moving_space_or_window() && (palm.y < -0.50 || palm.z > -0.12) {
             self.reset();
             return Some(Sample {
                 wrist,
@@ -160,7 +175,7 @@ impl HandInput {
             )
         });
         self.ray = Some(ray);
-        let was_grabbing = self.gesture == Gesture::Grab;
+        let was_grabbing = self.moving_space_or_window();
         if fingers_valid {
             let width = p(7).distance(p(22));
             let ratios = [
@@ -184,9 +199,9 @@ impl HandInput {
         } else {
             self.release_since = None;
         }
-        if self.gesture == Gesture::Grab && !was_grabbing {
+        if self.moving_space_or_window() && !was_grabbing {
             self.grab_ray_from_wrist = Some(wrist.inverse() * ray);
-        } else if self.gesture != Gesture::Grab {
+        } else if !self.moving_space_or_window() {
             self.grab_ray_from_wrist = None;
         }
         Some(Sample {
@@ -204,6 +219,17 @@ impl HandInput {
             if open >= 2 {
                 let at = *self.release_since.get_or_insert(now);
                 if now.saturating_sub(at) >= Duration::from_millis(100) {
+                    self.finish_gesture();
+                }
+            } else {
+                self.release_since = None;
+            }
+            return;
+        }
+        if self.gesture == Gesture::SpaceDrag {
+            if ratios[0] > 0.42 || ratios[1] > 0.42 {
+                let at = *self.release_since.get_or_insert(now);
+                if now.saturating_sub(at) >= Duration::from_millis(60) {
                     self.finish_gesture();
                 }
             } else {
@@ -234,6 +260,12 @@ impl HandInput {
         let first = pinches.next().map(|(i, _)| gestures[i]);
         let candidate = if extension[0] < 0.65 && curled >= 3 {
             Gesture::Grab
+        } else if self.space_drag_enabled
+            && ratios[0] < 0.28
+            && ratios[1] < 0.28
+            && ratios[2] > 0.42
+        {
+            Gesture::SpaceDrag
         } else if pinches.next().is_none() {
             first.unwrap_or_default()
         } else {
@@ -243,7 +275,13 @@ impl HandInput {
             self.candidate = candidate;
             self.candidate_since = now;
         }
-        let debounce = if candidate == Gesture::Grab { 80 } else { 45 };
+        let debounce = if matches!(candidate, Gesture::Grab | Gesture::SpaceDrag) {
+            80
+        } else if self.space_drag_enabled {
+            120
+        } else {
+            45
+        };
         if candidate != Gesture::Neutral
             && now.saturating_sub(self.candidate_since) >= Duration::from_millis(debounce)
         {
@@ -607,5 +645,113 @@ mod tests {
                 .is_none()
         );
         assert_eq!(h.gesture, Gesture::Neutral);
+    }
+    #[test]
+    fn offhand_chord_waits_for_both_pinches_and_releases_without_clicking() {
+        let mut h = HandInput::default();
+        h.set_space_drag_enabled(true);
+        for t in [0, 100] {
+            h.update_gesture(ms(t), [1.; 3], [1.; 4]);
+        }
+        h.update_gesture(ms(110), [0.2, 1., 1.], [1.; 4]);
+        h.update_gesture(ms(170), [0.2, 1., 1.], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::Neutral); // no click while assembling the chord
+        h.update_gesture(ms(180), [0.2, 0.2, 1.], [1.; 4]);
+        h.update_gesture(ms(259), [0.2, 0.2, 1.], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::Neutral);
+        h.update_gesture(ms(260), [0.2, 0.2, 1.], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::SpaceDrag);
+        h.update_gesture(ms(280), [0.35, 0.35, 1.], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::SpaceDrag);
+        h.update_gesture(ms(300), [0.2, 1., 1.], [1.; 4]);
+        h.update_gesture(ms(359), [0.2, 1., 1.], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::SpaceDrag);
+        h.update_gesture(ms(360), [0.2, 1., 1.], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::Neutral);
+        h.update_gesture(ms(500), [0.2, 1., 1.], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::Neutral); // residual pinch cannot become a click
+    }
+    #[test]
+    fn chord_is_offhand_only_and_role_change_requires_neutral() {
+        let mut h = HandInput::default();
+        for t in [0, 100] {
+            h.update_gesture(ms(t), [1.; 3], [1.; 4]);
+        }
+        for t in [110, 210] {
+            h.update_gesture(ms(t), [0.2, 0.2, 1.], [1.; 4]);
+        }
+        assert_eq!(h.gesture, Gesture::Neutral);
+        h.set_space_drag_enabled(true);
+        for t in [220, 320] {
+            h.update_gesture(ms(t), [1.; 3], [1.; 4]);
+        }
+        for t in [330, 410] {
+            h.update_gesture(ms(t), [0.2, 0.2, 1.], [1.; 4]);
+        }
+        assert_eq!(h.gesture, Gesture::SpaceDrag);
+        h.set_space_drag_enabled(false);
+        assert_eq!(h.gesture, Gesture::Neutral);
+        assert!(!h.armed);
+    }
+    #[test]
+    fn offhand_single_pinch_still_clicks_and_fist_remains_window_grip() {
+        let mut h = HandInput::default();
+        h.set_space_drag_enabled(true);
+        for t in [0, 100] {
+            h.update_gesture(ms(t), [1.; 3], [1.; 4]);
+        }
+        for t in [110, 230] {
+            h.update_gesture(ms(t), [0.2, 1., 1.], [1.; 4]);
+        }
+        assert_eq!(h.gesture, Gesture::Click);
+        h.reset();
+        assert!(h.space_drag_enabled);
+        for t in [240, 340] {
+            h.update_gesture(ms(t), [1.; 3], [1.; 4]);
+        }
+        for t in [350, 430] {
+            h.update_gesture(ms(t), [0.2, 0.2, 1.], [0.4; 4]);
+        }
+        assert_eq!(h.gesture, Gesture::Grab);
+    }
+    #[test]
+    fn space_drag_uses_wrist_through_aim_loss_and_rearms_after_tracking_loss() {
+        let mut h = HandInput::default();
+        h.set_space_drag_enabled(true);
+        let mut j = joints();
+        for t in [0, 100] {
+            h.update(
+                ms(t),
+                Some(&j),
+                Some(Affine3A::IDENTITY),
+                Affine3A::IDENTITY,
+                true,
+            );
+        }
+        j[10].pose.position = j[5].pose.position;
+        j[15].pose.position = j[5].pose.position;
+        for t in [110, 190] {
+            h.update(
+                ms(t),
+                Some(&j),
+                Some(Affine3A::IDENTITY),
+                Affine3A::IDENTITY,
+                true,
+            );
+        }
+        assert_eq!(h.gesture, Gesture::SpaceDrag);
+        j[0].pose.position.y = -0.7;
+        let sample = h
+            .update(ms(210), Some(&j), None, Affine3A::IDENTITY, true)
+            .unwrap();
+        assert_eq!(sample.gesture, Gesture::SpaceDrag);
+        assert!(sample.ray.is_some());
+        assert!(
+            h.update(ms(220), None, None, Affine3A::IDENTITY, true)
+                .is_none()
+        );
+        assert_eq!(h.gesture, Gesture::Neutral);
+        assert!(h.space_drag_enabled);
+        assert!(!h.armed);
     }
 }

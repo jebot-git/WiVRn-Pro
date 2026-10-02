@@ -250,3 +250,21 @@ The user confirmed all revised interactions work in the live Quest Pro session:
 watch orientation, cursor following the ray, closed-hand window grip and open-hand
 drop, and direct index-finger taps on the watch and virtual keyboard. This is a
 functional live check, not an extended latency or tracking-robustness benchmark.
+
+### Offhand three-finger space drag
+
+Added a thumb–index–middle chord on the watch hand (left by default), routed to
+WayVR's existing OpenXR space-drag action. It follows the watch hand assignment,
+uses wrist displacement throughout holding and release, preserves existing space
+movement settings, and suppresses that hand's mouse/touch interaction while held.
+Offhand single-pinches have a 120 ms assembly delay; the chord presses after 80 ms
+and releases after either pinch opens for 60 ms. Neutral rearming prevents the
+remaining single pinch from turning into a click. Full grip still moves windows.
+
+All 25 WayVR release tests pass, including offhand-only activation, staggered
+chord assembly, release without click leakage, hand-role changes, ordinary
+single-pinches, fist priority, aim loss and tracking-loss rearming. The host build
+and source/patch audit pass. Installed the worker atomically and restarted only
+WayVR: the existing headset session remains connected, the worker reaches FOCUSED,
+both hands initialize, and the Monado space-offset API is available. Live chord
+usability is awaiting the user's check.

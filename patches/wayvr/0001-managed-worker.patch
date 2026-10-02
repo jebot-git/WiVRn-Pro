@@ -90,7 +90,24 @@
          <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
-@@ -349,6 +349,13 @@
+@@ -75,6 +75,8 @@
+     pub picking_focus: FocusPickState,
+     processes: Vec<Child>,
+     disable_lerp_until: Instant,
++    /// The watch hand is the offhand for the hand-tracked space-drag chord.
++    pub space_drag_hand: usize,
+     pub head_yaw_total: f64,
+     head_last_yaw: Option<f64>,
+ }
+@@ -91,6 +93,7 @@
+             handsfree_state: PointerState::default(),
+             picking_focus: FocusPickState::None,
+             disable_lerp_until: Instant::now(),
++            space_drag_hand: 0,
+             head_yaw_total: 0.0,
+             head_last_yaw: None,
+         }
+@@ -349,6 +352,13 @@
      pub(super) interaction: InteractionState,
      pub tracked: bool,
      pub handsfree: bool,
@@ -104,7 +121,7 @@
      /// distance of the most recent ray hit on a wayland client window, used for drag n drop
      pub last_wvr_hit_distance: Option<f32>,
  }
-@@ -367,8 +374,32 @@
+@@ -367,8 +377,32 @@
              interaction: InteractionState::default(),
              tracked: false,
              handsfree: false,
@@ -137,7 +154,7 @@
      }
 
      pub const fn hand(&self) -> Option<LeftRight> {
-@@ -451,6 +482,9 @@
+@@ -451,6 +485,9 @@
      maybe_hit: Option<(PointerHit, RayHit)>,
      hmd: &Affine3A,
  ) {
@@ -147,7 +164,7 @@
      let Some((hit, raw_hit)) = maybe_hit else {
          return;
      };
-@@ -523,6 +557,126 @@
+@@ -523,6 +560,126 @@
      [hits[0].1, hits[1].1]
  }
 
@@ -274,10 +291,18 @@
  fn interact_hand<O>(
      idx: usize,
      overlays: &mut OverlayWindowManager<O>,
-@@ -531,15 +685,15 @@
+@@ -531,15 +688,23 @@
  where
      O: Default,
  {
++    if app.input_state.pointers[idx].hand_tracking && app.input_state.pointers[idx].now.space_drag {
++        // Playspace movement owns this hand; release touch/click/grab targets
++        // and do not move the desktop cursor while dragging the playspace.
++        release_pointer(idx, overlays, app);
++        app.input_state.pointers[idx].now.space_drag = true;
++        app.input_state.pointers[idx].tracked = true;
++        return (None, None);
++    }
 +    if !app.input_state.pointers[idx].cancel_interaction {
 +        prepare_touch(idx, overlays, app);
 +    }
@@ -297,7 +322,7 @@
 
      // already grabbing, ignore everything else
      if let Some(grab_data) = pointer.interaction.grabbed {
-@@ -689,6 +843,9 @@
+@@ -689,6 +854,9 @@
      if let Some(hovered_id) = hovered_id
          && let Some(hovered) = overlays.mut_by_id(hovered_id)
      {
@@ -307,7 +332,7 @@
          log::debug!("{} on_left (no hit)", hovered.config.name);
          hovered.config.backend.on_left(app, pointer_idx);
          hovered.hover_pointers[pointer_idx] = false;
-@@ -799,9 +956,19 @@
+@@ -799,9 +967,19 @@
      let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
 
      for (id, overlay) in overlays.iter() {
@@ -327,7 +352,7 @@
          if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
              continue;
          }
-@@ -817,6 +984,9 @@
+@@ -817,6 +995,9 @@
          }
      }
 
@@ -337,7 +362,7 @@
      hits.sort_by(|a, b| a.dist.total_cmp(&b.dist));
 
      for hit in hits {
-@@ -1135,3 +1305,77 @@
+@@ -1135,3 +1316,77 @@
          dist,
      })
  }
@@ -509,7 +534,15 @@
      }
 
      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
-@@ -356,6 +405,100 @@
+@@ -348,6 +397,7 @@
+         if picking_focus.is_none() {
+             let should_disable_lerp = app.input_state.should_disable_lerp();
+             for i in 0..2 {
++                self.hand_input[i].set_space_drag_enabled(i == app.input_state.space_drag_hand);
+                 let pointer = &mut app.input_state.pointers[i];
+                 self.pointers[i].update(
+                     pointer,
+@@ -356,6 +406,103 @@
                      !should_disable_lerp,
                      physical_inputs,
                  )?;
@@ -586,13 +619,16 @@
 +                        });
 +                        if let Some(ray) = sample.ray {
 +                            pointer.pose = ray;
-+                            pointer.raw_pose = ray;
++                            // Playspace movement uses the wrist, including the release
++                            // frame; switching back to an aim origin would add a jump.
++                            pointer.raw_pose = sample.wrist;
 +                            pointer.tracked = true;
 +                            use crate::hand_input::Gesture;
 +                            pointer.now.click = matches!(
 +                                sample.gesture,
 +                                Gesture::Click | Gesture::MiddleClick | Gesture::RightClick
 +                            );
++                            pointer.now.space_drag = sample.gesture == Gesture::SpaceDrag;
 +                            pointer.now.grab = sample.gesture == Gesture::Grab;
 +                            pointer.now.grab_float = pointer.now.grab;
 +                            pointer.now.move_mouse = true;
@@ -610,7 +646,7 @@
                  any_tracked |= pointer.tracked;
              }
          } else {
-@@ -371,10 +514,25 @@
+@@ -371,10 +518,25 @@
                  pointer.now = PointerState::default();
                  pointer.tracked = false;
                  pointer.handsfree = false;
@@ -687,6 +723,32 @@
              log::trace!("xrEndFrame");
              frame_stream.end(
                  xr_frame_state.predicted_display_time,
+@@ -301,6 +318,25 @@
+         }
+
+         app.input_state.pre_update();
++        app.input_state.space_drag_hand = overlays
++            .iter()
++            .find_map(|(_, overlay)| {
++                if overlay.config.name.as_ref() != crate::overlays::watch::WATCH_NAME {
++                    return None;
++                }
++                let state = overlay
++                    .config
++                    .active_state
++                    .as_ref()
++                    .unwrap_or(&overlay.config.default_state);
++                match state.positioning {
++                    wlx_common::windowing::Positioning::FollowHand { hand, .. } => {
++                        Some(hand as usize)
++                    }
++                    _ => None,
++                }
++            })
++            .unwrap_or(0);
+         input_source.update(&xr_state, &mut app)?;
+         app.input_state.post_update(&app.session);
+
 --- a/wayvr/src/gui/panel/label.rs
 +++ b/wayvr/src/gui/panel/label.rs
 @@ -52,6 +52,13 @@
