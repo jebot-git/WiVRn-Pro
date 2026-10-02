@@ -728,7 +728,7 @@
   },
   "fork_sha256": {
     "wayvr/build.rs": "e4e5f818c57c50d1af57308435dc90616b392c654b1fb6635ee785591fbbf8eb",
-    "wayvr/src/main.rs": "db0227aaa2d82729ddc5b3eb4da3985415e3e7a917d9d9047264c6eee7f50b97",
+    "wayvr/src/main.rs": "523f323dc5e23b5f3c4833e84968cc25a9fcfe7b4618cbc93bde891ddea103ff",
     "wayvr/src/overlays/dashboard.rs": "d45c4b52033e399e0c03c287d0a79f27ec7225591458fdb37ef7fe68141a8101",
     "dash-frontend/assets/gui/tab/home.xml": "897cf5fecaa7ed770791e6526ca6fd084a2e0e270ed75a3369604bc4aac6e44c",
     "dash-frontend/src/tab/home.rs": "fa35db9373957459f68c05e4748537bd70c11aba67f1ef86380245e45a6d79c0",
@@ -736,10 +736,12 @@
     "wayvr/src/gui/panel/label.rs": "61b4968341e36b8372314215df376ef31dceb7cc2b1e34a7c16705f05a954035",
     "wayvr/src/state.rs": "6fca13fb8f63a46ec49dc7df7cebd6c79bb8ada7e53aa164c6f31e5107db7571",
     "wlx-common/src/dash_interface.rs": "49dbe44ff105eb3c22e9da7e741f1d2a1529d13d892f2b77f0e052d44cc5ee8b",
-    "wayvr/src/backend/input.rs": "15d520a3acf6b6042423fb1b03134e83e4ad8a82f095d8d6c7d9ba5ade0a29ee",
+    "wayvr/src/backend/input.rs": "841573bb1c76dd732543daad846c7a57936b95b7f4bb8c24daed591fe616d229",
     "wayvr/src/backend/openxr/helpers.rs": "9308c0b3546434e11f76b2a524e6eaecf91c13943e7d5f4265ae2e6defbb6bbc",
-    "wayvr/src/backend/openxr/input.rs": "5484c432c3e8e4bb9d8d4196bc71097c8ac901393d30669832bb6815c4320120",
-    "wayvr/src/backend/openxr/mod.rs": "95698cae662d92d47ed7e38669e7d1c91c0fadef76f400b3c5c80adde1636539",
-    "wayvr/src/windowing/window.rs": "2ca484ce73ca407b479341237dca45381383309689d079883f287913388d516c"
+    "wayvr/src/backend/openxr/input.rs": "3c817fb36a7f655fc94ab0514e25110b32d7896e788f494c12867fef1269f86c",
+    "wayvr/src/backend/openxr/mod.rs": "0b9cd313df3ccdb20ca5ad287eae4eee18ef0a379c6fd246bb7b850196d82572",
+    "wayvr/src/windowing/window.rs": "2ca484ce73ca407b479341237dca45381383309689d079883f287913388d516c",
+    "wayvr/src/overlays/screen/backend.rs": "cf9257897e5744edad0917e4e7b3d7c7256d3f4e1e779cc14d9cdb5bf6fbecf5",
+    "wayvr/src/overlays/wayvr.rs": "382880787260b7e678899b26fd948ba914c2a1e04107eaaa65625050859b9a93"
   }
 }

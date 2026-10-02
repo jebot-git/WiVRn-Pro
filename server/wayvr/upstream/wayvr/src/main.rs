@@ -38,6 +38,8 @@ mod shora_battery;
 #[cfg(feature = "openxr")]
 #[path = "../../../hand_input.rs"]
 mod hand_input;
+#[path = "../../../hand_touch.rs"]
+mod hand_touch;
 
 use std::{
     path::PathBuf,

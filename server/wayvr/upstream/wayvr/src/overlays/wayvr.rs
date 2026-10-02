@@ -1020,7 +1020,11 @@ impl OverlayBackend for WvrWindowBackend {
 
         let target = ctx.hit_target(hit);
         let outside_pos = ctx.unclamped_client_pos_from_hit(hit);
-        let click_freeze = app.session.config.click_freeze_time_ms;
+        let click_freeze = if app.input_state.pointers[hit.pointer].hand_tracking {
+            0
+        } else {
+            app.session.config.click_freeze_time_ms
+        };
 
         // if the press was consumed to dismiss a popup, consume the matching release too.
         if !pressed && self.popup_outside_button == Some(index) {
@@ -1051,7 +1055,11 @@ impl OverlayBackend for WvrWindowBackend {
                 self.popup_outside_button = Some(index);
             }
 
-            let click_freeze = app.session.config.click_freeze_time_ms;
+            let click_freeze = if app.input_state.pointers[hit.pointer].hand_tracking {
+                0
+            } else {
+                app.session.config.click_freeze_time_ms
+            };
             app.wvr_server.as_mut().unwrap().send_mouse_button(
                 PointerFocusTarget::None,
                 outside_pos,
@@ -1094,7 +1102,11 @@ impl OverlayBackend for WvrWindowBackend {
             }
 
             Some(WvrHitTarget::Toplevel { pos }) => {
-                let click_freeze = app.session.config.click_freeze_time_ms;
+                let click_freeze = if app.input_state.pointers[hit.pointer].hand_tracking {
+                    0
+                } else {
+                    app.session.config.click_freeze_time_ms
+                };
                 let wvr_server = app.wvr_server.as_mut().unwrap();
 
                 wvr_server.send_mouse_button(

@@ -430,6 +430,7 @@ impl OpenXrInputSource {
                 }
                 pointer.hand_tracking = hand_mode;
                 pointer.wrist_pose = None;
+                pointer.index_tip = None;
                 if hand_mode {
                     let joints = if xr.focused && hmd_tracked {
                         xr.stage
@@ -463,20 +464,35 @@ impl OpenXrInputSource {
                     pointer.tracked = false;
                     if let Some(sample) = sample {
                         pointer.wrist_pose = Some(sample.wrist);
+                        pointer.index_tip = joints.as_ref().and_then(|j| {
+                            let tip = j[10];
+                            let pos = glam::Vec3A::new(
+                                tip.pose.position.x,
+                                tip.pose.position.y,
+                                tip.pose.position.z,
+                            );
+                            (tip.location_flags
+                                .contains(xr::SpaceLocationFlags::POSITION_VALID)
+                                && pos.is_finite())
+                            .then_some(pos)
+                        });
                         if let Some(ray) = sample.ray {
                             pointer.pose = ray;
                             pointer.raw_pose = ray;
                             pointer.tracked = true;
                             use crate::hand_input::Gesture;
-                            pointer.now.click =
-                                matches!(sample.gesture, Gesture::Click | Gesture::RightClick);
+                            pointer.now.click = matches!(
+                                sample.gesture,
+                                Gesture::Click | Gesture::MiddleClick | Gesture::RightClick
+                            );
                             pointer.now.grab = sample.gesture == Gesture::Grab;
+                            pointer.now.grab_float = pointer.now.grab;
+                            pointer.now.move_mouse = true;
+                            pointer.now.click_modifier_middle =
+                                sample.gesture == Gesture::MiddleClick;
                             pointer.now.click_modifier_right =
                                 sample.gesture == Gesture::RightClick;
                         }
-                    }
-                    if !pointer.tracked && (pointer.before.click || pointer.before.grab) {
-                        pointer.cancel_interaction = true;
                     }
                 }
                 if !xr.focused || pointer.cancel_interaction {
@@ -499,6 +515,7 @@ impl OpenXrInputSource {
                 pointer.tracked = false;
                 pointer.handsfree = false;
                 pointer.wrist_pose = None;
+                pointer.index_tip = None;
             }
             for hand in &mut self.hand_input {
                 hand.reset();

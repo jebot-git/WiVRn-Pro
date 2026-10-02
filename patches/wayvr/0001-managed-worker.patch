@@ -90,22 +90,30 @@
          <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
-@@ -349,6 +349,9 @@
+@@ -349,6 +349,13 @@
      pub(super) interaction: InteractionState,
      pub tracked: bool,
      pub handsfree: bool,
 +    pub hand_tracking: bool,
 +    pub wrist_pose: Option<Affine3A>,
++    pub index_tip: Option<Vec3A>,
++    touch_hit: Option<RayHit>,
++    touch_press: crate::hand_touch::TouchPress,
++    touch_needs_neutral: bool,
 +    pub cancel_interaction: bool,
      /// distance of the most recent ray hit on a wayland client window, used for drag n drop
      pub last_wvr_hit_distance: Option<f32>,
  }
-@@ -367,8 +370,27 @@
+@@ -367,8 +374,32 @@
              interaction: InteractionState::default(),
              tracked: false,
              handsfree: false,
 +            hand_tracking: false,
 +            wrist_pose: None,
++            index_tip: None,
++            touch_hit: None,
++            touch_press: Default::default(),
++            touch_needs_neutral: false,
 +            cancel_interaction: false,
              last_wvr_hit_distance: None,
          }
@@ -120,7 +128,8 @@
 +                crate::overlays::watch::WATCH_POS,
 +            );
 +            let on_wrist = Affine3A::from_rotation_translation(
-+                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2),
++                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
++                    * Quat::from_rotation_z(std::f32::consts::FRAC_PI_2),
 +                glam::Vec3::new(0.0, 0.035, 0.025),
 +            );
 +            wrist * on_wrist * watch.inverse()
@@ -128,10 +137,112 @@
      }
 
      pub const fn hand(&self) -> Option<LeftRight> {
-@@ -523,6 +545,32 @@
+@@ -451,6 +482,9 @@
+     maybe_hit: Option<(PointerHit, RayHit)>,
+     hmd: &Affine3A,
+ ) {
++    if pointer.touch_hit.is_some() {
++        return;
++    }
+     let Some((hit, raw_hit)) = maybe_hit else {
+         return;
+     };
+@@ -523,6 +557,126 @@
      [hits[0].1, hits[1].1]
  }
 
++/// Project an index fingertip onto the same flat/curved surface used by rays.
++fn touch_projection(
++    tip: Vec3A,
++    id: OverlayID,
++    transform: &Affine3A,
++    curvature: Option<&f32>,
++) -> Option<(RayHit, f32)> {
++    let (_, rotation, _) = transform.to_scale_rotation_translation();
++    let normal = transform.z_axis.try_normalize()?;
++    let origin = Affine3A::from_rotation_translation(rotation, (tip + normal * 0.05).into());
++    let hit = ray_test(&origin, id, transform, curvature)?;
++    let clearance = hit.dist - 0.05;
++    (-0.020..=0.035)
++        .contains(&clearance)
++        .then_some((hit, clearance))
++}
++
++fn prepare_touch<O: Default>(
++    idx: usize,
++    overlays: &mut OverlayWindowManager<O>,
++    app: &mut AppState,
++) {
++    let pointer = &app.input_state.pointers[idx];
++    let old = pointer.touch_hit;
++    let mut candidates = Vec::new();
++    if pointer.hand_tracking
++        && !pointer.now.grab
++        && pointer.interaction.grabbed.is_none()
++        && let Some(tip) = pointer.index_tip
++    {
++        for (id, overlay) in overlays.iter() {
++            if overlay.config.name.as_ref() != WATCH_NAME
++                && overlay.config.category != OverlayCategory::Keyboard
++            {
++                continue;
++            }
++            let Some(state) = overlay.config.active_state.as_ref() else {
++                continue;
++            };
++            if !state.interactable || state.alpha < 0.025 {
++                continue;
++            }
++            if overlay.config.name.as_ref() == WATCH_NAME
++                && matches!(state.positioning, Positioning::FollowHand {hand, ..} if hand as usize == idx)
++            {
++                continue;
++            }
++            if let Some(hit) = touch_projection(tip, id, &state.transform, state.curvature.as_ref())
++            {
++                candidates.push(hit);
++            }
++        }
++    }
++    candidates.sort_by(|a, b| a.1.abs().total_cmp(&b.1.abs()));
++    let target = candidates.into_iter().find(|(hit, _)| {
++        overlays
++            .mut_by_id(hit.overlay)
++            .and_then(|o| o.config.backend.get_interaction_transform())
++            .is_some_and(|t| {
++                let uv = t.transform_point2(hit.local_pos);
++                (0.0..=1.0).contains(&uv.x) && (0.0..=1.0).contains(&uv.y)
++            })
++    });
++    let changed = old.map(|h| h.overlay) != target.map(|(h, _)| h.overlay);
++    if changed
++        && (old.is_some() || (target.is_some() && app.input_state.pointers[idx].before.click))
++    {
++        // Send button-up to the old target before changing input source.
++        release_pointer(idx, overlays, app);
++        app.input_state.pointers[idx].touch_needs_neutral = true;
++    }
++    let pointer = &mut app.input_state.pointers[idx];
++    if let Some((hit, clearance)) = target {
++        if changed {
++            pointer.touch_press = Default::default();
++        }
++        pointer.touch_hit = Some(hit);
++        pointer.tracked = true; // Touch also works below the ray's pointing zone.
++        pointer.now = PointerState {
++            click: pointer.touch_press.update(Instant::now(), clearance),
++            ..Default::default()
++        };
++        pointer.interaction.mode = PointerMode::Left;
++        pointer.touch_needs_neutral = true;
++    } else if pointer.touch_needs_neutral {
++        if !pointer.now.click && !pointer.now.grab {
++            pointer.touch_needs_neutral = false;
++        }
++        pointer.now = PointerState::default();
++    }
++}
++
 +/// Release at the previous pose before switching sources or losing tracking.
 +pub fn release_pointer<O>(idx: usize, overlays: &mut OverlayWindowManager<O>, app: &mut AppState)
 +where
@@ -143,6 +254,8 @@
 +    pointer.tracked = false;
 +    // A lowered hand can still have a valid wrist attachment.
 +    pointer.pending_haptics = None;
++    pointer.touch_hit = None;
++    pointer.touch_press = Default::default();
 +    let grabbed = pointer.interaction.grabbed.map(|g| g.grabbed_id);
 +    let hovered = pointer.interaction.hovered_id.take();
 +    if let Some(id) = grabbed {
@@ -161,10 +274,13 @@
  fn interact_hand<O>(
      idx: usize,
      overlays: &mut OverlayWindowManager<O>,
-@@ -531,15 +579,12 @@
+@@ -531,15 +685,15 @@
  where
      O: Default,
  {
++    if !app.input_state.pointers[idx].cancel_interaction {
++        prepare_touch(idx, overlays, app);
++    }
 +    if app.input_state.pointers[idx].cancel_interaction || !app.input_state.pointers[idx].tracked {
 +        release_pointer(idx, overlays, app);
 +        return (None, None);
@@ -181,7 +297,7 @@
 
      // already grabbing, ignore everything else
      if let Some(grab_data) = pointer.interaction.grabbed {
-@@ -689,6 +734,9 @@
+@@ -689,6 +843,9 @@
      if let Some(hovered_id) = hovered_id
          && let Some(hovered) = overlays.mut_by_id(hovered_id)
      {
@@ -191,7 +307,13 @@
          log::debug!("{} on_left (no hit)", hovered.config.name);
          hovered.config.backend.on_left(app, pointer_idx);
          hovered.hover_pointers[pointer_idx] = false;
-@@ -802,6 +850,13 @@
+@@ -799,9 +956,19 @@
+     let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
+
+     for (id, overlay) in overlays.iter() {
++        if pointer.touch_hit.is_some() {
++            break;
++        }
          let Some(overlay_state) = overlay.config.active_state.as_ref() else {
              continue;
          };
@@ -205,7 +327,17 @@
          if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
              continue;
          }
-@@ -1135,3 +1190,34 @@
+@@ -817,6 +984,9 @@
+         }
+     }
+
++    if let Some(hit) = pointer.touch_hit {
++        hits.push(hit);
++    }
+     hits.sort_by(|a, b| a.dist.total_cmp(&b.dist));
+
+     for hit in hits {
+@@ -1135,3 +1305,77 @@
          dist,
      })
  }
@@ -235,8 +367,51 @@
 +        );
 +        assert!(
 +            local
++                .transform_vector3(glam::Vec3::X)
++                .abs_diff_eq(glam::Vec3::NEG_Z, 1e-5)
++        );
++        assert!(
++            local
 +                .transform_vector3(glam::Vec3::Z)
 +                .abs_diff_eq(glam::Vec3::Y, 1e-5)
++        );
++    }
++    #[test]
++    fn touch_projection_uses_surface_coordinates_after_rotation_and_scaling() {
++        let transform = Affine3A::from_scale_rotation_translation(
++            glam::Vec3::splat(0.7),
++            Quat::from_rotation_y(0.5),
++            glam::Vec3::new(0.1, 1.0, -0.7),
++        );
++        let on_surface = transform.transform_point3a(Vec3A::new(0.2, -0.1, 0.0));
++        let normal = transform.z_axis.normalize();
++        let (hit, d) = touch_projection(
++            on_surface + normal * 0.003,
++            OverlayID::default(),
++            &transform,
++            None,
++        )
++        .unwrap();
++        assert!((d - 0.003).abs() < 1e-5);
++        assert!(hit.local_pos.abs_diff_eq(Vec2::new(0.2, -0.1), 1e-5));
++        assert!(hit.global_pos.abs_diff_eq(on_surface, 1e-5));
++        assert!(
++            touch_projection(
++                on_surface + normal * 0.10,
++                OverlayID::default(),
++                &transform,
++                None
++            )
++            .is_none()
++        );
++        assert!(
++            touch_projection(
++                on_surface - normal * 0.04,
++                OverlayID::default(),
++                &transform,
++                None
++            )
++            .is_none()
 +        );
 +    }
 +}
@@ -334,7 +509,7 @@
      }
 
      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
-@@ -356,6 +405,84 @@
+@@ -356,6 +405,100 @@
                      !should_disable_lerp,
                      physical_inputs,
                  )?;
@@ -363,6 +538,7 @@
 +                }
 +                pointer.hand_tracking = hand_mode;
 +                pointer.wrist_pose = None;
++                pointer.index_tip = None;
 +                if hand_mode {
 +                    let joints = if xr.focused && hmd_tracked {
 +                        xr.stage
@@ -396,20 +572,35 @@
 +                    pointer.tracked = false;
 +                    if let Some(sample) = sample {
 +                        pointer.wrist_pose = Some(sample.wrist);
++                        pointer.index_tip = joints.as_ref().and_then(|j| {
++                            let tip = j[10];
++                            let pos = glam::Vec3A::new(
++                                tip.pose.position.x,
++                                tip.pose.position.y,
++                                tip.pose.position.z,
++                            );
++                            (tip.location_flags
++                                .contains(xr::SpaceLocationFlags::POSITION_VALID)
++                                && pos.is_finite())
++                            .then_some(pos)
++                        });
 +                        if let Some(ray) = sample.ray {
 +                            pointer.pose = ray;
 +                            pointer.raw_pose = ray;
 +                            pointer.tracked = true;
 +                            use crate::hand_input::Gesture;
-+                            pointer.now.click =
-+                                matches!(sample.gesture, Gesture::Click | Gesture::RightClick);
++                            pointer.now.click = matches!(
++                                sample.gesture,
++                                Gesture::Click | Gesture::MiddleClick | Gesture::RightClick
++                            );
 +                            pointer.now.grab = sample.gesture == Gesture::Grab;
++                            pointer.now.grab_float = pointer.now.grab;
++                            pointer.now.move_mouse = true;
++                            pointer.now.click_modifier_middle =
++                                sample.gesture == Gesture::MiddleClick;
 +                            pointer.now.click_modifier_right =
 +                                sample.gesture == Gesture::RightClick;
 +                        }
-+                    }
-+                    if !pointer.tracked && (pointer.before.click || pointer.before.grab) {
-+                        pointer.cancel_interaction = true;
 +                    }
 +                }
 +                if !xr.focused || pointer.cancel_interaction {
@@ -419,7 +610,7 @@
                  any_tracked |= pointer.tracked;
              }
          } else {
-@@ -371,10 +498,24 @@
+@@ -371,10 +514,25 @@
                  pointer.now = PointerState::default();
                  pointer.tracked = false;
                  pointer.handsfree = false;
@@ -428,6 +619,7 @@
 -
 -        if !picking_focus.is_none() || !any_tracked {
 +                pointer.wrist_pose = None;
++                pointer.index_tip = None;
 +            }
 +            for hand in &mut self.hand_input {
 +                hand.reset();
@@ -466,7 +658,7 @@
          stage: Arc::new(stage),
          view: Arc::new(view),
          extra_exts,
-@@ -203,6 +205,14 @@
+@@ -203,6 +205,15 @@
                      // Session state change is where we can begin and end sessions, as well as
                      // find quit messages!
                      log::info!("entered state {:?}", e.state());
@@ -476,12 +668,13 @@
 +                        for i in 0..2 {
 +                            crate::backend::input::release_pointer(i, &mut overlays, &mut app);
 +                            app.input_state.pointers[i].wrist_pose = None;
++                            app.input_state.pointers[i].index_tip = None;
 +                        }
 +                    }
                      match e.state() {
                          xr::SessionState::READY => {
                              xr_state.session.begin(VIEW_TYPE)?;
-@@ -291,6 +301,11 @@
+@@ -291,6 +302,12 @@
          };
 
          if !xr_frame_state.should_render {
@@ -489,6 +682,7 @@
 +            for i in 0..2 {
 +                crate::backend::input::release_pointer(i, &mut overlays, &mut app);
 +                app.input_state.pointers[i].wrist_pose = None;
++                app.input_state.pointers[i].index_tip = None;
 +            }
              log::trace!("xrEndFrame");
              frame_stream.end(
@@ -511,7 +705,7 @@
                  log_missing_attrib(parser_state, TAG, "_device");
 --- a/wayvr/src/main.rs
 +++ b/wayvr/src/main.rs
-@@ -30,6 +30,14 @@
+@@ -30,6 +30,16 @@
  mod subsystem;
  mod test;
  mod windowing;
@@ -523,10 +717,12 @@
 +#[cfg(feature = "openxr")]
 +#[path = "../../../hand_input.rs"]
 +mod hand_input;
++#[path = "../../../hand_touch.rs"]
++mod hand_touch;
 
  use std::{
      path::PathBuf,
-@@ -184,6 +192,9 @@
+@@ -184,6 +194,9 @@
 
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
@@ -571,6 +767,86 @@
      fn window_list(&mut self, app: &mut AppState) -> anyhow::Result<Vec<WvrWindow>> {
          let wvr_server = app.wvr_server.as_mut().unwrap();
          Ok(wvr_server
+--- a/wayvr/src/overlays/screen/backend.rs
++++ b/wayvr/src/overlays/screen/backend.rs
+@@ -299,7 +299,7 @@
+                 .set_input_focus(app.wvr_server.as_mut(), InputFocus::PhysicalScreen);
+         }
+
+-        if can_move()
++        if (app.input_state.pointers[hit.pointer].hand_tracking || can_move())
+             && (!app.session.config.focus_follows_mouse_mode
+                 || app.input_state.pointers[hit.pointer].now.move_mouse)
+         {
+@@ -328,18 +328,16 @@
+         }
+
+         if pressed {
+-            set_next_move(app.session.config.click_freeze_time_ms as _);
+-        }
+-
++            if !app.input_state.pointers[hit.pointer].hand_tracking {
++                set_next_move(app.session.config.click_freeze_time_ms as _);
++            }
++            // Place the cursor at the beam hit before delivering button-down.
++            let pos = self.mouse_transform.transform_point2(hit.uv);
++            app.hid_provider
++                .inner
++                .mouse_move(DVec2::new(pos.x as _, pos.y as _));
++        }
+         app.hid_provider.inner.send_button(btn, pressed);
+-
+-        if !pressed {
+-            return;
+-        }
+-        let pos = self.mouse_transform.transform_point2(hit.uv);
+-        app.hid_provider
+-            .inner
+-            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
+     }
+
+     fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {
+--- a/wayvr/src/overlays/wayvr.rs
++++ b/wayvr/src/overlays/wayvr.rs
+@@ -1020,7 +1020,11 @@
+
+         let target = ctx.hit_target(hit);
+         let outside_pos = ctx.unclamped_client_pos_from_hit(hit);
+-        let click_freeze = app.session.config.click_freeze_time_ms;
++        let click_freeze = if app.input_state.pointers[hit.pointer].hand_tracking {
++            0
++        } else {
++            app.session.config.click_freeze_time_ms
++        };
+
+         // if the press was consumed to dismiss a popup, consume the matching release too.
+         if !pressed && self.popup_outside_button == Some(index) {
+@@ -1051,7 +1055,11 @@
+                 self.popup_outside_button = Some(index);
+             }
+
+-            let click_freeze = app.session.config.click_freeze_time_ms;
++            let click_freeze = if app.input_state.pointers[hit.pointer].hand_tracking {
++                0
++            } else {
++                app.session.config.click_freeze_time_ms
++            };
+             app.wvr_server.as_mut().unwrap().send_mouse_button(
+                 PointerFocusTarget::None,
+                 outside_pos,
+@@ -1094,7 +1102,11 @@
+             }
+
+             Some(WvrHitTarget::Toplevel { pos }) => {
+-                let click_freeze = app.session.config.click_freeze_time_ms;
++                let click_freeze = if app.input_state.pointers[hit.pointer].hand_tracking {
++                    0
++                } else {
++                    app.session.config.click_freeze_time_ms
++                };
+                 let wvr_server = app.wvr_server.as_mut().unwrap();
+
+                 wvr_server.send_mouse_button(
 --- a/wayvr/src/state.rs
 +++ b/wayvr/src/state.rs
 @@ -55,6 +55,7 @@

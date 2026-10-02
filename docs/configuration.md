@@ -186,16 +186,28 @@ returns when the runtime switches back to the controller interaction profile.
 - Point using the runtime's hand aim pose, or a shoulder-to-index ray when no
   aim pose is available.
 - Pinch thumb–index to click. Hold it while moving to drag inside an application.
-- Pinch thumb–middle while pointing at a movable window to move it in 3D; release
-  to drop it using WayVR's existing placement behavior.
+- Pinch thumb–middle for the middle mouse button.
+- Point at a movable window, close your hand into a grip, then move it in 3D.
+  Open the hand to drop it. The grip moves that window rather than its whole group.
 - Pinch thumb–ring to right-click. Open the hand briefly between gestures.
+- Touch the wrist watch or virtual keyboard with an extended index fingertip.
+  Approach from the front, touch the surface, then withdraw to release. Use the
+  opposite hand for the watch. Touch takes priority over that hand's distant ray;
+  after leaving the panel, release any pinch before clicking with the ray again.
+- The mouse cursor follows the hand ray's projected surface hit without requiring
+  a movement modifier or pausing after a click.
 
 The gesture design comes from the local KWin prototype: pinch distances are
 normalized to hand width, with 0.28 press / 0.42 release thresholds, a 45 ms press
 debounce and 100 ms neutral rearming. Rays use 35 ms smoothing. Lowering the palm
 more than 50 cm below the headset, or bringing it within 12 cm of the headset's
 forward plane, disables pointing while retaining a valid wrist attachment.
-Tracking loss, focus loss and input-source changes release clicks and grabs.
+A held grip continues below the pointing zone and follows the wrist independently
+of the runtime aim pose. Index plus two other curled fingers held for 80 ms start
+it; opening two fingers for 100 ms releases it. Brief finger occlusion is tolerated
+for up to 120 ms while the wrist is still tracked. Wrist loss, focus loss and
+input-source changes release clicks and grabs. Valid wrists remain attached when
+finger joints temporarily become unavailable.
 WiVRn expires hand samples after 150 ms without fresh production timestamps.
 
 Existing action files are preserved; missing hand aim bindings are filled in
@@ -204,3 +216,11 @@ attachment frame. Hand gestures replace native pinch bindings while in hand mode
 preventing duplicate clicks; existing controller mappings remain in use otherwise.
 The wrist orientation follows the
 [OpenXR hand-joint convention](https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#convention-of-hand-joints).
+
+Direct touch uses the same surface projection as ray input, including window
+rotation, scale and curvature. It arms when the fingertip is at least 14 mm in
+front of the surface, presses within 4 mm after 25 ms, and releases after pulling
+back 14 mm. Leaving the target, losing fingertip tracking or penetrating more
+than 20 mm releases the contact. Each hand has independent touch state; appearing
+inside a panel cannot press it. The watch's hand attachment includes the corrected
+90° roll while retaining saved controller-relative offsets.

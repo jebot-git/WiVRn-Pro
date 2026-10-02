@@ -211,6 +211,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
                         for i in 0..2 {
                             crate::backend::input::release_pointer(i, &mut overlays, &mut app);
                             app.input_state.pointers[i].wrist_pose = None;
+                            app.input_state.pointers[i].index_tip = None;
                         }
                     }
                     match e.state() {
@@ -305,6 +306,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
             for i in 0..2 {
                 crate::backend::input::release_pointer(i, &mut overlays, &mut app);
                 app.input_state.pointers[i].wrist_pose = None;
+                app.input_state.pointers[i].index_tip = None;
             }
             log::trace!("xrEndFrame");
             frame_stream.end(

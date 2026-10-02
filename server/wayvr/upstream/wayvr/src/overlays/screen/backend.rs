@@ -299,7 +299,7 @@ impl OverlayBackend for ScreenBackend {
                 .set_input_focus(app.wvr_server.as_mut(), InputFocus::PhysicalScreen);
         }
 
-        if can_move()
+        if (app.input_state.pointers[hit.pointer].hand_tracking || can_move())
             && (!app.session.config.focus_follows_mouse_mode
                 || app.input_state.pointers[hit.pointer].now.move_mouse)
         {
@@ -328,18 +328,16 @@ impl OverlayBackend for ScreenBackend {
         }
 
         if pressed {
-            set_next_move(app.session.config.click_freeze_time_ms as _);
+            if !app.input_state.pointers[hit.pointer].hand_tracking {
+                set_next_move(app.session.config.click_freeze_time_ms as _);
+            }
+            // Place the cursor at the beam hit before delivering button-down.
+            let pos = self.mouse_transform.transform_point2(hit.uv);
+            app.hid_provider
+                .inner
+                .mouse_move(DVec2::new(pos.x as _, pos.y as _));
         }
-
         app.hid_provider.inner.send_button(btn, pressed);
-
-        if !pressed {
-            return;
-        }
-        let pos = self.mouse_transform.transform_point2(hit.uv);
-        app.hid_provider
-            .inner
-            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
     }
 
     fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {

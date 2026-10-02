@@ -351,6 +351,10 @@ pub struct Pointer {
     pub handsfree: bool,
     pub hand_tracking: bool,
     pub wrist_pose: Option<Affine3A>,
+    pub index_tip: Option<Vec3A>,
+    touch_hit: Option<RayHit>,
+    touch_press: crate::hand_touch::TouchPress,
+    touch_needs_neutral: bool,
     pub cancel_interaction: bool,
     /// distance of the most recent ray hit on a wayland client window, used for drag n drop
     pub last_wvr_hit_distance: Option<f32>,
@@ -372,6 +376,10 @@ impl Pointer {
             handsfree: false,
             hand_tracking: false,
             wrist_pose: None,
+            index_tip: None,
+            touch_hit: None,
+            touch_press: Default::default(),
+            touch_needs_neutral: false,
             cancel_interaction: false,
             last_wvr_hit_distance: None,
         }
@@ -386,7 +394,8 @@ impl Pointer {
                 crate::overlays::watch::WATCH_POS,
             );
             let on_wrist = Affine3A::from_rotation_translation(
-                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2),
+                Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)
+                    * Quat::from_rotation_z(std::f32::consts::FRAC_PI_2),
                 glam::Vec3::new(0.0, 0.035, 0.025),
             );
             wrist * on_wrist * watch.inverse()
@@ -473,6 +482,9 @@ fn populate_lines(
     maybe_hit: Option<(PointerHit, RayHit)>,
     hmd: &Affine3A,
 ) {
+    if pointer.touch_hit.is_some() {
+        return;
+    }
     let Some((hit, raw_hit)) = maybe_hit else {
         return;
     };
@@ -545,6 +557,98 @@ where
     [hits[0].1, hits[1].1]
 }
 
+/// Project an index fingertip onto the same flat/curved surface used by rays.
+fn touch_projection(
+    tip: Vec3A,
+    id: OverlayID,
+    transform: &Affine3A,
+    curvature: Option<&f32>,
+) -> Option<(RayHit, f32)> {
+    let (_, rotation, _) = transform.to_scale_rotation_translation();
+    let normal = transform.z_axis.try_normalize()?;
+    let origin = Affine3A::from_rotation_translation(rotation, (tip + normal * 0.05).into());
+    let hit = ray_test(&origin, id, transform, curvature)?;
+    let clearance = hit.dist - 0.05;
+    (-0.020..=0.035)
+        .contains(&clearance)
+        .then_some((hit, clearance))
+}
+
+fn prepare_touch<O: Default>(
+    idx: usize,
+    overlays: &mut OverlayWindowManager<O>,
+    app: &mut AppState,
+) {
+    let pointer = &app.input_state.pointers[idx];
+    let old = pointer.touch_hit;
+    let mut candidates = Vec::new();
+    if pointer.hand_tracking
+        && !pointer.now.grab
+        && pointer.interaction.grabbed.is_none()
+        && let Some(tip) = pointer.index_tip
+    {
+        for (id, overlay) in overlays.iter() {
+            if overlay.config.name.as_ref() != WATCH_NAME
+                && overlay.config.category != OverlayCategory::Keyboard
+            {
+                continue;
+            }
+            let Some(state) = overlay.config.active_state.as_ref() else {
+                continue;
+            };
+            if !state.interactable || state.alpha < 0.025 {
+                continue;
+            }
+            if overlay.config.name.as_ref() == WATCH_NAME
+                && matches!(state.positioning, Positioning::FollowHand {hand, ..} if hand as usize == idx)
+            {
+                continue;
+            }
+            if let Some(hit) = touch_projection(tip, id, &state.transform, state.curvature.as_ref())
+            {
+                candidates.push(hit);
+            }
+        }
+    }
+    candidates.sort_by(|a, b| a.1.abs().total_cmp(&b.1.abs()));
+    let target = candidates.into_iter().find(|(hit, _)| {
+        overlays
+            .mut_by_id(hit.overlay)
+            .and_then(|o| o.config.backend.get_interaction_transform())
+            .is_some_and(|t| {
+                let uv = t.transform_point2(hit.local_pos);
+                (0.0..=1.0).contains(&uv.x) && (0.0..=1.0).contains(&uv.y)
+            })
+    });
+    let changed = old.map(|h| h.overlay) != target.map(|(h, _)| h.overlay);
+    if changed
+        && (old.is_some() || (target.is_some() && app.input_state.pointers[idx].before.click))
+    {
+        // Send button-up to the old target before changing input source.
+        release_pointer(idx, overlays, app);
+        app.input_state.pointers[idx].touch_needs_neutral = true;
+    }
+    let pointer = &mut app.input_state.pointers[idx];
+    if let Some((hit, clearance)) = target {
+        if changed {
+            pointer.touch_press = Default::default();
+        }
+        pointer.touch_hit = Some(hit);
+        pointer.tracked = true; // Touch also works below the ray's pointing zone.
+        pointer.now = PointerState {
+            click: pointer.touch_press.update(Instant::now(), clearance),
+            ..Default::default()
+        };
+        pointer.interaction.mode = PointerMode::Left;
+        pointer.touch_needs_neutral = true;
+    } else if pointer.touch_needs_neutral {
+        if !pointer.now.click && !pointer.now.grab {
+            pointer.touch_needs_neutral = false;
+        }
+        pointer.now = PointerState::default();
+    }
+}
+
 /// Release at the previous pose before switching sources or losing tracking.
 pub fn release_pointer<O>(idx: usize, overlays: &mut OverlayWindowManager<O>, app: &mut AppState)
 where
@@ -556,6 +660,8 @@ where
     pointer.tracked = false;
     // A lowered hand can still have a valid wrist attachment.
     pointer.pending_haptics = None;
+    pointer.touch_hit = None;
+    pointer.touch_press = Default::default();
     let grabbed = pointer.interaction.grabbed.map(|g| g.grabbed_id);
     let hovered = pointer.interaction.hovered_id.take();
     if let Some(id) = grabbed {
@@ -579,6 +685,9 @@ fn interact_hand<O>(
 where
     O: Default,
 {
+    if !app.input_state.pointers[idx].cancel_interaction {
+        prepare_touch(idx, overlays, app);
+    }
     if app.input_state.pointers[idx].cancel_interaction || !app.input_state.pointers[idx].tracked {
         release_pointer(idx, overlays, app);
         return (None, None);
@@ -847,6 +956,9 @@ where
     let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
 
     for (id, overlay) in overlays.iter() {
+        if pointer.touch_hit.is_some() {
+            break;
+        }
         let Some(overlay_state) = overlay.config.active_state.as_ref() else {
             continue;
         };
@@ -872,6 +984,9 @@ where
         }
     }
 
+    if let Some(hit) = pointer.touch_hit {
+        hits.push(hit);
+    }
     hits.sort_by(|a, b| a.dist.total_cmp(&b.dist));
 
     for hit in hits {
@@ -1216,8 +1331,51 @@ mod hand_attachment_tests {
         );
         assert!(
             local
+                .transform_vector3(glam::Vec3::X)
+                .abs_diff_eq(glam::Vec3::NEG_Z, 1e-5)
+        );
+        assert!(
+            local
                 .transform_vector3(glam::Vec3::Z)
                 .abs_diff_eq(glam::Vec3::Y, 1e-5)
+        );
+    }
+    #[test]
+    fn touch_projection_uses_surface_coordinates_after_rotation_and_scaling() {
+        let transform = Affine3A::from_scale_rotation_translation(
+            glam::Vec3::splat(0.7),
+            Quat::from_rotation_y(0.5),
+            glam::Vec3::new(0.1, 1.0, -0.7),
+        );
+        let on_surface = transform.transform_point3a(Vec3A::new(0.2, -0.1, 0.0));
+        let normal = transform.z_axis.normalize();
+        let (hit, d) = touch_projection(
+            on_surface + normal * 0.003,
+            OverlayID::default(),
+            &transform,
+            None,
+        )
+        .unwrap();
+        assert!((d - 0.003).abs() < 1e-5);
+        assert!(hit.local_pos.abs_diff_eq(Vec2::new(0.2, -0.1), 1e-5));
+        assert!(hit.global_pos.abs_diff_eq(on_surface, 1e-5));
+        assert!(
+            touch_projection(
+                on_surface + normal * 0.10,
+                OverlayID::default(),
+                &transform,
+                None
+            )
+            .is_none()
+        );
+        assert!(
+            touch_projection(
+                on_surface - normal * 0.04,
+                OverlayID::default(),
+                &transform,
+                None
+            )
+            .is_none()
         );
     }
 }

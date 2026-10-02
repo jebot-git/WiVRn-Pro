@@ -10,6 +10,7 @@ pub enum Gesture {
     #[default]
     Neutral,
     Click,
+    MiddleClick,
     Grab,
     RightClick,
 }
@@ -22,8 +23,10 @@ pub struct HandInput {
     candidate: Gesture,
     candidate_since: Duration,
     last_sample: Option<Duration>,
-    runtime_aim: bool,
     ray: Option<Affine3A>,
+    grab_ray_from_wrist: Option<Affine3A>,
+    last_fingers: Option<Duration>,
+    release_since: Option<Duration>,
 }
 
 pub struct Sample {
@@ -79,12 +82,6 @@ impl HandInput {
     ) -> Option<Sample> {
         let valid = xr::SpaceLocationFlags::POSITION_VALID;
         if !head.is_finite()
-            || j.iter().any(|v| {
-                !v.location_flags.contains(valid) || !position(v.pose.position).is_finite()
-            })
-            || !j[0]
-                .location_flags
-                .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
             || !j[1].location_flags.contains(
                 valid
                     | xr::SpaceLocationFlags::ORIENTATION_VALID
@@ -95,13 +92,26 @@ impl HandInput {
         }
         let wrist = pose(j[1].pose)?;
         let p = |i: usize| position(j[i].pose.position);
-        let width = p(7).distance(p(22));
-        if !(0.03..=0.13).contains(&width) {
-            return None;
+        if self
+            .last_sample
+            .is_some_and(|at| now.saturating_sub(at) > Duration::from_millis(150))
+        {
+            self.reset();
         }
-        let palm = head.inverse().transform_point3(p(0));
-        // Keep the wrist attached even when lowering the hand disables pointing.
-        if palm.y < -0.50 || palm.z > -0.12 {
+        let fingers_valid = j
+            .iter()
+            .all(|v| v.location_flags.contains(valid) && position(v.pose.position).is_finite())
+            && j[0]
+                .location_flags
+                .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
+            && (0.03..=0.13).contains(&p(7).distance(p(22)));
+        if fingers_valid {
+            self.last_fingers = Some(now);
+        } else if self.gesture != Gesture::Grab
+            || !self
+                .last_fingers
+                .is_some_and(|at| now.saturating_sub(at) <= Duration::from_millis(120))
+        {
             self.reset();
             return Some(Sample {
                 wrist,
@@ -109,19 +119,24 @@ impl HandInput {
                 gesture: Gesture::Neutral,
             });
         }
-        let expired = self
-            .last_sample
-            .is_some_and(|at| now.saturating_sub(at) > Duration::from_millis(150));
-        let runtime = native_aim.is_some_and(|a| a.is_finite());
-        if expired || runtime != self.runtime_aim {
+        let palm = head.inverse().transform_point3(p(0));
+        // Once grabbed, allow moving below the pointing zone. A fresh tracked
+        // wrist is always required; only finger occlusion gets a short grace.
+        if self.gesture != Gesture::Grab && (palm.y < -0.50 || palm.z > -0.12) {
             self.reset();
+            return Some(Sample {
+                wrist,
+                ray: None,
+                gesture: Gesture::Neutral,
+            });
         }
-        self.runtime_aim = runtime;
         let dt = self.last_sample.map_or(0.05, |at| {
             now.saturating_sub(at).as_secs_f32().clamp(0.001, 0.05)
         });
         self.last_sample = Some(now);
-        let target = if let Some(aim) = native_aim.filter(|a| a.is_finite()) {
+        let target = if let Some(offset) = self.grab_ray_from_wrist {
+            wrist * offset
+        } else if let Some(aim) = native_aim.filter(|a| a.is_finite()) {
             aim
         } else {
             let shoulder =
@@ -145,30 +160,66 @@ impl HandInput {
             )
         });
         self.ray = Some(ray);
-        let ratios = [
-            p(5).distance(p(10)) / width,
-            p(5).distance(p(15)) / width,
-            p(5).distance(p(20)) / width,
-        ];
-        self.update_gesture(now, ratios);
+        let was_grabbing = self.gesture == Gesture::Grab;
+        if fingers_valid {
+            let width = p(7).distance(p(22));
+            let ratios = [
+                p(5).distance(p(10)) / width,
+                p(5).distance(p(15)) / width,
+                p(5).distance(p(20)) / width,
+            ];
+            // Tip-to-knuckle distance / bone-chain length: 1 = straight,
+            // close to 0 = curled. Independent of thumb contact and hand size.
+            let extension = [7, 12, 17, 22].map(|base| {
+                let length = (base..base + 3)
+                    .map(|i| p(i).distance(p(i + 1)))
+                    .sum::<f32>();
+                if length > 0.015 {
+                    p(base).distance(p(base + 3)) / length
+                } else {
+                    1.0
+                }
+            });
+            self.update_gesture(now, ratios, extension);
+        } else {
+            self.release_since = None;
+        }
+        if self.gesture == Gesture::Grab && !was_grabbing {
+            self.grab_ray_from_wrist = Some(wrist.inverse() * ray);
+        } else if self.gesture != Gesture::Grab {
+            self.grab_ray_from_wrist = None;
+        }
         Some(Sample {
             wrist,
             ray: Some(ray),
             gesture: self.gesture,
         })
     }
-    fn update_gesture(&mut self, now: Duration, ratios: [f32; 3]) {
-        let gestures = [Gesture::Click, Gesture::Grab, Gesture::RightClick];
+    fn update_gesture(&mut self, now: Duration, ratios: [f32; 3], extension: [f32; 4]) {
+        let curled = extension.iter().filter(|v| **v < 0.65).count();
+        let open = extension.iter().filter(|v| **v > 0.82).count();
+        if self.gesture == Gesture::Grab {
+            // Opening two fingers for 100 ms releases. One noisy/occluded
+            // finger cannot drop a window, and thumb movement is irrelevant.
+            if open >= 2 {
+                let at = *self.release_since.get_or_insert(now);
+                if now.saturating_sub(at) >= Duration::from_millis(100) {
+                    self.finish_gesture();
+                }
+            } else {
+                self.release_since = None;
+            }
+            return;
+        }
+        let gestures = [Gesture::Click, Gesture::MiddleClick, Gesture::RightClick];
         if let Some(i) = gestures.iter().position(|g| *g == self.gesture) {
             if ratios[i] > 0.42 {
-                self.gesture = Gesture::Neutral;
-                self.armed = false;
-                self.neutral_since = None;
+                self.finish_gesture();
             }
             return;
         }
         if !self.armed {
-            if !ratios.iter().all(|v| *v > 0.42) {
+            if open < 3 || !ratios.iter().all(|v| *v > 0.42) {
                 self.neutral_since = None;
             } else if let Some(at) = self.neutral_since {
                 if now.saturating_sub(at) >= Duration::from_millis(100) {
@@ -179,14 +230,12 @@ impl HandInput {
             }
             return;
         }
-        let pressed: Vec<_> = ratios
-            .iter()
-            .enumerate()
-            .filter(|(_, v)| **v < 0.28)
-            .map(|(i, _)| gestures[i])
-            .collect();
-        let candidate = if pressed.len() == 1 {
-            pressed[0]
+        let mut pinches = ratios.iter().enumerate().filter(|(_, v)| **v < 0.28);
+        let first = pinches.next().map(|(i, _)| gestures[i]);
+        let candidate = if extension[0] < 0.65 && curled >= 3 {
+            Gesture::Grab
+        } else if pinches.next().is_none() {
+            first.unwrap_or_default()
         } else {
             Gesture::Neutral
         };
@@ -194,12 +243,21 @@ impl HandInput {
             self.candidate = candidate;
             self.candidate_since = now;
         }
+        let debounce = if candidate == Gesture::Grab { 80 } else { 45 };
         if candidate != Gesture::Neutral
-            && now.saturating_sub(self.candidate_since) >= Duration::from_millis(45)
+            && now.saturating_sub(self.candidate_since) >= Duration::from_millis(debounce)
         {
             self.gesture = candidate;
             self.candidate = Gesture::Neutral;
+            self.release_since = None;
         }
+    }
+    fn finish_gesture(&mut self) {
+        self.gesture = Gesture::Neutral;
+        self.armed = false;
+        self.neutral_since = None;
+        self.release_since = None;
+        self.grab_ray_from_wrist = None;
     }
 }
 
@@ -240,40 +298,55 @@ mod tests {
         ] {
             j[i].pose.position.x = x;
         }
+        for base in [7, 12, 17, 22] {
+            let x = match base {
+                7 => 0.04,
+                12 => 0.01,
+                17 => -0.015,
+                _ => -0.04,
+            };
+            for k in 0..4 {
+                j[base + k].pose.position = xr::Vector3f {
+                    x,
+                    y: -0.2,
+                    z: -0.4 - k as f32 * 0.025,
+                };
+            }
+        }
         j
     }
     #[test]
     fn kwin_gestures_debounce_hysteresis_and_neutral_rearm() {
-        for (i, g) in [Gesture::Click, Gesture::Grab, Gesture::RightClick]
+        for (i, g) in [Gesture::Click, Gesture::MiddleClick, Gesture::RightClick]
             .into_iter()
             .enumerate()
         {
             let mut h = HandInput::default();
-            h.update_gesture(ms(0), [1.; 3]);
-            h.update_gesture(ms(100), [1.; 3]);
+            h.update_gesture(ms(0), [1.; 3], [1.; 4]);
+            h.update_gesture(ms(100), [1.; 3], [1.; 4]);
             let mut r = [1.; 3];
             r[i] = 0.2;
-            h.update_gesture(ms(110), r);
-            h.update_gesture(ms(154), r);
+            h.update_gesture(ms(110), r, [1.; 4]);
+            h.update_gesture(ms(154), r, [1.; 4]);
             assert_eq!(h.gesture, Gesture::Neutral);
-            h.update_gesture(ms(155), r);
+            h.update_gesture(ms(155), r, [1.; 4]);
             assert_eq!(h.gesture, g);
             r[i] = 0.35;
-            h.update_gesture(ms(200), r);
+            h.update_gesture(ms(200), r, [1.; 4]);
             assert_eq!(h.gesture, g);
-            h.update_gesture(ms(210), [1.; 3]);
+            h.update_gesture(ms(210), [1.; 3], [1.; 4]);
             assert_eq!(h.gesture, Gesture::Neutral);
-            h.update_gesture(ms(260), [0.1; 3]);
+            h.update_gesture(ms(260), [0.1; 3], [1.; 4]);
             assert_eq!(h.gesture, Gesture::Neutral);
         }
     }
     #[test]
     fn ambiguous_pinch_does_not_press() {
         let mut h = HandInput::default();
-        h.update_gesture(ms(0), [1.; 3]);
-        h.update_gesture(ms(100), [1.; 3]);
-        h.update_gesture(ms(110), [0.1, 0.1, 1.]);
-        h.update_gesture(ms(200), [0.1, 0.1, 1.]);
+        h.update_gesture(ms(0), [1.; 3], [1.; 4]);
+        h.update_gesture(ms(100), [1.; 3], [1.; 4]);
+        h.update_gesture(ms(110), [0.1, 0.1, 1.], [1.; 4]);
+        h.update_gesture(ms(200), [0.1, 0.1, 1.], [1.; 4]);
         assert_eq!(h.gesture, Gesture::Neutral);
     }
     #[test]
@@ -308,14 +381,17 @@ mod tests {
         );
         h.gesture = Gesture::Grab;
         j[0].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
+        // Invalid fingers stop input but the valid wrist remains attached.
         assert!(
-            h.update(ms(10), Some(&j), None, Affine3A::IDENTITY, false)
+            h.update(ms(200), Some(&j), None, Affine3A::IDENTITY, false)
+                .unwrap()
+                .ray
                 .is_none()
         );
         assert_eq!(h.gesture, Gesture::Neutral);
     }
     #[test]
-    fn timeout_and_ray_switch_require_rearming() {
+    fn timeout_requires_rearming_but_ray_switch_keeps_held_button() {
         let mut h = HandInput::default();
         let j = joints();
         h.update(ms(0), Some(&j), None, Affine3A::IDENTITY, false);
@@ -325,6 +401,8 @@ mod tests {
         assert_eq!(h.gesture, Gesture::Neutral);
         assert!(!h.armed);
         h.gesture = Gesture::Click;
+        let mut j = j;
+        j[10].pose.position = j[5].pose.position;
         h.update(
             ms(210),
             Some(&j),
@@ -332,7 +410,7 @@ mod tests {
             Affine3A::IDENTITY,
             false,
         );
-        assert_eq!(h.gesture, Gesture::Neutral);
+        assert_eq!(h.gesture, Gesture::Click);
     }
     #[test]
     fn missing_joints_release_click_and_held_pinch_cannot_reacquire() {
@@ -359,7 +437,7 @@ mod tests {
                 Gesture::Neutral
             );
         }
-        j[10].pose.position.x = 0.04;
+        j[10] = joints()[10];
         for t in [280, 380] {
             h.update(ms(t), Some(&j), None, Affine3A::IDENTITY, false);
         }
@@ -371,6 +449,8 @@ mod tests {
         j[15].pose.position.x = f32::NAN;
         assert!(
             h.update(ms(440), Some(&j), None, Affine3A::IDENTITY, false)
+                .unwrap()
+                .ray
                 .is_none()
         );
         assert_eq!(h.gesture, Gesture::Neutral);
@@ -408,5 +488,124 @@ mod tests {
             .ray
             .unwrap();
         assert!(ray.translation.x > 0.0 && ray.translation.x < 1.0);
+    }
+    #[test]
+    fn grip_uses_finger_curl_and_has_separate_press_release_hysteresis() {
+        let mut h = HandInput::default();
+        for t in [0, 100] {
+            h.update_gesture(ms(t), [1.; 3], [1.; 4]);
+        }
+        h.update_gesture(ms(110), [0.1; 3], [0.4, 0.4, 0.4, 1.]);
+        h.update_gesture(ms(189), [0.1; 3], [0.4, 0.4, 0.4, 1.]);
+        assert_eq!(h.gesture, Gesture::Neutral);
+        h.update_gesture(ms(190), [0.1; 3], [0.4, 0.4, 0.4, 1.]);
+        assert_eq!(h.gesture, Gesture::Grab); // fist wins over ambiguous thumb contacts
+        h.update_gesture(ms(220), [1.; 3], [0.7, 0.7, 0.7, 1.]);
+        assert_eq!(h.gesture, Gesture::Grab);
+        h.update_gesture(ms(240), [1.; 3], [1.; 4]);
+        h.update_gesture(ms(300), [1.; 3], [0.4; 4]); // brief open glitch cannot drop
+        h.update_gesture(ms(350), [1.; 3], [1.; 4]);
+        h.update_gesture(ms(449), [1.; 3], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::Grab);
+        h.update_gesture(ms(450), [1.; 3], [1.; 4]);
+        assert_eq!(h.gesture, Gesture::Neutral);
+    }
+    #[test]
+    fn extended_index_for_direct_touch_is_not_a_grip() {
+        let mut h = HandInput::default();
+        for t in [0, 100] {
+            h.update_gesture(ms(t), [1.; 3], [1.; 4]);
+        }
+        for t in [110, 210] {
+            h.update_gesture(ms(t), [1.; 3], [1., 0.4, 0.4, 0.4]);
+        }
+        assert_eq!(h.gesture, Gesture::Neutral);
+    }
+    fn fist() -> xr::HandJointLocations {
+        let mut j = joints();
+        for base in [7, 12, 17, 22] {
+            for (k, (y, z)) in [
+                (-0.2, -0.4),
+                (-0.22, -0.43),
+                (-0.25, -0.415),
+                (-0.25, -0.39),
+            ]
+            .into_iter()
+            .enumerate()
+            {
+                j[base + k].pose.position.y = y;
+                j[base + k].pose.position.z = z;
+            }
+        }
+        j
+    }
+    fn grabbing() -> (HandInput, xr::HandJointLocations) {
+        let mut h = HandInput::default();
+        for t in [0, 100] {
+            h.update(
+                ms(t),
+                Some(&joints()),
+                Some(Affine3A::IDENTITY),
+                Affine3A::IDENTITY,
+                false,
+            );
+        }
+        let j = fist();
+        for t in [110, 190] {
+            h.update(
+                ms(t),
+                Some(&j),
+                Some(Affine3A::IDENTITY),
+                Affine3A::IDENTITY,
+                false,
+            );
+        }
+        assert_eq!(h.gesture, Gesture::Grab);
+        (h, j)
+    }
+    #[test]
+    fn closed_grip_survives_aim_loss_and_brief_finger_occlusion_but_expires() {
+        let (mut h, mut j) = grabbing();
+        j[1].pose.position.x += 0.1;
+        let sample = h
+            .update(ms(210), Some(&j), None, Affine3A::IDENTITY, false)
+            .unwrap();
+        assert_eq!(sample.gesture, Gesture::Grab);
+        assert!(sample.ray.unwrap().translation.x > 0.0); // wrist moves the window
+        for v in &mut j[2..] {
+            v.location_flags = xr::SpaceLocationFlags::EMPTY;
+        }
+        for t in [250, 300] {
+            assert_eq!(
+                h.update(ms(t), Some(&j), None, Affine3A::IDENTITY, false)
+                    .unwrap()
+                    .gesture,
+                Gesture::Grab
+            );
+        }
+        assert_eq!(
+            h.update(ms(331), Some(&j), None, Affine3A::IDENTITY, false)
+                .unwrap()
+                .gesture,
+            Gesture::Neutral
+        );
+        assert!(h.grab_ray_from_wrist.is_none());
+    }
+    #[test]
+    fn grip_continues_below_pointing_zone_but_wrist_loss_releases_immediately() {
+        let (mut h, mut j) = grabbing();
+        j[0].pose.position.y = -0.7;
+        assert_eq!(
+            h.update(ms(210), Some(&j), None, Affine3A::IDENTITY, false)
+                .unwrap()
+                .gesture,
+            Gesture::Grab
+        );
+        j[1].location_flags = xr::SpaceLocationFlags::EMPTY;
+        assert!(
+            h.update(ms(220), Some(&j), None, Affine3A::IDENTITY, false)
+                .is_none()
+        );
+        assert_eq!(h.gesture, Gesture::Neutral);
     }
 }

@@ -221,5 +221,29 @@ upstream Rust dead-code warnings remain; no new dependency or Quest APK is neede
 Live startup with the Quest Pro confirms both OpenXR hand trackers initialize,
 WayVR reaches FOCUSED and both pointers select hand-joint input. QSV HEVC 10-bit
 remains active for all three streams; both installed services remain active with
-zero restarts. Headset capture shows the running overlay session. Final gesture
-usability and wrist placement are awaiting the user's in-headset check.
+zero restarts. Headset capture shows the running overlay session. The user subsequently reported unreliable middle-pinch grabs, a 90° clockwise
+watch rotation, and that the cursor should follow the ray. These observations
+led to the follow-up below.
+
+
+### Grip, cursor and direct finger touch follow-up
+
+Middle pinch now maps to the middle mouse button. Window movement uses a curled
+hand grip with independent activation/release thresholds, wrist-relative motion,
+and bounded finger-occlusion tolerance. An extended index used for pointing or
+touching cannot start a grip. The wrist frame has a counterclockwise 90° local-Z
+correction. Hand pointers bypass the desktop movement modifier and click-freeze
+behavior, and desktop button-down is delivered after moving to the ray hit.
+
+Watch and virtual-keyboard contacts project the index fingertip onto the existing
+surface geometry. Front approach, press debounce, withdrawal hysteresis and
+per-hand target ownership prevent repeated or stale presses. Changing targets,
+losing tracking or leaving the surface releases the old click target; ray pinches
+must return to neutral after touch. Near input works below the far-ray zone.
+
+All 21 WayVR release tests pass, including physical-grip geometry, aim loss,
+bounded finger occlusion, wrist loss, open-hand release, extended-index exclusion,
+rotated/scaled touch projection, touch jitter, repeated taps and deep penetration.
+The full host build and pinned-source/patch audit pass. The worker was installed
+atomically and restarted via the existing supervisor without restarting WiVRn.
+In-headset validation of the revised interactions remains pending.
