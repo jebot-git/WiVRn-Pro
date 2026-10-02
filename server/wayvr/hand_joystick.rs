@@ -5,6 +5,8 @@ use std::{
     os::fd::{AsRawFd, FromRawFd, OwnedFd},
     time::{Duration, Instant},
 };
+pub const DEADZONE: f32 = 0.12;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Pad {
     pub frame: Affine3A,
@@ -96,11 +98,21 @@ impl ThumbPad {
         } else {
             gun_grip
         };
-        // The index mode follows the proximal index segment. Thumb joints
-        // never participate in its frame. The legacy fist pose remains usable.
+        // Anchor directly to the tracked index tip and distal segment. No
+        // thumb-derived position offset is retained in index mode.
+        if mount_index
+            && [9, 10].iter().any(|&i| {
+                !j[i]
+                    .location_flags
+                    .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
+            })
+        {
+            self.reset();
+            return None;
+        }
         let across = (p(7) - p(22)) / width;
         let (origin, along) = if mount_index {
-            ((p(7) + p(8)) * 0.5, p(8) - p(7))
+            (p(10), p(10) - p(9))
         } else {
             let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
             let curled = (p(8) + p(13) + p(18) + p(23)) * 0.25;
@@ -158,12 +170,16 @@ impl ThumbPad {
             let normal = head.transform_vector3(Vec3::Y).normalize();
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
-            // Centre below the thumb at activation, then freeze the complete
-            // frame relative to the support finger/fist. Thumb travel cannot move it.
+            // Preserve the accepted tilt, but put index pads on the fingertip
+            // itself. The fist mode keeps its existing thumb-centred placement.
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
-            let frame =
-                Affine3A::from_rotation_translation(rotation, p(5) - (rotation * Vec3::Z) * 0.012);
+            let center = if mount_index {
+                p(10)
+            } else {
+                p(5) - (rotation * Vec3::Z) * 0.012
+            };
+            let frame = Affine3A::from_rotation_translation(rotation, center);
             self.local = Some(mount.inverse() * frame);
             self.index_mounted = mount_index;
             self.radius = if mount_index {
@@ -177,13 +193,13 @@ impl ThumbPad {
         let tip = frame.inverse().transform_point3(p(5));
         let raw = Vec2::new(tip.x, tip.y) / self.radius;
         let length = raw.length();
-        // The initial thumb projects to the centre, arming with zero axes.
-        // Keep the existing centre gate and radial deadzone.
+        // A fingertip-mounted pad stays neutral until the thumb reaches its
+        // centre. Preserve the centre gate and radial deadzone.
         self.armed |= length <= 0.25;
-        let target = if !self.armed || length <= 0.12 {
+        let target = if !self.armed || length <= DEADZONE {
             Vec2::ZERO
         } else {
-            raw / length * ((length - 0.12) / 0.88).min(1.0)
+            raw / length * ((length - DEADZONE) / (1.0 - DEADZONE)).min(1.0)
         };
         self.axes = self.axes.lerp(target, 1.0 - (-dt / 0.03).exp());
         Some(Pad {
@@ -651,8 +667,24 @@ mod tests {
         }
         p.reset();
         let pad = activate(&mut p, &j);
-        assert!(p.index_mounted && pad.armed);
+        assert!(p.index_mounted && !pad.armed);
         assert!(pad.axes.length() < 0.001 && pad.radius <= 0.02);
+        let index_tip = Vec3::new(
+            j[10].pose.position.x,
+            j[10].pose.position.y,
+            j[10].pose.position.z,
+        );
+        assert!((Vec3::from(pad.frame.translation) - index_tip).length() < 0.0001);
+        let neutral = pad.frame.transform_point3(Vec3::Z * 0.012);
+        j[5].pose.position = xr::Vector3f {
+            x: neutral.x,
+            y: neutral.y,
+            z: neutral.z,
+        };
+        let armed = p
+            .update(Duration::from_millis(160), Some(&j), Affine3A::IDENTITY)
+            .unwrap();
+        assert!(armed.armed && armed.axes.length() < 0.001);
         j[1].pose.position.y += 0.05;
         let target = pad
             .frame
@@ -678,11 +710,26 @@ mod tests {
             y: -0.035,
             z: -0.04,
         };
-        assert!(
-            p.update(Duration::from_millis(230), Some(&j), Affine3A::IDENTITY)
-                .is_some()
-        );
+        let flexed = p
+            .update(Duration::from_millis(230), Some(&j), Affine3A::IDENTITY)
+            .unwrap();
         assert!(p.index_mounted);
+        let tip = Vec3::new(
+            j[10].pose.position.x,
+            j[10].pose.position.y,
+            j[10].pose.position.z,
+        );
+        assert!((Vec3::from(flexed.frame.translation) - tip).length() < 0.0001);
+        assert!(
+            (flexed.frame.transform_vector3(Vec3::Y) - pad.frame.transform_vector3(Vec3::Y))
+                .length()
+                > 0.01
+        );
+        j[10].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
+        assert!(
+            p.update(Duration::from_millis(250), Some(&j), Affine3A::IDENTITY)
+                .is_none()
+        );
     }
     #[test]
     fn replay_opt_in_hand_diagnostics() {
@@ -719,6 +766,16 @@ mod tests {
             ) {
                 if pads[side].index_mounted {
                     counts[side] += 1;
+                    let tip = j[10].pose.position;
+                    assert!(
+                        (Vec3::from(pad.frame.translation) - Vec3::new(tip.x, tip.y, tip.z))
+                            .length()
+                            < 0.0001
+                    );
+                    assert!(pad.axes.is_finite() && pad.axes.length() <= 1.0001);
+                    if !pad.armed {
+                        assert!(pad.axes.length() < 0.0001);
+                    }
                     ranges[side][0] = ranges[side][0].min(pad.axes);
                     ranges[side][1] = ranges[side][1].max(pad.axes);
                 }
@@ -729,10 +786,8 @@ mod tests {
             counts.iter().all(|n| *n > 20),
             "trace must include both gun poses"
         );
-        assert!(
-            ranges.iter().all(|r| r[0].y < -0.8 && r[1].y > 0.8),
-            "both hands must reach up and down in the recorded sweep"
-        );
+        // This recording predates the fingertip placement. It validates the
+        // mount and neutral gate; it cannot establish reach of the new surface.
     }
     #[test]
     fn loss_invalid_pose_and_stream_gap_clear_pad() {

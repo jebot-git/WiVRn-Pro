@@ -3,7 +3,11 @@ use super::{
     CompositionLayer, XrState, helpers,
     swapchain::{SwapchainOpts, WlxSwapchain, create_swapchain},
 };
-use crate::{graphics::GpuFutures, hand_joystick::Pad, state::AppState};
+use crate::{
+    graphics::GpuFutures,
+    hand_joystick::{DEADZONE, Pad},
+    state::AppState,
+};
 use openxr as xr;
 use smallvec::SmallVec;
 use std::sync::Arc;
@@ -33,7 +37,7 @@ impl HandPads {
         for _ in 0..2 {
             let uniform = app
                 .gfx
-                .empty_buffer(BufferUsage::TRANSFER_DST | BufferUsage::UNIFORM_BUFFER, 4)?;
+                .empty_buffer(BufferUsage::TRANSFER_DST | BufferUsage::UNIFORM_BUFFER, 8)?;
             let set = pipeline.buffer(0, uniform.clone())?;
             let pass = pipeline.create_pass(
                 [256.0, 256.0],
@@ -74,11 +78,15 @@ impl HandPads {
                     .into_iter()
                     .next()
                     .unwrap();
-                surface.uniform.write()?[..4].copy_from_slice(&[
+                surface.uniform.write()?[..8].copy_from_slice(&[
                     pad.cursor.x,
                     pad.cursor.y,
                     i as f32,
                     f32::from(pad.armed),
+                    DEADZONE,
+                    0.0,
+                    0.0,
+                    0.0,
                 ]);
                 let mut cmd = app
                     .gfx

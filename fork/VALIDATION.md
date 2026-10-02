@@ -426,3 +426,19 @@ results append to `thumbpad-diagnostics.jsonl` in the same directory. The marker
 expires after two minutes. Save/truncate prior samples before another run to
 avoid the 8 MiB cap. Set `WIVRN_THUMBPAD_TRACE` to the saved JSONL path for the
 optional joystick trace-replay test. No diagnostic capture is enabled by default.
+
+### Fingertip alignment and visible deadzone
+
+Index-mode pads now centre exactly on the tracked index fingertip and follow
+the distal index segment. They no longer retain a thumb-derived hovering offset.
+The existing size, 60-degree initial tilt and axis range remain unchanged; the
+thumb must enter the centre before the pad arms. Loss of tracked fingertip or
+distal-joint data releases input. Six joystick tests pass, covering fingertip
+position and flex, thumb/wrist independence, neutral entry and tracking loss.
+Recorded-pose replay confirms anchoring and bounded axes; those older sweeps
+predate this surface position and do not establish its new live reach.
+
+The rendered pad now includes a pale centre ring and shaded interior at the
+12% radial deadzone. The shader receives the same DEADZONE constant used for
+axis output, keeping the display and input boundary synchronized. Release
+worker/shader compilation and the upstream-source audit pass.
