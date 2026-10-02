@@ -116,7 +116,7 @@ impl ThumbPad {
         } else {
             let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
             let curled = (p(8) + p(13) + p(18) + p(23)) * 0.25;
-            (knuckles, knuckles - curled)
+            (p(7), knuckles - curled)
         };
         let along = along - across * along.dot(across);
         if along.length_squared() < 0.005_f32.powi(2) {
@@ -171,14 +171,10 @@ impl ThumbPad {
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
             // Preserve the accepted tilt, but put index pads on the fingertip
-            // itself. The fist mode keeps its existing thumb-centred placement.
+            // itself; the larger fist pad sits on the index knuckle.
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
-            let center = if mount_index {
-                p(10)
-            } else {
-                p(5) - (rotation * Vec3::Z) * 0.012
-            };
+            let center = if mount_index { p(10) } else { p(7) };
             let frame = Affine3A::from_rotation_translation(rotation, center);
             self.local = Some(mount.inverse() * frame);
             self.index_mounted = mount_index;
@@ -495,7 +491,7 @@ mod tests {
             let mut p = ThumbPad::default();
             let spawned = activate(&mut p, &j);
             assert_eq!(spawned.axes, Vec2::ZERO);
-            assert!(spawned.armed);
+            assert!(!spawned.armed);
             let neutral = spawned.frame.transform_point3(Vec3::Z * 0.012);
             j[5].pose.position = xr::Vector3f {
                 x: neutral.x,
@@ -540,7 +536,7 @@ mod tests {
         }
     }
     #[test]
-    fn thumb_centred_spawn_locks_to_fist_and_allows_full_axis_travel() {
+    fn knuckle_mount_ignores_activation_thumb_height_and_allows_full_axis_travel() {
         for mirror in [1.0, -1.0] {
             for direction in [Vec2::X, Vec2::NEG_X, Vec2::Y, Vec2::NEG_Y] {
                 let mut j = joints();
@@ -556,9 +552,12 @@ mod tests {
                 let mut p = ThumbPad::default();
                 let pad = activate(&mut p, &j);
                 assert!(
-                    (alternate_pad.frame.translation
-                        - pad.frame.translation
-                        - glam::Vec3A::new(0.0, 0.025, 0.0))
+                    (alternate_pad.frame.translation - pad.frame.translation).length() < 0.0001
+                );
+                let knuckle = j[7].pose.position;
+                assert!(
+                    (Vec3::from(pad.frame.translation)
+                        - Vec3::new(knuckle.x, knuckle.y, knuckle.z))
                     .length()
                         < 0.0001
                 );
