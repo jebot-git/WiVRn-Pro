@@ -266,5 +266,14 @@ chord assembly, release without click leakage, hand-role changes, ordinary
 single-pinches, fist priority, aim loss and tracking-loss rearming. The host build
 and source/patch audit pass. Installed the worker atomically and restarted only
 WayVR: the existing headset session remains connected, the worker reaches FOCUSED,
-both hands initialize, and the Monado space-offset API is available. Live chord
-usability is awaiting the user's check.
+both hands initialize, and the Monado space-offset API is available. Live logs
+show normal space-drag start and end events.
+
+For visual validation, launched a temporary separate OpenXR application showing
+a 65 cm checkerboard at a fixed stage pose, initially 1.4 m ahead at eye height.
+This avoids WayVR's configured compensation of its own overlays during space
+drag (`space_drag_affects_world=false`); the saved configuration was preserved.
+Headset capture confirmed the reference was visible. The user confirmed it moves
+relative to the real room during the chord and stops correctly on release.
+The temporary reference application was stopped afterward; WiVRn-Pro remains
+running. The temporary application and capture are not included in the fork.
