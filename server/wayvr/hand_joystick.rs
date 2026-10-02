@@ -114,10 +114,12 @@ impl ThumbPad {
             let normal = head.transform_vector3(Vec3::Y).normalize();
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
-            let frame = Affine3A::from_rotation_translation(
-                Quat::from_mat3(&Mat3::from_cols(right, forward, normal)),
-                p(5) - normal * 0.012,
-            );
+            // Tilt the pad's local X axis toward the viewer. Offset along
+            // the tilted normal so the initial thumb still projects to zero.
+            let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
+                * Quat::from_rotation_x(60.0_f32.to_radians());
+            let frame =
+                Affine3A::from_rotation_translation(rotation, p(5) - (rotation * Vec3::Z) * 0.012);
             self.local = Some(wrist.inverse() * frame);
             self.radius = (width * 0.35).clamp(0.025, 0.04);
             self.axes = Vec2::ZERO;

@@ -318,3 +318,9 @@ connected joystick channel. Existing monitor-capture tokens, keyboard and
 OpenXR action configuration loaded, and Shora battery reports resumed. The
 full offline suite also passed (19 Python tests plus native geometry, wire,
 bridge, configuration and worker-supervisor tests).
+
+The virtual thumb pads now tilt 60 degrees around their local X axis toward
+the user's viewpoint at activation. The centre remains below the thumb along
+the tilted normal, keeping initial axes neutral; the whole frame remains
+wrist-relative. Both joystick regression tests pass and the release worker
+build succeeds. Installed by restarting only WayVR.
