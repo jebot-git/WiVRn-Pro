@@ -561,3 +561,20 @@ rendering and input behavior.
 
 Release worker and shader compilation passed. Installed and restarted WayVR;
 the headset session remains running.
+
+### Open WiVRn menu with both hand stick clicks
+
+The server now detects both current emulated thumbstick clicks and sends the
+existing stream_tab_change(applications) control packet to the Quest client.
+This connects the previously separate PC input and headset-menu paths without
+changing the client or wire format. A held chord fires only once. Both clicks
+must remain released for 300 ms of fresh, enabled hand input to rearm; disabled,
+stale or unfocused input cannot rearm it. This prevents reopening the menu when
+WayVR resumes and its 150 ms finger-gun debounce completes with hands still held.
+
+The local socket test passes single-click exclusion, one-shot behavior, partial
+release, focus loss, full release/rearm, physical-controller priority and stale
+input. Existing thumbstick click delivery and opacity cues remain unchanged.
+
+Server build passed. Installed and restarted the unified service, reconnected
+the Quest client and verified SessionRunning=true. A live gesture check is pending.

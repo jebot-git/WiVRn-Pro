@@ -104,6 +104,7 @@ void hand_joystick::disconnect()
 	client = -1;
 	command = {};
 	received = 0;
+	menu_released_at = 0;
 }
 void hand_joystick::cleanup()
 {
@@ -182,6 +183,33 @@ void hand_joystick::poll(int64_t now, uint32_t hand_mask)
 		if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
 			disconnect();
 	}
+}
+bool hand_joystick::consume_menu_request(int64_t now)
+{
+	std::lock_guard lock(mutex);
+	// Disabled/focus-lost/stale packets cannot open the menu or rearm a held
+	// chord. Require a real neutral interval after focus returns: WayVR's
+	// 150 ms gesture debounce alone must not reopen a just-dismissed menu.
+	if (client < 0 || !command.enabled || hands != 3 || now - command.time > ttl || now - received > ttl)
+	{
+		menu_released_at = 0;
+		return false;
+	}
+	if (!command.clicks)
+	{
+		if (!menu_released_at)
+			menu_released_at = now;
+		if (now - menu_released_at >= 300'000'000)
+			menu_armed = true;
+		return false;
+	}
+	menu_released_at = 0;
+	if (command.clicks == 3 && menu_armed)
+	{
+		menu_armed = false;
+		return true;
+	}
+	return false;
 }
 std::optional<hand_joystick::value> hand_joystick::get(unsigned hand, int64_t now) const
 {

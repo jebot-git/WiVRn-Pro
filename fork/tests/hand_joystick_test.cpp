@@ -69,6 +69,7 @@ int main()
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
 		assert(endpoint.get(0, now)->clicked && endpoint.get(0, now)->touched);
+		assert(!endpoint.consume_menu_request(now));
 		assert(endpoint.get(0, now)->axes[0] == 0 && !endpoint.get(1, now)->clicked);
 		assert(!endpoint.get(0, now + 151'000'000));
 		endpoint.poll(now, 2); // Physical left controller takes over.
@@ -78,6 +79,7 @@ int main()
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
 		assert(!endpoint.get(0, now)->clicked && endpoint.get(1, now)->clicked);
+		assert(!endpoint.consume_menu_request(now));
 		put(packet, 4, 1, 4);
 		put(packet, 32, 4, 8);
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
@@ -95,6 +97,28 @@ int main()
 		endpoint.poll(now, 3);
 		assert(endpoint.get(0, now));
 		assert(endpoint.get(0, now)->clicked && endpoint.get(1, now)->clicked);
+		assert(endpoint.consume_menu_request(now));
+		assert(!endpoint.consume_menu_request(now)); // Held chord fires once.
+		uint64_t sequence = 6;
+		auto menu = [&](uint32_t flags, int64_t elapsed, uint32_t hands = 3) {
+			put(packet, 4, flags, 4);
+			put(packet, 8, now + elapsed, 8);
+			put(packet, 32, ++sequence, 8);
+			assert(send(fd, packet.data(), packet.size(), 0) == 40);
+			endpoint.poll(now + elapsed, hands);
+			return endpoint.consume_menu_request(now + elapsed);
+		};
+		assert(!menu(9, 10'000'000)); // Releasing only one does not rearm.
+		assert(!menu(25, 20'000'000));
+		assert(!menu(0, 30'000'000)); // Menu stole focus.
+		assert(!menu(1, 100'000'000));
+		assert(!menu(25, 250'000'000)); // Gesture debounce isn't a physical release.
+		assert(!menu(1, 300'000'000));
+		assert(!menu(1, 450'000'000));
+		assert(!menu(1, 600'000'000)); // Both released for 300 ms.
+		assert(!menu(25, 610'000'000, 1)); // No chord with a physical right controller.
+		assert(menu(25, 620'000'000));
+		assert(!endpoint.consume_menu_request(now + 800'000'000)); // Stale.
 		close(fd);
 		endpoint.poll(now, 3);
 		assert(!endpoint.get(0, now));
