@@ -773,3 +773,18 @@ Only WayVR was restarted, at 20:19:57 CEST. It reached FOCUSED, enabled both
 hand-joint sources, and connected to Shora with six trackers/four battery
 reports. No panel parsing errors were logged. In-headset visual review remains
 pending; no server or APK replacement was needed.
+
+
+## 2026-10-02 — wrist icon grid
+
+Sticks and Perf now use original monochrome SVG joystick and performance-graph
+icons, sized 40×40 inside the existing rounded-square button style. They occupy
+the right column of the existing control grid: keyboard/edit/sticks on top,
+recenter/floor/performance below. Actions and tooltips retain their existing IDs
+and behavior. Fork icons live outside the upstream import and are embedded by
+the asset provider.
+
+Existing native layout test passed with the battery templates instantiated;
+release build and 723-file upstream patch audit passed. Installed worker hash
+matches `2cafb4a4e04672e997d7a59135e806fb2bcaffe327aa9001f1db0b006aab8dd6`.
+Only WayVR was reloaded; in-headset visual confirmation remains pending.
