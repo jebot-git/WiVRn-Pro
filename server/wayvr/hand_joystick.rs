@@ -98,15 +98,13 @@ impl ThumbPad {
         } else {
             gun_grip
         };
-        // Anchor directly to the tracked index tip and distal segment. No
-        // thumb-derived position offset is retained in index mode.
-        if mount_index
-            && [9, 10].iter().any(|&i| {
-                !j[i]
-                    .location_flags
-                    .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
-            })
-        {
+        // Both sizes are supported by the last index segment. Release input
+        // when that segment is no longer tracked.
+        if [9, 10].iter().any(|&i| {
+            !j[i]
+                .location_flags
+                .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
+        }) {
             self.reset();
             return None;
         }
@@ -116,7 +114,28 @@ impl ThumbPad {
         } else {
             let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
             let curled = (p(8) + p(13) + p(18) + p(23)) * 0.25;
-            (p(7), knuckles - curled)
+            // Place the large pad on the fleshy, inside surface of the last
+            // segment, toward the index base in the finger's curl plane.
+            let distal = p(10) - p(9);
+            if distal.length_squared() < 0.005_f32.powi(2) {
+                self.reset();
+                return None;
+            }
+            let distal = distal.normalize();
+            let middle = (p(9) + p(10)) * 0.5;
+            let inward = p(7) - middle;
+            let inward = inward - distal * inward.dot(distal);
+            if inward.length_squared() < 0.005_f32.powi(2) {
+                self.reset();
+                return None;
+            }
+            let radius = (j[9].radius + j[10].radius) * 0.5;
+            let clearance = if radius.is_finite() {
+                radius.clamp(0.004, 0.012) + 0.002
+            } else {
+                0.010
+            };
+            (middle + inward.normalize() * clearance, knuckles - curled)
         };
         let along = along - across * along.dot(across);
         if along.length_squared() < 0.005_f32.powi(2) {
@@ -171,10 +190,10 @@ impl ThumbPad {
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
             // Preserve the accepted tilt, but put index pads on the fingertip
-            // itself; the larger fist pad sits on the index knuckle.
+            // itself; the larger pad sits inside the curled last segment.
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
-            let center = if mount_index { p(10) } else { p(7) };
+            let center = origin;
             let frame = Affine3A::from_rotation_translation(rotation, center);
             self.local = Some(mount.inverse() * frame);
             self.index_mounted = mount_index;
@@ -536,7 +555,7 @@ mod tests {
         }
     }
     #[test]
-    fn knuckle_mount_ignores_activation_thumb_height_and_allows_full_axis_travel() {
+    fn inside_distal_mount_ignores_thumb_height_and_allows_full_axis_travel() {
         for mirror in [1.0, -1.0] {
             for direction in [Vec2::X, Vec2::NEG_X, Vec2::Y, Vec2::NEG_Y] {
                 let mut j = joints();
@@ -554,13 +573,10 @@ mod tests {
                 assert!(
                     (alternate_pad.frame.translation - pad.frame.translation).length() < 0.0001
                 );
-                let knuckle = j[7].pose.position;
-                assert!(
-                    (Vec3::from(pad.frame.translation)
-                        - Vec3::new(knuckle.x, knuckle.y, knuckle.z))
-                    .length()
-                        < 0.0001
-                );
+                // Fixture's distal segment runs along +Z; its fleshy side
+                // faces +Y toward the palm, identically for either hand.
+                let expected = Vec3::new(0.04 * mirror, -0.038, -0.0025);
+                assert!((Vec3::from(pad.frame.translation) - expected).length() < 0.0001);
                 let neutral = pad.frame.transform_point3(Vec3::Z * 0.012);
                 j[5].pose.position = xr::Vector3f {
                     x: neutral.x,
@@ -593,6 +609,30 @@ mod tests {
                 assert!((moved.cursor - direction).length() < 0.001);
             }
         }
+    }
+    #[test]
+    fn large_pad_follows_curled_last_segment_and_releases_on_tracking_loss() {
+        let mut j = joints();
+        let mut p = ThumbPad::default();
+        let pad = activate(&mut p, &j);
+        for i in [9, 10] {
+            j[i].pose.position.y += 0.005;
+        }
+        let flexed = p
+            .update(Duration::from_millis(160), Some(&j), Affine3A::IDENTITY)
+            .unwrap();
+        assert!(!p.index_mounted);
+        assert!(
+            (Vec3::from(flexed.frame.translation - pad.frame.translation) - Vec3::Y * 0.005)
+                .length()
+                < 0.0001
+        );
+        j[9].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
+        assert!(
+            p.update(Duration::from_millis(180), Some(&j), Affine3A::IDENTITY)
+                .is_none()
+        );
+        assert!(!p.owns_hand());
     }
     #[test]
     fn fist_mount_ignores_wrist_estimate_and_carries_rotation() {

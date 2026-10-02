@@ -475,3 +475,19 @@ using the fist frame for orientation. Thumb height no longer moves its mount.
 The fingertip mount for an extended index, size, angle, neutral gate and visible
 deadzone are unchanged. All six joystick tests and the release worker build
 pass. Installed by restarting WayVR.
+
+### Inside distal pad and Mac Relay menu icon
+
+The large pad now centres on the inside surface of the curled index finger's
+last segment, between the distal joint and tip, offset by the tracked finger
+radius plus 2 mm. Its position follows that segment; its accepted angle, size,
+neutral gate and 12% deadzone remain unchanged. Both pad sizes release input
+when distal-index tracking is lost. Seven joystick tests pass, including
+mirrored-hand placement, distal flex, thumb independence and tracking loss.
+The release worker was built, installed and activated with a WayVR restart;
+the WiVRn session remained running. These geometry checks do not establish
+live comfort or reach.
+
+Mac Desktop Relay now uses a light bitten-apple silhouette on a dark rounded
+square. The SVG was rendered and inspected at 128, 64, 32 and 24 pixels, installed
+in its independent application prefix, and KDE's menu cache was refreshed.
