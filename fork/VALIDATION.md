@@ -606,3 +606,20 @@ Server and release-worker builds passed using the existing local libinput
 sysroot. Installed both and restarted the unified service; the Quest reconnected
 with SessionRunning=true and ClientTab=hidden. Live contact feel remains to be
 confirmed by the user.
+
+### Stick-press pads removed; finger gun unbound
+
+Removed the index-mounted button circles, opacity mode, thumb-contact handling
+and WayVR stick-click output. Finger-gun/extended-index poses now release any
+active analogue pad and remain unbound by the joystick feature, without claiming
+hand-input ownership. Existing pointer/pinch interactions and the large
+thumbs-up pads retain their behavior. WayVR sends only enabled/analogue-activity
+flags; no emulated stick-click bits are produced.
+
+Eight joystick tests pass with saved-motion replay, including no pad or joystick
+ownership for either finger-gun hand, no stick binding on thumb contact, release
+from a previously active large pad and preservation of the analogue-pad tests.
+The upstream patch/hash audit passes.
+
+Release worker/shader build passed and was installed. WayVR restarted with
+the headset session still running.

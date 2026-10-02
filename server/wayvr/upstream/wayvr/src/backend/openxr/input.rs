@@ -599,9 +599,6 @@ impl OpenXrInputSource {
         self.joystick_link.exchange(
             app.input_state.joysticks_enabled && xr.focused && picking_focus.is_none(),
             app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
-            std::array::from_fn(|i| {
-                app.input_state.pointers[i].joystick_owned && self.thumb_pads[i].clicked()
-            }),
         );
         app.session.config.handsfree_pointer = old_handsfree;
 

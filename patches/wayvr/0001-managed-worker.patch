@@ -778,7 +778,7 @@
              self.handsfree_pointer.update_handsfree(
                  &mut app.input_state.pointers[0],
                  xr,
-@@ -386,6 +593,16 @@
+@@ -386,6 +593,13 @@
              )?;
          }
  
@@ -788,9 +788,6 @@
 +        self.joystick_link.exchange(
 +            app.input_state.joysticks_enabled && xr.focused && picking_focus.is_none(),
 +            app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
-+            std::array::from_fn(|i| {
-+                app.input_state.pointers[i].joystick_owned && self.thumb_pads[i].clicked()
-+            }),
 +        );
          app.session.config.handsfree_pointer = old_handsfree;
  

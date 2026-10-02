@@ -738,7 +738,7 @@
     "wlx-common/src/dash_interface.rs": "49dbe44ff105eb3c22e9da7e741f1d2a1529d13d892f2b77f0e052d44cc5ee8b",
     "wayvr/src/backend/input.rs": "81b9a4fadb1e82265d77202d8f8a7c067b81eea72f06af50dad7f87fe187d3e0",
     "wayvr/src/backend/openxr/helpers.rs": "9308c0b3546434e11f76b2a524e6eaecf91c13943e7d5f4265ae2e6defbb6bbc",
-    "wayvr/src/backend/openxr/input.rs": "f3e8fd3fd975609ff36392b552fb4638ca5ed37aa5735cfb659e6c5fe12246c1",
+    "wayvr/src/backend/openxr/input.rs": "75b32824e9859d6d687fa4130e098cf21117bce65e4533b9f099cf786e35c364",
     "wayvr/src/backend/openxr/mod.rs": "6badf71cac14ee5e7b0d6022f980e5d266fdd3ccf6657c6e23d3bcb21f4ab9de",
     "wayvr/src/windowing/window.rs": "2ca484ce73ca407b479341237dca45381383309689d079883f287913388d516c",
     "wayvr/src/overlays/screen/backend.rs": "340a53906ed31e482849de8067711043849aaae96af0904e99923d5d5f69677e",
