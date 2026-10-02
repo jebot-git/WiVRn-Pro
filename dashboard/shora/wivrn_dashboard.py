@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QFormLayout, 
     QLabel, QPushButton, QComboBox, QCheckBox, QLineEdit, QPlainTextEdit, QSpinBox, QInputDialog)
 from shora_qt import HubWindow, STYLE
 from tracking_panel import DEFAULTS
+from mac_desktop_panel import MacDesktopPanel
 
 SERVICE = 'io.github.wivrn.Server'
 OBJECT = '/io/github/wivrn/Server'
@@ -334,6 +335,7 @@ class Dashboard(HubWindow):
         self.detach_button.clicked.disconnect()
         self.detach_button.clicked.connect(lambda: self.backend.service('restart'))
         self.tabs.insertTab(0, StreamingPanel(self.backend), 'WiVRn streaming')
+        self.tabs.addTab(MacDesktopPanel(self), 'Mac desktop')
         self.tabs.setCurrentIndex(0)
         self.logs.setPlaceholderText('Service logs: journalctl --user -u wivrn-pro.service\nTracking diagnostics and calibration messages appear below.')
         self.backend.failure.connect(self.show_error)

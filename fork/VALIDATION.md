@@ -352,3 +352,30 @@ excluding both the thumb and the runtime wrist pose. It still centres below
 the thumb once on activation. All four joystick tests pass: full signed travel,
 neutral activation, fist translation/rotation, independence from wrist pose
 changes, and opening/tracking-loss release. The tilt and deadzone are unchanged.
+
+### Initial Mac desktop relay
+
+Added a native macOS companion and a Qt receiver launched as a WayVR-managed
+window from a new dashboard tab. Its host/account profile is separate from
+WiVRn and Shora settings. The first transport is SSH-carried JPEG at up to
+15 fps, with explicit-focus mouse/keyboard forwarding and bounded input leases.
+It does not yet provide audio, clipboard, low-latency H.264, gamepad passthrough
+or automatic routing of raw headset devices between computers.
+
+Ten protocol/receiver tests and fourteen existing dashboard tests pass,
+including real 1080p JPEG decode, framing limits, SSH target validation, focus
+release, Tab forwarding, backpressure and stream-loss handling. CMake configure
+and Dashboard installation pass. The dashboard panel was rendered and checked;
+the WayVR source manifest and patch audit still pass.
+
+Built and ad-hoc signed the native companion on the user's Apple M4 Mac mini,
+macOS 26.6.1 (25G76), after Xcode setup. Installed it under the user's Applications
+folder and launched it in the graphical session. The user granted permissions
+and reported "Virtual desktop ready". System Profiler confirms exactly one
+1920x1080 WiVRn-Pro virtual extended display alongside the original 2560x1080
+physical main display, with mirroring off for both. The companion listens only
+on 127.0.0.1:9758. An SSH receiver decoded a real 1920x1080 desktop frame, which
+was visually inspected. The receiver was then launched inside the running
+WayVR compositor; process and toplevel creation were verified. The existing
+unified headset session remains active. Live pointer/keyboard ergonomics and
+the latest fist-mounted thumbpad change await the user's test report.

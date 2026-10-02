@@ -1,2 +1,3 @@
 #!/bin/sh
+export WIVRN_PRO_BINDIR="@CMAKE_INSTALL_FULL_BINDIR@"
 exec "@Python3_EXECUTABLE@" "@CMAKE_INSTALL_FULL_DATADIR@/wivrn-pro/dashboard/wivrn_dashboard.py" "$@"

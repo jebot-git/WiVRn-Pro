@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 python3 fork/check-policy.py
 python3 fork/check-wayvr-source.py
 python3 -m unittest discover -s fork/tests -p "test_*.py"
+python3 -m unittest discover -s server/remote_desktop -p "test_*.py"
 mkdir -p build/native-tests
 cxx=${CXX:-c++}
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Icommon fork/tests/policy_test.cpp -o build/native-tests/policy-test

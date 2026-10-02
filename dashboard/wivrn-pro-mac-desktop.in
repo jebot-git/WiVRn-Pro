@@ -1,0 +1,2 @@
+#!/bin/sh
+exec "@Python3_EXECUTABLE@" "@CMAKE_INSTALL_FULL_DATADIR@/wivrn-pro/remote-desktop/receiver.py" "$@"

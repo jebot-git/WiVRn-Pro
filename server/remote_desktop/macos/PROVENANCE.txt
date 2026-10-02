@@ -1,0 +1,8 @@
+The private CGVirtualDisplay Objective-C ABI is documented by Chromium's
+virtual-display test utility:
+https://chromium.googlesource.com/chromium/src/+/HEAD/ui/display/mac/test/virtual_display_util_mac.mm
+Only the API declarations needed by this companion are declared locally.
+The companion implementation is original to WiVRn-Pro. The runtime lookup is
+experimental: it must fail visibly if macOS changes the private API. It never
+falls back to recording a physical display. ScreenCaptureKit capture and
+CoreGraphics input use Apple's public APIs.
