@@ -345,3 +345,10 @@ The accepted 60-degree tilt and 12% deadzone remain unchanged. All three
 joystick regression tests pass, including neutral spawn at different thumb
 heights and full travel. The release worker was built, installed and restarted.
 This new positioning still awaits user confirmation.
+
+Following further live feedback, the pad's stored offset now attaches to a
+rigid frame derived from the four curled fingers (MCP and PIP positions),
+excluding both the thumb and the runtime wrist pose. It still centres below
+the thumb once on activation. All four joystick tests pass: full signed travel,
+neutral activation, fist translation/rotation, independence from wrist pose
+changes, and opening/tracking-loss release. The tilt and deadzone are unchanged.

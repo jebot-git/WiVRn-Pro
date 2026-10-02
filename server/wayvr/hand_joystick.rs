@@ -53,26 +53,36 @@ impl ThumbPad {
         let valid = xr::SpaceLocationFlags::POSITION_VALID;
         if j.iter().any(|v| !v.location_flags.contains(valid))
             || (0..26).any(|i| !p(i).is_finite())
-            || !j[1].location_flags.contains(
-                xr::SpaceLocationFlags::POSITION_TRACKED
-                    | xr::SpaceLocationFlags::ORIENTATION_VALID,
-            )
+            || [7, 8, 12, 13, 17, 18, 22, 23].iter().any(|&i| {
+                !j[i]
+                    .location_flags
+                    .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
+            })
         {
             self.reset();
             return None;
         }
-        let q = j[1].pose.orientation;
-        let rotation = Quat::from_xyzw(q.x, q.y, q.z, q.w);
-        if !rotation.is_finite() || !(0.5..1.5).contains(&rotation.length_squared()) {
-            self.reset();
-            return None;
-        }
-        let wrist = Affine3A::from_rotation_translation(rotation.normalize(), p(1));
         let width = p(7).distance(p(22));
         if !(0.03..=0.13).contains(&width) {
             self.reset();
             return None;
         }
+        // Build the mount from the four curled fingers, excluding the thumb
+        // and the runtime's wrist pose (which can shift as the thumb moves).
+        let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
+        let curled = (p(8) + p(13) + p(18) + p(23)) * 0.25;
+        let across = (p(7) - p(22)) / width;
+        let along = knuckles - curled;
+        let along = along - across * along.dot(across);
+        if along.length_squared() < 0.005_f32.powi(2) {
+            self.reset();
+            return None;
+        }
+        let along = along.normalize();
+        let fist = Affine3A::from_mat3_translation(
+            Mat3::from_cols(across, along, across.cross(along)),
+            knuckles,
+        );
         let extension = [7, 12, 17, 22].map(|b| {
             let length = (b..b + 3).map(|i| p(i).distance(p(i + 1))).sum::<f32>();
             if length > 0.015 {
@@ -118,16 +128,16 @@ impl ThumbPad {
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
             // Centre below the thumb at activation, then freeze the complete
-            // frame relative to the wrist. Subsequent thumb travel cannot move it.
+            // frame relative to the fist. Subsequent thumb travel cannot move it.
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
             let frame =
                 Affine3A::from_rotation_translation(rotation, p(5) - (rotation * Vec3::Z) * 0.012);
-            self.local = Some(wrist.inverse() * frame);
+            self.local = Some(fist.inverse() * frame);
             self.radius = (width * 0.35).clamp(0.025, 0.04);
             self.axes = Vec2::ZERO;
         }
-        let frame = wrist * self.local.unwrap();
+        let frame = fist * self.local.unwrap();
         let tip = frame.inverse().transform_point3(p(5));
         let raw = Vec2::new(tip.x, tip.y) / self.radius;
         let length = raw.length();
@@ -347,7 +357,7 @@ mod tests {
             .unwrap()
     }
     #[test]
-    fn pad_follows_wrist_and_thumb_axes_clamp_and_open_releases() {
+    fn pad_follows_fist_and_thumb_axes_clamp_and_open_releases() {
         for mirror in [1.0, -1.0] {
             let mut j = joints();
             for v in &mut j {
@@ -401,7 +411,7 @@ mod tests {
         }
     }
     #[test]
-    fn thumb_centred_spawn_locks_to_wrist_and_allows_full_axis_travel() {
+    fn thumb_centred_spawn_locks_to_fist_and_allows_full_axis_travel() {
         for mirror in [1.0, -1.0] {
             for direction in [Vec2::X, Vec2::NEG_X, Vec2::Y, Vec2::NEG_Y] {
                 let mut j = joints();
@@ -455,6 +465,49 @@ mod tests {
                 assert!((moved.cursor - direction).length() < 0.001);
             }
         }
+    }
+    #[test]
+    fn fist_mount_ignores_wrist_estimate_and_carries_rotation() {
+        let mut j = joints();
+        let mut p = ThumbPad::default();
+        let pad = activate(&mut p, &j);
+        // A changed wrist estimate must not chase the thumb or move the pad.
+        j[1].pose.position.y += 0.04;
+        j[1].pose.orientation = xr::Quaternionf {
+            x: 0.5,
+            y: 0.0,
+            z: 0.0,
+            w: 0.8660254,
+        };
+        let stable = p
+            .update(Duration::from_millis(160), Some(&j), Affine3A::IDENTITY)
+            .unwrap();
+        assert!((stable.frame.translation - pad.frame.translation).length() < 0.0001);
+        assert!(stable.axes.length() < 0.0001);
+        let motion = Affine3A::from_rotation_translation(
+            Quat::from_rotation_y(0.7),
+            Vec3::new(0.2, 0.3, -0.1),
+        );
+        for joint in &mut j {
+            let v = joint.pose.position;
+            let v = motion.transform_point3(Vec3::new(v.x, v.y, v.z));
+            joint.pose.position = xr::Vector3f {
+                x: v.x,
+                y: v.y,
+                z: v.z,
+            };
+        }
+        let carried = p
+            .update(Duration::from_millis(180), Some(&j), Affine3A::IDENTITY)
+            .unwrap();
+        assert!((carried.frame.translation - (motion * pad.frame).translation).length() < 0.0001);
+        assert!(
+            (carried.frame.transform_vector3(Vec3::Y)
+                - (motion * pad.frame).transform_vector3(Vec3::Y))
+            .length()
+                < 0.0001
+        );
+        assert!(carried.axes.length() < 0.0001);
     }
     #[test]
     fn loss_invalid_pose_and_stream_gap_clear_pad() {
