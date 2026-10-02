@@ -379,3 +379,50 @@ was visually inspected. The receiver was then launched inside the running
 WayVR compositor; process and toplevel creation were verified. The existing
 unified headset session remains active. Live pointer/keyboard ergonomics and
 the latest fist-mounted thumbpad change await the user's test report.
+
+
+### Physical mouse routing and measured thumb-pad reach
+
+The user confirmed Mac video and hand input, but neither the host mouse nor
+the headset-passthrough mouse reached the receiver. WayVR selected its internal
+input focus without asking its evdev worker to capture devices. Window selection
+now requests capture; selecting the Linux desktop, closing the focused window,
+or Super+Z releases it. Focus loss clears Wayland keyboard focus and releases
+keys/buttons. Capture waits for physical keys and buttons to be released, and
+the existing five-second watchdog remains active. Both WiVRn virtual HID devices
+and host devices use the same route; the mouse-priority arbitration is preserved.
+The user subsequently reported Mac capture working as intended.
+
+Added opt-in local thumb-pad diagnostics: a marker in the private runtime
+folder enables 10 Hz samples for at most two minutes, capped at 8 MiB. Only
+wrist-relative joint coordinates in head axes and pad values are written, with
+0600 permissions; no room positions, images, audio or network upload. Two
+user-requested captures were saved under the ignored build/diagnostics folder.
+The first trace showed positive Y maxima of +0.41/+0.34 versus negative Y of
+-0.99/-0.90. The second repeated the limited upward reach (about +0.1), while
+finger-gun poses provided roughly 35–48 mm of projected vertical thumb travel.
+
+An extended-index mode now waits for the thumb to lower from fully upright,
+centres below it, and fixes that centre to the proximal index segment. The
+supporting index has pose hysteresis; thumb/wrist changes do not move the mount.
+The radius is 24% of palm width, limited to 14–20 mm (about 15 mm in this trace).
+The accepted 60-degree tilt and 12% normalized deadzone are unchanged. The
+original fist pose remains available. Replaying the second capture produces
+approximately -0.97/+0.98 and -0.98/+0.96 vertical ranges in the index mode.
+The live version still requires user confirmation of comfort and reach.
+
+
+All 36 WayVR release tests pass with the recorded-motion replay enabled. The
+final index-flex hysteresis additionally passes the six joystick tests and
+increases captured index-mode samples to 179/229, with sideways ranges of
+-0.97/+0.99 and -0.96/+1.00. The worker was built, installed and restarted;
+Mac receiver restoration and the existing headset connection were verified.
+The upstream source audit passes. Raw hand recordings remain outside version
+control, and the opt-in capture marker was removed after measurement.
+
+To repeat local diagnostics, touch
+`$XDG_RUNTIME_DIR/wivrn-pro/thumbpad-diagnostics.enabled` while Sticks is enabled;
+results append to `thumbpad-diagnostics.jsonl` in the same directory. The marker
+expires after two minutes. Save/truncate prior samples before another run to
+avoid the 8 MiB cap. Set `WIVRN_THUMBPAD_TRACE` to the saved JSONL path for the
+optional joystick trace-replay test. No diagnostic capture is enabled by default.

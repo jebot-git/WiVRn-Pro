@@ -518,6 +518,7 @@ impl WvrServerState {
                     }
                 }
                 WayVRTask::DropToplevel(client_id, toplevel) => {
+                    let mut release_input = false;
                     for client in &wvr_server.manager.clients {
                         if client.client.id() != client_id {
                             continue;
@@ -557,7 +558,19 @@ impl WvrServerState {
                             }
                         }
 
+                        release_input |= wvr_server.wm.keyboard_focus == Some(window_handle)
+                            || wvr_server
+                                .wm
+                                .mouse
+                                .as_ref()
+                                .is_some_and(|m| m.hover_window == window_handle);
                         wvr_server.wm.remove_window(window_handle);
+                    }
+                    if release_input || wvr_server.wm.windows.is_empty() {
+                        app.hid_provider.set_input_focus(
+                            Some(wvr_server),
+                            crate::subsystem::input::InputFocus::PhysicalScreen,
+                        );
                     }
                 }
                 WayVRTask::VisibilityChange(window_handle, visible) => {
@@ -692,6 +705,17 @@ impl WvrServerState {
             wvr_server.manager.cleanup_handles();
         }
 
+        if wvr_server.has_input_focus
+            && wvr_server
+                .wm
+                .keyboard_focus
+                .is_some_and(|w| !wvr_server.wm.windows.contains_key(w))
+        {
+            app.hid_provider.set_input_focus(
+                Some(wvr_server),
+                crate::subsystem::input::InputFocus::PhysicalScreen,
+            );
+        }
         wvr_server.process_input_capture(
             &mut app.input_state,
             &mut app.tasks,
@@ -833,6 +857,9 @@ impl WvrServerState {
                     .ok();
                 self.input_capture_init_attempted = true;
                 if let Some(cap) = self.input_capture.as_mut() {
+                    let _ = cap
+                        .set_grabbed(self.has_input_focus)
+                        .log_err("Could not request window input capture");
                     cap
                 } else {
                     let text = &globals
@@ -973,6 +1000,7 @@ impl WvrServerState {
                     }
                 }
                 input_capture::CapturedEvent::Grabbed => {
+                    log::info!("Physical mouse and keyboard captured for WayVR");
                     audio.play_sample("input_grab");
                     if !self.grab_toast_sent {
                         self.grab_toast_sent = true;
@@ -980,13 +1008,23 @@ impl WvrServerState {
                         let _ = DbusConnector::notify_send("WayVR", text, 1, 5000, 0, true);
                     }
                 }
-                input_capture::CapturedEvent::Ungrabbed => {
+                input_capture::CapturedEvent::Ungrabbed
+                | input_capture::CapturedEvent::Released => {
+                    log::info!("Physical mouse and keyboard released to Linux");
                     input_state.mouse_priority.clear_capture();
                     hid_wrapper.inner.send_key(hid::VirtualKey::LSuper, false);
                     hid_wrapper.inner.send_key(hid::VirtualKey::RSuper, false);
                     self.manager.release_all_keys();
-                    self.has_input_focus = false;
-                    self.wm.keyboard_focus = None;
+                    for button in [MouseIndex::Left, MouseIndex::Right, MouseIndex::Center] {
+                        self.manager.send_pointer_button(button, false);
+                    }
+                    if matches!(ev, input_capture::CapturedEvent::Ungrabbed) {
+                        self.set_input_focus(false);
+                        hid_wrapper.set_input_focus(
+                            None,
+                            crate::subsystem::input::InputFocus::PhysicalScreen,
+                        );
+                    }
                     audio.play_sample("input_ungrab");
                 }
                 input_capture::CapturedEvent::KeyCombo { combo, pressed } => match combo {
@@ -1088,9 +1126,24 @@ impl WvrServerState {
     }
 
     /// Use HidWrapper::set_input_focus instead!!!
-    pub const fn set_input_focus(&mut self, has_focus: bool) {
+    pub fn set_input_focus(&mut self, has_focus: bool) {
         self.has_input_focus = has_focus;
+        if let Some(cap) = self.input_capture.as_mut() {
+            let _ = cap
+                .set_grabbed(has_focus)
+                .log_err("Could not update window input capture");
+        }
         if !has_focus {
+            self.manager.release_all_keys();
+            for button in [MouseIndex::Left, MouseIndex::Right, MouseIndex::Center] {
+                self.manager.send_pointer_button(button, false);
+            }
+            self.manager.seat_keyboard.set_focus(
+                &mut self.manager.state,
+                None,
+                self.manager.serial_counter.next_serial(),
+            );
+            self.wm.keyboard_focus = None;
             self.wm.mouse = None;
         }
     }

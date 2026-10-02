@@ -60,6 +60,7 @@ pub enum CapturedEvent {
     },
     Grabbed,
     Ungrabbed,
+    Released, // focus-driven release; preserve any newer window selection
     KeyCombo {
         combo: KeyCombo,
         pressed: bool,
@@ -85,6 +86,7 @@ pub struct InputCapture {
     command_tx: SyncSender<Command>,
     event_rx: Receiver<CapturedEvent>,
     worker: Option<JoinHandle<()>>,
+    requested_grab: bool,
 }
 
 impl InputCapture {
@@ -102,6 +104,7 @@ impl InputCapture {
                 command_tx,
                 event_rx,
                 worker: Some(worker),
+                requested_grab: false,
             }),
             Ok(Err(error)) => {
                 let _ = worker.join();
@@ -118,9 +121,25 @@ impl InputCapture {
     }
 
     /// Returns every currently queued event without blocking.
-    pub fn drain_events(&self) -> Vec<CapturedEvent> {
+    pub fn drain_events(&mut self) -> Vec<CapturedEvent> {
         let _ = self.command_tx.try_send(Command::ResetWatchdog);
-        self.event_rx.try_iter().collect()
+        let events: Vec<_> = self.event_rx.try_iter().collect();
+        for event in &events {
+            match event {
+                CapturedEvent::Grabbed => self.requested_grab = true,
+                CapturedEvent::Ungrabbed | CapturedEvent::Released => self.requested_grab = false,
+                _ => {}
+            }
+        }
+        events
+    }
+
+    pub fn set_grabbed(&mut self, grabbed: bool) -> anyhow::Result<()> {
+        if self.requested_grab != grabbed {
+            self.command_tx.try_send(Command::SetGrabbed(grabbed))?;
+            self.requested_grab = grabbed;
+        }
+        Ok(())
     }
 
     /// Set acceleration profile for current and future mice
@@ -148,12 +167,8 @@ impl Drop for InputCapture {
 
 enum Command {
     ResetWatchdog,
-    #[allow(dead_code)]
-    SetGrabbed(bool), // might need later?
-    SetPointerAccel {
-        accel: bool,
-        speed: f32,
-    },
+    SetGrabbed(bool),
+    SetPointerAccel { accel: bool, speed: f32 },
     Shutdown,
 }
 
@@ -311,6 +326,7 @@ impl LibinputInterface for RestrictedInterface {
 #[derive(Default)]
 struct RuntimeDeviceState {
     pressed_keys: HashSet<u16>,
+    pressed_buttons: HashSet<u32>,
     active_combos: HashSet<KeyCombo>,
     horizontal_v120_remainder: f64,
     vertical_v120_remainder: f64,
@@ -358,50 +374,24 @@ fn worker_main(
         loop {
             match command_rx.try_recv() {
                 Ok(Command::SetGrabbed(requested)) => {
-                    pending_grab = false;
-
-                    let _ = if requested {
-                        match restricted_state.borrow_mut().set_grabbed(true) {
-                            Ok(()) => {
-                                grabbed = true;
-                                Ok(())
-                            }
-                            Err(error) => {
-                                grabbed = false;
-                                Err(error)
-                            }
-                        }
+                    if requested {
+                        // Preserve currently held keyboard state; grab only after
+                        // release so a modifier cannot become stuck on Linux.
+                        pending_grab = !grabbed;
                     } else {
-                        let ungrab_result = restricted_state.borrow_mut().set_grabbed(false);
+                        pending_grab = false;
+                        force_emergency_ungrab(
+                            &mut libinput,
+                            &restricted_state,
+                            &mut runtime_devices,
+                            &mut pointer_devices,
+                            pointer_accel,
+                            &event_tx,
+                        );
                         grabbed = false;
-
-                        match ungrab_result {
-                            Ok(()) => Ok(()),
-                            Err(error) => {
-                                log::warn!(
-                                    "Could not cleanly ungrab every input device: {error}. Reopening libinput devices."
-                                );
-                                force_reopen_ungrabbed(
-                                    &mut libinput,
-                                    &restricted_state,
-                                    &mut runtime_devices,
-                                    &mut pointer_devices,
-                                    pointer_accel,
-                                    &event_tx,
-                                )
-                            }
-                        }
-                    };
-
+                        let _ = event_tx.send(CapturedEvent::Released);
+                    }
                     watchdog = Instant::now() + WATCHDOG_TIMEOUT;
-                    clear_transient_state(&mut runtime_devices);
-                    drain_pending_libinput_events(
-                        &mut libinput,
-                        &mut runtime_devices,
-                        &mut pointer_devices,
-                        pointer_accel,
-                        &event_tx,
-                    );
                 }
                 Ok(Command::SetPointerAccel { accel, speed }) => {
                     pointer_accel = PointerAccelConfig { accel, speed };
@@ -460,17 +450,9 @@ fn worker_main(
             continue;
         }
 
-        if poll_result == 0 {
-            continue;
-        }
-
         if poll_fd.revents & (libc::POLLERR | libc::POLLHUP | libc::POLLNVAL) != 0 {
             log::error!("libinput poll fd became invalid; input worker is exiting");
             break 'worker;
-        }
-
-        if poll_fd.revents & libc::POLLIN == 0 {
-            continue;
         }
 
         if let Err(error) = libinput.dispatch() {
@@ -500,7 +482,7 @@ fn worker_main(
             }
         }
 
-        if !grabbed && pending_grab && all_keyboard_keys_released(&runtime_devices) {
+        if !grabbed && pending_grab && all_inputs_released(&runtime_devices) {
             pending_grab = false;
 
             match restricted_state.borrow_mut().set_grabbed(true) {
@@ -528,6 +510,7 @@ fn worker_main(
                         true,
                     );
                     log::warn!("Could not grab input devices: {error}");
+                    let _ = event_tx.send(CapturedEvent::Ungrabbed);
                 }
             }
         }
@@ -670,8 +653,17 @@ fn process_libinput_event(par: ProcessLibinputEventParams) -> ProcessResult {
                 return ProcessResult::ReceiverGone;
             }
         }
-        Event::Pointer(PointerEvent::Button(event)) if par.grabbed => {
+        Event::Pointer(PointerEvent::Button(event)) => {
             let pressed = event.button_state() == ButtonState::Pressed;
+            let state = par.runtime_devices.entry(event.device()).or_default();
+            if pressed {
+                state.pressed_buttons.insert(event.button());
+            } else {
+                state.pressed_buttons.remove(&event.button());
+            }
+            if !par.grabbed {
+                return ProcessResult::Continue;
+            }
             if par
                 .event_tx
                 .send(CapturedEvent::PointerButton {
@@ -840,6 +832,7 @@ fn force_emergency_ungrab(
 fn clear_transient_state(runtime_devices: &mut HashMap<LibinputDevice, RuntimeDeviceState>) {
     for state in runtime_devices.values_mut() {
         state.pressed_keys.clear();
+        state.pressed_buttons.clear();
         state.active_combos.clear();
         state.horizontal_v120_remainder = 0.0;
         state.vertical_v120_remainder = 0.0;
@@ -960,10 +953,63 @@ fn with_device_context(action: &str, path: &Path, error: io::Error) -> io::Error
     )
 }
 
-fn all_keyboard_keys_released(
-    runtime_devices: &HashMap<LibinputDevice, RuntimeDeviceState>,
-) -> bool {
-    runtime_devices
-        .values()
-        .all(|state| state.pressed_keys.is_empty())
+fn all_inputs_released(runtime_devices: &HashMap<LibinputDevice, RuntimeDeviceState>) -> bool {
+    runtime_devices.values().all(RuntimeDeviceState::released)
+}
+
+impl RuntimeDeviceState {
+    fn released(&self) -> bool {
+        self.pressed_keys.is_empty() && self.pressed_buttons.is_empty()
+    }
+}
+
+#[cfg(test)]
+mod routing_tests {
+    use super::*;
+    #[test]
+    fn window_selection_requests_capture_and_manual_release_can_rearm() {
+        let (command_tx, command_rx) = mpsc::sync_channel(8);
+        let (event_tx, event_rx) = mpsc::channel();
+        let mut capture = InputCapture {
+            command_tx,
+            event_rx,
+            worker: None,
+            requested_grab: false,
+        };
+        capture.set_grabbed(true).unwrap();
+        assert!(matches!(
+            command_rx.try_recv().unwrap(),
+            Command::SetGrabbed(true)
+        ));
+        capture.set_grabbed(true).unwrap();
+        assert!(command_rx.try_recv().is_err());
+        event_tx.send(CapturedEvent::Ungrabbed).unwrap();
+        capture.drain_events();
+        assert!(matches!(
+            command_rx.try_recv().unwrap(),
+            Command::ResetWatchdog
+        ));
+        capture.set_grabbed(true).unwrap();
+        assert!(matches!(
+            command_rx.try_recv().unwrap(),
+            Command::SetGrabbed(true)
+        ));
+        capture.set_grabbed(false).unwrap();
+        assert!(matches!(
+            command_rx.try_recv().unwrap(),
+            Command::SetGrabbed(false)
+        ));
+    }
+    #[test]
+    fn switching_waits_for_keyboard_and_mouse_button_release() {
+        let mut state = RuntimeDeviceState::default();
+        assert!(state.released());
+        state.pressed_keys.insert(KeyCode::KEY_LEFTCTRL.0);
+        state.pressed_buttons.insert(272);
+        assert!(!state.released());
+        state.pressed_keys.clear();
+        assert!(!state.released());
+        state.pressed_buttons.clear();
+        assert!(state.released());
+    }
 }

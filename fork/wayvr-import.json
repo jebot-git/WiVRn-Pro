@@ -738,13 +738,15 @@
     "wlx-common/src/dash_interface.rs": "49dbe44ff105eb3c22e9da7e741f1d2a1529d13d892f2b77f0e052d44cc5ee8b",
     "wayvr/src/backend/input.rs": "81b9a4fadb1e82265d77202d8f8a7c067b81eea72f06af50dad7f87fe187d3e0",
     "wayvr/src/backend/openxr/helpers.rs": "9308c0b3546434e11f76b2a524e6eaecf91c13943e7d5f4265ae2e6defbb6bbc",
-    "wayvr/src/backend/openxr/input.rs": "efc3e55e87126de186412baae746e72df7c06f583a5fd3f06837f5bb25906243",
+    "wayvr/src/backend/openxr/input.rs": "75b32824e9859d6d687fa4130e098cf21117bce65e4533b9f099cf786e35c364",
     "wayvr/src/backend/openxr/mod.rs": "6badf71cac14ee5e7b0d6022f980e5d266fdd3ccf6657c6e23d3bcb21f4ab9de",
     "wayvr/src/windowing/window.rs": "2ca484ce73ca407b479341237dca45381383309689d079883f287913388d516c",
     "wayvr/src/overlays/screen/backend.rs": "340a53906ed31e482849de8067711043849aaae96af0904e99923d5d5f69677e",
     "wayvr/src/overlays/wayvr.rs": "1fe51721615a2c38f2a025630dbfbf8f6dde5ac7ebc0c8a2191876501dd208f4",
-    "wayvr/src/backend/wayvr/mod.rs": "a0c782d2209d064904370bdd10e8070e5e34290686c59544aa1b21f565f638e4",
+    "wayvr/src/backend/wayvr/mod.rs": "4e951fb6af275d9d8699918729459489cb4bd7ad62c3f06371df50cd755c65fc",
     "wayvr/src/gui/panel/button.rs": "21496ce20fbcd3586985656c7d705f1a91f8b2694a2ee2b76cb590d956b14677",
-    "wayvr/src/shaders/mod.rs": "54a91c8460a38bd0077d27c175f2450b87d867a03144610b929531cf6e4fd40d"
+    "wayvr/src/shaders/mod.rs": "54a91c8460a38bd0077d27c175f2450b87d867a03144610b929531cf6e4fd40d",
+    "wayvr/src/backend/wayvr/input_capture.rs": "da5856d6df43c004d8f0dedeaf5062b6fb2f58521cd506ffc4f376dbea7db635",
+    "wayvr/src/subsystem/input.rs": "5bb25ba69e88aa4dea52b8d367b25f46aba583b9990299bb0b5bde4814dbe7b7"
   }
 }

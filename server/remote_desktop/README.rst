@@ -9,9 +9,13 @@ remote input. Linux desktop windows remain available alongside it.
 
 This initial implementation transports JPEG at up to 15 fps over SSH. It has
 mouse motion, three buttons, wheel scrolling and common keyboard keys. It does
-not yet have audio, clipboard, gamepad passthrough, automatic headset-device
-routing between hosts, low-latency H.264 or background login registration.
-Headset devices currently follow WayVR's existing input capture/focus behavior.
+not yet have audio, clipboard, gamepad passthrough, low-latency H.264 or
+background login registration.
+Clicking a WayVR-managed window now captures physical mouse/keyboard input,
+including the WiVRn headset passthrough devices. Selecting a Linux desktop
+releases capture; Super+Z also releases it. Clicking the Mac window again
+reacquires capture. Held keys/buttons defer capture until release. Closing the
+selected window and the existing worker watchdog also release device capture.
 Non-US keyboard layouts and IME text entry need further work and testing.
 
 Build and run on the Mac

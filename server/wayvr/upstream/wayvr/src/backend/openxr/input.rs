@@ -471,6 +471,13 @@ impl OpenXrInputSource {
                             app.input_state.hmd,
                         );
                         pointer.joystick_owned = self.thumb_pads[i].owns_hand();
+                        crate::hand_joystick::diagnostic_sample(
+                            i,
+                            self.started.elapsed(),
+                            joints.as_ref(),
+                            app.input_state.hmd,
+                            pointer.joystick_pad,
+                        );
                     } else {
                         self.thumb_pads[i].reset();
                     }

@@ -46,14 +46,14 @@ impl HidWrapper {
         wvr_server: Option<&mut WvrServerState>,
         value: InputFocus,
     ) -> bool {
+        // An explicit click also rearms capture after Super+Z released it.
+        if let Some(wvr_server) = wvr_server {
+            wvr_server.set_input_focus(matches!(value, InputFocus::WayVR));
+        }
         if self.input_focus == value {
             false
         } else {
             self.input_focus = value;
-
-            if let Some(wvr_server) = wvr_server {
-                wvr_server.set_input_focus(matches!(value, InputFocus::WayVR));
-            }
 
             true
         }

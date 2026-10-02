@@ -1,9 +1,9 @@
 --- a/dash-frontend/assets/gui/tab/home.xml
 +++ b/dash-frontend/assets/gui/tab/home.xml
 @@ -24,6 +24,8 @@
-
+ 
        <label id="label_hello" margin_top="24" size="32" weight="bold" color="on_background" />
-
+ 
 +      <label id="shora_batteries" size="14" color="on_background" margin_top="8" />
 +
        <!-- main button list -->
@@ -13,7 +13,7 @@
 +++ b/dash-frontend/src/tab/home.rs
 @@ -27,7 +27,18 @@
  }
-
+ 
  impl<T> Tab<T> for TabHome<T> {
 -	fn get_type(&self) -> TabType {
 +	fn update(&mut self, frontend: &mut Frontend<T>, _time_ms: u32, data: &mut T) -> anyhow::Result<()> {
@@ -38,7 +38,7 @@
  use shaderc::{Compiler, EnvVersion, ShaderKind, TargetEnv};
 -use std::{path::PathBuf, process::Command};
 +use std::path::PathBuf;
-
+ 
  const SHADERS: &[(&str, ShaderKind)] = &[
      ("quad.vert", ShaderKind::Vertex),
      ("color.frag", ShaderKind::Fragment),
@@ -49,15 +49,15 @@
 @@ -16,7 +16,7 @@
  fn main() {
      compile_shaders();
-
+ 
 -    let mut wlx_build = get_version().unwrap_or(format!("{}-unknown", env!("CARGO_PKG_VERSION")));
 +    let mut wlx_build = String::from("26.8.0-4590371-wivrn-pro");
-
+ 
      match std::env::var("GITHUB_JOB").as_deref() {
          Ok("make_release") => {
 @@ -39,7 +39,11 @@
      options.set_target_env(TargetEnv::Vulkan, EnvVersion::Vulkan1_3 as u32);
-
+ 
      for (name, kind) in SHADERS {
 -        let path = shader_dir.join(name);
 +        let path = if *name == "hand_pad.frag" {
@@ -66,7 +66,7 @@
 +            shader_dir.join(name)
 +        };
          println!("cargo:rerun-if-changed={}", path.display());
-
+ 
          let source = std::fs::read_to_string(&path)
 @@ -51,26 +55,3 @@
              .unwrap_or_else(|e| panic!("failed to write compiled shader {name}: {e}"));
@@ -100,7 +100,7 @@
 @@ -119,6 +119,8 @@
          <Tracker idx="3" />
        </div>
-
+ 
 +      <label id="shora_batteries" _source="shora_batteries" size="15" color="primary" />
 +
        <!-- All other elements inside the container -->
@@ -109,7 +109,7 @@
 @@ -127,7 +129,7 @@
              <Clock />
            </div>
-
+ 
 -          <!-- Four buttons -->
 +          <!-- Interaction buttons -->
            <div flex_direction="column" gap="8">
@@ -124,7 +124,7 @@
 +            </Button>
            </div>
          </rectangle>
-
+ 
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
 @@ -75,6 +75,10 @@
@@ -199,7 +199,7 @@
 +            wrist * on_wrist * watch.inverse()
 +        })
      }
-
+ 
      pub const fn hand(&self) -> Option<LeftRight> {
 @@ -451,6 +495,9 @@
      maybe_hit: Option<(PointerHit, RayHit)>,
@@ -214,7 +214,7 @@
 @@ -523,6 +570,129 @@
      [hits[0].1, hits[1].1]
  }
-
+ 
 +/// Project an index fingertip onto the same flat/curved surface used by rays.
 +fn touch_projection(
 +    tip: Vec3A,
@@ -376,7 +376,7 @@
 -        pointer.interaction.kbd_block_activated = false;
 -        return (None, pending_haptics); // no hit
 -    }
-
+ 
      // already grabbing, ignore everything else
      if let Some(grab_data) = pointer.interaction.grabbed {
 @@ -689,6 +874,9 @@
@@ -391,7 +391,7 @@
          hovered.hover_pointers[pointer_idx] = false;
 @@ -799,9 +987,19 @@
      let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
-
+ 
      for (id, overlay) in overlays.iter() {
 +        if pointer.touch_hit.is_some() {
 +            break;
@@ -412,12 +412,12 @@
 @@ -817,6 +1015,9 @@
          }
      }
-
+ 
 +    if let Some(hit) = pointer.touch_hit {
 +        hits.push(hit);
 +    }
      hits.sort_by(|a, b| a.dist.total_cmp(&b.dist));
-
+ 
      for hit in hits {
 @@ -1135,3 +1336,77 @@
          dist,
@@ -505,7 +505,7 @@
      pub ext_eye_gaze_interaction: bool,
 +    pub ext_hand_tracking: bool,
  }
-
+ 
  pub(super) fn init_xr() -> Result<(xr::Instance, xr::SystemId, ExtraExts), anyhow::Error> {
 @@ -61,6 +62,8 @@
      } else {
@@ -529,12 +529,12 @@
 +    hand_paths: [xr::Path; 2],
 +    started: Instant,
  }
-
+ 
  pub(super) struct OpenXrPointer {
 @@ -264,7 +270,25 @@
          let mut right_source = OpenXrHandSource::new(&mut action_set, "right")?;
          let mut fallback_source = OpenXrHandSource::new(&mut action_set, "handsfree")?;
-
+ 
 -        let profiles = load_xr_input_profiles();
 +        let mut profiles = load_xr_input_profiles();
 +        // Keep saved mappings, filling missing hand aim bindings in memory only.
@@ -557,7 +557,7 @@
 +        }
          let (physical_inputs, physical_input_map) =
              create_physical_inputs(&action_set, &xr.instance, &profiles)?;
-
+ 
 @@ -288,7 +312,40 @@
                  OpenXrPointer::new(xr, right_source)?,
              ],
@@ -597,7 +597,7 @@
 +            hand.reset();
 +        }
      }
-
+ 
      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
 @@ -348,6 +405,7 @@
          if picking_focus.is_none() {
@@ -607,7 +607,7 @@
                  let pointer = &mut app.input_state.pointers[i];
                  self.pointers[i].update(
                      pointer,
-@@ -356,6 +414,131 @@
+@@ -356,6 +414,138 @@
                      !should_disable_lerp,
                      physical_inputs,
                  )?;
@@ -668,6 +668,13 @@
 +                            app.input_state.hmd,
 +                        );
 +                        pointer.joystick_owned = self.thumb_pads[i].owns_hand();
++                        crate::hand_joystick::diagnostic_sample(
++                            i,
++                            self.started.elapsed(),
++                            joints.as_ref(),
++                            app.input_state.hmd,
++                            pointer.joystick_pad,
++                        );
 +                    } else {
 +                        self.thumb_pads[i].reset();
 +                    }
@@ -739,7 +746,7 @@
                  any_tracked |= pointer.tracked;
              }
          } else {
-@@ -371,10 +554,27 @@
+@@ -371,10 +561,27 @@
                  pointer.now = PointerState::default();
                  pointer.tracked = false;
                  pointer.handsfree = false;
@@ -771,10 +778,10 @@
              self.handsfree_pointer.update_handsfree(
                  &mut app.input_state.pointers[0],
                  xr,
-@@ -386,6 +586,13 @@
+@@ -386,6 +593,13 @@
              )?;
          }
-
+ 
 +        if !picking_focus.is_none() {
 +            self.reset_hands();
 +        }
@@ -783,13 +790,13 @@
 +            app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
 +        );
          app.session.config.handsfree_pointer = old_handsfree;
-
+ 
          Ok(())
 --- a/wayvr/src/backend/openxr/mod.rs
 +++ b/wayvr/src/backend/openxr/mod.rs
 @@ -39,6 +39,8 @@
  };
-
+ 
  mod blocker;
 +#[path = "../../../../../hand_pad.rs"]
 +mod hand_pad;
@@ -813,9 +820,9 @@
          view: Arc::new(view),
          extra_exts,
 @@ -154,6 +158,7 @@
-
+ 
      let mut skybox: Option<Skybox> = None;
-
+ 
 +    let mut hand_pads = hand_pad::HandPads::new(&xr_state, &app)?;
      let pointer_lines = [
          lines.allocate(&xr_state, &app)?,
@@ -840,7 +847,7 @@
                              xr_state.session.begin(VIEW_TYPE)?;
 @@ -291,6 +307,14 @@
          };
-
+ 
          if !xr_frame_state.should_render {
 +            input_source.reset_hands();
 +            for i in 0..2 {
@@ -856,7 +863,7 @@
 @@ -300,7 +324,27 @@
              continue 'main_loop;
          }
-
+ 
 +        app.input_state.mouse_priority.poll();
          app.input_state.pre_update();
 +        app.input_state.space_drag_hand = overlays
@@ -880,19 +887,19 @@
 +            .unwrap_or(0);
          input_source.update(&xr_state, &mut app)?;
          app.input_state.post_update(&app.session);
-
+ 
 @@ -452,6 +496,7 @@
          }
-
+ 
          lines.render(&app, &mut futures)?;
 +        hand_pads.render(&app, &mut futures)?;
          futures.wait()?;
          // End rendering
-
+ 
 @@ -485,7 +530,11 @@
              }
          }
-
+ 
 -        for layer in lines.present(&xr_state)? {
 +        for layer in hand_pads
 +            .present(&xr_state)?
@@ -902,9 +909,341 @@
              layers.push((0.0, layer));
          }
          // End layer composition
+--- a/wayvr/src/backend/wayvr/input_capture.rs
++++ b/wayvr/src/backend/wayvr/input_capture.rs
+@@ -60,6 +60,7 @@
+     },
+     Grabbed,
+     Ungrabbed,
++    Released, // focus-driven release; preserve any newer window selection
+     KeyCombo {
+         combo: KeyCombo,
+         pressed: bool,
+@@ -85,6 +86,7 @@
+     command_tx: SyncSender<Command>,
+     event_rx: Receiver<CapturedEvent>,
+     worker: Option<JoinHandle<()>>,
++    requested_grab: bool,
+ }
+ 
+ impl InputCapture {
+@@ -102,6 +104,7 @@
+                 command_tx,
+                 event_rx,
+                 worker: Some(worker),
++                requested_grab: false,
+             }),
+             Ok(Err(error)) => {
+                 let _ = worker.join();
+@@ -118,9 +121,25 @@
+     }
+ 
+     /// Returns every currently queued event without blocking.
+-    pub fn drain_events(&self) -> Vec<CapturedEvent> {
++    pub fn drain_events(&mut self) -> Vec<CapturedEvent> {
+         let _ = self.command_tx.try_send(Command::ResetWatchdog);
+-        self.event_rx.try_iter().collect()
++        let events: Vec<_> = self.event_rx.try_iter().collect();
++        for event in &events {
++            match event {
++                CapturedEvent::Grabbed => self.requested_grab = true,
++                CapturedEvent::Ungrabbed | CapturedEvent::Released => self.requested_grab = false,
++                _ => {}
++            }
++        }
++        events
++    }
++
++    pub fn set_grabbed(&mut self, grabbed: bool) -> anyhow::Result<()> {
++        if self.requested_grab != grabbed {
++            self.command_tx.try_send(Command::SetGrabbed(grabbed))?;
++            self.requested_grab = grabbed;
++        }
++        Ok(())
+     }
+ 
+     /// Set acceleration profile for current and future mice
+@@ -148,12 +167,8 @@
+ 
+ enum Command {
+     ResetWatchdog,
+-    #[allow(dead_code)]
+-    SetGrabbed(bool), // might need later?
+-    SetPointerAccel {
+-        accel: bool,
+-        speed: f32,
+-    },
++    SetGrabbed(bool),
++    SetPointerAccel { accel: bool, speed: f32 },
+     Shutdown,
+ }
+ 
+@@ -311,6 +326,7 @@
+ #[derive(Default)]
+ struct RuntimeDeviceState {
+     pressed_keys: HashSet<u16>,
++    pressed_buttons: HashSet<u32>,
+     active_combos: HashSet<KeyCombo>,
+     horizontal_v120_remainder: f64,
+     vertical_v120_remainder: f64,
+@@ -358,50 +374,24 @@
+         loop {
+             match command_rx.try_recv() {
+                 Ok(Command::SetGrabbed(requested)) => {
+-                    pending_grab = false;
+-
+-                    let _ = if requested {
+-                        match restricted_state.borrow_mut().set_grabbed(true) {
+-                            Ok(()) => {
+-                                grabbed = true;
+-                                Ok(())
+-                            }
+-                            Err(error) => {
+-                                grabbed = false;
+-                                Err(error)
+-                            }
+-                        }
++                    if requested {
++                        // Preserve currently held keyboard state; grab only after
++                        // release so a modifier cannot become stuck on Linux.
++                        pending_grab = !grabbed;
+                     } else {
+-                        let ungrab_result = restricted_state.borrow_mut().set_grabbed(false);
++                        pending_grab = false;
++                        force_emergency_ungrab(
++                            &mut libinput,
++                            &restricted_state,
++                            &mut runtime_devices,
++                            &mut pointer_devices,
++                            pointer_accel,
++                            &event_tx,
++                        );
+                         grabbed = false;
+-
+-                        match ungrab_result {
+-                            Ok(()) => Ok(()),
+-                            Err(error) => {
+-                                log::warn!(
+-                                    "Could not cleanly ungrab every input device: {error}. Reopening libinput devices."
+-                                );
+-                                force_reopen_ungrabbed(
+-                                    &mut libinput,
+-                                    &restricted_state,
+-                                    &mut runtime_devices,
+-                                    &mut pointer_devices,
+-                                    pointer_accel,
+-                                    &event_tx,
+-                                )
+-                            }
+-                        }
+-                    };
+-
++                        let _ = event_tx.send(CapturedEvent::Released);
++                    }
+                     watchdog = Instant::now() + WATCHDOG_TIMEOUT;
+-                    clear_transient_state(&mut runtime_devices);
+-                    drain_pending_libinput_events(
+-                        &mut libinput,
+-                        &mut runtime_devices,
+-                        &mut pointer_devices,
+-                        pointer_accel,
+-                        &event_tx,
+-                    );
+                 }
+                 Ok(Command::SetPointerAccel { accel, speed }) => {
+                     pointer_accel = PointerAccelConfig { accel, speed };
+@@ -460,17 +450,9 @@
+             continue;
+         }
+ 
+-        if poll_result == 0 {
+-            continue;
+-        }
+-
+         if poll_fd.revents & (libc::POLLERR | libc::POLLHUP | libc::POLLNVAL) != 0 {
+             log::error!("libinput poll fd became invalid; input worker is exiting");
+             break 'worker;
+-        }
+-
+-        if poll_fd.revents & libc::POLLIN == 0 {
+-            continue;
+         }
+ 
+         if let Err(error) = libinput.dispatch() {
+@@ -500,7 +482,7 @@
+             }
+         }
+ 
+-        if !grabbed && pending_grab && all_keyboard_keys_released(&runtime_devices) {
++        if !grabbed && pending_grab && all_inputs_released(&runtime_devices) {
+             pending_grab = false;
+ 
+             match restricted_state.borrow_mut().set_grabbed(true) {
+@@ -528,6 +510,7 @@
+                         true,
+                     );
+                     log::warn!("Could not grab input devices: {error}");
++                    let _ = event_tx.send(CapturedEvent::Ungrabbed);
+                 }
+             }
+         }
+@@ -670,8 +653,17 @@
+                 return ProcessResult::ReceiverGone;
+             }
+         }
+-        Event::Pointer(PointerEvent::Button(event)) if par.grabbed => {
++        Event::Pointer(PointerEvent::Button(event)) => {
+             let pressed = event.button_state() == ButtonState::Pressed;
++            let state = par.runtime_devices.entry(event.device()).or_default();
++            if pressed {
++                state.pressed_buttons.insert(event.button());
++            } else {
++                state.pressed_buttons.remove(&event.button());
++            }
++            if !par.grabbed {
++                return ProcessResult::Continue;
++            }
+             if par
+                 .event_tx
+                 .send(CapturedEvent::PointerButton {
+@@ -840,6 +832,7 @@
+ fn clear_transient_state(runtime_devices: &mut HashMap<LibinputDevice, RuntimeDeviceState>) {
+     for state in runtime_devices.values_mut() {
+         state.pressed_keys.clear();
++        state.pressed_buttons.clear();
+         state.active_combos.clear();
+         state.horizontal_v120_remainder = 0.0;
+         state.vertical_v120_remainder = 0.0;
+@@ -960,10 +953,63 @@
+     )
+ }
+ 
+-fn all_keyboard_keys_released(
+-    runtime_devices: &HashMap<LibinputDevice, RuntimeDeviceState>,
+-) -> bool {
+-    runtime_devices
+-        .values()
+-        .all(|state| state.pressed_keys.is_empty())
+-}
++fn all_inputs_released(runtime_devices: &HashMap<LibinputDevice, RuntimeDeviceState>) -> bool {
++    runtime_devices.values().all(RuntimeDeviceState::released)
++}
++
++impl RuntimeDeviceState {
++    fn released(&self) -> bool {
++        self.pressed_keys.is_empty() && self.pressed_buttons.is_empty()
++    }
++}
++
++#[cfg(test)]
++mod routing_tests {
++    use super::*;
++    #[test]
++    fn window_selection_requests_capture_and_manual_release_can_rearm() {
++        let (command_tx, command_rx) = mpsc::sync_channel(8);
++        let (event_tx, event_rx) = mpsc::channel();
++        let mut capture = InputCapture {
++            command_tx,
++            event_rx,
++            worker: None,
++            requested_grab: false,
++        };
++        capture.set_grabbed(true).unwrap();
++        assert!(matches!(
++            command_rx.try_recv().unwrap(),
++            Command::SetGrabbed(true)
++        ));
++        capture.set_grabbed(true).unwrap();
++        assert!(command_rx.try_recv().is_err());
++        event_tx.send(CapturedEvent::Ungrabbed).unwrap();
++        capture.drain_events();
++        assert!(matches!(
++            command_rx.try_recv().unwrap(),
++            Command::ResetWatchdog
++        ));
++        capture.set_grabbed(true).unwrap();
++        assert!(matches!(
++            command_rx.try_recv().unwrap(),
++            Command::SetGrabbed(true)
++        ));
++        capture.set_grabbed(false).unwrap();
++        assert!(matches!(
++            command_rx.try_recv().unwrap(),
++            Command::SetGrabbed(false)
++        ));
++    }
++    #[test]
++    fn switching_waits_for_keyboard_and_mouse_button_release() {
++        let mut state = RuntimeDeviceState::default();
++        assert!(state.released());
++        state.pressed_keys.insert(KeyCode::KEY_LEFTCTRL.0);
++        state.pressed_buttons.insert(272);
++        assert!(!state.released());
++        state.pressed_keys.clear();
++        assert!(!state.released());
++        state.pressed_buttons.clear();
++        assert!(state.released());
++    }
++}
 --- a/wayvr/src/backend/wayvr/mod.rs
 +++ b/wayvr/src/backend/wayvr/mod.rs
-@@ -915,6 +915,7 @@
+@@ -518,6 +518,7 @@
+                     }
+                 }
+                 WayVRTask::DropToplevel(client_id, toplevel) => {
++                    let mut release_input = false;
+                     for client in &wvr_server.manager.clients {
+                         if client.client.id() != client_id {
+                             continue;
+@@ -557,7 +558,19 @@
+                             }
+                         }
+ 
++                        release_input |= wvr_server.wm.keyboard_focus == Some(window_handle)
++                            || wvr_server
++                                .wm
++                                .mouse
++                                .as_ref()
++                                .is_some_and(|m| m.hover_window == window_handle);
+                         wvr_server.wm.remove_window(window_handle);
++                    }
++                    if release_input || wvr_server.wm.windows.is_empty() {
++                        app.hid_provider.set_input_focus(
++                            Some(wvr_server),
++                            crate::subsystem::input::InputFocus::PhysicalScreen,
++                        );
+                     }
+                 }
+                 WayVRTask::VisibilityChange(window_handle, visible) => {
+@@ -692,6 +705,17 @@
+             wvr_server.manager.cleanup_handles();
+         }
+ 
++        if wvr_server.has_input_focus
++            && wvr_server
++                .wm
++                .keyboard_focus
++                .is_some_and(|w| !wvr_server.wm.windows.contains_key(w))
++        {
++            app.hid_provider.set_input_focus(
++                Some(wvr_server),
++                crate::subsystem::input::InputFocus::PhysicalScreen,
++            );
++        }
+         wvr_server.process_input_capture(
+             &mut app.input_state,
+             &mut app.tasks,
+@@ -833,6 +857,9 @@
+                     .ok();
+                 self.input_capture_init_attempted = true;
+                 if let Some(cap) = self.input_capture.as_mut() {
++                    let _ = cap
++                        .set_grabbed(self.has_input_focus)
++                        .log_err("Could not request window input capture");
+                     cap
+                 } else {
+                     let text = &globals
+@@ -915,6 +942,7 @@
                      }
                  }
                  input_capture::CapturedEvent::PointerButton { button, pressed } => {
@@ -912,7 +1251,7 @@
                      let Some(mouse_index) = Self::button_to_mouse_index(button) else {
                          continue;
                      };
-@@ -942,6 +943,9 @@
+@@ -942,6 +970,9 @@
                      dx_raw,
                      dy_raw,
                  } => {
@@ -922,7 +1261,7 @@
                      mouse_delta += DVec2 { x: dx, y: dy };
                      mouse_delta_raw += DVec2 {
                          x: dx_raw,
-@@ -952,6 +956,9 @@
+@@ -952,6 +983,9 @@
                      horizontal_v120,
                      vertical_v120,
                  } => {
@@ -932,14 +1271,67 @@
                      let mut delta = WheelDelta {
                          x: horizontal_v120 as f32,
                          y: vertical_v120 as f32,
-@@ -974,6 +981,7 @@
+@@ -966,6 +1000,7 @@
                      }
                  }
-                 input_capture::CapturedEvent::Ungrabbed => {
+                 input_capture::CapturedEvent::Grabbed => {
++                    log::info!("Physical mouse and keyboard captured for WayVR");
+                     audio.play_sample("input_grab");
+                     if !self.grab_toast_sent {
+                         self.grab_toast_sent = true;
+@@ -973,12 +1008,23 @@
+                         let _ = DbusConnector::notify_send("WayVR", text, 1, 5000, 0, true);
+                     }
+                 }
+-                input_capture::CapturedEvent::Ungrabbed => {
++                input_capture::CapturedEvent::Ungrabbed
++                | input_capture::CapturedEvent::Released => {
++                    log::info!("Physical mouse and keyboard released to Linux");
 +                    input_state.mouse_priority.clear_capture();
                      hid_wrapper.inner.send_key(hid::VirtualKey::LSuper, false);
                      hid_wrapper.inner.send_key(hid::VirtualKey::RSuper, false);
                      self.manager.release_all_keys();
+-                    self.has_input_focus = false;
+-                    self.wm.keyboard_focus = None;
++                    for button in [MouseIndex::Left, MouseIndex::Right, MouseIndex::Center] {
++                        self.manager.send_pointer_button(button, false);
++                    }
++                    if matches!(ev, input_capture::CapturedEvent::Ungrabbed) {
++                        self.set_input_focus(false);
++                        hid_wrapper.set_input_focus(
++                            None,
++                            crate::subsystem::input::InputFocus::PhysicalScreen,
++                        );
++                    }
+                     audio.play_sample("input_ungrab");
+                 }
+                 input_capture::CapturedEvent::KeyCombo { combo, pressed } => match combo {
+@@ -1080,9 +1126,24 @@
+     }
+ 
+     /// Use HidWrapper::set_input_focus instead!!!
+-    pub const fn set_input_focus(&mut self, has_focus: bool) {
++    pub fn set_input_focus(&mut self, has_focus: bool) {
+         self.has_input_focus = has_focus;
++        if let Some(cap) = self.input_capture.as_mut() {
++            let _ = cap
++                .set_grabbed(has_focus)
++                .log_err("Could not update window input capture");
++        }
+         if !has_focus {
++            self.manager.release_all_keys();
++            for button in [MouseIndex::Left, MouseIndex::Right, MouseIndex::Center] {
++                self.manager.send_pointer_button(button, false);
++            }
++            self.manager.seat_keyboard.set_focus(
++                &mut self.manager.state,
++                None,
++                self.manager.serial_counter.next_serial(),
++            );
++            self.wm.keyboard_focus = None;
+             self.wm.mouse = None;
+         }
+     }
 --- a/wayvr/src/gui/panel/button.rs
 +++ b/wayvr/src/gui/panel/button.rs
 @@ -520,6 +520,14 @@
@@ -961,7 +1353,7 @@
 +++ b/wayvr/src/gui/panel/label.rs
 @@ -52,6 +52,13 @@
      };
-
+ 
      let callback: EventCallback<AppState, S> = match source {
 +        "shora_batteries" => Box::new(|common, data, app, _| {
 +            let (text, low) = app.shora_battery.text(6);
@@ -1004,11 +1396,11 @@
 +#[cfg(test)]
 +#[path = "../../../wivrn_tests.rs"]
 +mod wivrn_tests;
-
+ 
  use std::{
      path::PathBuf,
 @@ -184,6 +202,9 @@
-
+ 
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
 +        if std::env::var_os("WIVRN_MANAGED_WAYVR").is_some() {
@@ -1016,13 +1408,13 @@
 +        }
          let exe = std::env::current_exe()?;
          let mut args = vec!["--replace", "--show"];
-
+ 
 --- a/wayvr/src/overlays/dashboard.rs
 +++ b/wayvr/src/overlays/dashboard.rs
 @@ -85,6 +85,24 @@
              }
          }
-
+ 
 +        if let Ok(exec) = std::env::var("WIVRN_DASHBOARD_EXECUTABLE")
 +            && !exec.is_empty()
 +            && app.wvr_server.is_some()
@@ -1042,11 +1434,11 @@
 +        }
 +
          let tutorial = !app.session.config.tutorial_graduated;
-
+ 
          let frontend = frontend::Frontend::new(frontend::InitParams {
 @@ -391,6 +409,7 @@
  }
-
+ 
  impl DashInterface<AppState> for DashInterfaceLive {
 +    fn tracking_batteries(&mut self, app: &mut AppState) -> (String, bool) { app.shora_battery.text(16) }
      fn window_list(&mut self, app: &mut AppState) -> anyhow::Result<Vec<WvrWindow>> {
@@ -1057,7 +1449,7 @@
 @@ -299,7 +299,7 @@
                  .set_input_focus(app.wvr_server.as_mut(), InputFocus::PhysicalScreen);
          }
-
+ 
 -        if can_move()
 +        if (app.input_state.pointers[hit.pointer].hand_tracking || can_move())
              && (!app.session.config.focus_follows_mouse_mode
@@ -1065,7 +1457,7 @@
          {
 @@ -328,18 +328,20 @@
          }
-
+ 
          if pressed {
 -            set_next_move(app.session.config.click_freeze_time_ms as _);
 -        }
@@ -1094,14 +1486,14 @@
 +            app.hid_provider.inner.send_button(btn, pressed);
 +        }
      }
-
+ 
      fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {
 --- a/wayvr/src/overlays/wayvr.rs
 +++ b/wayvr/src/overlays/wayvr.rs
 @@ -1003,6 +1003,24 @@
              return;
          };
-
+ 
 +        let physical_button = match hit.mode {
 +            input::PointerMode::Right => 0x111,
 +            input::PointerMode::Middle => 0x112,
@@ -1124,7 +1516,7 @@
              if wvr_server.dnd_active() && !wvr_server.dnd_active_for_pointer(hit.pointer) {
                  return;
 @@ -1020,7 +1038,11 @@
-
+ 
          let target = ctx.hit_target(hit);
          let outside_pos = ctx.unclamped_client_pos_from_hit(hit);
 -        let click_freeze = app.session.config.click_freeze_time_ms;
@@ -1133,13 +1525,13 @@
 +        } else {
 +            app.session.config.click_freeze_time_ms
 +        };
-
+ 
          // if the press was consumed to dismiss a popup, consume the matching release too.
          if !pressed && self.popup_outside_button == Some(index) {
 @@ -1051,7 +1073,11 @@
                  self.popup_outside_button = Some(index);
              }
-
+ 
 -            let click_freeze = app.session.config.click_freeze_time_ms;
 +            let click_freeze = if app.input_state.pointers[hit.pointer].hand_tracking {
 +                0
@@ -1151,7 +1543,7 @@
                  outside_pos,
 @@ -1094,7 +1120,11 @@
              }
-
+ 
              Some(WvrHitTarget::Toplevel { pos }) => {
 -                let click_freeze = app.session.config.click_freeze_time_ms;
 +                let click_freeze = if app.input_state.pointers[hit.pointer].hand_tracking {
@@ -1160,7 +1552,7 @@
 +                    app.session.config.click_freeze_time_ms
 +                };
                  let wvr_server = app.wvr_server.as_mut().unwrap();
-
+ 
                  wvr_server.send_mouse_button(
 --- a/wayvr/src/shaders/mod.rs
 +++ b/wayvr/src/shaders/mod.rs
@@ -1193,7 +1585,7 @@
 +++ b/wayvr/src/state.rs
 @@ -55,6 +55,7 @@
      pub executor: wlx_common::async_executor::AsyncExecutor,
-
+ 
      pub input_state: InputState,
 +    pub shora_battery: crate::shora_battery::BatteryFeed,
      pub screens: SmallVec<[ScreenMeta; 8]>,
@@ -1207,6 +1599,27 @@
              screens: smallvec![],
              anchor: Affine3A::IDENTITY,
              anchor_grabbed: false,
+--- a/wayvr/src/subsystem/input.rs
++++ b/wayvr/src/subsystem/input.rs
+@@ -46,14 +46,14 @@
+         wvr_server: Option<&mut WvrServerState>,
+         value: InputFocus,
+     ) -> bool {
++        // An explicit click also rearms capture after Super+Z released it.
++        if let Some(wvr_server) = wvr_server {
++            wvr_server.set_input_focus(matches!(value, InputFocus::WayVR));
++        }
+         if self.input_focus == value {
+             false
+         } else {
+             self.input_focus = value;
+-
+-            if let Some(wvr_server) = wvr_server {
+-                wvr_server.set_input_focus(matches!(value, InputFocus::WayVR));
+-            }
+ 
+             true
+         }
 --- a/wayvr/src/windowing/window.rs
 +++ b/wayvr/src/windowing/window.rs
 @@ -270,7 +270,7 @@
@@ -1221,7 +1634,7 @@
 @@ -314,7 +314,22 @@
              return;
          };
-
+ 
 +        if self.name.as_ref() == crate::overlays::watch::WATCH_NAME {
 +            if let Positioning::FollowHand { hand, .. } = state.positioning {
 +                let pointer = &app.input_state.pointers[hand as usize];
@@ -1240,9 +1653,9 @@
 +            }
              return;
          }
-
+ 
 @@ -340,7 +355,9 @@
-
+ 
          let parent_transform = match state.positioning {
              Positioning::Floating | Positioning::FollowHead { .. } => app.input_state.hmd,
 -            Positioning::FollowHand { hand, .. } => app.input_state.pointers[hand as usize].pose,
@@ -1267,7 +1680,7 @@
 +++ b/wlx-common/src/dash_interface.rs
 @@ -74,6 +74,7 @@
  }
-
+ 
  pub trait DashInterface<T> {
 +	fn tracking_batteries(&mut self, _data: &mut T) -> (String, bool) { (String::new(), false) }
  	fn window_list(&mut self, data: &mut T) -> anyhow::Result<Vec<WvrWindow>>;

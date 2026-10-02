@@ -17,6 +17,7 @@ pub struct Pad {
 pub struct ThumbPad {
     since: Option<Duration>,
     local: Option<Affine3A>,
+    index_mounted: bool,
     axes: Vec2,
     armed: bool,
     radius: f32,
@@ -67,22 +68,6 @@ impl ThumbPad {
             self.reset();
             return None;
         }
-        // Build the mount from the four curled fingers, excluding the thumb
-        // and the runtime's wrist pose (which can shift as the thumb moves).
-        let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
-        let curled = (p(8) + p(13) + p(18) + p(23)) * 0.25;
-        let across = (p(7) - p(22)) / width;
-        let along = knuckles - curled;
-        let along = along - across * along.dot(across);
-        if along.length_squared() < 0.005_f32.powi(2) {
-            self.reset();
-            return None;
-        }
-        let along = along.normalize();
-        let fist = Affine3A::from_mat3_translation(
-            Mat3::from_cols(across, along, across.cross(along)),
-            knuckles,
-        );
         let extension = [7, 12, 17, 22].map(|b| {
             let length = (b..b + 3).map(|i| p(i).distance(p(i + 1))).sum::<f32>();
             if length > 0.015 {
@@ -95,6 +80,42 @@ impl ThumbPad {
             self.reset();
             return None;
         }
+        let index_threshold = if self.local.is_some() && self.index_mounted {
+            0.72
+        } else {
+            0.82
+        };
+        let gun_grip = extension[0] > index_threshold
+            && extension[1..].iter().filter(|v| **v < 0.65).count() >= 2;
+        if self.local.is_some() && gun_grip != self.index_mounted {
+            // A different support pose needs a fresh centre and mount.
+            self.reset();
+        }
+        let mount_index = if self.local.is_some() {
+            self.index_mounted
+        } else {
+            gun_grip
+        };
+        // The index mode follows the proximal index segment. Thumb joints
+        // never participate in its frame. The legacy fist pose remains usable.
+        let across = (p(7) - p(22)) / width;
+        let (origin, along) = if mount_index {
+            ((p(7) + p(8)) * 0.5, p(8) - p(7))
+        } else {
+            let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
+            let curled = (p(8) + p(13) + p(18) + p(23)) * 0.25;
+            (knuckles, knuckles - curled)
+        };
+        let along = along - across * along.dot(across);
+        if along.length_squared() < 0.005_f32.powi(2) {
+            self.reset();
+            return None;
+        }
+        let along = along.normalize();
+        let mount = Affine3A::from_mat3_translation(
+            Mat3::from_cols(across, along, across.cross(along)),
+            origin,
+        );
         if self
             .last
             .is_some_and(|t| now.saturating_sub(t) > Duration::from_millis(150))
@@ -116,7 +137,17 @@ impl ThumbPad {
                     .normalize()
                     .dot(head.transform_vector3(Vec3::Y).normalize())
                     > 0.55;
-            if !thumbs_up {
+            let elevation = if thumb.length_squared() > 0.0001 {
+                thumb
+                    .normalize()
+                    .dot(head.transform_vector3(Vec3::Y).normalize())
+            } else {
+                1.0
+            };
+            // Fully upright is the end of the thumb's reach, not a neutral
+            // joystick pose. Wait for it to lower while the index is extended.
+            let relaxed_gun = gun_grip && (0.20..=0.70).contains(&elevation);
+            if !(if mount_index { relaxed_gun } else { thumbs_up }) {
                 self.since = None;
                 return None;
             }
@@ -128,16 +159,21 @@ impl ThumbPad {
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
             // Centre below the thumb at activation, then freeze the complete
-            // frame relative to the fist. Subsequent thumb travel cannot move it.
+            // frame relative to the support finger/fist. Thumb travel cannot move it.
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
             let frame =
                 Affine3A::from_rotation_translation(rotation, p(5) - (rotation * Vec3::Z) * 0.012);
-            self.local = Some(fist.inverse() * frame);
-            self.radius = (width * 0.35).clamp(0.025, 0.04);
+            self.local = Some(mount.inverse() * frame);
+            self.index_mounted = mount_index;
+            self.radius = if mount_index {
+                (width * 0.24).clamp(0.014, 0.020)
+            } else {
+                (width * 0.35).clamp(0.025, 0.04)
+            };
             self.axes = Vec2::ZERO;
         }
-        let frame = fist * self.local.unwrap();
+        let frame = mount * self.local.unwrap();
         let tip = frame.inverse().transform_point3(p(5));
         let raw = Vec2::new(tip.x, tip.y) / self.radius;
         let length = raw.length();
@@ -157,6 +193,83 @@ impl ThumbPad {
             cursor: raw.clamp_length_max(1.0),
             armed: self.armed,
         })
+    }
+}
+
+/// Opt-in, two-minute local capture for thumb-pad ergonomics. Coordinates are
+/// relative to the wrist in head axes, not absolute room positions.
+pub fn diagnostic_sample(
+    side: usize,
+    now: Duration,
+    joints: Option<&xr::HandJointLocations>,
+    head: Affine3A,
+    pad: Option<Pad>,
+) {
+    use std::{
+        io::Write,
+        os::unix::fs::OpenOptionsExt,
+        sync::{Mutex, OnceLock},
+    };
+    static LAST: OnceLock<Mutex<[Duration; 2]>> = OnceLock::new();
+    let mut last = LAST
+        .get_or_init(|| Mutex::new([Duration::ZERO; 2]))
+        .lock()
+        .unwrap();
+    if side > 1 || now.saturating_sub(last[side]) < Duration::from_millis(100) {
+        return;
+    }
+    last[side] = now;
+    let Some(runtime) = std::env::var_os("XDG_RUNTIME_DIR") else {
+        return;
+    };
+    let root = std::path::PathBuf::from(runtime).join("wivrn-pro");
+    let enabled = std::fs::metadata(root.join("thumbpad-diagnostics.enabled"))
+        .and_then(|m| m.modified())
+        .ok()
+        .and_then(|t| t.elapsed().ok())
+        .is_some_and(|age| age < Duration::from_secs(120));
+    if !enabled {
+        return;
+    }
+    let Some(j) = joints else {
+        return;
+    };
+    if !head.is_finite() {
+        return;
+    }
+    let point = |i: usize| {
+        Vec3::new(
+            j[i].pose.position.x,
+            j[i].pose.position.y,
+            j[i].pose.position.z,
+        )
+    };
+    let relative: Vec<_> = (0..26)
+        .map(|i| {
+            head.inverse()
+                .transform_vector3(point(i) - point(1))
+                .to_array()
+        })
+        .collect();
+    let record = serde_json::json!({
+        "time":now.as_secs_f64(), "side":side, "relative_joints":relative,
+        "valid":j.iter().all(|v| v.location_flags.contains(xr::SpaceLocationFlags::POSITION_VALID)),
+        "pad":pad.map(|p| serde_json::json!({"thumb":p.frame.inverse().transform_point3(point(5)).to_array(),
+            "axes":p.axes.to_array(), "radius":p.radius,
+            "center":head.inverse().transform_vector3(Vec3::from(p.frame.translation)-point(1)).to_array()})),
+    });
+    let path = root.join("thumbpad-diagnostics.jsonl");
+    if std::fs::metadata(&path).is_ok_and(|m| m.len() >= 8 * 1024 * 1024) {
+        return;
+    }
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW)
+        .open(path)
+    {
+        let _ = writeln!(file, "{record}");
     }
 }
 
@@ -508,6 +621,118 @@ mod tests {
                 < 0.0001
         );
         assert!(carried.axes.length() < 0.0001);
+    }
+    #[test]
+    fn index_mount_accepts_relaxed_thumb_and_excludes_thumb_and_wrist_motion() {
+        let mut j = joints();
+        for k in 0..4 {
+            j[7 + k].pose.position = xr::Vector3f {
+                x: 0.04,
+                y: 0.0,
+                z: -(k as f32) * 0.025,
+            };
+        }
+        let mut p = ThumbPad::default();
+        assert!(
+            p.update(Duration::ZERO, Some(&j), Affine3A::IDENTITY)
+                .is_none()
+        );
+        assert!(
+            p.update(Duration::from_millis(180), Some(&j), Affine3A::IDENTITY)
+                .is_none()
+        );
+        // Lower the thumb, preserving an extended index and three curled fingers.
+        for k in 0..4 {
+            j[2 + k].pose.position = xr::Vector3f {
+                x: 0.05,
+                y: k as f32 * 0.01,
+                z: -(k as f32) * 0.018,
+            };
+        }
+        p.reset();
+        let pad = activate(&mut p, &j);
+        assert!(p.index_mounted && pad.armed);
+        assert!(pad.axes.length() < 0.001 && pad.radius <= 0.02);
+        j[1].pose.position.y += 0.05;
+        let target = pad
+            .frame
+            .transform_point3(Vec3::new(0.0, pad.radius, 0.012));
+        j[5].pose.position = xr::Vector3f {
+            x: target.x,
+            y: target.y,
+            z: target.z,
+        };
+        let moved = p
+            .update(Duration::from_millis(200), Some(&j), Affine3A::IDENTITY)
+            .unwrap();
+        assert!((moved.frame.translation - pad.frame.translation).length() < 0.0001);
+        assert!(moved.axes.y > 0.7);
+        // Slight index flex should retain the pad without another activation.
+        j[9].pose.position = xr::Vector3f {
+            x: 0.04,
+            y: -0.024,
+            z: -0.023,
+        };
+        j[10].pose.position = xr::Vector3f {
+            x: 0.04,
+            y: -0.035,
+            z: -0.04,
+        };
+        assert!(
+            p.update(Duration::from_millis(230), Some(&j), Affine3A::IDENTITY)
+                .is_some()
+        );
+        assert!(p.index_mounted);
+    }
+    #[test]
+    fn replay_opt_in_hand_diagnostics() {
+        let Ok(path) = std::env::var("WIVRN_THUMBPAD_TRACE") else {
+            return;
+        };
+        let text = std::fs::read_to_string(path).unwrap();
+        let mut pads: [ThumbPad; 2] = Default::default();
+        let mut counts = [0; 2];
+        let mut ranges = [[Vec2::ONE, Vec2::NEG_ONE]; 2];
+        for line in text.lines() {
+            let row: serde_json::Value = serde_json::from_str(line).unwrap();
+            let side = row["side"].as_u64().unwrap() as usize;
+            if row["valid"] != true {
+                continue;
+            }
+            let mut j = joints();
+            for (i, xyz) in row["relative_joints"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .enumerate()
+            {
+                j[i].pose.position = xr::Vector3f {
+                    x: xyz[0].as_f64().unwrap() as f32,
+                    y: xyz[1].as_f64().unwrap() as f32,
+                    z: xyz[2].as_f64().unwrap() as f32,
+                };
+            }
+            if let Some(pad) = pads[side].update(
+                Duration::from_secs_f64(row["time"].as_f64().unwrap()),
+                Some(&j),
+                Affine3A::IDENTITY,
+            ) {
+                if pads[side].index_mounted {
+                    counts[side] += 1;
+                    ranges[side][0] = ranges[side][0].min(pad.axes);
+                    ranges[side][1] = ranges[side][1].max(pad.axes);
+                }
+            }
+        }
+        eprintln!("Index-pad trace replay samples {counts:?}, axis ranges {ranges:?}");
+        assert!(
+            counts.iter().all(|n| *n > 20),
+            "trace must include both gun poses"
+        );
+        assert!(
+            ranges.iter().all(|r| r[0].y < -0.8 && r[1].y > 0.8),
+            "both hands must reach up and down in the recorded sweep"
+        );
     }
     #[test]
     fn loss_invalid_pose_and_stream_gap_clear_pad() {
