@@ -577,4 +577,7 @@ release, focus loss, full release/rearm, physical-controller priority and stale
 input. Existing thumbstick click delivery and opacity cues remain unchanged.
 
 Server build passed. Installed and restarted the unified service, reconnected
-the Quest client and verified SessionRunning=true. A live gesture check is pending.
+the Quest client and verified SessionRunning=true. The live gesture subsequently
+logged "Opening WiVRn menu from both emulated thumbstick clicks"; ClientTab
+changed to applications and the client reported XR_SESSION_STATE_VISIBLE,
+confirming the menu command reached and opened the headset UI.
