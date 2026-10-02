@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "wayvr_worker.h"
 #include <algorithm>
+#include <gio/gio.h>
 #include <cerrno>
 #include <filesystem>
 #include <csignal>
@@ -31,6 +32,39 @@ void wayvr_worker::spawn()
 		argv.push_back(arg.data());
 	argv.push_back(nullptr);
 	auto env = g_get_environ();
+	// A lingering server can start before desktop login. Read the current
+	// user-manager display environment at each worker launch, not just boot.
+	if (auto bus = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, nullptr))
+	{
+		auto reply = g_dbus_connection_call_sync(bus, "org.freedesktop.systemd1",
+		        "/org/freedesktop/systemd1", "org.freedesktop.DBus.Properties", "Get",
+		        g_variant_new("(ss)", "org.freedesktop.systemd1.Manager", "Environment"),
+		        G_VARIANT_TYPE("(v)"), G_DBUS_CALL_FLAGS_NONE, 1000, nullptr, nullptr);
+		if (reply)
+		{
+			GVariant * value = nullptr;
+			g_variant_get(reply, "(v)", &value);
+			if (g_variant_is_of_type(value, G_VARIANT_TYPE("as")))
+			{
+				GVariantIter iter;
+				g_variant_iter_init(&iter, value);
+				const char * entry;
+				while (g_variant_iter_next(&iter, "&s", &entry))
+				{
+					std::string item(entry);
+					auto equal = item.find('=');
+					if (equal == std::string::npos) continue;
+					auto name = item.substr(0, equal);
+					if (name == "DISPLAY" || name == "WAYLAND_DISPLAY" || name == "XAUTHORITY"
+					    || name == "XDG_CURRENT_DESKTOP" || name == "XDG_SESSION_TYPE")
+						env = g_environ_setenv(env, name.c_str(), item.c_str() + equal + 1, TRUE);
+				}
+			}
+			g_variant_unref(value);
+			g_variant_unref(reply);
+		}
+		g_object_unref(bus);
+	}
 	env = g_environ_setenv(env, "XR_RUNTIME_JSON", manifest.c_str(), TRUE);
 	env = g_environ_setenv(env, "WIVRN_MANAGED_WAYVR", "1", TRUE);
 	env = g_environ_setenv(env, "WIVRN_DASHBOARD_EXECUTABLE", dashboard.c_str(), TRUE);

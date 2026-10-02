@@ -172,3 +172,31 @@ battery reader reconnects to all six trackers. The user's saved 100 Mbps server
 configuration remains unchanged; the Quest's existing 50 Mbps selection negotiates
 24.6 Mbps per eye plus 0.6 Mbps for the third stream. Sustained latency/quality benchmarking was not
 part of this launch test.
+
+## Permanent installation and boot startup
+
+Removed the seven superseded RPMs (`wivrn`, `wivrn-dashboard`, `slimevr`, and the
+four `slimevr-server-rs` backend/Qt/WayVR/WiVRn packages), their installed service
+units, the old WayVR AppImage and launcher/icons, and the standalone spatial
+service. No dependency autoremove was used. Removed four legacy Quest packages
+with `pm uninstall -k`, preserving application data; only
+`org.meumeu.wivrn.spatial` remains installed. Source checkouts and user profiles
+were retained. Private backups of profiles, service definitions and launcher
+metadata are under ignored `build/install-migration-20261002-092203`.
+
+Installed the current fork into `~/.local/opt/wivrn-pro`, registered its four CLI
+launchers, desktop entry and icon, and enabled `wivrn-pro.service` plus
+`wivrn-pro-dashboard.service`. User lingering is enabled. The core is independent
+of the graphical session and starts at boot; the attach-only desktop dashboard
+starts at graphical login. WayVR and its virtual dashboard follow the headset's
+VR session. Desktop autologin and Quest boot behavior were not changed.
+
+The lingering server now refreshes only the display/session variables from the
+systemd user manager before spawning WayVR. A live boot-environment simulation
+explicitly removed display variables from the server: `/proc` inspection showed
+an empty display environment in the core and the correct Wayland/X11 environment
+in WayVR, which reached FOCUSED. The temporary test override was then removed.
+The supervisor tests, unit verification, configured desktop launcher validation,
+and host rebuild passed. All six real trackers are active, QSV HEVC 10-bit remains
+selected, both permanent units are enabled/active with zero restarts, and legacy
+RPMs/services are absent. No actual reboot was performed.

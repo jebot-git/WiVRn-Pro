@@ -1,7 +1,6 @@
 [Unit]
 Description=WiVRn Pro (Quest Pro, Intel Arc, spatial capture, Shora tracking and WayVR)
-After=graphical-session.target
-PartOf=graphical-session.target
+# Enable user lingering to run at boot, before graphical login.
 Conflicts=spatial-bridge.service shora-wayvr.service wayvr.service wlx-overlay-s.service wivrn.service wivrn-pro-shora.service shora-server.service shora-proxy.service
 
 [Service]

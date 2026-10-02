@@ -1,0 +1,14 @@
+[Unit]
+Description=WiVRn Pro desktop dashboard
+After=graphical-session.target wivrn-pro.service
+PartOf=graphical-session.target
+Wants=wivrn-pro.service
+
+[Service]
+Type=simple
+ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/wivrn-pro-dashboard
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

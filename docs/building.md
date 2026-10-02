@@ -77,11 +77,25 @@ After reviewing the build, installation and activation are explicit operations:
 
 ```sh
 cmake --install build/server
-mkdir -p "$HOME/.config/systemd/user"
-ln -sfn "$HOME/.local/opt/wivrn-pro/lib/systemd/user/wivrn-pro.service" \
-  "$HOME/.config/systemd/user/wivrn-pro.service"
+mkdir -p "$HOME/.config/systemd/user" "$HOME/.local/bin" \
+  "$HOME/.local/share/applications" "$HOME/.local/share/icons/hicolor/scalable/apps"
+for unit in wivrn-pro wivrn-pro-dashboard; do
+  ln -sfn "$HOME/.local/opt/wivrn-pro/lib/systemd/user/$unit.service" \
+    "$HOME/.config/systemd/user/$unit.service"
+done
+for app in wivrn-pro-server wivrn-pro-dashboard wivrn-pro-spatial wivrn-pro-wayvrctl; do
+  ln -sfn "$HOME/.local/opt/wivrn-pro/bin/$app" "$HOME/.local/bin/$app"
+done
+ln -sfn "$HOME/.local/opt/wivrn-pro/share/applications/wivrn-pro.desktop" \
+  "$HOME/.local/share/applications/wivrn-pro.desktop"
+ln -sfn "$HOME/.local/opt/wivrn-pro/share/icons/hicolor/scalable/apps/wivrn-pro.svg" \
+  "$HOME/.local/share/icons/hicolor/scalable/apps/wivrn-pro.svg"
 systemctl --user daemon-reload
+loginctl enable-linger "$USER"
 systemctl --user enable --now wivrn-pro.service
+systemctl --user enable wivrn-pro-dashboard.service
+# Start this separately only when the graphical session is already running:
+systemctl --user start wivrn-pro-dashboard.service
 ```
 
 Adjust paths if configured with another prefix. The service conflicts with
@@ -89,8 +103,16 @@ Adjust paths if configured with another prefix. The service conflicts with
 `shora-proxy.service`, `spatial-bridge.service`, `shora-wayvr.service`,
 `wayvr.service` and `wlx-overlay-s.service` to prevent competing owners. Starting it does not
 disable those units permanently. Stop their boot activation separately when
-making this fork the default. Stopping WiVRn also stops its workers and their child processes. The service
-follows the graphical session; no separate WayVR service needs enabling.
+making this fork the default. Stopping WiVRn also stops its workers and their child
+processes. The core service survives logout and starts at boot when user lingering
+is enabled.
+The separate attach-only desktop dashboard starts with `graphical-session.target`
+and stops at logout. No separate Shora, spatial or WayVR service is needed.
+WayVR and its in-headset dashboard start when the Quest creates a VR session.
+The supervisor refreshes the desktop display environment from the user manager
+at each WayVR launch, so a server started before login can capture the desktop
+after login. A graphical session is required for desktop capture; boot activation
+does not enable automatic desktop login or turn on the Quest.
 The desktop session must export its display/session environment to the user
 service manager (normally done by the desktop). Desktop capture also requires
 its working PipeWire/portal services.
