@@ -66,6 +66,8 @@
 		<property name="SystemName"            type="s" access="read"/>
 
 		<property name="Pin"                   type="s" access="read"/>
+		<!-- JSON mirror for Qt Python bindings that cannot decode a(ssx). -->
+		<property name="KnownKeysJson" type="s" access="read"/>
 		<property name="KnownKeys"             type="a(ssx)" access="read">
 			<annotation name="org.qtproject.QtDBus.QtTypeName" value="QList&lt;std::tuple&lt;QString,QString,uint64_t&gt;&gt;"/>
 			<!-- first: name, second: public key, third: last connection timestamp (seconds since epoch, or 0) -->

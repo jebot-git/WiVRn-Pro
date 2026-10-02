@@ -24,3 +24,8 @@ cat build/native-tests/wire-host.txt
 build/native-tests/anchors-test
 build/native-tests/capture-test
 build/native-tests/bridge-test
+
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/config_migration_test.cpp -o build/native-tests/config-migration-test
+build/native-tests/config-migration-test
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver -Icommon fork/tests/tracking_supervisor_test.cpp server/tracking_worker.cpp $(pkg-config --cflags --libs glib-2.0) -o build/native-tests/tracking-supervisor-test
+build/native-tests/tracking-supervisor-test

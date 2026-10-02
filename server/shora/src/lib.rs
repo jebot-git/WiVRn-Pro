@@ -111,3 +111,18 @@ mod lifecycle_tests {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+/// Internal worker entry point. argv strings remain valid for this call.
+#[no_mangle]
+pub unsafe extern "C" fn wivrn_shora_worker(argc: i32, argv: *const *const c_char) -> i32 {
+    if argc <= 0 || argv.is_null() { return 1; }
+    std::panic::catch_unwind(|| {
+        if std::slice::from_raw_parts(argv, argc as usize).iter().any(|p| p.is_null()) { return 1; }
+        let args = std::slice::from_raw_parts(argv, argc as usize).iter()
+            .map(|p| CStr::from_ptr(*p).to_string_lossy().into_owned()).collect();
+        match wivrn_tracking::run_worker(args) {
+            Ok(()) => 0,
+            Err(e) => { eprintln!("WiVRn tracking worker: {e:#}"); 1 }
+        }
+    }).unwrap_or(1)
+}

@@ -35,10 +35,11 @@ require('"questpro"' in read('build.gradle'), 'Quest Pro manifest target missing
 for preset in json.loads(read('CMakePresets.json'))['configurePresets']:
     for key, value in preset.get('cacheVariables', {}).items():
         require(not (key in ('WIVRN_USE_NVENC','WIVRN_USE_X264') and value == 'ON'), 'Forbidden preset: ' + key)
-for name in ('wivrn-pro', 'wivrn-pro-shora'):
-    text = read('server/dist/' + name + '.service.in')
-    require('RuntimeDirectoryPreserve=yes' in text, 'Shared runtime directory must survive independent restarts')
-    require('Requires=' not in text and 'BindsTo=' not in text and 'PartOf=' not in text, 'Backend restart must not stop WiVRn')
+text = read('server/dist/wivrn-pro.service.in')
+require('RuntimeDirectoryPreserve=yes' in text, 'Private socket directory must survive restarts')
+require('tracking_worker' in read('server/main.cpp'), 'Integrated tracking worker owner removed')
+require('wivrn-tracking' in read('server/shora/Cargo.toml'), 'Native tracking backend removed')
+require(not (root / 'server/dist/wivrn-pro-shora.service.in').exists(), 'Standalone Shora service returned')
 if errors:
     sys.exit('\n'.join(errors))
 print('Fork policy checks passed')

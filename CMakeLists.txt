@@ -172,25 +172,8 @@ if (WIVRN_BUILD_DASHBOARD OR WIVRN_BUILD_SERVER)
     find_package(PNG REQUIRED)
 endif()
 
-if (WIVRN_BUILD_DASHBOARD)
-    find_package(Qt6 REQUIRED COMPONENTS Core Quick Test Gui QuickControls2 Widgets Network)
 
-    if(Qt6_VERSION VERSION_GREATER_EQUAL 6.10.0)
-        # QtCoro needs this for Qt 6.10 and (currently) doesn't do this by itself
-        find_package(Qt6 REQUIRED COMPONENTS QmlPrivate)
-    endif()
-
-    find_package(ECM 5.115 REQUIRED NO_MODULE)
-    list(APPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")
-
-    find_package(KF6 REQUIRED COMPONENTS Kirigami I18n CoreAddons QQC2DesktopStyle IconThemes)
-    find_package(KF6Kirigami)
-    find_package(nlohmann_json REQUIRED)
-    find_package(QCoro6 REQUIRED COMPONENTS Core Network Qml)
-    qcoro_enable_coroutines()
-endif()
-
-if (WIVRN_BUILD_CLIENT OR WIVRN_BUILD_DASHBOARD)
+if (WIVRN_BUILD_CLIENT)
     find_package(Gettext REQUIRED)
 endif()
 
@@ -335,7 +318,7 @@ endif()
 
 add_subdirectory(tools)
 
-foreach(TARGET_NAME wivrn wivrn-server wivrn-dashboard wivrn-common wivrn-dissector wivrnctl)
+foreach(TARGET_NAME wivrn wivrn-server wivrn-common wivrn-dissector wivrnctl)
     if(TARGET ${TARGET_NAME})
         target_compile_options(${TARGET_NAME} PRIVATE
             -fdiagnostics-color -Wall -Wextra -pedantic

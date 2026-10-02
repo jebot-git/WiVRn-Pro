@@ -122,6 +122,7 @@ if (WIVRN_BUILD_SERVER)
 			driver/clock_offset.cpp
 			driver/spatial_bridge.cpp
 			driver/shora_bridge.cpp
+			tracking_worker.cpp
 			driver/configuration.cpp
 			driver/hand_joints_list.cpp
 			driver/pose_list.cpp
@@ -151,7 +152,7 @@ if (WIVRN_BUILD_SERVER)
 	target_include_directories(wivrn-server SYSTEM PRIVATE ${monado_SOURCE_DIR}/src/xrt/compositor/)
 	target_include_directories(wivrn-server PRIVATE .)
 
-	target_link_libraries(wivrn-server PRIVATE CLI11::CLI11 xrt-external-renderdoc wivrn-shora ${CMAKE_DL_LIBS} m)
+	target_link_libraries(wivrn-server PRIVATE CLI11::CLI11 xrt-external-renderdoc wivrn-shora ${CMAKE_DL_LIBS} m udev openxr_loader)
 
 	if (WIVRN_FEATURE_STEAMVR_LIGHTHOUSE)
 		target_include_directories(wivrn-server SYSTEM PRIVATE ${monado_SOURCE_DIR}/src/xrt/drivers/steamvr_lh/)
@@ -270,23 +271,12 @@ if (WIVRN_BUILD_SERVER)
 	target_compile_definitions(wivrn-server PRIVATE JSON_DIAGNOSTICS=1)
 
 	set_target_properties(wivrn-server PROPERTIES OUTPUT_NAME wivrn-pro-server)
-    set(WIVRN_SHORA_BACKEND /usr/bin/slimevr-server-rs CACHE FILEPATH "Shora tracking backend executable")
-    set(WIVRN_SHORA_INIT /usr/libexec/slimevr-server-rs/init-profile CACHE FILEPATH "Shora profile initializer")
-    set(WIVRN_PRO_RUNTIME_MANIFEST openxr_wivrn_pro.json)
-    if(WIVRN_OPENXR_MANIFEST_ABI)
-        if(CMAKE_C_COMPILER_ARCHITECTURE_ID MATCHES "i.86")
-            set(WIVRN_PRO_RUNTIME_MANIFEST openxr_wivrn_pro.i686.json)
-        else()
-            set(WIVRN_PRO_RUNTIME_MANIFEST openxr_wivrn_pro.${CMAKE_C_COMPILER_ARCHITECTURE_ID}.json)
-        endif()
-    endif()
-    foreach(unit wivrn-pro wivrn-pro-shora)
-        configure_file(dist/${unit}.service.in ${unit}.service @ONLY)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${unit}.service DESTINATION lib/systemd/user/)
-    endforeach()
-    install(PROGRAMS ../fork/wait-shora.py DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/wivrn-pro)
+    configure_file(dist/wivrn-pro.service.in wivrn-pro.service @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/wivrn-pro.service DESTINATION lib/systemd/user/)
+    install(DIRECTORY shora/backend/licenses/ DESTINATION share/licenses/wivrn-pro/shora COMPONENT ShoraNotices)
+    install(FILES shora/vendor/solarxr-protocol/LICENSE-APACHE shora/vendor/solarxr-protocol/LICENSE-MIT DESTINATION share/licenses/wivrn-pro/shora/solarxr COMPONENT ShoraNotices)
     install(PROGRAMS ../fork/subscribe.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME wivrn-pro-spatial)
-    install(FILES shora/LICENSE-APACHE shora/LICENSE-MIT DESTINATION share/licenses/wivrn-pro/shora)
+    install(FILES shora/LICENSE-APACHE shora/LICENSE-MIT shora/backend/THIRD_PARTY.md DESTINATION share/licenses/wivrn-pro/shora)
 
 	install(FILES dist/firewalld-wivrn.xml
 		RENAME wivrn.xml
@@ -338,4 +328,5 @@ endif()
 
 # Input validation must retain IEEE NaN/Inf checks despite the renderer fast-math default.
 set_source_files_properties(driver/spatial_bridge.cpp
-			driver/shora_bridge.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math")
+			driver/shora_bridge.cpp
+			tracking_worker.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math")

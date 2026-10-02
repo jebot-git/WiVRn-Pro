@@ -1,0 +1,168 @@
+//! SteamVR feeder bridge — the `SlimeVRInput` Unix socket where WiVRn sends the
+//! HMD (and controller) 6-DoF poses. Framing matches the SolarXR socket: a
+//! 4-byte little-endian length prefix (including the 4 prefix bytes) followed by
+//! a protobuf `messages.ProtobufMessage`.
+
+use std::io;
+use std::path::Path;
+use std::sync::{Arc, RwLock};
+use std::time::Instant;
+
+use prost::Message;
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite};
+use tokio::net::{UnixListener, UnixStream};
+
+mod proto {
+    include!(concat!(env!("OUT_DIR"), "/messages.rs"));
+}
+use proto::{protobuf_message, ProtobufMessage};
+
+/// The HMD pose reported by WiVRn: `[x, y, z, qx, qy, qz, qw]`.
+pub type HmdPose = [f32; 7];
+
+#[derive(Clone, Copy)]
+pub struct FreshHmdPose { pub pose: HmdPose, pub at: Instant }
+pub type FreshHmdHandle = Arc<RwLock<Option<FreshHmdPose>>>;
+
+struct FreshPoseGuard { shared: FreshHmdHandle, last: Option<Instant> }
+impl Drop for FreshPoseGuard {
+    fn drop(&mut self) {
+        let mut current = self.shared.write().unwrap();
+        if current.as_ref().map(|p| p.at) == self.last { *current = None; }
+    }
+}
+
+/// SlimeVR tracker role for the HMD (see the `TrackerRole` enum).
+const ROLE_HMD: i32 = 19;
+
+/// Run the feeder bridge forever, recording the latest HMD pose in `hmd`.
+pub async fn run(path: String, hmd: Arc<RwLock<Option<HmdPose>>>, fresh: FreshHmdHandle) -> anyhow::Result<()> {
+    let p = Path::new(&path);
+    if p.exists() {
+        if UnixStream::connect(p).await.is_ok() {
+            anyhow::bail!("feeder socket {path:?} is already in use");
+        }
+        tracing::warn!("removing stale feeder socket {path:?}");
+        std::fs::remove_file(p)?;
+    }
+    let listener = UnixListener::bind(p)?;
+    tracing::info!("SteamVR feeder socket listening on {path}");
+
+    loop {
+        let (stream, _) = listener.accept().await?;
+        tracing::info!("feeder client connected");
+        let hmd = hmd.clone();
+        let fresh = fresh.clone();
+        tokio::spawn(async move {
+            if let Err(e) = handle_connection(stream, hmd, fresh).await {
+                tracing::warn!("feeder connection ended: {e:#}");
+            }
+        });
+    }
+}
+
+/// Serve one WiVRn feeder connection: learn the HMD tracker id, record its pose.
+async fn handle_connection(
+    mut stream: UnixStream,
+    hmd: Arc<RwLock<Option<HmdPose>>>,
+    fresh: FreshHmdHandle,
+) -> anyhow::Result<()> {
+    let mut hmd_id: Option<i32> = None;
+    let mut guard = FreshPoseGuard { shared: fresh, last: None };
+    loop {
+        let Some(body) = read_message(&mut stream).await? else {
+            break;
+        };
+        let Ok(msg) = ProtobufMessage::decode(body.as_slice()) else {
+            continue;
+        };
+        match msg.message {
+            Some(protobuf_message::Message::TrackerAdded(ta)) if ta.tracker_role == ROLE_HMD => {
+                hmd_id = Some(ta.tracker_id);
+                tracing::info!(id = ta.tracker_id, "feeder HMD tracker added");
+            }
+            Some(protobuf_message::Message::Position(pos)) if Some(pos.tracker_id) == hmd_id => {
+                let pose: HmdPose = [pos.x, pos.y, pos.z, pos.qx, pos.qy, pos.qz, pos.qw];
+                if !pose.iter().all(|x| x.is_finite()) || pose[3..].iter().map(|x| x*x).sum::<f32>() < 1e-12 { continue; }
+                *hmd.write().unwrap() = Some(pose);
+                let at = Instant::now();
+                *guard.shared.write().unwrap() = Some(FreshHmdPose { pose, at });
+                guard.last = Some(at);
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+/// Read one length-prefixed message. Returns `None` on clean EOF.
+async fn read_message<R: AsyncRead + Unpin>(r: &mut R) -> io::Result<Option<Vec<u8>>> {
+    let mut len_buf = [0u8; 4];
+    match r.read_exact(&mut len_buf).await {
+        Ok(_) => {}
+        Err(e) if e.kind() == io::ErrorKind::UnexpectedEof => return Ok(None),
+        Err(e) => return Err(e),
+    }
+    let len = u32::from_le_bytes(len_buf) as usize;
+    if !(4..=1024 * 1024).contains(&len) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("bad feeder message length {len}"),
+        ));
+    }
+    let mut body = vec![0u8; len - 4];
+    r.read_exact(&mut body).await?;
+    Ok(Some(body))
+}
+
+// Silence the unused-import lint for `AsyncWrite` (imported for symmetry with
+// future writes; only reads are needed today).
+#[allow(unused_imports)]
+use AsyncWrite as _;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proto::Position;
+
+    #[test]
+    fn disconnect_only_invalidates_the_current_hmd_writer() {
+        let first = Instant::now();
+        let second = first + std::time::Duration::from_millis(1);
+        let shared = Arc::new(RwLock::new(Some(FreshHmdPose { pose: [0.0; 7], at: second })));
+        drop(FreshPoseGuard { shared: shared.clone(), last: Some(first) });
+        assert_eq!(shared.read().unwrap().as_ref().unwrap().at, second);
+        drop(FreshPoseGuard { shared: shared.clone(), last: Some(second) });
+        assert!(shared.read().unwrap().is_none());
+    }
+
+    #[test]
+    fn position_round_trips() {
+        let msg = ProtobufMessage {
+            message: Some(protobuf_message::Message::Position(Position {
+                tracker_id: 0,
+                x: 1.0,
+                y: 2.0,
+                z: 3.0,
+                qx: 0.0,
+                qy: 0.0,
+                qz: 0.0,
+                qw: 1.0,
+                data_source: 0,
+                vx: 0.0,
+                vy: 0.0,
+                vz: 0.0,
+            })),
+        };
+        let mut buf = Vec::new();
+        msg.encode(&mut buf).unwrap();
+        let decoded = ProtobufMessage::decode(buf.as_slice()).unwrap();
+        match decoded.message {
+            Some(protobuf_message::Message::Position(p)) => {
+                assert_eq!(p.tracker_id, 0);
+                assert_eq!((p.x, p.y, p.z), (1.0, 2.0, 3.0));
+            }
+            other => panic!("unexpected variant: {other:?}"),
+        }
+    }
+}

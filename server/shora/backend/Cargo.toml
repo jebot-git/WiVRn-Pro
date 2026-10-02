@@ -1,0 +1,66 @@
+[package]
+name = "wivrn-tracking"
+version = "0.1.1"
+edition = "2021"
+autobins = false
+description = "A from-scratch Rust rewrite of the SlimeVR full-body tracking server"
+license = "MIT OR Apache-2.0"
+
+
+[dependencies]
+# ── SlimeVR-Rust boilerplate (the whole point of this project) ────────────────
+# firmware_protocol: the "Hey OVR =D 5" tracker UDP protocol (serverbound side).
+firmware_protocol = { git = "https://github.com/SlimeVR/SlimeVR-Rust", rev = "6d25f871f9fb4b2f52e2913ce35a2c771385a6a9" }
+# skeletal_model: the human skeleton graph + FK solver. Vendored so we can finish
+# the upstream `todo!()` solver in-place.
+skeletal_model = { path = "vendor/skeletal_model" }
+# vqf: the VQF IMU orientation filter (for server-side fusion / drift correction).
+vqf = { git = "https://github.com/SlimeVR/SlimeVR-Rust", rev = "6d25f871f9fb4b2f52e2913ce35a2c771385a6a9" }
+
+# ── SolarXR output (WiVRn-facing) ─────────────────────────────────────────────
+# Vendored SolarXR protocol FlatBuffers bindings (same version shora uses with WiVRn).
+solarxr_protocol = { path = "../vendor/solarxr-protocol" }
+flatbuffers = "22.10.26"
+
+# ── async + networking ────────────────────────────────────────────────────────
+tokio = { version = "1", features = ["full"] }
+
+# ── CLI + config ──────────────────────────────────────────────────────────────
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive", "rc"] }
+toml = "0.8"
+
+# ── SteamVR feeder protocol (protobuf over the SlimeVRInput socket) ────────────
+prost = "0.12"
+
+# ── misc ──────────────────────────────────────────────────────────────────────
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+socket2 = { version = "0.5", features = ["all"] }
+# nalgebra 0.32 to interoperate with `vqf`'s quaternion/vector types.
+nalgebra = "0.32"
+
+# oscavmgr face/eye pipeline (ported from Shora).
+rosc = "0.10"
+serde_json = "1"
+glam = { version = "0.30", features = ["mint"] }
+mint = "0.5"
+strum = { version = "0.27", features = ["derive"] }
+mdns-sd = "0.20"
+openxr = { git = "https://github.com/galister/openxrs", rev = "17642d0ccac65dbf7e24da84db56cc500592afff", default-features = false, features = ["linked", "mint"], optional = true }
+
+# Native HaritoraX interpreter and Shora terminal frontend.
+base64 = "0.22"
+serialport = "4"
+ratatui = "0.28"
+crossterm = "0.28"
+libc = "0.2"
+
+[features]
+default = []
+face-xr = ["dep:openxr"]
+
+[build-dependencies]
+prost-build = "0.12"
+protoc-bin-vendored = "3"

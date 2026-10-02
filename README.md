@@ -1,7 +1,7 @@
 # WiVRn Pro
 
 A WiVRn fork for **Meta Quest Pro over Wi-Fi and Intel Arc discrete GPUs**.
-WiVRn client, server, guided spatial capture and the Shora reconnect bridge are
+WiVRn client, server, guided spatial capture and the complete current native Shora backend are
 one source tree. Both peers must be built from this branch; stock WiVRn clients
 use a different protocol. The standalone spatial bridge remains on `main`.
 
@@ -14,10 +14,13 @@ use a different protocol. The standalone spatial bridge remains on `main`.
 - Room capture saves up to 12 markers with a guided scan and reload verification.
   Spatial data uses WiVRn's own stage mapping and supports 32 concurrent PC
   readers. It starts automatically with the runtime, with no bridge opt-in.
-- Shora's bounded SolarXR/HMD-feeder reconnect bridge is statically linked into
-  WiVRn. Its tracking backend remains independently restartable.
-- `wivrn-pro.service` manages the fork; `wivrn-pro-shora.service` manages the
-  Shora tracking backend. Native CMake installation is the supported packaging
+- Shora's native tracker UDP/serial acquisition, skeleton/calibration, face/eye
+  OSC and reconnect bridge are linked into the WiVRn executable. WiVRn supervises
+  its own private tracking worker; no separate Shora installation is required.
+- A unified Shora Qt6 dashboard controls streaming, pairing, tracking and profiles.
+  Existing WiVRn and Shora user configurations are imported once without overwriting
+  fork profiles.
+- `wivrn-pro.service` manages the entire fork. Native CMake installation is the supported packaging
   route; upstream store, Flatpak, Nix and Debian release recipes were removed.
 
 See [build and service setup](docs/building.md), [encoder configuration](docs/configuration.md),
@@ -29,7 +32,7 @@ fork/build-server.sh -DCMAKE_INSTALL_PREFIX="$HOME/.local/opt/wivrn-pro"
 # Optional QSV: append -DWIVRN_USE_QSV=ON
 fork/build-client.sh
 fork/test-offline.sh
-cargo test --locked --manifest-path server/shora/Cargo.toml
+cargo test --workspace --locked --manifest-path server/shora/Cargo.toml
 ```
 
 The fork records the official WiVRn v26.9 ancestry and has an `upstream` remote.

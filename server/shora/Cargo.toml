@@ -7,7 +7,11 @@ license = "MIT OR Apache-2.0"
 [lib]
 crate-type = ["staticlib", "rlib"]
 
+[workspace]
+members = ["backend", "backend/vendor/skeletal_model"]
+
 [dependencies]
+wivrn-tracking = { path = "backend", features = ["face-xr"] }
 anyhow = "1"
 flatbuffers = "22.10.26"
 libc = "0.2"

@@ -32,6 +32,7 @@
 
 #include "active_runtime.h"
 #include "avahi_publisher.h"
+#include "config_migration.h"
 #include "driver/configuration.h"
 #include "driver/wivrn_connection.h"
 #include "exit_codes.h"
@@ -39,12 +40,16 @@
 #include "protocol_version.h"
 #include "start_application.h"
 #include "start_systemd_unit.h"
+#include "tracking_worker.h"
 #include "utils/overloaded.h"
+#include "utils/xdg_base_directory.h"
 #include "version.h"
 #include "wivrn_config.h"
 #include "wivrn_ipc.h"
 #include "wivrn_packets.h"
 #include "wivrn_sockets.h"
+#include <charconv>
+#include <sys/prctl.h>
 
 #include "wivrn_server_dbus.h"
 
@@ -767,8 +772,10 @@ void on_json_configuration(WivrnServer * server, const GParamSpec * pspec, gpoin
 void expose_known_keys_on_dbus()
 {
 	GVariantBuilder * builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssx)"));
+	auto keys_json = nlohmann::json::array();
 	for (const auto & i: known_keys())
 	{
+		keys_json.push_back({i.name, i.public_key, i.last_connection ? std::chrono::duration_cast<std::chrono::seconds>((*i.last_connection).time_since_epoch()).count() : 0});
 		g_variant_builder_add(builder,
 		                      "(ssx)",
 		                      i.name.c_str(),
@@ -778,6 +785,7 @@ void expose_known_keys_on_dbus()
 	GVariant * value = g_variant_new("a(ssx)", builder);
 	g_variant_builder_unref(builder);
 	wivrn_server_set_known_keys(dbus_server, value);
+	wivrn_server_set_known_keys_json(dbus_server, keys_json.dump().c_str());
 }
 
 void on_headset_info_packet(const wivrn::from_headset::headset_info_packet & info)
@@ -1009,10 +1017,13 @@ int inner_main(int argc, char * argv[], bool show_instructions)
 	// Initialize libnotify
 	notify_init("WiVRn");
 
+	// The tracking worker outlives individual headset/runtime sessions.
+	auto tracking = std::make_unique<wivrn::tracking_worker>();
 	// Main loop
 	g_main_loop_run(main_loop);
 
 	// Cleanup
+	tracking.reset();
 	notify_uninit();
 	runtime_setter.reset();
 	stop_publishing();
@@ -1026,8 +1037,23 @@ int inner_main(int argc, char * argv[], bool show_instructions)
 	return wivrn_exit_code::success;
 }
 
+extern "C" int wivrn_shora_worker(int argc, const char * const * argv);
 int main(int argc, char * argv[])
 {
+	if (argc >= 3 && std::string_view(argv[1]) == "--shora-worker")
+	{
+		int parent = 0;
+		auto end = argv[2] + strlen(argv[2]);
+		auto parsed = std::from_chars(argv[2], end, parent);
+		if (parsed.ec != std::errc{} || parsed.ptr != end || parent <= 1)
+			return 1;
+		if (prctl(PR_SET_PDEATHSIG, SIGTERM) || getppid() != parent)
+			return 1;
+		prctl(PR_SET_NAME, "wivrn-tracking");
+		argv[2] = argv[0];
+		return wivrn_shora_worker(argc - 2, const_cast<const char * const *>(argv + 2));
+	}
+
 	CLI::App app;
 
 	std::string config_file;
@@ -1053,6 +1079,17 @@ int main(int argc, char * argv[])
 
 	if (not config_file.empty())
 		configuration::set_config_file(config_file);
+
+	try
+	{
+		for (const auto & message: wivrn::migration::carry_over(xdg_config_home(), config_file.empty()))
+			std::cerr << "Configuration: " << message << std::endl;
+	}
+	catch (const std::exception & error)
+	{
+		std::cerr << "Configuration import failed: " << error.what() << std::endl;
+		return wivrn_exit_code::unknown_error;
+	}
 
 	if (*early_active_runtime)
 	{

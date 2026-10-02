@@ -2,8 +2,9 @@
 
 Server configuration merges `<prefix>/share/wivrn-pro/config.json`,
 `/etc/wivrn-pro/config.json` and `$XDG_CONFIG_HOME/wivrn-pro/config.json`
-(default `~/.config/wivrn-pro/config.json`), in that order. Stock WiVRn config
-is not imported. All values are optional.
+(default `~/.config/wivrn-pro/config.json`), in that order. Missing user fork files are imported once from the existing WiVRn and native
+Shora profiles; existing fork files take precedence. See the [carryover rules](../fork/SHORA.md#configuration-carryover).
+All values are optional.
 
 ## Encoding
 

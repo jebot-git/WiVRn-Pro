@@ -25,6 +25,14 @@ MIT OR Apache-2.0 licensing. Copies of those licenses are in `server/shora/`,
 and SolarXR retains its own license in `server/shora/vendor/solarxr-protocol/`.
 Cargo.lock pins transitive Rust crates; those retain their individual licenses.
 
-The independently installed Shora tracking backend is not copied into this
-repository. See [integration boundaries](SHORA.md). OpenXR, Monado, FFmpeg,
-Vulkan and other dependency notices remain applicable to binary distribution.
+The full current native backend and Qt6 frontend are also imported from that
+checkout, including its local edits. `shora-backend-import.json` records source
+input hashes; HEAD alone does not reproduce this snapshot. Backend source and
+skeletal-model vendor code live under `server/shora/backend`, Qt modules under
+`dashboard/shora`. Fork adaptations add the library entry point, SIGTERM handling,
+HMD expiry, profile-preservation tests and the unified dashboard. Future Shora
+updates should diff against these hashes and retain the fork adapters/tests.
+The existing source licenses and third-party attribution are preserved in
+`server/shora/backend/{LICENSE-*,THIRD_PARTY.md,licenses/}`. Only the public example
+avatar mapping fixture is included, never a user avatar or profile. OpenXR,
+Monado, FFmpeg, Vulkan and other dependency notices remain applicable.

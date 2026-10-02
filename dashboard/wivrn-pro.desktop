@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=WiVRn Pro
+Comment=Quest Pro streaming and Shora tracking
+Exec=wivrn-pro-dashboard
+Icon=wivrn-pro
+Type=Application
+Categories=Settings;Game;
+Terminal=false

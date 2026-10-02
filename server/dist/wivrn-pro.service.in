@@ -1,8 +1,6 @@
 [Unit]
-Description=WiVRn Pro (Quest Pro, Intel Arc, spatial and Shora bridges)
-Conflicts=wivrn.service
-Wants=wivrn-pro-shora.service
-After=wivrn-pro-shora.service
+Description=WiVRn Pro (Quest Pro, Intel Arc, spatial capture and native Shora tracking)
+Conflicts=wivrn.service wivrn-pro-shora.service shora-server.service shora-proxy.service
 
 [Service]
 Type=simple

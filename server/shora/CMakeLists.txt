@@ -5,7 +5,7 @@ if(WIVRN_SHORA_OFFLINE)
     list(APPEND shora_args --offline)
 endif()
 set(shora_archive "${CMAKE_CURRENT_BINARY_DIR}/cargo/release/libwivrn_shora_bridge.a")
-file(GLOB_RECURSE shora_sources CONFIGURE_DEPENDS "src/*.rs" "vendor/*.rs" "proto/*.proto")
+file(GLOB_RECURSE shora_sources CONFIGURE_DEPENDS "src/*.rs" "vendor/*.rs" "proto/*.proto" "backend/*.rs" "backend/*.proto" "backend/Cargo.toml" "backend/vendor/*/Cargo.toml")
 add_custom_command(OUTPUT "${shora_archive}"
     COMMAND ${CMAKE_COMMAND} -E env "CARGO_TARGET_DIR=${CMAKE_CURRENT_BINARY_DIR}/cargo"
         ${CARGO_EXECUTABLE} build ${shora_args} --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/Cargo.toml"

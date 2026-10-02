@@ -1,6 +1,6 @@
 # Offline validation — 2026-10-02
 
-Validated on this branch without starting the fork server, connecting to a headset,
+Validated on this branch without starting the WiVRn streaming runtime, connecting to a headset,
 changing installed services, selecting an OpenXR runtime or accessing tracker hardware.
 
 | Check | Result |
@@ -17,17 +17,23 @@ changing installed services, selecting an OpenXR runtime or accessing tracker ha
 | Arc/Quest Pro/Wi-Fi/codec policy | Compile-time cases and source merge guards passed |
 | Unsupported CMake configurations | NVENC ON, x264 ON, SolarXR OFF, desktop client and all encoders OFF rejected |
 | Upstream merge helper | 5 tests passed: isolated merge, preserved conflict, dirty source, wrong remote, current revision |
-| Service readiness helper | 2 tests passed: ready listener and bounded missing-listener failure |
-| Embedded Shora | 6 tests passed, including synthetic Unix-socket backend restart and endpoint cleanup |
-| Staged CMake installation | Executable, services, helper, licenses and both manifest libraries present |
-| systemd unit verification | Both units pass `systemd-analyze --user verify` using staged executable paths |
+| Bundled native Shora | 98 backend tests, 9 skeletal-model tests, 6 relay tests and 2 skeletal-model doctests passed |
+| Internal worker | Fake serial acquisition, skeleton, HMD anchoring/expiry, resets, reconnect, ownership, SIGTERM and saved-profile reload passed |
+| C++ worker supervisor | Automatic crash restart, matching manifest environment and bounded clean stop passed |
+| Qt6 dashboard | 11 tests passed; real worker calibration/tuning and attach-only close passed; offscreen streaming/skeleton views inspected |
+| Qt D-Bus | Isolated mock verifies status, paired keys, pairing, config write and stale-editor conflict detection |
+| Configuration migration | No-overwrite precedence, private file permissions, malformed input and removed-feature handling passed |
+| Current user profiles | Temporary copies of current WiVRn config/keys/cookie and Shora TOML imported; JSON round-trip and Rust parsing preserve settings; original files unchanged |
+| Staged CMake installation | Combined executable, unified Qt dashboard, single service, spatial helper, third-party licenses and runtime libraries present |
+| systemd unit verification | Unified unit passes `systemd-analyze --user verify` using staged executable paths |
 | Monado private-socket patch | Reverse-apply check passes against the patched build source |
-| Optional dashboard | Configure blocked: Qt6 development package unavailable locally; a dedicated CI job is supplied |
 
-Build artifacts remain under ignored `build/`. Installation was staged under
-`build/package`, not into the live prefix. The two staged packages are `build/package` (QSV OFF) and
-`build/package-qsv` (QSV ON); the final build directory is configured with QSV ON. An explicit install
-should use the desired final encoder configuration. The APK is debug-signed.
+Build artifacts remain under ignored `build/`. The integrated packages are staged
+under `build/package-integrated-off` and `build/package-integrated-on` for QSV OFF
+and ON respectively, never into the live prefix. Older package directories predate
+the full Shora integration. The final build is configured with QSV ON and the Qt6
+dashboard enabled. The existing Quest Pro debug APK was validated in the preceding
+fork change; this integration changes host code only, so it was not rebuilt here.
 
 The official upstream check found 53 commits after the imported v26.9 baseline
 at fetched master `0d9e6e121a180f7dc9b806e9f04284f89bea6bb8`. These were reported,
