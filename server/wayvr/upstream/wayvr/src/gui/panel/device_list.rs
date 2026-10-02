@@ -55,6 +55,17 @@ impl DeviceList {
                         params,
                     )?;
                 }
+                for tile in app.shora_battery.tiles() {
+                    let mut params = TemplateParams::new();
+                    params.insert_rc("key", tile.key.into());
+                    parser_state.instantiate_template(
+                        doc_params,
+                        "ShoraTracker",
+                        layout,
+                        devices_root,
+                        params,
+                    )?;
+                }
                 elements_changed = true;
             }
             _ => {}

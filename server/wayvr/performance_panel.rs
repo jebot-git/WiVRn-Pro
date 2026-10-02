@@ -176,7 +176,7 @@ mod tests {
         )
         .unwrap();
         for path in ["gui/performance.xml", "gui/watch.xml"] {
-            let (mut layout, parser) = wgui::parser::new_layout_from_assets(
+            let (mut layout, mut parser) = wgui::parser::new_layout_from_assets(
                 &wgui::parser::ParseDocumentParams {
                     globals: globals.clone(),
                     path: wgui::assets::AssetPathRef::BuiltIn(path),
@@ -188,6 +188,34 @@ mod tests {
                 },
             )
             .unwrap();
+            if path.ends_with("watch.xml") {
+                let root = parser.get_widget_id("devices_root").unwrap();
+                for (template, key, value) in [
+                    ("Hmd", "idx", "0"),
+                    ("LeftHand", "idx", "1"),
+                    ("RightHand", "idx", "2"),
+                    ("ShoraTracker", "key", "chest"),
+                    ("ShoraTracker", "key", "hip"),
+                    ("ShoraTracker", "key", "left"),
+                    ("ShoraTracker", "key", "right"),
+                ] {
+                    let mut params = wgui::parser::TemplateParams::new();
+                    params.insert_rc(key, value.into());
+                    parser
+                        .instantiate_template(
+                            &wgui::parser::ParseDocumentParams {
+                                globals: globals.clone(),
+                                path: wgui::assets::AssetPathRef::BuiltIn(path),
+                                extra: Default::default(),
+                            },
+                            template,
+                            &mut layout,
+                            root,
+                            params,
+                        )
+                        .unwrap();
+                }
+            }
             layout
                 .update(&mut wgui::layout::LayoutUpdateParams {
                     size: glam::vec2(2048.0, 2048.0),

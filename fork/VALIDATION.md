@@ -723,3 +723,53 @@ the existing legacy desktop window. WiVRn-Pro restarted at 19:51 CEST, is active
 with zero unexpected restarts, and Shora resumed all four physical tracker feeds.
 The Quest ADB connection is offline and SessionRunning=false: in-headset visual
 placement, live timing accuracy and the reported popup recurrence remain pending.
+
+
+## 2026-10-02 — compact wrist controls and graphical tracker batteries
+
+Sticks and Perf now share one horizontal row. The Shora wrist text block is
+replaced by WayVR's existing tracker SVG, tile border, typography and battery
+palette. The dashboard/performance details retain their textual summaries.
+Tiles deduplicate sensors by physical device MAC; synthesized HaritoraX knees
+and invalid battery reports are omitted. Valid zero and 100% are displayed.
+Inactive, paused or older-than-three-second samples show `--`; connection loss
+retains device identities without retaining stale percentages. Layout rebuilds
+are limited to membership changes, checked twice per second.
+
+All 46 WayVR tests passed, including physical/virtual device filtering, shared
+battery deduplication, stale/offline/paused handling, membership changes and
+actual wrist XML instantiation with headset, both controller templates and four
+tracker templates. Release build passed. No Quest application was switched or
+controller interaction test requested during this work.
+
+Controller battery feasibility: current WiVRn Android battery sampling reads
+ACTION_BATTERY_CHANGED for the headset only. The wire battery packet updates
+only wivrn_hmd; wivrn_controller does not expose Monado battery_status. WayVR
+already knows how to query left/right Monado battery status and render its
+controller_l.svg/controller_r.svg tiles.
+
+The standard XR_EXT_interaction_profile_battery_state_display provides the
+missing runtime API: chain XrBatteryStateDisplayEXT into
+xrGetCurrentInteractionProfile for each /user/hand path and accept batteryLevel
+only with VALID set. It would require optional client extension enablement,
+per-hand transport, and controller battery callbacks with stale-state handling.
+Reference: https://registry.khronos.org/OpenXR/specs/1.1/man/html/XrBatteryStateDisplayEXT.html .
+
+However, the saved complete Quest extension enumeration from 2026-10-01
+20:22:46 (/tmp/anchor-headset-start2.log) does not advertise this extension.
+That run identifies Oculus runtime 209.68.0 (OpenXR API 1.1.58); today's read-only
+ADB inspection reports installed systemdriver 209.0.0.68.430. Its runtime binary
+contains private METAX battery symbols, but that does not establish a supported
+public API. The Android runtime brokers are disabled. A current Android input
+dump had no active Touch Pro devices, so Android InputDevice.getBatteryState
+remains unverified as a fallback, including reliable left/right identification.
+No fake controller percentage, private API call, or APK/protocol change was
+added. Public OpenXR controller-battery support requires runtime exposure before
+this path can be implemented and validated on this headset.
+
+Installed worker SHA-256 matches the release binary:
+`5a4b976f9b3de41b156959bbf1e258c6135fe03dd0bcc17432bb45da92c64b89`.
+Only WayVR was restarted, at 20:19:57 CEST. It reached FOCUSED, enabled both
+hand-joint sources, and connected to Shora with six trackers/four battery
+reports. No panel parsing errors were logged. In-headset visual review remains
+pending; no server or APK replacement was needed.

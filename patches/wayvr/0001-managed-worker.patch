@@ -97,16 +97,21 @@
 -}
 --- a/wayvr/src/assets/gui/watch.xml
 +++ b/wayvr/src/assets/gui/watch.xml
-@@ -119,6 +119,8 @@
-         <Tracker idx="3" />
-       </div>
- 
-+      <label id="shora_batteries" _source="shora_batteries" size="15" color="primary" />
+@@ -31,6 +31,13 @@
+   </template>
+   <template name="Tracker">
+     <Device idx="${idx}" src="@/watch/track.svg" />
++  </template>
 +
-       <!-- All other elements inside the container -->
-       <div flex_direction="column" gap="8" min_width="300">
-         <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
-@@ -127,7 +129,7 @@
++  <template name="ShoraTracker">
++    <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
++      <sprite width="32" height="32" src_builtin="@/watch/track.svg" color="on_background" />
++      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
++    </rectangle>
+   </template>
+ 
+   <template name="Screen">
+@@ -127,7 +134,7 @@
              <Clock />
            </div>
  
@@ -115,19 +120,21 @@
            <div flex_direction="column" gap="8">
              <div gap="8">
                <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
-@@ -145,6 +147,12 @@
+@@ -143,6 +150,14 @@
+               </Button>
+               <Button macro="button_style" _press="::PlayspaceFixFloor" tooltip="WATCH.FIX_FLOOR" tooltip_side="left">
                  <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
++              </Button>
++            </div>
++            <div flex_direction="row" gap="8">
++              <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
++                <label text="Sticks" size="22" weight="bold" />
++              </Button>
++              <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
++                <label text="Perf" size="22" weight="bold" />
                </Button>
              </div>
-+            <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
-+              <label text="Perf" size="22" weight="bold" />
-+            </Button>
-+            <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
-+              <label text="Sticks" size="22" weight="bold" />
-+            </Button>
            </div>
-         </rectangle>
- 
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
 @@ -75,6 +75,10 @@
@@ -848,7 +855,18 @@
                      match e.state() {
                          xr::SessionState::READY => {
                              xr_state.session.begin(VIEW_TYPE)?;
-@@ -291,6 +307,14 @@
+@@ -257,6 +273,10 @@
+             next_device_update = Instant::now() + Duration::from_secs(30);
+         }
+ 
++        if app.shora_battery.layout_changed() {
++            overlays.devices_changed(&mut app)?;
++        }
++
+         if !session_running {
+             std::thread::sleep(Duration::from_millis(100));
+             log::trace!("session not running: continue");
+@@ -291,6 +311,14 @@
          };
  
          if !xr_frame_state.should_render {
@@ -863,7 +881,7 @@
              log::trace!("xrEndFrame");
              frame_stream.end(
                  xr_frame_state.predicted_display_time,
-@@ -300,7 +324,27 @@
+@@ -300,7 +328,27 @@
              continue 'main_loop;
          }
  
@@ -891,7 +909,7 @@
          input_source.update(&xr_state, &mut app)?;
          app.input_state.post_update(&app.session);
  
-@@ -452,6 +496,7 @@
+@@ -452,6 +500,7 @@
          }
  
          lines.render(&app, &mut futures)?;
@@ -899,7 +917,7 @@
          futures.wait()?;
          // End rendering
  
-@@ -485,7 +530,11 @@
+@@ -485,7 +534,11 @@
              }
          }
  
@@ -1389,16 +1407,61 @@
                  "::EditToggle" => Box::new(move |_common, data, app, _| {
                      if !test_button(data) || !test_duration(&button, app) {
                          return Ok(EventResult::Pass);
+--- a/wayvr/src/gui/panel/device_list.rs
++++ b/wayvr/src/gui/panel/device_list.rs
+@@ -55,6 +55,17 @@
+                         params,
+                     )?;
+                 }
++                for tile in app.shora_battery.tiles() {
++                    let mut params = TemplateParams::new();
++                    params.insert_rc("key", tile.key.into());
++                    parser_state.instantiate_template(
++                        doc_params,
++                        "ShoraTracker",
++                        layout,
++                        devices_root,
++                        params,
++                    )?;
++                }
+                 elements_changed = true;
+             }
+             _ => {}
 --- a/wayvr/src/gui/panel/label.rs
 +++ b/wayvr/src/gui/panel/label.rs
-@@ -52,6 +52,13 @@
+@@ -52,6 +52,38 @@
      };
  
      let callback: EventCallback<AppState, S> = match source {
++        "shora_battery" => {
++            let Some(key) = attribs.get_value("_device").map(String::from) else {
++                log_missing_attrib(parser_state, TAG, "_device");
++                return;
++            };
++            let low_color = parse_color(attribs, "_low_color", &layout.state.globals, BAT_LOW);
++            let normal_color =
++                parse_color(attribs, "_normal_color", &layout.state.globals, BAT_NORMAL);
++            Box::new(move |common, data, app, _| {
++                let charge = app.shora_battery.tile_charge(&key);
++                let label = data.obj.get_as_mut::<WidgetLabel>().unwrap();
++                label.set_color(
++                    common,
++                    if charge.is_some_and(|v| v * 100.0 < BAT_LOW_THRESHOLD as f32) {
++                        low_color
++                    } else {
++                        normal_color
++                    },
++                    false,
++                );
++                let text = charge.map_or_else(|| "--".into(), |v| format!("{:.0}%", v * 100.0));
++                label.set_text(common, Translation::from_raw_text(&text));
++                Ok(EventResult::Pass)
++            })
++        }
 +        "shora_batteries" => Box::new(|common, data, app, _| {
 +            let (text, low) = app.shora_battery.text(6);
 +            let label = data.obj.get_as_mut::<WidgetLabel>().unwrap();
-+            label.set_color(common, if low {BAT_LOW} else {BAT_NORMAL}.into(), false);
++            label.set_color(common, if low { BAT_LOW } else { BAT_NORMAL }.into(), false);
 +            label.set_text(common, Translation::from_raw_text(&text));
 +            Ok(EventResult::Pass)
 +        }),

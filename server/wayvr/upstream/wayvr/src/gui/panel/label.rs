@@ -52,10 +52,35 @@ pub(super) fn setup_custom_label<S: 'static>(
     };
 
     let callback: EventCallback<AppState, S> = match source {
+        "shora_battery" => {
+            let Some(key) = attribs.get_value("_device").map(String::from) else {
+                log_missing_attrib(parser_state, TAG, "_device");
+                return;
+            };
+            let low_color = parse_color(attribs, "_low_color", &layout.state.globals, BAT_LOW);
+            let normal_color =
+                parse_color(attribs, "_normal_color", &layout.state.globals, BAT_NORMAL);
+            Box::new(move |common, data, app, _| {
+                let charge = app.shora_battery.tile_charge(&key);
+                let label = data.obj.get_as_mut::<WidgetLabel>().unwrap();
+                label.set_color(
+                    common,
+                    if charge.is_some_and(|v| v * 100.0 < BAT_LOW_THRESHOLD as f32) {
+                        low_color
+                    } else {
+                        normal_color
+                    },
+                    false,
+                );
+                let text = charge.map_or_else(|| "--".into(), |v| format!("{:.0}%", v * 100.0));
+                label.set_text(common, Translation::from_raw_text(&text));
+                Ok(EventResult::Pass)
+            })
+        }
         "shora_batteries" => Box::new(|common, data, app, _| {
             let (text, low) = app.shora_battery.text(6);
             let label = data.obj.get_as_mut::<WidgetLabel>().unwrap();
-            label.set_color(common, if low {BAT_LOW} else {BAT_NORMAL}.into(), false);
+            label.set_color(common, if low { BAT_LOW } else { BAT_NORMAL }.into(), false);
             label.set_text(common, Translation::from_raw_text(&text));
             Ok(EventResult::Pass)
         }),

@@ -33,6 +33,13 @@
     <Device idx="${idx}" src="@/watch/track.svg" />
   </template>
 
+  <template name="ShoraTracker">
+    <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
+      <sprite width="32" height="32" src_builtin="@/watch/track.svg" color="on_background" />
+      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
+    </rectangle>
+  </template>
+
   <template name="Screen">
     <Button macro="button_style" id="overlay_${idx}" tooltip_str="${name}" _press="::OverlayToggle ${name}">
       <sprite width="38" height="38" src_builtin="@/edit/screen.svg" />
@@ -119,8 +126,6 @@
         <Tracker idx="3" />
       </div>
 
-      <label id="shora_batteries" _source="shora_batteries" size="15" color="primary" />
-
       <!-- All other elements inside the container -->
       <div flex_direction="column" gap="8" min_width="300">
         <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
@@ -147,12 +152,14 @@
                 <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
               </Button>
             </div>
-            <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
-              <label text="Perf" size="22" weight="bold" />
-            </Button>
-            <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
-              <label text="Sticks" size="22" weight="bold" />
-            </Button>
+            <div flex_direction="row" gap="8">
+              <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
+                <label text="Sticks" size="22" weight="bold" />
+              </Button>
+              <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
+                <label text="Perf" size="22" weight="bold" />
+              </Button>
+            </div>
           </div>
         </rectangle>
 

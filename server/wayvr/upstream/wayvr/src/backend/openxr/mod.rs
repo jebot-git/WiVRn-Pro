@@ -273,6 +273,10 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
             next_device_update = Instant::now() + Duration::from_secs(30);
         }
 
+        if app.shora_battery.layout_changed() {
+            overlays.devices_changed(&mut app)?;
+        }
+
         if !session_running {
             std::thread::sleep(Duration::from_millis(100));
             log::trace!("session not running: continue");
