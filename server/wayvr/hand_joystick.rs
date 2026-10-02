@@ -98,13 +98,16 @@ impl ThumbPad {
         } else {
             gun_grip
         };
-        // Release input when the supporting index segment is no longer tracked.
-        let support = if mount_index { [9, 10] } else { [8, 9] };
-        if support.iter().any(|&i| {
-            !j[i]
-                .location_flags
+        let tracked = |i: usize| {
+            j[i].location_flags
                 .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
-        }) {
+        };
+        // MCP/metacarpal positions define a rigid palm frame. Curled finger
+        // joints only set the large pad's initial offset, never its live mount.
+        let support = if mount_index { [9, 10] } else { [11, 16] };
+        if support.iter().any(|&i| !tracked(i))
+            || (!mount_index && self.local.is_none() && !tracked(9))
+        {
             self.reset();
             return None;
         }
@@ -113,29 +116,8 @@ impl ThumbPad {
             (p(10), p(10) - p(9))
         } else {
             let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
-            let curled = (p(8) + p(13) + p(18) + p(23)) * 0.25;
-            // Place the large pad on the fleshy, inside surface of the middle
-            // segment, toward the index base in the finger's curl plane.
-            let segment = p(9) - p(8);
-            if segment.length_squared() < 0.005_f32.powi(2) {
-                self.reset();
-                return None;
-            }
-            let segment = segment.normalize();
-            let middle = (p(8) + p(9)) * 0.5;
-            let inward = p(7) - middle;
-            let inward = inward - segment * inward.dot(segment);
-            if inward.length_squared() < 0.005_f32.powi(2) {
-                self.reset();
-                return None;
-            }
-            let radius = (j[8].radius + j[9].radius) * 0.5;
-            let clearance = if radius.is_finite() {
-                radius.clamp(0.004, 0.012) + 0.002
-            } else {
-                0.010
-            };
-            (middle + inward.normalize() * clearance, knuckles - curled)
+            let palm_forward = (p(12) + p(17) - p(11) - p(16)) * 0.5;
+            (knuckles, palm_forward)
         };
         let along = along - across * along.dot(across);
         if along.length_squared() < 0.005_f32.powi(2) {
@@ -186,22 +168,43 @@ impl ThumbPad {
             if now.saturating_sub(at) < Duration::from_millis(150) {
                 return None;
             }
-            let normal = head.transform_vector3(Vec3::Y).normalize();
-            let right = head.transform_vector3(Vec3::X).normalize();
-            let forward = normal.cross(right).normalize();
-            // Preserve the accepted tilt, but put index pads on the fingertip
-            // itself; the larger pad sits inside the curled middle segment.
-            let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
-                * Quat::from_rotation_x(60.0_f32.to_radians());
-            let center = origin;
-            let frame = Affine3A::from_rotation_translation(rotation, center);
-            self.local = Some(mount.inverse() * frame);
-            self.index_mounted = mount_index;
             self.radius = if mount_index {
                 (width * 0.24).clamp(0.014, 0.020)
             } else {
                 (width * 0.35).clamp(0.025, 0.04)
             };
+            // Align both pads to view yaw on activation. Head roll/pitch must
+            // not skew the axes; thereafter the saved frame rotates with the hand.
+            let normal = Vec3::Y;
+            let view_right = head.transform_vector3(Vec3::X);
+            let right = Vec3::new(view_right.x, 0.0, view_right.z).normalize_or_zero();
+            if right.length_squared() < 0.5 {
+                self.reset();
+                return None;
+            }
+            let forward = normal.cross(right).normalize();
+            let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
+                * Quat::from_rotation_x(60.0_f32.to_radians());
+            let center = if mount_index {
+                origin
+            } else {
+                // Reference photos: lower rim just above the index, toward the
+                // thumb side of the fist. Account for the pad's projected extent
+                // so the whole surface clears the finger at the accepted tilt.
+                let radius = (j[8].radius + j[9].radius) * 0.5;
+                let finger_radius = if radius.is_finite() {
+                    radius.clamp(0.004, 0.012)
+                } else {
+                    0.008
+                };
+                let pad_x = rotation * Vec3::X;
+                let pad_y = rotation * Vec3::Y;
+                let extent = self.radius * Vec2::new(pad_x.dot(across), pad_y.dot(across)).length();
+                (p(8) + p(9)) * 0.5 + across * (finger_radius + 0.002 + extent)
+            };
+            let frame = Affine3A::from_rotation_translation(rotation, center);
+            self.local = Some(mount.inverse() * frame);
+            self.index_mounted = mount_index;
             self.axes = Vec2::ZERO;
         }
         let frame = mount * self.local.unwrap();
@@ -478,6 +481,9 @@ mod tests {
                 j[base + k].pose.position = xr::Vector3f { x, y, z };
             }
         }
+        for (i, x) in [(11, 0.01), (16, -0.015)] {
+            j[i].pose.position = xr::Vector3f { x, y: 0.0, z: 0.05 };
+        }
         for i in 2..6 {
             j[i].pose.position = xr::Vector3f {
                 x: 0.05,
@@ -555,7 +561,7 @@ mod tests {
         }
     }
     #[test]
-    fn inside_middle_mount_ignores_thumb_height_and_allows_full_axis_travel() {
+    fn raised_mount_ignores_thumb_height_and_allows_full_axis_travel() {
         for mirror in [1.0, -1.0] {
             for direction in [Vec2::X, Vec2::NEG_X, Vec2::Y, Vec2::NEG_Y] {
                 let mut j = joints();
@@ -573,9 +579,9 @@ mod tests {
                 assert!(
                     (alternate_pad.frame.translation - pad.frame.translation).length() < 0.0001
                 );
-                // The middle segment's inside normal points toward +Y/+Z,
-                // identically for either hand (12 mm surface clearance).
-                let expected = Vec3::new(0.04 * mirror, -0.02963344, -0.01176687);
+                // Fixture's radial (thumbward) axis is +/-X. The rim clears
+                // the index by its 10 mm radius plus a 2 mm gap.
+                let expected = Vec3::new((0.04 + 0.012 + pad.radius) * mirror, -0.035, -0.0225);
                 assert!((Vec3::from(pad.frame.translation) - expected).length() < 0.0001);
                 let neutral = pad.frame.transform_point3(Vec3::Z * 0.012);
                 j[5].pose.position = xr::Vector3f {
@@ -611,23 +617,22 @@ mod tests {
         }
     }
     #[test]
-    fn large_pad_follows_curled_middle_segment_and_releases_on_tracking_loss() {
+    fn large_pad_ignores_finger_flex_and_releases_on_palm_tracking_loss() {
         let mut j = joints();
         let mut p = ThumbPad::default();
         let pad = activate(&mut p, &j);
-        for i in [8, 9] {
-            j[i].pose.position.y += 0.005;
+        for base in [7, 12, 17, 22] {
+            for i in base + 1..=base + 3 {
+                j[i].pose.position.y += 0.005;
+            }
         }
         let flexed = p
             .update(Duration::from_millis(160), Some(&j), Affine3A::IDENTITY)
             .unwrap();
         assert!(!p.index_mounted);
-        assert!(
-            (Vec3::from(flexed.frame.translation - pad.frame.translation) - Vec3::Y * 0.005)
-                .length()
-                < 0.0001
-        );
-        j[9].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
+        assert!((flexed.frame.translation - pad.frame.translation).length() < 0.0001);
+        assert!((flexed.frame.matrix3 - pad.frame.matrix3).abs_diff_eq(glam::Mat3A::ZERO, 0.0001));
+        j[11].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
         assert!(
             p.update(Duration::from_millis(180), Some(&j), Affine3A::IDENTITY)
                 .is_none()
@@ -676,6 +681,33 @@ mod tests {
                 < 0.0001
         );
         assert!(carried.axes.length() < 0.0001);
+    }
+    #[test]
+    fn pad_axes_start_level_and_do_not_follow_head_motion() {
+        let j = joints();
+        let mut level = ThumbPad::default();
+        let expected = activate(&mut level, &j);
+        let tilted_head = Affine3A::from_rotation_translation(
+            Quat::from_rotation_z(0.35),
+            Vec3::new(0.0, 0.2, 0.0),
+        );
+        let mut tilted = ThumbPad::default();
+        for ms in [0, 100] {
+            assert!(
+                tilted
+                    .update(Duration::from_millis(ms), Some(&j), tilted_head)
+                    .is_none()
+            );
+        }
+        let pad = tilted
+            .update(Duration::from_millis(150), Some(&j), tilted_head)
+            .unwrap();
+        assert!(pad.frame.abs_diff_eq(expected.frame, 0.0001));
+        let turned_head = Affine3A::from_quat(Quat::from_rotation_y(0.7));
+        let stable = tilted
+            .update(Duration::from_millis(170), Some(&j), turned_head)
+            .unwrap();
+        assert!(stable.frame.abs_diff_eq(pad.frame, 0.0001));
     }
     #[test]
     fn index_mount_accepts_relaxed_thumb_and_excludes_thumb_and_wrist_motion() {

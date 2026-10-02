@@ -501,3 +501,23 @@ angle, size and deadzone are unchanged. Seven joystick tests pass, including
 middle-segment placement and movement on the synthetic curled-hand fixture.
 The release worker built successfully and was installed with a WayVR restart;
 the WiVRn session remains active. Live comfort still needs user confirmation.
+
+### Photo-guided raised pad and stable palm mount
+
+Using the user's 1.jpg/2.jpg references, the large pad now sits above the curled
+index on the thumb side of the fist. Its nearest rim clears the finger by
+2 mm; placement accounts for tracked finger radius and the tilted disc's
+projected extent. The initial position is stored in a palm frame derived from
+MCP/metacarpal positions, so finger curl and thumb motion no longer recalculate
+its offset or orientation. It translates and rotates with the fist as requested.
+
+Initial axes align to view yaw with head roll removed, retaining the 60-degree
+tilt; subsequent head motion does not rotate them. Pad size, deadzone and neutral
+entry are unchanged. Eight joystick tests pass, including mirrored placement,
+finger-flex independence, rigid hand motion, head-motion independence and
+tracking-loss release. Saved-motion replay also passes, but its older sweeps
+cannot establish reach or comfort for the new placement. Reference photos
+remain outside the repository.
+
+Release build completed and was installed with a WayVR restart. The WiVRn
+session remains running.
