@@ -19,7 +19,8 @@ pub struct Pad {
 pub struct ThumbPad {
     since: Option<Duration>,
     local: Option<Affine3A>,
-    index_mounted: bool,
+    click_since: Option<Duration>,
+    clicked: bool,
     axes: Vec2,
     armed: bool,
     radius: f32,
@@ -30,7 +31,10 @@ impl ThumbPad {
         *self = Self::default();
     }
     pub fn owns_hand(&self) -> bool {
-        self.since.is_some() || self.local.is_some()
+        self.since.is_some() || self.local.is_some() || self.click_since.is_some()
+    }
+    pub fn clicked(&self) -> bool {
+        self.clicked
     }
     pub fn update(
         &mut self,
@@ -82,53 +86,6 @@ impl ThumbPad {
             self.reset();
             return None;
         }
-        let index_threshold = if self.local.is_some() && self.index_mounted {
-            0.72
-        } else {
-            0.82
-        };
-        let gun_grip = extension[0] > index_threshold
-            && extension[1..].iter().filter(|v| **v < 0.65).count() >= 2;
-        if self.local.is_some() && gun_grip != self.index_mounted {
-            // A different support pose needs a fresh centre and mount.
-            self.reset();
-        }
-        let mount_index = if self.local.is_some() {
-            self.index_mounted
-        } else {
-            gun_grip
-        };
-        let tracked = |i: usize| {
-            j[i].location_flags
-                .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
-        };
-        // MCP/metacarpal positions define a rigid palm frame. Curled finger
-        // joints only set the large pad's initial offset, never its live mount.
-        let support = if mount_index { [9, 10] } else { [11, 16] };
-        if support.iter().any(|&i| !tracked(i))
-            || (!mount_index && self.local.is_none() && !tracked(9))
-        {
-            self.reset();
-            return None;
-        }
-        let across = (p(7) - p(22)) / width;
-        let (origin, along) = if mount_index {
-            (p(10), p(10) - p(9))
-        } else {
-            let knuckles = (p(7) + p(12) + p(17) + p(22)) * 0.25;
-            let palm_forward = (p(12) + p(17) - p(11) - p(16)) * 0.5;
-            (knuckles, palm_forward)
-        };
-        let along = along - across * along.dot(across);
-        if along.length_squared() < 0.005_f32.powi(2) {
-            self.reset();
-            return None;
-        }
-        let along = along.normalize();
-        let mount = Affine3A::from_mat3_translation(
-            Mat3::from_cols(across, along, across.cross(along)),
-            origin,
-        );
         if self
             .last
             .is_some_and(|t| now.saturating_sub(t) > Duration::from_millis(150))
@@ -139,6 +96,67 @@ impl ThumbPad {
             now.saturating_sub(t).as_secs_f32().clamp(0.001, 0.05)
         });
         self.last = Some(now);
+        let index_threshold = if self.click_since.is_some() {
+            0.72
+        } else {
+            0.82
+        };
+        let thumb_length = (2..5).map(|i| p(i).distance(p(i + 1))).sum::<f32>();
+        let thumb_extended = thumb_length > 0.025
+            && p(5).distance(p(2)) / thumb_length
+                > if self.click_since.is_some() {
+                    0.65
+                } else {
+                    0.75
+                };
+        let gun_grip = extension[0] > index_threshold
+            && thumb_extended
+            && extension[1..].iter().filter(|v| **v < 0.65).count() >= 2;
+        if gun_grip {
+            if [4, 5, 9, 10].iter().any(|&i| {
+                !j[i]
+                    .location_flags
+                    .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
+            }) {
+                self.reset();
+                return None;
+            }
+            // The finger gun owns the hand but has no pad or analogue output.
+            // Debounce once, then hold the standard stick button until release.
+            self.local = None;
+            self.since = None;
+            self.armed = false;
+            self.axes = Vec2::ZERO;
+            let at = *self.click_since.get_or_insert(now);
+            self.clicked = now.saturating_sub(at) >= Duration::from_millis(150);
+            return None;
+        }
+        self.click_since = None;
+        self.clicked = false;
+        let tracked = |i: usize| {
+            j[i].location_flags
+                .contains(xr::SpaceLocationFlags::POSITION_TRACKED)
+        };
+        // MCP/metacarpal positions define a rigid palm frame. Curled finger
+        // joints only set the large pad's initial offset, never its live mount.
+        let support = [11, 16];
+        if support.iter().any(|&i| !tracked(i)) || (self.local.is_none() && !tracked(9)) {
+            self.reset();
+            return None;
+        }
+        let across = (p(7) - p(22)) / width;
+        let origin = (p(7) + p(12) + p(17) + p(22)) * 0.25;
+        let along = (p(12) + p(17) - p(11) - p(16)) * 0.5;
+        let along = along - across * along.dot(across);
+        if along.length_squared() < 0.005_f32.powi(2) {
+            self.reset();
+            return None;
+        }
+        let along = along.normalize();
+        let mount = Affine3A::from_mat3_translation(
+            Mat3::from_cols(across, along, across.cross(along)),
+            origin,
+        );
         if self.local.is_none() {
             let thumb = p(5) - p(2);
             let length = (2..5).map(|i| p(i).distance(p(i + 1))).sum::<f32>();
@@ -150,17 +168,7 @@ impl ThumbPad {
                     .normalize()
                     .dot(head.transform_vector3(Vec3::Y).normalize())
                     > 0.55;
-            let elevation = if thumb.length_squared() > 0.0001 {
-                thumb
-                    .normalize()
-                    .dot(head.transform_vector3(Vec3::Y).normalize())
-            } else {
-                1.0
-            };
-            // Fully upright is the end of the thumb's reach, not a neutral
-            // joystick pose. Wait for it to lower while the index is extended.
-            let relaxed_gun = gun_grip && (0.20..=0.70).contains(&elevation);
-            if !(if mount_index { relaxed_gun } else { thumbs_up }) {
+            if !thumbs_up {
                 self.since = None;
                 return None;
             }
@@ -168,11 +176,7 @@ impl ThumbPad {
             if now.saturating_sub(at) < Duration::from_millis(150) {
                 return None;
             }
-            self.radius = if mount_index {
-                (width * 0.24).clamp(0.014, 0.020)
-            } else {
-                (width * 0.35).clamp(0.025, 0.04)
-            };
+            self.radius = (width * 0.35).clamp(0.025, 0.04);
             // Align both pads to view yaw on activation. Head roll/pitch must
             // not skew the axes; thereafter the saved frame rotates with the hand.
             let normal = Vec3::Y;
@@ -185,9 +189,7 @@ impl ThumbPad {
             let forward = normal.cross(right).normalize();
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
-            let center = if mount_index {
-                origin
-            } else {
+            let center = {
                 // Reference photos: lower rim just above the index, toward the
                 // thumb side of the fist. Account for the pad's projected extent
                 // so the whole surface clears the finger at the accepted tilt.
@@ -204,14 +206,13 @@ impl ThumbPad {
             };
             let frame = Affine3A::from_rotation_translation(rotation, center);
             self.local = Some(mount.inverse() * frame);
-            self.index_mounted = mount_index;
             self.axes = Vec2::ZERO;
         }
         let frame = mount * self.local.unwrap();
         let tip = frame.inverse().transform_point3(p(5));
         let raw = Vec2::new(tip.x, tip.y) / self.radius;
         let length = raw.length();
-        // A fingertip-mounted pad stays neutral until the thumb reaches its
+        // The pad stays neutral until the thumb reaches its
         // centre. Preserve the centre gate and radial deadzone.
         self.armed |= length <= 0.25;
         let target = if !self.armed || length <= DEADZONE {
@@ -307,6 +308,17 @@ pub fn diagnostic_sample(
     }
 }
 
+// WVJ1 flags: enabled, left/right pad active, left/right stick click.
+fn command_flags(enabled: bool, active: [bool; 2], clicks: [bool; 2]) -> u32 {
+    if !enabled {
+        return 0;
+    }
+    1 | (u32::from(active[0]) << 1)
+        | (u32::from(active[1]) << 2)
+        | (u32::from(clicks[0]) << 3)
+        | (u32::from(clicks[1]) << 4)
+}
+
 pub struct Link {
     fd: Option<OwnedFd>,
     retry: Option<Instant>,
@@ -400,7 +412,7 @@ impl Link {
             log::info!("WiVRn joystick input channel connected");
         }
     }
-    pub fn exchange(&mut self, enabled: bool, pads: [Option<Pad>; 2]) {
+    pub fn exchange(&mut self, enabled: bool, pads: [Option<Pad>; 2], clicks: [bool; 2]) {
         self.connect();
         let Some(fd) = self.fd.as_ref().map(AsRawFd::as_raw_fd) else {
             return;
@@ -433,8 +445,7 @@ impl Link {
         }
         let mut packet = [0u8; 40];
         packet[..4].copy_from_slice(b"WVJ1");
-        let flags = u32::from(enabled)
-            | ((u32::from(pads[0].is_some()) | u32::from(pads[1].is_some()) << 1) << 1);
+        let flags = command_flags(enabled, pads.each_ref().map(Option::is_some), clicks);
         packet[4..8].copy_from_slice(&flags.to_le_bytes());
         let mut ts: libc::timespec = unsafe { std::mem::zeroed() };
         unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut ts) };
@@ -629,7 +640,7 @@ mod tests {
         let flexed = p
             .update(Duration::from_millis(160), Some(&j), Affine3A::IDENTITY)
             .unwrap();
-        assert!(!p.index_mounted);
+        assert!(!p.clicked());
         assert!((flexed.frame.translation - pad.frame.translation).length() < 0.0001);
         assert!((flexed.frame.matrix3 - pad.frame.matrix3).abs_diff_eq(glam::Mat3A::ZERO, 0.0001));
         j[11].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
@@ -709,8 +720,7 @@ mod tests {
             .unwrap();
         assert!(stable.frame.abs_diff_eq(pad.frame, 0.0001));
     }
-    #[test]
-    fn index_mount_accepts_relaxed_thumb_and_excludes_thumb_and_wrist_motion() {
+    fn gun_joints() -> xr::HandJointLocations {
         let mut j = joints();
         for k in 0..4 {
             j[7 + k].pose.position = xr::Vector3f {
@@ -719,88 +729,73 @@ mod tests {
                 z: -(k as f32) * 0.025,
             };
         }
-        let mut p = ThumbPad::default();
-        assert!(
-            p.update(Duration::ZERO, Some(&j), Affine3A::IDENTITY)
-                .is_none()
-        );
-        assert!(
-            p.update(Duration::from_millis(180), Some(&j), Affine3A::IDENTITY)
-                .is_none()
-        );
-        // Lower the thumb, preserving an extended index and three curled fingers.
-        for k in 0..4 {
-            j[2 + k].pose.position = xr::Vector3f {
-                x: 0.05,
-                y: k as f32 * 0.01,
-                z: -(k as f32) * 0.018,
-            };
+        j
+    }
+    #[test]
+    fn finger_gun_clicks_without_pad_and_releases() {
+        for mirror in [1.0, -1.0] {
+            let mut j = gun_joints();
+            for v in &mut j {
+                v.pose.position.x *= mirror;
+            }
+            let mut p = ThumbPad::default();
+            for ms in [0, 100, 149] {
+                assert!(
+                    p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY)
+                        .is_none()
+                );
+                assert!(p.owns_hand() && !p.clicked());
+            }
+            for ms in [150, 200, 250, 350] {
+                assert!(
+                    p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY)
+                        .is_none()
+                );
+                assert!(p.clicked() && p.axes == Vec2::ZERO);
+            }
+            p.update(
+                Duration::from_millis(370),
+                Some(&joints()),
+                Affine3A::IDENTITY,
+            );
+            assert!(!p.clicked());
+            // Re-entering the gun pose must debounce afresh.
+            p.update(Duration::from_millis(380), Some(&j), Affine3A::IDENTITY);
+            assert!(!p.clicked());
+            p.update(Duration::from_millis(480), Some(&j), Affine3A::IDENTITY);
+            p.update(Duration::from_millis(530), Some(&j), Affine3A::IDENTITY);
+            assert!(p.clicked());
+            j[10].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
+            p.update(Duration::from_millis(550), Some(&j), Affine3A::IDENTITY);
+            assert!(!p.clicked() && !p.owns_hand());
         }
-        p.reset();
-        let pad = activate(&mut p, &j);
-        assert!(p.index_mounted && !pad.armed);
-        assert!(pad.axes.length() < 0.001 && pad.radius <= 0.02);
-        let index_tip = Vec3::new(
-            j[10].pose.position.x,
-            j[10].pose.position.y,
-            j[10].pose.position.z,
-        );
-        assert!((Vec3::from(pad.frame.translation) - index_tip).length() < 0.0001);
-        let neutral = pad.frame.transform_point3(Vec3::Z * 0.012);
-        j[5].pose.position = xr::Vector3f {
-            x: neutral.x,
-            y: neutral.y,
-            z: neutral.z,
-        };
-        let armed = p
-            .update(Duration::from_millis(160), Some(&j), Affine3A::IDENTITY)
-            .unwrap();
-        assert!(armed.armed && armed.axes.length() < 0.001);
-        j[1].pose.position.y += 0.05;
-        let target = pad
-            .frame
-            .transform_point3(Vec3::new(0.0, pad.radius, 0.012));
-        j[5].pose.position = xr::Vector3f {
-            x: target.x,
-            y: target.y,
-            z: target.z,
-        };
-        let moved = p
-            .update(Duration::from_millis(200), Some(&j), Affine3A::IDENTITY)
-            .unwrap();
-        assert!((moved.frame.translation - pad.frame.translation).length() < 0.0001);
-        assert!(moved.axes.y > 0.7);
-        // Slight index flex should retain the pad without another activation.
-        j[9].pose.position = xr::Vector3f {
-            x: 0.04,
-            y: -0.024,
-            z: -0.023,
-        };
-        j[10].pose.position = xr::Vector3f {
-            x: 0.04,
-            y: -0.035,
-            z: -0.04,
-        };
-        let flexed = p
-            .update(Duration::from_millis(230), Some(&j), Affine3A::IDENTITY)
-            .unwrap();
-        assert!(p.index_mounted);
-        let tip = Vec3::new(
-            j[10].pose.position.x,
-            j[10].pose.position.y,
-            j[10].pose.position.z,
-        );
-        assert!((Vec3::from(flexed.frame.translation) - tip).length() < 0.0001);
-        assert!(
-            (flexed.frame.transform_vector3(Vec3::Y) - pad.frame.transform_vector3(Vec3::Y))
-                .length()
-                > 0.01
-        );
-        j[10].location_flags = xr::SpaceLocationFlags::POSITION_VALID;
-        assert!(
-            p.update(Duration::from_millis(250), Some(&j), Affine3A::IDENTITY)
-                .is_none()
-        );
+    }
+    #[test]
+    fn pad_to_click_clears_axes_and_stale_click_must_rearm() {
+        let mut p = ThumbPad::default();
+        activate(&mut p, &joints());
+        let j = gun_joints();
+        for ms in [160, 260, 310] {
+            assert!(
+                p.update(Duration::from_millis(ms), Some(&j), Affine3A::IDENTITY)
+                    .is_none()
+            );
+        }
+        assert!(p.clicked() && p.local.is_none() && p.axes == Vec2::ZERO);
+        p.update(Duration::from_millis(500), Some(&j), Affine3A::IDENTITY);
+        assert!(!p.clicked());
+        p.update(Duration::from_millis(600), Some(&j), Affine3A::IDENTITY);
+        p.update(Duration::from_millis(650), Some(&j), Affine3A::IDENTITY);
+        assert!(p.clicked());
+        p.update(Duration::from_millis(660), None, Affine3A::IDENTITY);
+        assert!(!p.clicked() && !p.owns_hand());
+    }
+    #[test]
+    fn click_packet_flags_are_independent_of_visible_pads() {
+        assert_eq!(command_flags(true, [false; 2], [true, false]), 9);
+        assert_eq!(command_flags(true, [false; 2], [false, true]), 17);
+        assert_eq!(command_flags(true, [true, false], [false, true]), 19);
+        assert_eq!(command_flags(false, [true; 2], [true; 2]), 0);
     }
     #[test]
     fn replay_opt_in_hand_diagnostics() {
@@ -830,35 +825,29 @@ mod tests {
                     z: xyz[2].as_f64().unwrap() as f32,
                 };
             }
-            if let Some(pad) = pads[side].update(
+            let pad = pads[side].update(
                 Duration::from_secs_f64(row["time"].as_f64().unwrap()),
                 Some(&j),
                 Affine3A::IDENTITY,
-            ) {
-                if pads[side].index_mounted {
-                    counts[side] += 1;
-                    let tip = j[10].pose.position;
-                    assert!(
-                        (Vec3::from(pad.frame.translation) - Vec3::new(tip.x, tip.y, tip.z))
-                            .length()
-                            < 0.0001
-                    );
-                    assert!(pad.axes.is_finite() && pad.axes.length() <= 1.0001);
-                    if !pad.armed {
-                        assert!(pad.axes.length() < 0.0001);
-                    }
-                    ranges[side][0] = ranges[side][0].min(pad.axes);
-                    ranges[side][1] = ranges[side][1].max(pad.axes);
+            );
+            if pads[side].clicked() {
+                counts[side] += 1;
+                assert!(pad.is_none() && pads[side].axes == Vec2::ZERO);
+            }
+            if let Some(pad) = pad {
+                assert!(pad.axes.is_finite() && pad.axes.length() <= 1.0001);
+                if !pad.armed {
+                    assert!(pad.axes.length() < 0.0001);
                 }
+                ranges[side][0] = ranges[side][0].min(pad.axes);
+                ranges[side][1] = ranges[side][1].max(pad.axes);
             }
         }
-        eprintln!("Index-pad trace replay samples {counts:?}, axis ranges {ranges:?}");
+        eprintln!("Gun-click replay samples {counts:?}, large-pad axis ranges {ranges:?}");
         assert!(
             counts.iter().all(|n| *n > 20),
             "trace must include both gun poses"
         );
-        // This recording predates the fingertip placement. It validates the
-        // mount and neutral gate; it cannot establish reach of the new surface.
     }
     #[test]
     fn loss_invalid_pose_and_stream_gap_clear_pad() {

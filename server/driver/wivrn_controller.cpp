@@ -748,7 +748,7 @@ xrt_result_t wivrn_controller::update_inputs()
 			auto & click = inputs_array[WIVRN_CONTROLLER_THUMBSTICK_CLICK];
 			click.active = true;
 			click.timestamp = value->time;
-			click.value.boolean = false;
+			click.value.boolean = value->clicked;
 		}
 	}
 	return XRT_SUCCESS;

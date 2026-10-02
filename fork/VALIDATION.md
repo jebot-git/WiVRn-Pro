@@ -521,3 +521,25 @@ remain outside the repository.
 
 Release build completed and was installed with a WayVR restart. The WiVRn
 session remains running.
+
+### Finger-gun thumbstick clicks
+
+Removed the small index-mounted pads. With Sticks enabled, extending the index
+and thumb while curling the other fingers now holds that hand's standard
+thumbstick click after a 150 ms debounce. Index/thumb hysteresis tolerates small
+pose changes; leaving the gesture releases the button. The gesture owns hand
+input without drawing a pad or sending analogue axes. The large thumbs-up pad
+keeps its position, size, angle, deadzone and neutral-entry behavior.
+
+The authenticated local WVJ1 link adds left/right click flag bits 3/4 to its
+existing 40-byte packet. The server maps them to THUMBSTICK_CLICK and touch,
+while physical controllers retain priority. Disabled, disconnected, expired,
+untracked and unfocused input releases via the existing reset/timeout paths.
+Ten Rust joystick tests pass with saved-pose replay, including debounce, held
+clicks, release, pad-to-click transition and packet flags. The native socket test
+passes left/right clicks, zero analogue axes, disable, timeout, physical-hand
+mask and disconnect checks. The WayVR upstream patch audit passes.
+
+Server/runtime and release-worker builds completed. Installed the new server
+and worker, restarted the unified service, and verified the headset session
+reconnected. In-headset thumbstick-click behavior awaits a user check.

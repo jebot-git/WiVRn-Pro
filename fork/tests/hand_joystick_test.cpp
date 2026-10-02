@@ -34,8 +34,17 @@ int main()
 	put(invalid, 16, std::bit_cast<uint32_t>(1.1f), 4);
 	assert(!decode_joysticks(invalid, now));
 	invalid = packet;
-	put(invalid, 4, 8, 4);
+	put(invalid, 4, 32, 4);
 	assert(!decode_joysticks(invalid, now));
+	// Clicks are independent of analogue-pad activity, and disabled means released.
+	for (unsigned flags: {9u, 17u, 25u, 24u})
+	{
+		auto clicks = packet;
+		put(clicks, 4, flags, 4);
+		auto c = decode_joysticks(clicks, now);
+		assert(c && c->clicks == ((flags & 1) ? flags >> 3 : 0));
+		assert(c->axes[0][0] == 0 && c->axes[1][1] == 0);
+	}
 	char directory[] = "/tmp/wivrn-joystick-test-XXXXXX";
 	assert(mkdtemp(directory));
 	{
@@ -55,21 +64,37 @@ int main()
 		endpoint.poll(now, 1);
 		assert(!endpoint.get(1, now));
 		assert(endpoint.get(0, now));
-		put(packet, 4, 1, 4);
+		put(packet, 4, 9, 4);
 		put(packet, 32, 2, 8);
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
-		assert(endpoint.get(0, now)->axes[0] == 0 && !endpoint.get(0, now)->touched);
-		put(packet, 4, 0, 4);
+		assert(endpoint.get(0, now)->clicked && endpoint.get(0, now)->touched);
+		assert(endpoint.get(0, now)->axes[0] == 0 && !endpoint.get(1, now)->clicked);
+		assert(!endpoint.get(0, now + 151'000'000));
+		endpoint.poll(now, 2); // Physical left controller takes over.
+		assert(!endpoint.get(0, now));
+		put(packet, 4, 17, 4);
 		put(packet, 32, 3, 8);
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
-		assert(!endpoint.get(0, now));
-		put(packet, 4, 7, 4);
+		assert(!endpoint.get(0, now)->clicked && endpoint.get(1, now)->clicked);
+		put(packet, 4, 1, 4);
 		put(packet, 32, 4, 8);
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
+		assert(endpoint.get(0, now)->axes[0] == 0 && !endpoint.get(0, now)->touched);
+		assert(!endpoint.get(0, now)->clicked && !endpoint.get(1, now)->clicked);
+		put(packet, 4, 24, 4); // Click bits must be ignored when disabled.
+		put(packet, 32, 5, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now, 3);
+		assert(!endpoint.get(0, now));
+		put(packet, 4, 25, 4);
+		put(packet, 32, 6, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now, 3);
 		assert(endpoint.get(0, now));
+		assert(endpoint.get(0, now)->clicked && endpoint.get(1, now)->clicked);
 		close(fd);
 		endpoint.poll(now, 3);
 		assert(!endpoint.get(0, now));

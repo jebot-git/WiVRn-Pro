@@ -29,11 +29,12 @@ std::optional<joystick_command> decode_joysticks(std::span<const uint8_t> p, int
 	if (p.size() != 40 || std::memcmp(p.data(), "WVJ1", 4))
 		return {};
 	auto flags = u32(p.data() + 4);
-	if (flags & ~7u)
+	if (flags & ~31u)
 		return {};
 	joystick_command c;
 	c.enabled = flags & 1;
 	c.active = (flags >> 1) & 3;
+	c.clicks = c.enabled ? (flags >> 3) & 3 : 0;
 	c.time = int64_t(u64(p.data() + 8));
 	c.sequence = u64(p.data() + 32);
 	if (c.time <= 0 || c.time > now + 50'000'000 || now - c.time > ttl || !c.sequence)
@@ -187,6 +188,6 @@ std::optional<hand_joystick::value> hand_joystick::get(unsigned hand, int64_t no
 	std::lock_guard lock(mutex);
 	if (hand > 1 || client < 0 || !command.enabled || !(hands & (1u << hand)) || now - command.time > ttl || now - received > ttl)
 		return {};
-	return value{command.axes[hand], bool(command.active & (1u << hand)), command.time};
+	return value{command.axes[hand], bool((command.active | command.clicks) & (1u << hand)), bool(command.clicks & (1u << hand)), command.time};
 }
 } // namespace wivrn

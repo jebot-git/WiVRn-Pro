@@ -12,6 +12,7 @@ struct joystick_command
 {
 	bool enabled = false;
 	uint32_t active = 0;
+	uint32_t clicks = 0;
 	int64_t time = 0;
 	uint64_t sequence = 0;
 	std::array<std::array<float, 2>, 2> axes{};
@@ -33,6 +34,7 @@ public:
 	{
 		std::array<float, 2> axes;
 		bool touched;
+		bool clicked;
 		int64_t time;
 	};
 	explicit hand_joystick(std::filesystem::path directory = {});
