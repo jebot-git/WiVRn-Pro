@@ -246,4 +246,7 @@ bounded finger occlusion, wrist loss, open-hand release, extended-index exclusio
 rotated/scaled touch projection, touch jitter, repeated taps and deep penetration.
 The full host build and pinned-source/patch audit pass. The worker was installed
 atomically and restarted via the existing supervisor without restarting WiVRn.
-In-headset validation of the revised interactions remains pending.
+The user confirmed all revised interactions work in the live Quest Pro session:
+watch orientation, cursor following the ray, closed-hand window grip and open-hand
+drop, and direct index-finger taps on the watch and virtual keyboard. This is a
+functional live check, not an extended latency or tracking-robustness benchmark.
