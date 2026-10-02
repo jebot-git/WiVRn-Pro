@@ -18,9 +18,3 @@ endforeach()
 
 configure_file(wivrn-pro-dashboard.service.in wivrn-pro-dashboard.service @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/wivrn-pro-dashboard.service" DESTINATION lib/systemd/user COMPONENT Dashboard)
-
-configure_file(wivrn-pro-mac-desktop.in wivrn-pro-mac-desktop @ONLY)
-install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/wivrn-pro-mac-desktop"
-    DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Dashboard)
-install(FILES ../server/remote_desktop/receiver.py ../server/remote_desktop/protocol.py
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/remote-desktop COMPONENT Dashboard)

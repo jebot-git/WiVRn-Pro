@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Mac Desktop Relay
+Comment=Connect to a remote Mac desktop
+Exec="@CMAKE_INSTALL_FULL_BINDIR@/mac-desktop-relay"
+Icon=mac-desktop-relay
+Terminal=false
+Categories=Network;RemoteAccess;
+StartupNotify=true
+StartupWMClass=mac-desktop-relay

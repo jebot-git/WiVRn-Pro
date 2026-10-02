@@ -41,7 +41,9 @@ def ssh_arguments(host, user):
     if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9._-]{0,63}', user):
         raise ValueError('Use the macOS account short name')
     # The token never appears on the local terminal or in process arguments.
-    command = '''token=$(cat "$HOME/Library/Application Support/WiVRn-Pro/relay.token") || exit 1
+    command = '''token_path="$HOME/Library/Application Support/Mac Desktop Relay/relay.token"
+[ -r "$token_path" ] || token_path="$HOME/Library/Application Support/WiVRn-Pro/relay.token"
+token=$(cat "$token_path") || exit 1
 { printf '{"op":"auth","token":"%s"}\\n' "$token"; cat; } | /usr/bin/nc 127.0.0.1 9758'''
     return ['-T', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5',
             '-o', 'StrictHostKeyChecking=yes', '-o', 'ServerAliveInterval=3',

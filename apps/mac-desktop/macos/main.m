@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <math.h>
+#include <signal.h>
 
 static const int Width=1920, Height=1080, Port=9758;
 static const int64_t EventTag=0x57565244;
@@ -31,6 +32,10 @@ static NSString *ReadLine(int fd) {
     int _clickCount[3];
 }
 @property(strong) NSWindow *window;
+@property(strong) NSStatusItem *statusItem;
+@property(strong) dispatch_source_t termination;
+@property BOOL background;
+@property double lastRetry;
 @property(strong) NSTextField *status;
 @property(strong) CGVirtualDisplay *display;
 @property(strong) SCStream *stream;
@@ -49,7 +54,7 @@ static NSString *ReadLine(int fd) {
 @end
 @implementation Companion
 - (void)showStatus:(NSString *)text {
-    dispatch_async(dispatch_get_main_queue(), ^{ self.status.stringValue=text; });
+    dispatch_async(dispatch_get_main_queue(), ^{ self.status.stringValue=text; if(self.background)NSLog(@"%@",text); });
 }
 - (void)message:(NSString *)text {
     [self showStatus:text];
@@ -58,13 +63,28 @@ static NSString *ReadLine(int fd) {
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
     self.listener=-1; self.client=-1; self.lock=[NSLock new];self.keys=[NSMutableSet new];self.buttons=[NSMutableSet new];self.context=[CIContext contextWithOptions:nil];
     self.window=[[NSWindow alloc]initWithContentRect:NSMakeRect(0,0,580,230) styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable backing:NSBackingStoreBuffered defer:NO];
-    self.window.title=@"WiVRn-Pro Mac Desktop";
-    self.status=[NSTextField wrappingLabelWithString:@"One virtual 1920×1080 desktop. Connect through WiVRn-Pro on Linux."];
+    self.window.title=@"Mac Desktop Relay";self.window.releasedWhenClosed=NO;
+    self.status=[NSTextField wrappingLabelWithString:@"One virtual 1920×1080 desktop. Connect with Mac Desktop Relay on Linux."];
     self.status.frame=NSMakeRect(20,95,540,115);[self.window.contentView addSubview:self.status];
     NSArray *labels=@[@"Screen capture permission",@"Input permission",@"Start / retry"];
     SEL actions[]={@selector(capturePermission:),@selector(inputPermission:),@selector(startButton:)};
     for(int i=0;i<3;i++){NSButton *b=[NSButton buttonWithTitle:labels[i] target:self action:actions[i]];b.frame=NSMakeRect(15+i*185,35,180,36);[self.window.contentView addSubview:b];}
-    [self.window center];[self.window makeKeyAndOrderFront:nil];[NSApp activateIgnoringOtherApps:YES];
+    [self.window center];
+    if(!self.background)[self showSettings:nil];
+    self.statusItem=[NSStatusBar.systemStatusBar statusItemWithLength:NSVariableStatusItemLength];
+    self.statusItem.button.title=@"MDR";
+    NSMenu *menu=[NSMenu new];
+    NSMenuItem *settings=[[NSMenuItem alloc]initWithTitle:@"Mac Desktop Relay settings…" action:@selector(showSettings:) keyEquivalent:@""];
+    settings.target=self;[menu addItem:settings];
+    NSMenuItem *retry=[[NSMenuItem alloc]initWithTitle:@"Retry capture" action:@selector(startButton:) keyEquivalent:@""];
+    retry.target=self;[menu addItem:retry];
+    [menu addItem:NSMenuItem.separatorItem];
+    NSMenuItem *quit=[[NSMenuItem alloc]initWithTitle:@"Quit Mac Desktop Relay" action:@selector(terminate:) keyEquivalent:@""];
+    quit.target=NSApp;[menu addItem:quit];self.statusItem.menu=menu;
+    signal(SIGTERM,SIG_IGN);
+    self.termination=dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL,SIGTERM,0,dispatch_get_main_queue());
+    dispatch_source_set_event_handler(self.termination, ^{[NSApp terminate:nil];});
+    dispatch_resume(self.termination);
     if(![self startListener])return;
     __weak Companion *weak=self;
     self.mouseMonitor=[NSEvent addGlobalMonitorForEventsMatchingMask:(NSEventMaskMouseMoved|NSEventMaskLeftMouseDown|NSEventMaskLeftMouseUp|NSEventMaskRightMouseDown|NSEventMaskRightMouseUp|NSEventMaskOtherMouseDown|NSEventMaskOtherMouseUp|NSEventMaskScrollWheel|NSEventMaskLeftMouseDragged|NSEventMaskRightMouseDragged|NSEventMaskOtherMouseDragged) handler:^(NSEvent *event){
@@ -81,12 +101,17 @@ static NSString *ReadLine(int fd) {
     [NSTimer scheduledTimerWithTimeInterval:0.25 repeats:YES block:^(NSTimer *timer){
         Companion *s=weak;if(!s)return;double now=NSProcessInfo.processInfo.systemUptime;
         if(s.focused && now-s.heartbeat>1.5){s.focused=NO;[s releaseInputs];}
+        if(s.background && !s.stream && !s.starting && now-s.lastRetry>5 && CGPreflightScreenCaptureAccess()){
+            s.lastRetry=now;[s startCapture];
+        }
         [s.lock lock];NSData *last=s.lastJPEG;BOOL repeat=now-s.lastSent>0.75;[s.lock unlock];
         if(last && repeat)dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0), ^{[s sendType:2 data:last];});
     }];
     [self startCapture];
 }
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender { return YES; }
+- (void)showSettings:(id)sender { [self.window makeKeyAndOrderFront:nil];[NSApp activateIgnoringOtherApps:YES]; }
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)visible { [self showSettings:nil];return YES; }
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender { return !self.background; }
 - (void)applicationWillTerminate:(NSNotification *)notification {
     [self releaseInputs];if(self.mouseMonitor)[NSEvent removeMonitor:self.mouseMonitor];
     [self.lock lock];if(self.client>=0)shutdown(self.client,SHUT_RDWR);[self.lock unlock];
@@ -96,10 +121,16 @@ static NSString *ReadLine(int fd) {
 - (void)inputPermission:(id)sender { AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef)@{(__bridge NSString *)kAXTrustedCheckOptionPrompt:@YES}); }
 - (void)startButton:(id)sender { [self startCapture]; }
 - (BOOL)startListener {
-    NSString *directory=[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support/WiVRn-Pro"];
+    NSString *directory=[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support/Mac Desktop Relay"];
     NSError *error=nil;
     if(![[NSFileManager defaultManager]createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions:@0700} error:&error]){[self showStatus:error.localizedDescription];return NO;}
     NSString *path=[directory stringByAppendingPathComponent:@"relay.token"];
+    if(![[NSFileManager defaultManager]fileExistsAtPath:path]){
+        NSString *legacy=[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support/WiVRn-Pro/relay.token"];
+        if([[NSFileManager defaultManager]fileExistsAtPath:legacy]){
+            if(![[NSFileManager defaultManager]copyItemAtPath:legacy toPath:path error:&error]){[self showStatus:error.localizedDescription];return NO;}
+        }
+    }
     self.token=[[NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
     NSCharacterSet *hex=[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdef"];
     if(self.token.length!=64 || [self.token rangeOfCharacterFromSet:hex.invertedSet].location!=NSNotFound){
@@ -152,7 +183,7 @@ static NSString *ReadLine(int fd) {
         if(!self.display){
             if(!NSClassFromString(@"CGVirtualDisplay") || !NSClassFromString(@"CGVirtualDisplayDescriptor")){[self message:@"Virtual display API unavailable on this macOS release."];return;}
             CGVirtualDisplayDescriptor *d=[NSClassFromString(@"CGVirtualDisplayDescriptor") new];
-            d.queue=dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0);d.name=@"WiVRn-Pro Desktop";d.maxPixelsWide=Width;d.maxPixelsHigh=Height;d.vendorID=0x5756;d.productID=0x5052;d.serialNum=1;if([d respondsToSelector:NSSelectorFromString(@"setSerialNumber:")])[d setValue:@1 forKey:@"serialNumber"];d.sizeInMillimeters=CGSizeMake(508,285.75);
+            d.queue=dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0);d.name=@"Mac Desktop Relay";d.maxPixelsWide=Width;d.maxPixelsHigh=Height;d.vendorID=0x5756;d.productID=0x5052;d.serialNum=1;if([d respondsToSelector:NSSelectorFromString(@"setSerialNumber:")])[d setValue:@1 forKey:@"serialNumber"];d.sizeInMillimeters=CGSizeMake(508,285.75);
             d.whitePoint=CGPointMake(0.3127,0.3290);d.redPrimary=CGPointMake(0.64,0.33);d.greenPrimary=CGPointMake(0.30,0.60);d.bluePrimary=CGPointMake(0.15,0.06);
             self.display=[[NSClassFromString(@"CGVirtualDisplay") alloc]initWithDescriptor:d];
             CGVirtualDisplaySettings *settings=[NSClassFromString(@"CGVirtualDisplaySettings") new];settings.hiDPI=0;
@@ -246,4 +277,4 @@ static NSString *ReadLine(int fd) {
     }
 }
 @end
-int main(int argc,const char **argv){@autoreleasepool{NSApplication *app=NSApplication.sharedApplication;[app setActivationPolicy:NSApplicationActivationPolicyRegular];__attribute__((objc_precise_lifetime)) Companion *delegate=[Companion new];app.delegate=delegate;[app run];}return 0;}
+int main(int argc,const char **argv){@autoreleasepool{NSApplication *app=NSApplication.sharedApplication;BOOL background=[NSProcessInfo.processInfo.arguments containsObject:@"--background"];[app setActivationPolicy:background?NSApplicationActivationPolicyAccessory:NSApplicationActivationPolicyRegular];__attribute__((objc_precise_lifetime)) Companion *delegate=[Companion new];delegate.background=background;app.delegate=delegate;[app run];}return 0;}

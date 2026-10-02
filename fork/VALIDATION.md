@@ -442,3 +442,36 @@ The rendered pad now includes a pale centre ring and shaded interior at the
 12% radial deadzone. The shader receives the same DEADZONE constant used for
 axis output, keeping the display and input boundary synchronized. Release
 worker/shader compilation and the upstream-source audit pass.
+
+### Independent Mac Desktop Relay application
+
+Moved the Mac relay to apps/mac-desktop, with its own standalone CMake project,
+Linux executable, desktop entry/icon, license and connection window. Building
+it requires Python/PySide6 and SSH, not WiVRn/OpenXR or the server dependencies.
+The default destination is a regular desktop window; WayVR is optional. Removed
+the Mac tab and package files from the WiVRn dashboard. Existing saved host/user
+settings migrate once to the independent application's profile without editing
+the legacy profile. A local compatibility command forwards old launch paths to
+the standalone app.
+
+The Mac companion now supports --background and a per-user Aqua LaunchAgent,
+starting at login and restarting on failure. An MDR menu provides settings,
+retry and quit; closing settings does not stop the background service. The
+installer preserves an existing app path and signing identifier; the token is
+copied to the new independent Application Support directory. Native build and
+LaunchAgent installation pass; running state, loopback-only listener and equal
+old/new tokens were verified without exposing token contents. macOS requested
+renewed screen-capture permission after this rebuild.
+
+Fourteen standalone tests (including four launcher/migration tests), fourteen
+existing dashboard tests and independent CMake/CTest configuration pass. The
+standalone application and KDE entry were installed, and the normal desktop
+launcher was started independently of WayVR.
+
+### Large pad knuckle mount
+
+When the index is curled, the large pad now centres on the index MCP knuckle,
+using the fist frame for orientation. Thumb height no longer moves its mount.
+The fingertip mount for an extended index, size, angle, neutral gate and visible
+deadzone are unchanged. All six joystick tests and the release worker build
+pass. Installed by restarting WayVR.

@@ -1,0 +1,4 @@
+#!/bin/sh
+export MAC_DESKTOP_RELAY_EXECUTABLE="@CMAKE_INSTALL_FULL_BINDIR@/mac-desktop-relay"
+export MAC_DESKTOP_RELAY_ICON="@CMAKE_INSTALL_FULL_DATADIR@/icons/hicolor/scalable/apps/mac-desktop-relay.svg"
+exec "@Python3_EXECUTABLE@" "@CMAKE_INSTALL_FULL_DATADIR@/mac-desktop-relay/launcher.py" "$@"
