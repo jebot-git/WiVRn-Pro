@@ -242,7 +242,7 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 			throw std::system_error(err, av_error_category(), "Cannot derive QSV device from selected Arc VAAPI device");
 		qsv_device.reset(tmp);
 		tmp = nullptr;
-		err = av_hwframe_ctx_create_derived(&tmp, AV_PIX_FMT_QSV, qsv_device.get(), vaapi_frame_ctx.get(), AV_HWFRAME_MAP_READ | AV_HWFRAME_MAP_DIRECT);
+		err = av_hwframe_ctx_create_derived(&tmp, AV_PIX_FMT_QSV, qsv_device.get(), vaapi_frame_ctx.get(), AV_HWFRAME_MAP_READ);
 		if (err < 0)
 			throw std::system_error(err, av_error_category(), "Cannot derive QSV frames from Arc VAAPI pool");
 		qsv_frames.reset(tmp);
@@ -348,32 +348,41 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 		auto & luma = slot.luma;
 		auto & chroma = slot.chroma;
 		auto & mem = slot.mem;
+		// Allocate one VA surface through the DRM view, then recover that same
+		// surface for both encoders. Mapping QSV before this step would bind it
+		// to a different surface than the one Vulkan writes.
 		va_frame = make_av_frame();
-		err = av_hwframe_get_buffer(vaapi_frame_ctx.get(), va_frame.get(), 0);
+		va_frame->format = AV_PIX_FMT_VAAPI;
+		va_frame->hw_frames_ctx = av_buffer_ref(vaapi_frame_ctx.get());
+		drm_frame = make_av_frame();
+		err = av_hwframe_get_buffer(drm_frame_ctx.get(), drm_frame.get(), 0);
 		if (err < 0)
-		{
-			throw std::system_error(err, av_error_category(), "Cannot create vaapi frame");
-		}
+			throw std::system_error(err, av_error_category(), "Cannot create vulkan frame");
+		err = av_hwframe_map(va_frame.get(), drm_frame.get(), AV_HWFRAME_MAP_DIRECT);
+		if (err < 0)
+			throw std::system_error(err, av_error_category(), "Cannot recover VA surface from DRM frame");
 		if (use_qsv)
 		{
 			slot.qsv_frame = make_av_frame();
 			slot.qsv_frame->format = AV_PIX_FMT_QSV;
 			slot.qsv_frame->hw_frames_ctx = av_buffer_ref(qsv_frames.get());
-			err = av_hwframe_map(slot.qsv_frame.get(), va_frame.get(), AV_HWFRAME_MAP_READ | AV_HWFRAME_MAP_DIRECT);
+			// DIRECT makes FFmpeg's VAAPI map_from reject the QSV pixel format
+			// before dispatch reaches QSV map_to. That map shares the VA surface
+			// handle without pixel copies; READ is sufficient here.
+			err = av_hwframe_map(slot.qsv_frame.get(), va_frame.get(), AV_HWFRAME_MAP_READ);
 			if (err < 0)
 				throw std::system_error(err, av_error_category(), "Cannot map Arc VA surface for QSV");
 		}
-		drm_frame = make_av_frame();
-		err = av_hwframe_get_buffer(drm_frame_ctx.get(), drm_frame.get(), 0);
-		if (err < 0)
-		{
-			throw std::system_error(err, av_error_category(), "Cannot create vulkan frame");
-		}
-		av_hwframe_map(va_frame.get(), drm_frame.get(), AV_HWFRAME_MAP_DIRECT);
 		va_frame->color_range = AVCOL_RANGE_JPEG;
 		va_frame->colorspace = AVCOL_SPC_BT709;
 		va_frame->color_primaries = AVCOL_PRI_BT709;
 		va_frame->color_trc = AVCOL_TRC_BT709;
+		if (use_qsv)
+		{
+			err = av_frame_copy_props(slot.qsv_frame.get(), va_frame.get());
+			if (err < 0)
+				throw std::system_error(err, av_error_category(), "Cannot copy QSV frame properties");
+		}
 		auto desc = (AVDRMFrameDescriptor *)drm_frame->data[0];
 
 		// layer == image

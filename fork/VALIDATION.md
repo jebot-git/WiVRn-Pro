@@ -150,3 +150,25 @@ encoding was not exercised. Face tracking was inactive in the observed session.
 Fresh marker capture, body reset and drift-accuracy testing remain separate
 physical calibration steps. Runtime screenshots/logs and private room data are
 not committed.
+
+## QSV hardware session
+
+The subsequent requested QSV session initially failed with `Cannot map Arc VA
+surface for QSV: Invalid argument`. FFmpeg's VAAPI `map_from` handles DIRECT
+before dispatch can reach QSV `map_to`, rejecting the differing hardware pixel
+format. The mapping now uses READ for QSV, whose handler shares the VA surface
+handle. DRM mapping retains DIRECT. Slot setup first recovers the actual VA
+surface allocated by the DRM view, then creates its QSV view; previously QSV
+referenced a different allocation than the one Vulkan filled. Mapping errors are
+checked and color properties copied to the QSV view.
+
+Reference: FFmpeg's [VAAPI mapping implementation](https://raw.githubusercontent.com/FFmpeg/FFmpeg/n8.0/libavutil/hwcontext_vaapi.c)
+and [QSV mapping implementation](https://raw.githubusercontent.com/FFmpeg/FFmpeg/n8.0/libavutil/hwcontext_qsv.c).
+
+Rebuilt and installed the host with warnings treated as errors. The live Arc
+A770 session now initializes all three encoders as `qsv (h265 10-bit)`, with no
+fallback. Quest stays connected, WayVR reaches FOCUSED, and the native Shora
+battery reader reconnects to all six trackers. The user's saved 100 Mbps server
+configuration remains unchanged; the Quest's existing 50 Mbps selection negotiates
+24.6 Mbps per eye plus 0.6 Mbps for the third stream. Sustained latency/quality benchmarking was not
+part of this launch test.
