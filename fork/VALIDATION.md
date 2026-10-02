@@ -335,3 +335,13 @@ from the fully extended activation pose. Opening or tracking loss resets it.
 All three joystick regression tests pass, including both hands, full travel
 in all four directions, mount independence from the activation thumb position,
 whole-hand movement, and loss/release behaviour.
+
+### Thumb-centred activation correction
+
+The fixed knuckle mount proved too low in live use. Activation now places the
+pad 12 mm below the observed thumb along the pad normal, then locks that frame
+to the wrist. Subsequent thumb travel changes the axes without moving the pad.
+The accepted 60-degree tilt and 12% deadzone remain unchanged. All three
+joystick regression tests pass, including neutral spawn at different thumb
+heights and full travel. The release worker was built, installed and restarted.
+This new positioning still awaits user confirmation.

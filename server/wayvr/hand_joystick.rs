@@ -117,14 +117,12 @@ impl ThumbPad {
             let normal = head.transform_vector3(Vec3::Y).normalize();
             let right = head.transform_vector3(Vec3::X).normalize();
             let forward = normal.cross(right).normalize();
-            // Mount above the thumb-side knuckles, independently of the raised
-            // thumb. Freeze this frame relative to the wrist until the hand opens.
+            // Centre below the thumb at activation, then freeze the complete
+            // frame relative to the wrist. Subsequent thumb travel cannot move it.
             let rotation = Quat::from_mat3(&Mat3::from_cols(right, forward, normal))
                 * Quat::from_rotation_x(60.0_f32.to_radians());
-            let fist_top = (p(7) + p(12)) * 0.5;
-            let clearance = (width * 0.25).clamp(0.015, 0.025);
             let frame =
-                Affine3A::from_rotation_translation(rotation, fist_top + normal * clearance);
+                Affine3A::from_rotation_translation(rotation, p(5) - (rotation * Vec3::Z) * 0.012);
             self.local = Some(wrist.inverse() * frame);
             self.radius = (width * 0.35).clamp(0.025, 0.04);
             self.axes = Vec2::ZERO;
@@ -133,8 +131,8 @@ impl ThumbPad {
         let tip = frame.inverse().transform_point3(p(5));
         let raw = Vec2::new(tip.x, tip.y) / self.radius;
         let length = raw.length();
-        // A thumbs-up starts beyond the pad centre. Require one centre entry
-        // before sending axes; do not calibrate neutral to that extended pose.
+        // The initial thumb projects to the centre, arming with zero axes.
+        // Keep the existing centre gate and radial deadzone.
         self.armed |= length <= 0.25;
         let target = if !self.armed || length <= 0.12 {
             Vec2::ZERO
@@ -358,7 +356,7 @@ mod tests {
             let mut p = ThumbPad::default();
             let spawned = activate(&mut p, &j);
             assert_eq!(spawned.axes, Vec2::ZERO);
-            assert!(!spawned.armed);
+            assert!(spawned.armed);
             let neutral = spawned.frame.transform_point3(Vec3::Z * 0.012);
             j[5].pose.position = xr::Vector3f {
                 x: neutral.x,
@@ -403,7 +401,7 @@ mod tests {
         }
     }
     #[test]
-    fn fixed_fist_mount_allows_full_forward_back_and_side_travel() {
+    fn thumb_centred_spawn_locks_to_wrist_and_allows_full_axis_travel() {
         for mirror in [1.0, -1.0] {
             for direction in [Vec2::X, Vec2::NEG_X, Vec2::Y, Vec2::NEG_Y] {
                 let mut j = joints();
@@ -419,7 +417,11 @@ mod tests {
                 let mut p = ThumbPad::default();
                 let pad = activate(&mut p, &j);
                 assert!(
-                    (pad.frame.translation - alternate_pad.frame.translation).length() < 0.0001
+                    (alternate_pad.frame.translation
+                        - pad.frame.translation
+                        - glam::Vec3A::new(0.0, 0.025, 0.0))
+                    .length()
+                        < 0.0001
                 );
                 let neutral = pad.frame.transform_point3(Vec3::Z * 0.012);
                 j[5].pose.position = xr::Vector3f {
