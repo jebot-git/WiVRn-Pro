@@ -45,6 +45,7 @@ class app_pacer : public u_pacing_app
 	int64_t cpu_time = 0;
 	int64_t gpu_time = 0;
 	int64_t compositor_time = 0;
+	app_performance performance;
 
 	u_var_draggable_f32 min_margin_ms;
 
@@ -65,7 +66,7 @@ class app_pacer : public u_pacing_app
 public:
 	using base_t = u_pacing_app;
 
-	app_pacer(pacing_app_factory & parent) :
+	app_pacer(pacing_app_factory & parent, uint64_t id) :
 	        u_pacing_app{
 	                .predict = method_pointer<&app_pacer::predict>,
 	                .mark_point = method_pointer<&app_pacer::mark_point>,
@@ -85,6 +86,7 @@ public:
 	                .max = 5.0,
 	        }
 	{
+		performance.id = id;
 		// U variable tracking.
 		u_var_add_root(this, "App timing info", true);
 		u_var_add_draggable_f32(this, &min_margin_ms, "Minimum margin(ms)");
@@ -114,6 +116,12 @@ public:
 	{
 		std::lock_guard lock(mutex);
 		return std::max(cpu_time, gpu_time);
+	}
+
+	app_performance snapshot()
+	{
+		std::lock_guard lock(mutex);
+		return performance;
 	}
 
 	void destroy()
@@ -218,6 +226,18 @@ void app_pacer::mark_gpu_done(int64_t frame_id, int64_t when_ns)
 	std::lock_guard lock(mutex);
 	cpu_time = lerp0(cpu_time, std::min(3 * period, frame.delivered - frame.wake_up), 0.1);
 	gpu_time = lerp0(gpu_time, std::min(3 * period, when_ns - frame.delivered), 0.1);
+	if (when_ns > performance.updated_ns)
+	{
+		if (performance.updated_ns && when_ns - performance.updated_ns < 1'000'000'000)
+			performance.interval_ns = lerp0(performance.interval_ns, when_ns - performance.updated_ns, 0.1);
+		else
+			performance.interval_ns = 0;
+		performance.updated_ns = when_ns;
+		performance.completed++;
+		performance.period_ns = period;
+		performance.cpu_ns = std::max<int64_t>(0, cpu_time);
+		performance.gpu_ns = std::max<int64_t>(0, gpu_time);
+	}
 }
 
 pacing_app_factory::pacing_app_factory() :
@@ -237,7 +257,7 @@ void pacing_app_factory::remove_app(app_pacer * app)
 xrt_result_t pacing_app_factory::create(struct u_pacing_app ** out_upa)
 {
 	std::lock_guard lock(mutex);
-	*out_upa = app_pacers.emplace_back(new app_pacer(*this));
+	*out_upa = app_pacers.emplace_back(new app_pacer(*this, ++next_id));
 	return XRT_SUCCESS;
 }
 
@@ -251,6 +271,19 @@ int64_t pacing_app_factory::get_frame_time()
 	if (app_pacers.empty())
 		return 1;
 	return std::ranges::max(std::ranges::transform_view(app_pacers, [](auto * pacer) { return pacer->get_app_time(); }));
+}
+
+std::vector<app_performance> pacing_app_factory::performance_snapshot()
+{
+	std::lock_guard lock(mutex);
+	std::vector<app_performance> result;
+	for (auto * app: app_pacers)
+	{
+		if (result.size() == 32)
+			break;
+		result.push_back(app->snapshot());
+	}
+	return result;
 }
 
 } // namespace wivrn

@@ -120,6 +120,7 @@ if (WIVRN_BUILD_SERVER)
 			encoder/video_encoder.cpp
 
 			driver/app_pacer.cpp
+			driver/performance_feed.cpp
 			driver/clock_offset.cpp
 			driver/hand_joystick.cpp
 			driver/spatial_bridge.cpp

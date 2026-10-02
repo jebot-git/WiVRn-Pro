@@ -115,10 +115,13 @@
            <div flex_direction="column" gap="8">
              <div gap="8">
                <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
-@@ -145,6 +147,9 @@
+@@ -145,6 +147,12 @@
                  <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
                </Button>
              </div>
++            <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
++              <label text="Perf" size="22" weight="bold" />
++            </Button>
 +            <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
 +              <label text="Sticks" size="22" weight="bold" />
 +            </Button>
@@ -935,7 +938,7 @@
              }),
              Ok(Err(error)) => {
                  let _ = worker.join();
-@@ -118,9 +121,25 @@
+@@ -118,9 +121,26 @@
      }
  
      /// Returns every currently queued event without blocking.
@@ -946,8 +949,9 @@
 +        let events: Vec<_> = self.event_rx.try_iter().collect();
 +        for event in &events {
 +            match event {
-+                CapturedEvent::Grabbed => self.requested_grab = true,
-+                CapturedEvent::Ungrabbed | CapturedEvent::Released => self.requested_grab = false,
++                // Ordinary acknowledgements can belong to an older focus request.
++                // Only an emergency/manual release overrides the latest command.
++                CapturedEvent::Ungrabbed => self.requested_grab = false,
 +                _ => {}
 +            }
 +        }
@@ -963,7 +967,7 @@
      }
  
      /// Set acceleration profile for current and future mice
-@@ -148,12 +167,8 @@
+@@ -148,12 +168,8 @@
  
  enum Command {
      ResetWatchdog,
@@ -978,7 +982,7 @@
      Shutdown,
  }
  
-@@ -311,6 +326,7 @@
+@@ -311,6 +327,7 @@
  #[derive(Default)]
  struct RuntimeDeviceState {
      pressed_keys: HashSet<u16>,
@@ -986,7 +990,7 @@
      active_combos: HashSet<KeyCombo>,
      horizontal_v120_remainder: f64,
      vertical_v120_remainder: f64,
-@@ -358,50 +374,24 @@
+@@ -358,50 +375,24 @@
          loop {
              match command_rx.try_recv() {
                  Ok(Command::SetGrabbed(requested)) => {
@@ -1052,7 +1056,7 @@
                  }
                  Ok(Command::SetPointerAccel { accel, speed }) => {
                      pointer_accel = PointerAccelConfig { accel, speed };
-@@ -460,17 +450,9 @@
+@@ -460,17 +451,9 @@
              continue;
          }
  
@@ -1070,7 +1074,7 @@
          }
  
          if let Err(error) = libinput.dispatch() {
-@@ -500,7 +482,7 @@
+@@ -500,7 +483,7 @@
              }
          }
  
@@ -1079,7 +1083,7 @@
              pending_grab = false;
  
              match restricted_state.borrow_mut().set_grabbed(true) {
-@@ -528,6 +510,7 @@
+@@ -528,6 +511,7 @@
                          true,
                      );
                      log::warn!("Could not grab input devices: {error}");
@@ -1087,7 +1091,7 @@
                  }
              }
          }
-@@ -670,8 +653,17 @@
+@@ -670,8 +654,17 @@
                  return ProcessResult::ReceiverGone;
              }
          }
@@ -1106,7 +1110,7 @@
              if par
                  .event_tx
                  .send(CapturedEvent::PointerButton {
-@@ -840,6 +832,7 @@
+@@ -840,6 +833,7 @@
  fn clear_transient_state(runtime_devices: &mut HashMap<LibinputDevice, RuntimeDeviceState>) {
      for state in runtime_devices.values_mut() {
          state.pressed_keys.clear();
@@ -1114,7 +1118,7 @@
          state.active_combos.clear();
          state.horizontal_v120_remainder = 0.0;
          state.vertical_v120_remainder = 0.0;
-@@ -960,10 +953,63 @@
+@@ -960,10 +954,81 @@
      )
  }
  
@@ -1171,6 +1175,24 @@
 +            command_rx.try_recv().unwrap(),
 +            Command::SetGrabbed(false)
 +        ));
++    }
++    #[test]
++    fn stale_acknowledgements_do_not_rearm_capture() {
++        let (command_tx, command_rx) = mpsc::sync_channel(8);
++        let (event_tx, event_rx) = mpsc::channel();
++        let mut capture = InputCapture {command_tx, event_rx, worker: None, requested_grab: false};
++        for desired in [true, false, true] {capture.set_grabbed(desired).unwrap();}
++        for _ in 0..3 {command_rx.try_recv().unwrap();}
++        event_tx.send(CapturedEvent::Released).unwrap();
++        capture.drain_events();
++        command_rx.try_recv().unwrap(); // watchdog
++        capture.set_grabbed(true).unwrap();
++        assert!(command_rx.try_recv().is_err());
++        capture.set_grabbed(false).unwrap();command_rx.try_recv().unwrap();
++        event_tx.send(CapturedEvent::Grabbed).unwrap();
++        capture.drain_events();command_rx.try_recv().unwrap();
++        capture.set_grabbed(false).unwrap();
++        assert!(command_rx.try_recv().is_err());
 +    }
 +    #[test]
 +    fn switching_waits_for_keyboard_and_mouse_button_release() {
@@ -1332,12 +1354,30 @@
              self.wm.mouse = None;
          }
      }
+--- a/wayvr/src/gui/asset.rs
++++ b/wayvr/src/gui/asset.rs
+@@ -4,6 +4,9 @@
+ 
+ impl wgui::assets::AssetProvider for GuiAsset {
+     fn load_from_path(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
++        if path == "gui/performance.xml" {
++            return Ok(include_bytes!("../../../../performance.xml").to_vec());
++        }
+         match Self::get(path) {
+             Some(data) => Ok(data.data.to_vec()),
+             None => anyhow::bail!("embedded file {path} not found"),
 --- a/wayvr/src/gui/panel/button.rs
 +++ b/wayvr/src/gui/panel/button.rs
-@@ -520,6 +520,14 @@
+@@ -520,6 +520,20 @@
                          Ok(EventResult::Consumed)
                      })
                  }
++                "::PerformanceToggle" => Box::new(move |common, data, app, _| {
++                    if !test_button(data) || !test_duration(&button, app) { return Ok(EventResult::Pass); }
++                    crate::performance_panel::toggle(app);
++                    button.set_sticky_state(common, app.performance.mode != 0);
++                    Ok(EventResult::Consumed)
++                }),
 +                "::HandJoysticksToggle" => Box::new(move |common, data, app, _| {
 +                    if !test_button(data) || !test_duration(&button, app) {
 +                        return Ok(EventResult::Pass);
@@ -1367,7 +1407,7 @@
                  log_missing_attrib(parser_state, TAG, "_device");
 --- a/wayvr/src/main.rs
 +++ b/wayvr/src/main.rs
-@@ -23,13 +23,31 @@
+@@ -23,13 +23,35 @@
  mod config;
  mod graphics;
  mod gui;
@@ -1386,6 +1426,10 @@
 +#[path = "../../../mouse_priority.rs"]
 +mod mouse_priority;
  mod overlays;
++#[path = "../../../performance.rs"]
++mod performance;
++#[path = "../../../performance_panel.rs"]
++mod performance_panel;
  mod shaders;
 +#[path = "../../../shora_battery.rs"]
 +mod shora_battery;
@@ -1399,7 +1443,7 @@
  
  use std::{
      path::PathBuf,
-@@ -184,6 +202,9 @@
+@@ -184,6 +206,9 @@
  
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
@@ -1583,19 +1627,21 @@
                  0,
 --- a/wayvr/src/state.rs
 +++ b/wayvr/src/state.rs
-@@ -55,6 +55,7 @@
+@@ -55,6 +55,8 @@
      pub executor: wlx_common::async_executor::AsyncExecutor,
  
      pub input_state: InputState,
++    pub performance: crate::performance::Feed,
 +    pub shora_battery: crate::shora_battery::BatteryFeed,
      pub screens: SmallVec<[ScreenMeta; 8]>,
      pub anchor: Affine3A,
      pub anchor_grabbed: bool,
-@@ -203,6 +204,7 @@
+@@ -203,6 +205,8 @@
              audio,
              wgui_shared,
              input_state: InputState::new(),
 +            shora_battery: crate::shora_battery::BatteryFeed::new(),
++            performance: crate::performance::Feed::new(),
              screens: smallvec![],
              anchor: Affine3A::IDENTITY,
              anchor_grabbed: false,
@@ -1635,7 +1681,7 @@
              return;
          };
  
-+        if self.name.as_ref() == crate::overlays::watch::WATCH_NAME {
++        if matches!(self.name.as_ref(), crate::overlays::watch::WATCH_NAME | crate::performance_panel::NAME) {
 +            if let Positioning::FollowHand { hand, .. } = state.positioning {
 +                let pointer = &app.input_state.pointers[hand as usize];
 +                if (pointer.hand_tracking && pointer.wrist_pose.is_none())

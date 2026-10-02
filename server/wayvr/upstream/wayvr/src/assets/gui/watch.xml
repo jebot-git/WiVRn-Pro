@@ -147,6 +147,9 @@
                 <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
               </Button>
             </div>
+            <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
+              <label text="Perf" size="22" weight="bold" />
+            </Button>
             <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
               <label text="Sticks" size="22" weight="bold" />
             </Button>

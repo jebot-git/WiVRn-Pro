@@ -437,8 +437,18 @@ class Dashboard(HubWindow):
 
 def main():
     app = QApplication(sys.argv)
+    from dashboard_instance import DashboardInstance
+    instance = DashboardInstance()
+    try:
+        if not instance.acquire(): return 0
+    except RuntimeError as error:
+        print(error, file=sys.stderr)
+        return 1
     app.setStyle('Fusion'); app.setStyleSheet(STYLE)
-    window = Dashboard(); window.show()
-    return app.exec()
+    window = Dashboard(); instance.window = window; window.show()
+    try:
+        return app.exec()
+    finally:
+        instance.close()
 
 if __name__ == '__main__': sys.exit(main())

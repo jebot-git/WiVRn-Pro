@@ -20,6 +20,7 @@
 #pragma once
 
 #include "app_pacer.h"
+#include "performance_feed.h"
 #include "clock_offset.h"
 #include "compositor/compositor.h"
 #include "inplace_vector.hpp"
@@ -75,6 +76,7 @@ class wivrn_session : public xrt_system_devices
 	shora_bridge shora;
 	wivrn::compositor compositor;
 	pacing_app_factory app_pacers;
+	performance_feed performance{app_pacers};
 
 	b_system & xrt_system;
 	ipc_server * mnd_ipc_server;

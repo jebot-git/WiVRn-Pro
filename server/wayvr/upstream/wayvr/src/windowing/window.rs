@@ -314,7 +314,7 @@ impl OverlayWindowConfig {
             return;
         };
 
-        if self.name.as_ref() == crate::overlays::watch::WATCH_NAME {
+        if matches!(self.name.as_ref(), crate::overlays::watch::WATCH_NAME | crate::performance_panel::NAME) {
             if let Positioning::FollowHand { hand, .. } = state.positioning {
                 let pointer = &app.input_state.pointers[hand as usize];
                 if (pointer.hand_tracking && pointer.wrist_pose.is_none())

@@ -55,6 +55,7 @@ pub struct AppState {
     pub executor: wlx_common::async_executor::AsyncExecutor,
 
     pub input_state: InputState,
+    pub performance: crate::performance::Feed,
     pub shora_battery: crate::shora_battery::BatteryFeed,
     pub screens: SmallVec<[ScreenMeta; 8]>,
     pub anchor: Affine3A,
@@ -205,6 +206,7 @@ impl AppState {
             wgui_shared,
             input_state: InputState::new(),
             shora_battery: crate::shora_battery::BatteryFeed::new(),
+            performance: crate::performance::Feed::new(),
             screens: smallvec![],
             anchor: Affine3A::IDENTITY,
             anchor_grabbed: false,

@@ -623,3 +623,103 @@ The upstream patch/hash audit passes.
 
 Release worker/shader build passed and was installed. WayVR restarted with
 the headset session still running.
+
+### Initial native performance overlay (2026-10-02)
+
+The wrist **Perf** button cycles off → wrist → floating → off. The native panel
+is passive: no input focus, grabbing, mouse routing or game-input blocking. It
+starts off each WayVR launch. Wrist placement follows the watch hand selected at
+spawn and hides on lost tracking; floating placement stays in the playspace.
+
+WiVRn publishes a versioned 5 Hz snapshot in the private runtime directory as
+`wivrn-pro/performance.json` (0600, atomic rename, exclusive publisher lock).
+Feedback only updates bounded caches. JSON and filesystem work run on a worker;
+WayVR reads it on a separate sampler thread. Both caches expire after two seconds.
+Host CPU/Intel GPU temperatures and used/total RAM refresh once per second.
+The existing headset/controller and Shora battery hooks are reused.
+
+The panel shows the busiest recent XR pacer by its session-local numeric ID,
+including overlay sessions. Monado's factory provides no application name here;
+it is deliberately not labelled as the active game. FPS uses smoothed GPU-done
+intervals, CPU time is wake-to-delivery pacing and GPU time is delivery-to-GPU-done
+wait. These are estimates, not instrumented CPU/GPU execution time. The bounded
+30-second graph samples the completion interval at 5 Hz; red means more than 10%
+over the pacer's frame budget. It is a trend, not a full per-frame spike trace.
+History clears when the producer/session/pacer changes or data expires.
+
+Streaming timing reports are cached separately by stage and stream so a newer
+receive report cannot erase an older frame's decoder/display timing. The UI shows
+worst latest encode, delivery, decode and encode-to-display measurements across
+fresh streams. Delivery includes transport/queue time; encode-to-display is not
+motion-to-photon latency. Extra displays count incremental times_displayed per
+unique frame, independently for each tiled stream; they are not SteamVR
+reprojection counts. Invalid/missing measurements display as unknown.
+
+Native publisher tests cover repeated and reordered feedback, late stage reports,
+invalid intervals, bounded history, file permissions, exclusive ownership and
+cleanup. Rust tests cover validation/expiry, source selection, memory accounting,
+unsafe files and parsing both the real panel and watch layouts without XR.
+Native source integration remains recorded in the pinned WayVR patch/hash audit.
+
+### Settings ownership and capture-focus acknowledgements (2026-10-02)
+
+The Qt settings frontend now reserves `io.github.wivrn.ProDashboard` on the login
+session bus before creating a window. KDE and WayVR therefore share one instance;
+a second launch from the other display exits without creating a window or moving
+the existing one. Same-display launches raise the existing window. The bus name
+is released automatically on exit/crash. A migration check preserves an already
+running pre-update frontend and its unsaved settings until the user closes it.
+
+Native-window clicks intentionally route the physical keyboard/mouse to WayVR;
+Super+Z returns them to Linux. The examined 17:46–19:46 CEST logs contain one
+capture notification transition, at 18:11:06, followed by release at 18:11:17,
+so repeated notifications could not be reproduced from those logs. The existing
+notification remains limited to once per WayVR process. Fixed a related race:
+late ordinary Grabbed/Released acknowledgements no longer overwrite a newer
+requested focus state and cause redundant capture commands. Emergency/manual
+release still overrides it and permits an explicit later click to rearm.
+
+Isolated D-Bus tests exercise desktop-first/VR-first exclusion and crash recovery;
+14 existing Qt settings regressions pass. Input tests cover stale acknowledgements,
+manual release/rearm and held-key/button release before capture.
+
+### Sharpening and USB investigation (2026-10-02)
+
+No additional sharpening pass is needed to expose Meta's filters. The client
+already offers Disabled/Normal/Quality in Settings → Post-processing → Sharpening,
+using XR_FB_composition_layer_settings. Meta documents Normal as RCAS based and
+Quality as Meta Quest Super Resolution since v55. The streamed projection uses an
+RGBA sRGB swapchain, avoiding the documented YUV-layer limitation. Saved flags are
+preserved, defaults are disabled, and this investigation did not change the APK
+or the user's selected filter. A standalone FidelityFX CAS compute pass is feasible
+after RGB reconstruction, but would add a mobile GPU pass and must avoid double
+sharpening. Prefer evaluating the existing Quality setting first.
+References: https://developers.meta.com/vr/blog/vr-image-quality-meta-quest-super-resolution/
+and https://gpuopen.com/fidelityfx-cas/ .
+
+The sampled two-hour kernel log (approximately 17:46–19:46 CEST) contains 1,126
+`usb 1-5: clear tt ... error -71` reports. Hub 1-5 is a Genesys 05e3:0610 USB2 hub;
+its three Shiftall 04da:3f18 receivers at 1-5.1/.2/.3 map to ttyACM0/1/3.
+All three disconnected together at 18:08:03, 19:14:26–27 and 19:40:07. After the
+last event they re-enumerated by 19:40:09 and GX6 reports resumed at 19:40:11.
+A burst at 19:29:15 preceded two tracker expirations at 19:29:20 (five-second
+watchdog). ttyACM2 is on the separate 1-10 path and is not implicated.
+
+This strongly implicates the shared USB path, not a serial read-timeout setting;
+the exact hub/cable/port/power/firmware cause remains unproven. Receiver runtime
+PM is already `on`, all were active; the hub itself has `auto` and zero suspend
+delay, which is a possible follow-up experiment, not proof of the cause. Shora's
+100 ms serial read timeouts are ordinary polling and ignored; actual I/O failures
+trigger its existing two-second reconnect loop. First isolate the hub/upstream
+cable/host port before increasing timeouts. No USB resets, power changes or
+tracker configuration changes were performed for this investigation.
+USB error semantics: https://docs.kernel.org/driver-api/usb/error-codes.html .
+
+Final verification: server/runtime and release WayVR builds passed; all 44 WayVR
+unit tests, 14 Qt regression tests, isolated cross-display D-Bus tests and native
+telemetry tests passed. Installed server and worker hashes match their build
+outputs. The installed launcher correctly declined a duplicate while retaining
+the existing legacy desktop window. WiVRn-Pro restarted at 19:51 CEST, is active
+with zero unexpected restarts, and Shora resumed all four physical tracker feeds.
+The Quest ADB connection is offline and SessionRunning=false: in-headset visual
+placement, live timing accuracy and the reported popup recurrence remain pending.

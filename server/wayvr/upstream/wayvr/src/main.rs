@@ -38,6 +38,10 @@ mod ipc;
 #[path = "../../../mouse_priority.rs"]
 mod mouse_priority;
 mod overlays;
+#[path = "../../../performance.rs"]
+mod performance;
+#[path = "../../../performance_panel.rs"]
+mod performance_panel;
 mod shaders;
 #[path = "../../../shora_battery.rs"]
 mod shora_battery;

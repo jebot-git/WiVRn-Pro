@@ -1,0 +1,19 @@
+<layout version="2">
+  <elements>
+    <rectangle padding="18" width="640" color="background" border="2" border_color="primary" round="12" flex_direction="column" gap="10" interactable="0">
+      <label text="WiVRn-Pro Performance" size="26" weight="bold" color="primary" />
+      <label id="metrics" text="Waiting for telemetry" size="20" color="on_background" />
+      <label text="XR completion interval — sampled trend (30 seconds)" size="16" color="on_background_variant" />
+      <BarGraph id="frames" width="600" height="90" unit="ms" limit_min="0" limit_max="40" capacity="149" />
+      <label text="Pacing estimates; XR sessions include overlays. Red: over budget." size="16" color="on_background_variant" />
+      <label id="host" text="Reading host sensors" size="18" color="on_background" />
+      <div gap="12">
+        <label text="HMD" size="18" /><label _source="battery" _device="0" size="18" color="primary" />
+        <label text="Left" size="18" /><label _source="battery" _device="1" size="18" color="primary" />
+        <label text="Right" size="18" /><label _source="battery" _device="2" size="18" color="primary" />
+      </div>
+      <label _source="shora_batteries" size="17" color="primary" />
+      <label text="Wrist Perf button: wrist → floating → off" size="16" color="on_background_variant" />
+    </rectangle>
+  </elements>
+</layout>

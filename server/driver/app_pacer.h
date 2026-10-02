@@ -29,11 +29,19 @@ namespace wivrn
 class wivrn_session;
 class app_pacer;
 
+// Values are pacing estimates, not instrumented CPU/GPU execution times.
+struct app_performance
+{
+	uint64_t id = 0, completed = 0;
+	int64_t updated_ns = 0, period_ns = 0, interval_ns = 0, cpu_ns = 0, gpu_ns = 0;
+};
+
 class pacing_app_factory : public u_pacing_app_factory
 {
 	friend class app_pacer;
 	std::mutex mutex;
 	std::vector<app_pacer *> app_pacers;
+	uint64_t next_id = 0;
 	void remove_app(app_pacer *);
 
 public:
@@ -44,6 +52,7 @@ public:
 	void destroy();
 
 	int64_t get_frame_time();
+	std::vector<app_performance> performance_snapshot();
 };
 
 } // namespace wivrn

@@ -126,8 +126,9 @@ impl InputCapture {
         let events: Vec<_> = self.event_rx.try_iter().collect();
         for event in &events {
             match event {
-                CapturedEvent::Grabbed => self.requested_grab = true,
-                CapturedEvent::Ungrabbed | CapturedEvent::Released => self.requested_grab = false,
+                // Ordinary acknowledgements can belong to an older focus request.
+                // Only an emergency/manual release overrides the latest command.
+                CapturedEvent::Ungrabbed => self.requested_grab = false,
                 _ => {}
             }
         }
@@ -999,6 +1000,24 @@ mod routing_tests {
             command_rx.try_recv().unwrap(),
             Command::SetGrabbed(false)
         ));
+    }
+    #[test]
+    fn stale_acknowledgements_do_not_rearm_capture() {
+        let (command_tx, command_rx) = mpsc::sync_channel(8);
+        let (event_tx, event_rx) = mpsc::channel();
+        let mut capture = InputCapture {command_tx, event_rx, worker: None, requested_grab: false};
+        for desired in [true, false, true] {capture.set_grabbed(desired).unwrap();}
+        for _ in 0..3 {command_rx.try_recv().unwrap();}
+        event_tx.send(CapturedEvent::Released).unwrap();
+        capture.drain_events();
+        command_rx.try_recv().unwrap(); // watchdog
+        capture.set_grabbed(true).unwrap();
+        assert!(command_rx.try_recv().is_err());
+        capture.set_grabbed(false).unwrap();command_rx.try_recv().unwrap();
+        event_tx.send(CapturedEvent::Grabbed).unwrap();
+        capture.drain_events();command_rx.try_recv().unwrap();
+        capture.set_grabbed(false).unwrap();
+        assert!(command_rx.try_recv().is_err());
     }
     #[test]
     fn switching_waits_for_keyboard_and_mouse_button_release() {

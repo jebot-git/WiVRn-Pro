@@ -835,6 +835,7 @@ void wivrn_session::operator()(from_headset::feedback && feedback)
 	if (not o)
 		return;
 	compositor.on_feedback(feedback, o);
+	performance.on_feedback(feedback, compositor.get_framerate());
 
 	if (feedback.received_first_packet)
 		trace::instant_feedback("receive_begin", o.from_headset(feedback.received_first_packet), feedback.frame_index, feedback.stream_index);
