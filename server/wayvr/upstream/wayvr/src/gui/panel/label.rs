@@ -52,6 +52,13 @@ pub(super) fn setup_custom_label<S: 'static>(
     };
 
     let callback: EventCallback<AppState, S> = match source {
+        "shora_batteries" => Box::new(|common, data, app, _| {
+            let (text, low) = app.shora_battery.text(6);
+            let label = data.obj.get_as_mut::<WidgetLabel>().unwrap();
+            label.set_color(common, if low {BAT_LOW} else {BAT_NORMAL}.into(), false);
+            label.set_text(common, Translation::from_raw_text(&text));
+            Ok(EventResult::Pass)
+        }),
         "battery" => {
             let Some(device) = attribs.get_value("_device") else {
                 log_missing_attrib(parser_state, TAG, "_device");

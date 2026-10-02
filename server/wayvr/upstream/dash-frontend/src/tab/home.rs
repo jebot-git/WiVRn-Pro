@@ -27,7 +27,18 @@ pub struct TabHome<T> {
 }
 
 impl<T> Tab<T> for TabHome<T> {
-	fn get_type(&self) -> TabType {
+	fn update(&mut self, frontend: &mut Frontend<T>, _time_ms: u32, data: &mut T) -> anyhow::Result<()> {
+        if let Ok(id) = self.state.get_widget_id("shora_batteries") {
+            let (text, low) = frontend.interface.tracking_batteries(data);
+            let mut common = frontend.layout.common();
+            let color = common.state.globals.get().palette.find(if low {"danger"} else {"on_background"});
+            let mut label = common.state.widgets.cast_as::<WidgetLabel>(id)?;
+            label.set_text(&mut common, Translation::from_raw_text(&text));
+            if let Some(color) = color {label.set_color(&mut common, color, false);}
+        }
+        Ok(())
+    }
+    fn get_type(&self) -> TabType {
 		TabType::Home
 	}
 }

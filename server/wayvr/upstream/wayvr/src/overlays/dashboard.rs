@@ -409,6 +409,7 @@ impl DashInterfaceLive {
 }
 
 impl DashInterface<AppState> for DashInterfaceLive {
+    fn tracking_batteries(&mut self, app: &mut AppState) -> (String, bool) { app.shora_battery.text(16) }
     fn window_list(&mut self, app: &mut AppState) -> anyhow::Result<Vec<WvrWindow>> {
         let wvr_server = app.wvr_server.as_mut().unwrap();
         Ok(wvr_server

@@ -24,6 +24,8 @@
 
       <label id="label_hello" margin_top="24" size="32" weight="bold" color="on_background" />
 
+      <label id="shora_batteries" size="14" color="on_background" margin_top="8" />
+
       <!-- main button list -->
       <div flex_direction="row" gap="8" margin_top="32">
         <MenuButton id="btn_apps" icon="@/dashboard/apps.svg" translation="APPLICATIONS" />

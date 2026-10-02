@@ -157,3 +157,19 @@ Change the TCP/UDP port used for the connection.
 Default value: unset
 
 If set, overrides the name displayed in the server list.
+
+### Shora batteries in WayVR
+
+The built-in wrist panel and dashboard Home tab read the existing Shora status
+hook directly from the supervised backend. No `shora-wayvr` helper, Python panel
+or separate service is needed. The wrist shows up to six trackers; Home shows up
+to sixteen, with overflow counts. Batteries at 20% or below are highlighted.
+Inactive trackers show `offline`; absent or invalid readings show `unknown`.
+Extension trackers do not inherit another sensor's battery value.
+
+The worker receives `WIVRN_SHORA_CONTROL_SOCKET` from its supervisor. A separate
+reader polls every 500 ms, checks the socket peer UID and bounds responses. The
+render thread reads a cache; failures clear it and readings older than three
+seconds display `disconnected / stale`. Existing custom wrist XML can override
+the built-in layout; add a label with `_source="shora_batteries"` to such layouts
+to opt into the same feed. User WayVR profiles are preserved.

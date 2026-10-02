@@ -1,3 +1,36 @@
+--- a/dash-frontend/assets/gui/tab/home.xml
++++ b/dash-frontend/assets/gui/tab/home.xml
+@@ -24,6 +24,8 @@
+ 
+       <label id="label_hello" margin_top="24" size="32" weight="bold" color="on_background" />
+ 
++      <label id="shora_batteries" size="14" color="on_background" margin_top="8" />
++
+       <!-- main button list -->
+       <div flex_direction="row" gap="8" margin_top="32">
+         <MenuButton id="btn_apps" icon="@/dashboard/apps.svg" translation="APPLICATIONS" />
+--- a/dash-frontend/src/tab/home.rs
++++ b/dash-frontend/src/tab/home.rs
+@@ -27,7 +27,18 @@
+ }
+ 
+ impl<T> Tab<T> for TabHome<T> {
+-	fn get_type(&self) -> TabType {
++	fn update(&mut self, frontend: &mut Frontend<T>, _time_ms: u32, data: &mut T) -> anyhow::Result<()> {
++        if let Ok(id) = self.state.get_widget_id("shora_batteries") {
++            let (text, low) = frontend.interface.tracking_batteries(data);
++            let mut common = frontend.layout.common();
++            let color = common.state.globals.get().palette.find(if low {"danger"} else {"on_background"});
++            let mut label = common.state.widgets.cast_as::<WidgetLabel>(id)?;
++            label.set_text(&mut common, Translation::from_raw_text(&text));
++            if let Some(color) = color {label.set_color(&mut common, color, false);}
++        }
++        Ok(())
++    }
++    fn get_type(&self) -> TabType {
+ 		TabType::Home
+ 	}
+ }
 --- a/wayvr/build.rs
 +++ b/wayvr/build.rs
 @@ -1,6 +1,5 @@
@@ -44,19 +77,48 @@
 -
 -    Ok(re.replace_all(&output_str, "${1}.r${2}.${3}").into_owned())
 -}
+--- a/wayvr/src/assets/gui/watch.xml
++++ b/wayvr/src/assets/gui/watch.xml
+@@ -119,6 +119,8 @@
+         <Tracker idx="3" />
+       </div>
+ 
++      <label id="shora_batteries" _source="shora_batteries" size="15" color="primary" />
++
+       <!-- All other elements inside the container -->
+       <div flex_direction="column" gap="8" min_width="300">
+         <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
+--- a/wayvr/src/gui/panel/label.rs
++++ b/wayvr/src/gui/panel/label.rs
+@@ -52,6 +52,13 @@
+     };
+ 
+     let callback: EventCallback<AppState, S> = match source {
++        "shora_batteries" => Box::new(|common, data, app, _| {
++            let (text, low) = app.shora_battery.text(6);
++            let label = data.obj.get_as_mut::<WidgetLabel>().unwrap();
++            label.set_color(common, if low {BAT_LOW} else {BAT_NORMAL}.into(), false);
++            label.set_text(common, Translation::from_raw_text(&text));
++            Ok(EventResult::Pass)
++        }),
+         "battery" => {
+             let Some(device) = attribs.get_value("_device") else {
+                 log_missing_attrib(parser_state, TAG, "_device");
 --- a/wayvr/src/main.rs
 +++ b/wayvr/src/main.rs
-@@ -30,6 +30,9 @@
+@@ -30,6 +30,11 @@
  mod subsystem;
  mod test;
  mod windowing;
 +#[cfg(test)]
 +#[path = "../../../wivrn_tests.rs"]
 +mod wivrn_tests;
++#[path = "../../../shora_battery.rs"]
++mod shora_battery;
  
  use std::{
      path::PathBuf,
-@@ -184,6 +187,9 @@
+@@ -184,6 +189,9 @@
  
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
@@ -68,13 +130,10 @@
  
 --- a/wayvr/src/overlays/dashboard.rs
 +++ b/wayvr/src/overlays/dashboard.rs
-@@ -82,6 +82,24 @@
-         } else {
-             for p in app.session.config.autostart_apps.clone() {
-                 let _ = interface.process_launch(app, false, p);
-+            }
-+        }
-+
+@@ -85,6 +85,24 @@
+             }
+         }
+ 
 +        if let Ok(exec) = std::env::var("WIVRN_DASHBOARD_EXECUTABLE")
 +            && !exec.is_empty()
 +            && app.wvr_server.is_some()
@@ -90,6 +149,45 @@
 +            };
 +            if let Err(error) = interface.process_launch(app, false, params) {
 +                log::warn!("Could not open WiVRn dashboard: {error}");
-             }
-         }
++            }
++        }
++
+         let tutorial = !app.session.config.tutorial_graduated;
  
+         let frontend = frontend::Frontend::new(frontend::InitParams {
+@@ -391,6 +409,7 @@
+ }
+ 
+ impl DashInterface<AppState> for DashInterfaceLive {
++    fn tracking_batteries(&mut self, app: &mut AppState) -> (String, bool) { app.shora_battery.text(16) }
+     fn window_list(&mut self, app: &mut AppState) -> anyhow::Result<Vec<WvrWindow>> {
+         let wvr_server = app.wvr_server.as_mut().unwrap();
+         Ok(wvr_server
+--- a/wayvr/src/state.rs
++++ b/wayvr/src/state.rs
+@@ -55,6 +55,7 @@
+     pub executor: wlx_common::async_executor::AsyncExecutor,
+ 
+     pub input_state: InputState,
++    pub shora_battery: crate::shora_battery::BatteryFeed,
+     pub screens: SmallVec<[ScreenMeta; 8]>,
+     pub anchor: Affine3A,
+     pub anchor_grabbed: bool,
+@@ -203,6 +204,7 @@
+             audio,
+             wgui_shared,
+             input_state: InputState::new(),
++            shora_battery: crate::shora_battery::BatteryFeed::new(),
+             screens: smallvec![],
+             anchor: Affine3A::IDENTITY,
+             anchor_grabbed: false,
+--- a/wlx-common/src/dash_interface.rs
++++ b/wlx-common/src/dash_interface.rs
+@@ -74,6 +74,7 @@
+ }
+ 
+ pub trait DashInterface<T> {
++	fn tracking_batteries(&mut self, _data: &mut T) -> (String, bool) { (String::new(), false) }
+ 	fn window_list(&mut self, data: &mut T) -> anyhow::Result<Vec<WvrWindow>>;
+ 	fn window_set_visible(&mut self, data: &mut T, handle: WvrWindowHandle, visible: bool) -> anyhow::Result<()>;
+ 	fn window_request_close(&mut self, data: &mut T, handle: WvrWindowHandle) -> anyhow::Result<()>;

@@ -159,7 +159,27 @@ void xr::session::end_frame(XrTime display_time, const std::vector<XrComposition
 	};
 
 	auto lock = queue->lock();
-	CHECK_XR(xrEndFrame(id, &end_info));
+	const auto result = xrEndFrame(id, &end_info);
+	if (result == XR_ERROR_POSE_INVALID)
+	{
+		auto log_pose = [](const char * kind, const XrPosef & pose) {
+			const auto & q = pose.orientation;
+			const auto & p = pose.position;
+			spdlog::warn("Invalid frame: {} orientation [{}, {}, {}, {}], position [{}, {}, {}]", kind, q.x, q.y, q.z, q.w, p.x, p.y, p.z);
+		};
+		for (const auto * layer: layers)
+		{
+			if (layer->type == XR_TYPE_COMPOSITION_LAYER_QUAD)
+				log_pose("quad", reinterpret_cast<const XrCompositionLayerQuad *>(layer)->pose);
+			else if (layer->type == XR_TYPE_COMPOSITION_LAYER_PROJECTION)
+			{
+				const auto * projection = reinterpret_cast<const XrCompositionLayerProjection *>(layer);
+				for (uint32_t i = 0; i < projection->viewCount; ++i)
+					log_pose("projection", projection->views[i].pose);
+			}
+		}
+	}
+	CHECK_XR(result);
 }
 
 void xr::session::begin_session(XrViewConfigurationType view_config)

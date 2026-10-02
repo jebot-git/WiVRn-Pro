@@ -2,6 +2,7 @@
 #include "wayvr_worker.h"
 #include <algorithm>
 #include <cerrno>
+#include <filesystem>
 #include <csignal>
 #include <sys/prctl.h>
 #include <sys/wait.h>
@@ -34,6 +35,9 @@ void wayvr_worker::spawn()
 	env = g_environ_setenv(env, "WIVRN_MANAGED_WAYVR", "1", TRUE);
 	env = g_environ_setenv(env, "WIVRN_DASHBOARD_EXECUTABLE", dashboard.c_str(), TRUE);
 	env = g_environ_setenv(env, "WAYVR_LOGFILE", log_path.c_str(), TRUE);
+    auto runtime = std::getenv("XDG_RUNTIME_DIR");
+    auto control = ((runtime ? std::filesystem::path(runtime) : std::filesystem::path("/run/user") / std::to_string(getuid())) / "wivrn-pro/ShoraControl").string();
+    env = g_environ_setenv(env, "WIVRN_SHORA_CONTROL_SOCKET", control.c_str(), TRUE);
 	GError * error = nullptr;
 	auto parent = getpid();
 	auto ok = g_spawn_async(nullptr, argv.data(), env, G_SPAWN_DO_NOT_REAP_CHILD, [](gpointer data) {

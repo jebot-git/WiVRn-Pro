@@ -127,8 +127,8 @@ public:
 	{
 		// Position of this viewport in the world
 		xr::spaces space; // Must be world to allow the cursor to work
-		glm::vec3 position;
-		glm::quat orientation;
+		glm::vec3 position{0};
+		glm::quat orientation{1, 0, 0, 0};
 		glm::vec2 size;
 
 		// Position of this viewport in the swapchain image
@@ -150,8 +150,8 @@ public:
 	{
 		// Position of this window in the world
 		xr::spaces space;
-		glm::vec3 position;
-		glm::quat orientation;
+		glm::vec3 position{0};
+		glm::quat orientation{1, 0, 0, 0};
 		glm::vec2 size;
 	};
 

@@ -8,6 +8,9 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
+# No C++ modules are used. Keep conventional header dependency tracking; the
+# experimental module scan is unnecessary for this fork.
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(ANDROID)

@@ -1,4 +1,6 @@
-# Offline validation — 2026-10-02
+# Validation — 2026-10-02
+
+## Earlier offline validation
 
 Validated on this branch without starting the WiVRn streaming runtime, connecting to a headset,
 changing installed services, selecting an OpenXR runtime or accessing tracker hardware.
@@ -60,7 +62,7 @@ at fetched master `0d9e6e121a180f7dc9b806e9f04284f89bea6bb8`. These were reporte
 not merged; synchronization tooling is ready for a reviewed future update.
 GitHub workflows are supplied but have not been run on a hosted fork.
 
-Live HMD tests remain suspended until the user requests them. QSV hardware
+At that stage, live HMD tests were suspended until requested. QSV hardware
 encoding, latency, marker capture accuracy, Quest permissions/UX, Wi-Fi routing
 on-device and real Shora tracking/reconnect behavior remain hardware-unverified.
 The PCI policy includes known discrete Arc IDs; unknown/new IDs need review.
@@ -92,3 +94,59 @@ calls; its persistence, hidden-on-loss behavior and default-off overlay were
 verified. No deployment, installed service change or live HMD test was performed.
 The new 5 cm / 3 degree / 2 second guard thresholds, calibration-guide usability,
 and actual reduction in body-tracking drift remain hardware-unverified.
+
+## Unified build and live deployment
+
+The user resumed hardware testing and confirmed the headset and trackers were
+ready. Built and installed the complete QSV-enabled server/runtime, bundled
+SlimeVR-Rust/Shora backend, Qt6 frontend, upstream-source WayVR and wayvrctl,
+and Quest Pro APK. PipeWire audio is enabled. Prefix:
+`~/.local/opt/wivrn-pro`; Quest package: `org.meumeu.wivrn.spatial`.
+
+The native WayVR battery integration adds three tests (six WayVR tests total):
+formatting of low/unknown/offline values and overflow, stale-cache expiry, and
+actual Unix-socket request/response framing. All passed. The source audit verifies
+all 723 imported inputs and the updated integration patch. The offline fork suite
+passed again with Unix-socket permission; its first sandboxed attempt could not
+bind a test socket. The supervisor test checks the private Shora status socket.
+
+Initial startup exposed a stale C++ object/header layout mismatch in a damaged
+Ninja dependency database. Removed that generated database and rebuilt all host
+objects; verified the supervisor headers now appear in main.cpp's dependencies.
+Disabled unused C++ module scanning. A separate Quest startup failure submitted
+an invalid OpenXR pose: lobby rendering now waits for valid located views, and UI
+viewport/window poses start with identity orientation. The rebuilt client then
+connected successfully; xrEndFrame failures now include layer-pose diagnostics.
+
+Live observations after the fixes:
+
+- Unified service remained active with zero automatic restarts during observation.
+- Quest Pro paired over Wi-Fi; Arc A770 VAAPI HEVC streaming established.
+- WayVR reached FOCUSED, launched the integrated Qt dashboard on its virtual
+  Wayland display, and exposed dashboard/watch/desktop overlays through IPC.
+  A second attach-only Qt frontend runs on the PC desktop.
+- The native battery hook connected to the supervised Shora process: six active
+  trackers, four real readings (chest/hip 90%, ankles 80%), two knee extensions
+  without battery values. Unknown values remain unknown.
+- PipeWire `wivrn.sink` exists and is RUNNING. Audible output and microphone
+  capture were not verified by listening/recording.
+- Native spatial publication reports a valid tracked HMD, saved room scene,
+  boundary and the direct WiVRn runtime alignment. Shora receives the HMD and
+  reports `tracking_only_no_anchor_validation`; no new application-owned anchors
+  or body calibration were created by this launch test. Drift learning remains
+  gated by `reference_needs_reset`, as intended.
+- Old WiVRn, Shora server/proxy, spatial-bridge and shora-wayvr services are
+  inactive; legacy Quest clients were force-stopped. They were not permanently
+  disabled. The unified service is linked and started for testing, not enabled
+  at login. Profiles were backed up under ignored `build/live-test-20261002`;
+  existing WiVRn/Shora settings and WayVR profiles were retained.
+
+Headset capture confirms the connected client and its in-headset settings UI.
+WayVR battery-hook acquisition and Qt surface creation are verified in logs.
+The user confirmed that WayVR, the integrated dashboard and wrist battery text
+are visible and working. Individual dashboard controls were not exhaustively tested.
+QSV was compiled but this carried-over configuration uses VAAPI, so QSV hardware
+encoding was not exercised. Face tracking was inactive in the observed session.
+Fresh marker capture, body reset and drift-accuracy testing remain separate
+physical calibration steps. Runtime screenshots/logs and private room data are
+not committed.

@@ -55,6 +55,7 @@ pub struct AppState {
     pub executor: wlx_common::async_executor::AsyncExecutor,
 
     pub input_state: InputState,
+    pub shora_battery: crate::shora_battery::BatteryFeed,
     pub screens: SmallVec<[ScreenMeta; 8]>,
     pub anchor: Affine3A,
     pub anchor_grabbed: bool,
@@ -203,6 +204,7 @@ impl AppState {
             audio,
             wgui_shared,
             input_state: InputState::new(),
+            shora_battery: crate::shora_battery::BatteryFeed::new(),
             screens: smallvec![],
             anchor: Affine3A::IDENTITY,
             anchor_grabbed: false,

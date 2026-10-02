@@ -39,7 +39,7 @@ Monado, FFmpeg, Vulkan and other dependency notices remain applicable.
 
 Upstream WayVR is imported from https://github.com/wayvr-org/wayvr at
 `4590371a4c8f6a5b30e2e7a3fdb3b8af15b6d65e`. `wayvr-import.json` records the 723
-source inputs and the hashes of the three adapted files; the source patch is
+source inputs and the hashes of the adapted files; the source patch is
 kept under `patches/wayvr`. Git metadata and upstream CI/editor configuration are
 excluded. This is a source build, with the original Cargo.lock and GPL-3.0-only
 notices retained, not an AppImage extraction. Source is under `server/wayvr/upstream`;

@@ -954,6 +954,13 @@ void scenes::lobby::render(const XrFrameState & frame_state)
 
 	XrSpace world_space = application::space(xr::spaces::world);
 	auto [flags, views] = session.locate_views(viewconfig, frame_state.predictedDisplayTime, world_space);
+	// Tracking may not yet be valid on the first frame after focus.
+	constexpr auto valid_views = XR_VIEW_STATE_ORIENTATION_VALID_BIT | XR_VIEW_STATE_POSITION_VALID_BIT;
+	if ((flags & valid_views) != valid_views)
+	{
+		session.end_frame(frame_state.predictedDisplayTime, {});
+		return;
+	}
 	// assert(views.size() == swapchains_lobby.size());
 	assert(views.size() == 2); // FIXME
 

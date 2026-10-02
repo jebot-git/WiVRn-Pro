@@ -728,7 +728,13 @@
   },
   "fork_sha256": {
     "wayvr/build.rs": "e4e5f818c57c50d1af57308435dc90616b392c654b1fb6635ee785591fbbf8eb",
-    "wayvr/src/main.rs": "a9da1231b84b1ccd2d65b20b6f02708bc57bc62bcd0278d534acffe2c25621c6",
-    "wayvr/src/overlays/dashboard.rs": "4a58d3e83f0ac89cb605a52fc26050de47af1487e5fa714a360ea2bbb6b0567d"
+    "wayvr/src/main.rs": "d22ca5e66dfff7a4e8ac53741c1c53cc9ee9ac2bc34b8232ff79d4babb1f0b77",
+    "wayvr/src/overlays/dashboard.rs": "d45c4b52033e399e0c03c287d0a79f27ec7225591458fdb37ef7fe68141a8101",
+    "dash-frontend/assets/gui/tab/home.xml": "897cf5fecaa7ed770791e6526ca6fd084a2e0e270ed75a3369604bc4aac6e44c",
+    "dash-frontend/src/tab/home.rs": "fa35db9373957459f68c05e4748537bd70c11aba67f1ef86380245e45a6d79c0",
+    "wayvr/src/assets/gui/watch.xml": "295d881952e1dd2ab107183f30105d3103dbd34d5b67b3026c362c24151dc912",
+    "wayvr/src/gui/panel/label.rs": "61b4968341e36b8372314215df376ef31dceb7cc2b1e34a7c16705f05a954035",
+    "wayvr/src/state.rs": "6fca13fb8f63a46ec49dc7df7cebd6c79bb8ada7e53aa164c6f31e5107db7571",
+    "wlx-common/src/dash_interface.rs": "49dbe44ff105eb3c22e9da7e741f1d2a1529d13d892f2b77f0e052d44cc5ee8b"
   }
 }

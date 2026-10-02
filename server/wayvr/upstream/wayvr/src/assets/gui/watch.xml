@@ -119,6 +119,8 @@
         <Tracker idx="3" />
       </div>
 
+      <label id="shora_batteries" _source="shora_batteries" size="15" color="primary" />
+
       <!-- All other elements inside the container -->
       <div flex_direction="column" gap="8" min_width="300">
         <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">

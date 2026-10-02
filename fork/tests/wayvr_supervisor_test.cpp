@@ -41,6 +41,7 @@ int main(int argc, char ** argv)
 		assert(std::string(std::getenv("XR_RUNTIME_JSON")) == "/test/manifest.json");
 		assert(std::string(std::getenv("WIVRN_DASHBOARD_EXECUTABLE")) == "/test/dashboard");
 		assert(std::string(std::getenv("WIVRN_MANAGED_WAYVR")) == "1");
+		assert(std::string(std::getenv("WIVRN_SHORA_CONTROL_SOCKET")).ends_with("/wivrn-pro/ShoraControl"));
 		int signal = 0;
 		assert(prctl(PR_GET_PDEATHSIG, &signal) == 0 && signal == SIGTERM);
 		assert(getpgrp() == getpid());

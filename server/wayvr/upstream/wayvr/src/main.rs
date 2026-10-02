@@ -33,6 +33,8 @@ mod windowing;
 #[cfg(test)]
 #[path = "../../../wivrn_tests.rs"]
 mod wivrn_tests;
+#[path = "../../../shora_battery.rs"]
+mod shora_battery;
 
 use std::{
     path::PathBuf,

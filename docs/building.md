@@ -67,7 +67,8 @@ The native Shora backend is bundled in the server binary and supervised by WiVRn
 WayVR is compiled from pinned upstream source into a separate worker, installed
 at `<prefix>/libexec/wivrn-pro/wayvr`. It is an integral build dependency, uses
 OpenXR/Wayland/X11 without OpenVR or Whisper, and does not use an AppImage.
-Its separate Cargo workspace avoids mixing Shora's and WayVR's OpenXR loader ABIs.
+The matching IPC tool is installed as `bin/wivrn-pro-wayvrctl`. PC audio uses
+PipeWire by default. Its separate Cargo workspace avoids mixing Shora's and WayVR's OpenXR loader ABIs.
 `WIVRN_WAYVR_TARGET_DIR` optionally selects its Cargo cache directory.
 No separate Shora executable, profile initializer or service is required. Existing
 user configurations are imported once; see [carryover rules](../fork/SHORA.md).
@@ -85,7 +86,8 @@ systemctl --user enable --now wivrn-pro.service
 
 Adjust paths if configured with another prefix. The service conflicts with
 `wivrn.service`, the old `wivrn-pro-shora.service`, `shora-server.service` and
-`shora-proxy.service`, `wayvr.service` and `wlx-overlay-s.service` to prevent competing owners. Starting it does not
+`shora-proxy.service`, `spatial-bridge.service`, `shora-wayvr.service`,
+`wayvr.service` and `wlx-overlay-s.service` to prevent competing owners. Starting it does not
 disable those units permanently. Stop their boot activation separately when
 making this fork the default. Stopping WiVRn also stops its workers and their child processes. The service
 follows the graphical session; no separate WayVR service needs enabling.
