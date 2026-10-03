@@ -12,7 +12,8 @@ input preset. A long load exceeding 30 seconds can still stop capture.
 
 Android stream lifecycle operations are serialized on an owner thread. Error
 callbacks only post notifications. Requested capture survives reopening; API
-start failures are checked. Shutdown does not wait for a callback acknowledgement
+start failures are checked. Invisible/suspended XR sessions stop capture without
+spending retries; visibility restores the retained microphone request. Shutdown does not wait for a callback acknowledgement
 or join a recreate thread under its mutex. AAudio close itself remains a platform
 operation whose timing is controlled by Android.
 
