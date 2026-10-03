@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "utils/audio_recovery.h"
 #include "utils/ring_buffer.h"
 #include "wivrn_packets.h"
 #include <atomic>
@@ -55,12 +56,17 @@ class audio
 		size_t size = 0;
 		int64_t timestamp = 0;
 		uint64_t generation = 0;
+		uint64_t forward_state = 0;
 	};
 	utils::ring_buffer<microphone_block, 32> microphone_samples;
 	std::atomic<uint64_t> microphone_generation = 0;
 	std::atomic<uint64_t> microphone_frames = 0;
 	std::atomic<uint64_t> microphone_drops = 0;
-	std::atomic<bool> mic_requested = false;
+	// Bit 0 is demand; upper bits invalidate every delivery transition.
+	std::atomic<uint64_t> mic_forward_state = 0;
+	std::atomic<bool> capture_enabled = true;
+	std::atomic<bool> system_blocked = true;
+	utils::microphone_session_policy capture_policy() const;
 	std::atomic<bool> mic_restart = false;
 	std::atomic<int32_t> mic_error = 0, speaker_error = 0;
 	const wivrn::to_headset::audio_stream_description description;
@@ -88,6 +94,7 @@ public:
 	void operator()(wivrn::audio_data &&);
 
 	void set_mic_state(bool running);
+	void set_capture_enabled(bool enabled);
 	void restart_microphone();
 	// Called only by the network thread; never send TCP from an AAudio callback.
 	void send_microphone_data();

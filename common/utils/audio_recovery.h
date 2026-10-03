@@ -5,35 +5,26 @@
 #include <optional>
 namespace utils
 {
-struct microphone_idle_hold
+// Capture lifetime and delivery demand are deliberately independent.
+struct microphone_session_policy
 {
-	using clock = std::chrono::steady_clock;
-	static constexpr auto grace = std::chrono::seconds(30);
-	bool enabled = false;
-	std::optional<clock::time_point> deadline;
-	bool update(bool reader, bool idle_allowed, clock::time_point now)
+	bool device_available;
+	bool session_visible;
+	bool capture_enabled;
+	bool system_blocked;
+	bool user_present;
+	bool reader_requested;
+	bool capture() const
 	{
-		if (reader)
-		{
-			enabled = true;
-			deadline.reset();
-		}
-		else if (!idle_allowed)
-		{
-			enabled = false;
-			deadline.reset();
-		}
-		else if (enabled)
-		{
-			if (!deadline)
-				deadline = now + grace;
-			if (now >= *deadline)
-			{
-				enabled = false;
-				deadline.reset();
-			}
-		}
-		return enabled;
+		return device_available && session_visible && capture_enabled && !system_blocked;
+	}
+	bool forward() const
+	{
+		return capture() && user_present && reader_requested;
+	}
+	bool recover() const
+	{
+		return capture() && user_present;
 	}
 };
 struct microphone_watchdog

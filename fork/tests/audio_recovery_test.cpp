@@ -7,18 +7,30 @@ int main()
 {
 	using clock = std::chrono::steady_clock;
 	auto t = clock::time_point{};
-	utils::microphone_idle_hold hold;
-	assert(!hold.update(false, true, t)); // no unsolicited capture at startup
-	assert(hold.update(true, true, t));
-	assert(hold.update(false, true, t + 1s));
-	assert(hold.update(false, true, t + 11s)); // observed world-loading gap
-	assert(hold.update(true, true, t + 11s));
-	assert(!hold.deadline); // returning reader cancels old expiry
-	assert(hold.update(false, true, t + 12s));
-	assert(hold.update(false, true, t + 41s));
-	assert(!hold.update(false, true, t + 42s));
-	assert(hold.update(true, true, t + 43s));
-	assert(!hold.update(false, false, t + 43s)); // disconnect/error bypass grace
+	utils::microphone_session_policy policy{true, true, true, false, true, false};
+	assert(policy.capture() && policy.recover() && !policy.forward());
+	// Repeated reader changes during world loads must never close capture.
+	for (int i = 0; i < 100; ++i)
+	{
+		policy.reader_requested = i % 2;
+		assert(policy.capture() && policy.recover());
+		assert(policy.forward() == policy.reader_requested);
+	}
+	policy.user_present = false;
+	assert(policy.capture() && !policy.forward() && !policy.recover());
+	policy.user_present = true;
+	policy.system_blocked = true;
+	assert(!policy.capture() && !policy.forward() && !policy.recover());
+	policy.system_blocked = false;
+	policy.capture_enabled = false;
+	assert(!policy.capture() && !policy.forward() && !policy.recover());
+	policy.capture_enabled = true;
+	policy.session_visible = false;
+	assert(!policy.capture() && !policy.forward() && !policy.recover());
+	policy.session_visible = true;
+	assert(policy.capture() && policy.forward() && policy.recover());
+	policy.device_available = false;
+	assert(!policy.capture() && !policy.forward() && !policy.recover());
 	utils::microphone_watchdog w;
 	w.start(t, 0);
 	assert(!w.stalled(t + 2s, 0, {})); // startup grace
@@ -54,5 +66,5 @@ int main()
 	for (int i = 1; i <= 12; ++i)
 		assert(!w.stalled(t + 4s + i * 1s, 42000 + i * 48000, 42000 + i * 48000));
 	assert(w.attempts == 0);
-	std::cout << "Audio idle and bounded recovery tests passed\n";
+	std::cout << "Session capture and bounded recovery tests passed\n";
 }

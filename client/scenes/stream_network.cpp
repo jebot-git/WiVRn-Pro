@@ -38,6 +38,7 @@ void scenes::stream::process_packets()
 #ifdef __ANDROID__
 			if (audio_handle)
 			{
+				audio_handle->set_capture_enabled(mic_capture_enabled);
 				if (request_mic_restart.exchange(false))
 					audio_handle->restart_microphone();
 				audio_handle->send_microphone_data();

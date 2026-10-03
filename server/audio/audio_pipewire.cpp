@@ -21,7 +21,6 @@
 #include "driver/wivrn_session.h"
 #include "os/os_time.h"
 #include "util/u_logging.h"
-#include "utils/audio_recovery.h"
 #include "utils/ring_buffer.h"
 #include <magic_enum.hpp>
 #include <memory>
@@ -66,9 +65,7 @@ struct pipewire_device : public audio_device
 	utils::ring_buffer<mic_packet, 100> mic_samples;
 	std::atomic<uint64_t> mic_generation = 0;
 	uint64_t current_generation = 0;
-	utils::microphone_idle_hold mic_hold;
 	std::atomic<bool> mic_enabled = false;
-	spa_source * mic_idle_timer = nullptr;
 	std::atomic<size_t> mic_buffer_size_bytes = 0;
 	audio_data mic_current;
 	std::unique_ptr<pw_stream, deleter> microphone;
@@ -81,7 +78,6 @@ struct pipewire_device : public audio_device
 	std::jthread thread;
 
 	void set_mic_enabled(bool enabled);
-	static void mic_idle_expired(void * self_v, uint64_t);
 	static void speaker_process(void * self_v);
 	static void mic_process(void * self_v);
 	static void mic_state_changed(void * self_v, pw_stream_state old, pw_stream_state state, const char * error);
@@ -108,9 +104,6 @@ struct pipewire_device : public audio_device
 		pw_init(&argc, nullptr);
 
 		pw_loop.reset(pw_main_loop_new(nullptr));
-		mic_idle_timer = pw_loop_add_timer(pw_main_loop_get_loop(pw_loop.get()), &mic_idle_expired, this);
-		if (!mic_idle_timer)
-			throw std::runtime_error("Cannot create microphone idle timer");
 		if (info.speaker)
 		{
 			desc.speaker = {
@@ -273,9 +266,7 @@ struct pipewire_device : public audio_device
 			        [this](std::stop_token) {
 				pw_main_loop_run(pw_loop.get());
 				speaker.reset();
-				microphone.reset();
-				pw_loop_destroy_source(pw_main_loop_get_loop(pw_loop.get()), mic_idle_timer);
-				mic_idle_timer = nullptr; });
+				microphone.reset(); });
 	}
 };
 } // namespace
@@ -380,16 +371,6 @@ void pipewire_device::set_mic_enabled(bool enabled)
 	}
 }
 
-void pipewire_device::mic_idle_expired(void * self_v, uint64_t)
-{
-	auto self = static_cast<pipewire_device *>(self_v);
-	if (self->mic_state == PW_STREAM_STATE_PAUSED)
-	{
-		U_LOG_I("Microphone scene-load grace expired");
-		self->set_mic_enabled(self->mic_hold.update(false, true, utils::microphone_idle_hold::clock::now()));
-	}
-}
-
 void pipewire_device::mic_state_changed(void * self_v, pw_stream_state old, pw_stream_state state, const char * error)
 {
 	auto self = static_cast<pipewire_device *>(self_v);
@@ -397,15 +378,9 @@ void pipewire_device::mic_state_changed(void * self_v, pw_stream_state old, pw_s
 	++self->mic_generation;
 	self->mic_state = state;
 	U_LOG_I("Microphone state changed from %s to %s%s%s", magic_enum::enum_name(old).data(), magic_enum::enum_name(state).data(), error ? ": " : "", error ? error : "");
-	auto now = utils::microphone_idle_hold::clock::now();
-	self->set_mic_enabled(self->mic_hold.update(state == PW_STREAM_STATE_STREAMING, state == PW_STREAM_STATE_PAUSED, now));
-	timespec timeout{};
-	if (self->mic_hold.deadline)
-	{
-		timeout.tv_sec = 30;
-		U_LOG_I("Keeping microphone capture alive for up to 30 seconds during reader idle");
-	}
-	pw_loop_update_timer(pw_main_loop_get_loop(self->pw_loop.get()), self->mic_idle_timer, &timeout, nullptr, false);
+	// The headset keeps its stream open for the VR session. This flag only
+	// requests delivery, so unused microphone data never crosses the network.
+	self->set_mic_enabled(state == PW_STREAM_STATE_STREAMING);
 }
 
 void pipewire_device::speaker_process(void * self_v)

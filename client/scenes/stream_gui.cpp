@@ -436,14 +436,23 @@ void scenes::stream::gui_settings(float)
 			wivrn::gui::settings_video(ctx);
 			break;
 		case settings_page::audio:
+		{
 			wivrn::gui::settings_audio(ctx);
 #ifdef __ANDROID__
 			ImGui::Spacing();
+			ImGui::BeginDisabled(!ctx.config.check_feature(feature::microphone));
+			bool capture = mic_capture_enabled;
+			if (ImGui::Checkbox("Microphone capture", &capture)) mic_capture_enabled = capture;
+			ImGui::TextWrapped("Keep capture ready during VR. Audio is sent only when a PC app requests it.");
+			ImGui::BeginDisabled(!capture);
 			if (wivrn::ui::button("Restart microphone", wivrn::ui::button_style::secondary))
 				request_mic_restart = true;
 			ImGui::TextWrapped("Reopen microphone capture while keeping the VR session running.");
+			ImGui::EndDisabled();
+			ImGui::EndDisabled();
 #endif
 			break;
+		}
 		case settings_page::streaming:
 			wivrn::gui::settings_streaming(ctx);
 			break;

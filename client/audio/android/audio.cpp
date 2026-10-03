@@ -19,6 +19,7 @@
 
 #include "audio.h"
 
+#include "android/jnipp.h"
 #include "application.h"
 #include "utils/audio_recovery.h"
 #include "utils/named_thread.h"
@@ -100,7 +101,11 @@ int32_t wivrn::android::audio::microphone_data_cb(AAudioStream * stream, void * 
 	if (self->exiting)
 		return AAUDIO_CALLBACK_RESULT_STOP;
 	self->microphone_frames += num_frames;
-	if (!self->mic_requested || !application::is_visible())
+	// Read epochs before gates so an overlapping disable cannot tag old audio
+	// with the next enabled generation.
+	const auto generation = self->microphone_generation.load();
+	const auto forward_state = self->mic_forward_state.load();
+	if (!(forward_state & 1) || !self->capture_policy().forward())
 		return AAUDIO_CALLBACK_RESULT_CONTINUE;
 	microphone_block block;
 	block.size = size_t(num_frames) * AAudioStream_getChannelCount(stream) * sizeof(int16_t);
@@ -110,7 +115,8 @@ int32_t wivrn::android::audio::microphone_data_cb(AAudioStream * stream, void * 
 		return AAUDIO_CALLBACK_RESULT_CONTINUE;
 	}
 	block.timestamp = self->instance.now();
-	block.generation = self->microphone_generation;
+	block.generation = generation;
+	block.forward_state = forward_state;
 	memcpy(block.data.data(), audio_data, block.size);
 	if (!self->microphone_samples.write(std::move(block)))
 		++self->microphone_drops;
@@ -123,7 +129,7 @@ void wivrn::android::audio::build_microphone(AAudioStreamBuilder * builder, int3
 	AAudioStreamBuilder_setSampleRate(builder, sample_rate);
 	AAudioStreamBuilder_setChannelCount(builder, num_channels);
 	AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
-	AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_EXCLUSIVE);
+	AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
 	AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
 	if (application::get_config().mic_unprocessed_audio)
 		AAudioStreamBuilder_setInputPreset(builder, AAUDIO_INPUT_PRESET_UNPROCESSED);
@@ -214,9 +220,24 @@ void wivrn::android::audio::operator()(wivrn::audio_data && data)
 		buffer_size_bytes -= size;
 }
 
+utils::microphone_session_policy wivrn::android::audio::capture_policy() const
+{
+	return {description.microphone.has_value(), application::is_visible(), capture_enabled.load(), system_blocked.load(), application::is_user_present(), bool(mic_forward_state.load() & 1)};
+}
+
 void wivrn::android::audio::set_mic_state(bool running)
 {
-	mic_requested = running;
+	// Network thread is the sole writer of forwarding demand.
+	auto previous = mic_forward_state.load();
+	if (bool(previous & 1) != running)
+		mic_forward_state = ((previous + 2) & ~uint64_t(1)) | uint64_t(running);
+	wake.notify_one();
+}
+
+void wivrn::android::audio::set_capture_enabled(bool enabled)
+{
+	if (capture_enabled.exchange(enabled) != enabled)
+		++microphone_generation;
 	wake.notify_one();
 }
 
@@ -234,7 +255,7 @@ void wivrn::android::audio::send_microphone_data()
 		if (!block)
 			break;
 		// Drop stale data after a stop/reopen, or after network backpressure.
-		if (!mic_requested || !application::is_visible() || block->generation != microphone_generation || instance.now() - block->timestamp > 100'000'000)
+		if (!capture_policy().forward() || block->forward_state != mic_forward_state || block->generation != microphone_generation || instance.now() - block->timestamp > 100'000'000)
 			continue;
 		session.send_control(wivrn::audio_data{.timestamp = block->timestamp, .payload = std::span(block->data.data(), block->size)});
 	}
@@ -245,7 +266,12 @@ void wivrn::android::audio::audio_worker()
 	using clock = std::chrono::steady_clock;
 	using namespace std::chrono_literals;
 	utils::microphone_watchdog watchdog;
-	bool mic_started = false, mic_fault = false, exhausted_logged = false, previous_requested = false;
+	bool mic_started = false, mic_fault = false, exhausted_logged = false, previous_requested = false, previous_monitoring = false;
+	bool previous_forwarding = false;
+	int previous_block_reason = -1;
+	application::instance().setup_jni();
+	jni::object<""> activity(application::native_app()->activity->clazz);
+	auto privacy_check = clock::now();
 	unsigned speaker_attempts = 0;
 	auto speaker_retry = clock::now(), diagnostic = clock::now();
 	auto close_stream = [](AAudioStream *& stream) {
@@ -288,13 +314,35 @@ void wivrn::android::audio::audio_worker()
 		if (speaker && now - speaker_retry >= 10s)
 			speaker_attempts = 0;
 
-		// Do not spend recovery attempts while the runtime suspends capture.
-		// A visible session rearms the budget and restores the retained request.
-		bool requested = mic_requested && application::is_visible() && description.microphone.has_value();
+		if (now >= privacy_check)
+		{
+			int reason = 8;
+			try
+			{
+				reason = activity.call<jni::Int>("getMicrophoneCaptureBlockReason").value;
+			}
+			catch (std::exception & error)
+			{
+				if (previous_block_reason != 8)
+					spdlog::warn("Microphone privacy query: {}", error.what());
+			}
+			system_blocked = reason != 0;
+			if (reason != previous_block_reason)
+				spdlog::info("Microphone system block reason: {}", reason);
+			previous_block_reason = reason;
+			privacy_check = now + 250ms;
+		}
+		auto policy = capture_policy();
+		bool requested = policy.capture(), monitoring = policy.recover();
+		if (requested != previous_requested || monitoring != previous_monitoring || policy.forward() != previous_forwarding)
+			spdlog::info("Microphone session: capture={} forward={} recovery={} present={}", requested, policy.forward(), monitoring, policy.user_present);
+		previous_forwarding = policy.forward();
 		bool manual = mic_restart.exchange(false);
-		if ((requested && !previous_requested) || manual)
+		if ((requested && !previous_requested) || (monitoring && !previous_monitoring) || manual)
 		{
 			watchdog = {};
+			if (microphone)
+				watchdog.start(now, microphone_frames, AAudioStream_getSampleRate(microphone));
 			exhausted_logged = false;
 			if (manual)
 			{
@@ -303,6 +351,7 @@ void wivrn::android::audio::audio_worker()
 			}
 		}
 		previous_requested = requested;
+		previous_monitoring = monitoring;
 		auto microphone_error = mic_error.exchange(0);
 		bool invalid_microphone = microphone_error != AAUDIO_OK;
 		if (invalid_microphone)
@@ -331,7 +380,9 @@ void wivrn::android::audio::audio_worker()
 				if (result == AAUDIO_OK)
 					hardware_position = position;
 				invalid_microphone = invalid_microphone || state == AAUDIO_STREAM_STATE_DISCONNECTED || state == AAUDIO_STREAM_STATE_STOPPED;
-				mic_fault = manual || invalid_microphone || watchdog.stalled(now, microphone_frames, hardware_position);
+				if (!monitoring)
+					watchdog.start(now, microphone_frames, AAudioStream_getSampleRate(microphone));
+				mic_fault = manual || invalid_microphone || (monitoring && watchdog.stalled(now, microphone_frames, hardware_position));
 				if (!mic_fault && watchdog.attempts == 0)
 					exhausted_logged = false;
 				if (now >= diagnostic)
@@ -350,13 +401,13 @@ void wivrn::android::audio::audio_worker()
 					diagnostic = now + 5s;
 				}
 			}
-			if (mic_fault && microphone && (invalid_microphone || watchdog.can_retry(now)))
+			if (mic_fault && microphone && (invalid_microphone || (monitoring && watchdog.can_retry(now))))
 			{
 				++microphone_generation;
 				close_stream(microphone);
 				mic_started = false;
 			}
-			if (!microphone && (!mic_fault || watchdog.retry(now)))
+			if (!microphone && (!mic_fault || (monitoring && watchdog.retry(now))))
 			{
 				if (mic_fault)
 					spdlog::warn("Reopening microphone, bounded attempt {}/3", watchdog.attempts);
@@ -381,7 +432,7 @@ void wivrn::android::audio::audio_worker()
 					}
 				}
 			}
-			if (mic_fault && watchdog.attempts >= 3 && !exhausted_logged)
+			if (monitoring && mic_fault && watchdog.attempts >= 3 && !exhausted_logged)
 			{
 				spdlog::error("Microphone automatic recovery limit reached; retaining usable stream, use Restart microphone in Audio settings");
 				exhausted_logged = true;

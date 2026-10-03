@@ -123,6 +123,7 @@ private:
 
 	std::optional<audio> audio_handle;
 	std::atomic<bool> request_mic_restart = false;
+	std::atomic<bool> mic_capture_enabled = true;
 
 	std::optional<xr::hand_tracker> left_hand;
 	std::optional<xr::hand_tracker> right_hand;

@@ -143,6 +143,8 @@ private:
 	bool session_running = false;
 	bool session_focused = false;
 	std::atomic<bool> session_visible = false;
+	// Visibility fallback until the runtime supplies user-presence events.
+	std::atomic<bool> user_present = true;
 	std::optional<std::chrono::steady_clock::time_point> timestamp_unsynchronized; // Timestamp when session_synchronized becomes false
 
 	bool debug_extensions_found = false;
@@ -228,6 +230,11 @@ public:
 	static bool is_focused()
 	{
 		return instance().session_focused;
+	}
+
+	static bool is_user_present()
+	{
+		return instance().user_present;
 	}
 
 	static bool is_visible()

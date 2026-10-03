@@ -1997,6 +1997,10 @@ void application::poll_events()
 				exit_requested = true;
 			}
 			break;
+			case XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT:
+				if (e.user_presence_changed.session == xr_session)
+					user_present = e.user_presence_changed.isUserPresent;
+				break;
 			case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:
 				break;
 			case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {

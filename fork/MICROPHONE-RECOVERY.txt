@@ -1,44 +1,39 @@
-Microphone recovery on the upstream-merged Pro build
+Session microphone keep-alive on the pre-upstream-merge Pro build
 
-Observed trigger: a VRChat world change removed its PipeWire source reader for
-about ten seconds. On return, WiVRn received synthetic silence while the Quest
-system tracking capture held the vendor HAL audio-record use case.
+Base: ed6325b6c427ca47d64b0ef6f3ccfb4ac5e22cdb, preserving local Pro
+encoding, reliability, tracking and dashboard changes. No full upstream merge.
 
-The server now holds an already-requested microphone through up to 30 seconds
-of consumer idle. Disconnected/error states stop it immediately. Audio received
-without a reader is discarded; generation tags reject pre-transition buffers.
-This changes consumer-idle behavior, not the headset's microphone permission or
-input preset. A long load exceeding 30 seconds can still stop capture.
+During a visible VR session, permitted and enabled microphone capture stays open
+indefinitely, including before the first PC reader and throughout world-loading
+gaps. PipeWire reader changes control forwarding only. Without a reader, headset
+callbacks discard samples locally; no idle microphone audio is transmitted.
+PC default input, PipeWire routing, application mute and voice activation remain
+unchanged. Existing Quest processed/unprocessed microphone selection is preserved;
+there is no new amplitude gate, noise filter, or silence-triggered recovery.
 
-Android stream lifecycle operations are serialized on an owner thread. Error
-callbacks only post notifications. Requested capture survives reopening; API
-start failures are checked. Invisible/suspended XR sessions stop capture without
-spending retries; visibility restores the retained microphone request. Shutdown does not wait for a callback acknowledgement
-or join a recreate thread under its mutex. AAudio close itself remains a platform
-operation whose timing is controlled by Android.
+Audio settings provide Microphone capture and Restart microphone controls.
+Permission loss, reported Android system microphone mute, session invisibility,
+and disconnect stop capture. Read-only permission/mute checks run every 250 ms. Android enforces its own
+privacy toggle; its state is not exposed by the public SensorPrivacyManager API.
+Presence loss suppresses delivery and recovery while retaining an otherwise
+allowed stream. Visibility is the fallback on runtimes without presence events.
 
-Capture callbacks only copy into a bounded queue. The network thread drains it,
-rejecting stale generations and samples older than 100 ms. The callback performs
-no network send. Network-send failure follows the normal session error path.
+Android lifecycle operations run on one owner thread. Callbacks only enqueue
+bounded samples when forwarding is requested. Reader and stream generations
+reject retired buffers, and samples older than 100 ms are discarded. No network
+send occurs in the audio callback. AAudio uses shared capture and preserves the
+existing VOICE_COMMUNICATION default and optional UNPROCESSED input preset.
 
-Recovery observes callback progress and AAudio timestamps, never PCM amplitude.
-A 3-second stall, delivery below half the negotiated sample rate over three
-seconds, or stream error permits up to three reopen attempts with backoff.
-Only ten seconds of healthy callback/timestamp progress rearms that budget.
-At the limit a usable stream is retained to allow external HAL recovery; invalid
-streams are closed. Unsupported
-hardware timestamps alone do not cause reopen. Live testing showed synthetic
-timestamps advancing at approximately 14 kHz on a 48 kHz capture; the cadence
-check detects this starvation without using microphone amplitude. AAudio timestamps are platform
-reports, not a guarantee that the vendor HAL is producing useful microphone data.
-Audio settings include Restart microphone, which preserves the VR connection
-and rearms recovery without enabling a microphone that the server has disabled.
+Recovery checks callback cadence and AAudio timestamps, never PCM amplitude.
+A three-second stall or delivery below half the negotiated sample rate permits
+up to three reopen attempts with backoff. Ten seconds of healthy progress,
+reactivation, or manual restart rearms recovery. Unsupported timestamps alone
+are not a fault. At the retry limit a usable stream is retained for external HAL
+recovery. Off-head and system-muted states do not spend recovery retries.
 
-Validation: offline policy/supervisor/wire tests, audio idle and recovery deadline
-tests, native server and ARM64 Android builds. Live world-load, retry, and manual
-recovery checks are recorded with the deployment in the microphone diagnosis
-workspace. Do not describe the vendor HAL collision as fixed until reproduced
-world transitions pass on hardware.
-
-API lifecycle reference:
-https://developer.android.com/ndk/guides/audio/aaudio/aaudio
+Quest HAL contention can produce synthetic silence and advancing timestamps.
+This design avoids consumer-driven reopen cycles; it cannot guarantee hardware
+priority over Meta services or detect every silent HAL failure. Hardware testing
+of this candidate is required, including long world loads, system mute, presence,
+suspend/resume, noise suppression and disconnect. Build validation is recorded
+alongside the candidate artifacts; this document does not claim deployment.
