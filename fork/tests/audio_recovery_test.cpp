@@ -44,5 +44,15 @@ int main()
 		assert(!w.stalled(t + 100s + i * 1s, i * 48000, i * 48000));
 	assert(w.attempts == 0); // sustained hardware progress rearms budget
 	// Signal amplitude is intentionally absent: quiet, progressing capture is healthy.
+	w = {};
+	w.start(t, 0, 48000);
+	assert(!w.stalled(t + 1s, 14000, 14000));
+	assert(!w.stalled(t + 2s, 28000, 28000));
+	assert(w.stalled(t + 3s, 42000, 42000)); // synthetic timestamps, severely under-rate delivery
+	assert(w.retry(t + 3s));
+	w.start(t + 4s, 42000, 48000);
+	for (int i = 1; i <= 12; ++i)
+		assert(!w.stalled(t + 4s + i * 1s, 42000 + i * 48000, 42000 + i * 48000));
+	assert(w.attempts == 0);
 	std::cout << "Audio idle and bounded recovery tests passed\n";
 }

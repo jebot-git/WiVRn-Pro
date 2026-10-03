@@ -22,9 +22,14 @@ rejecting stale generations and samples older than 100 ms. The callback performs
 no network send. Network-send failure follows the normal session error path.
 
 Recovery observes callback progress and AAudio timestamps, never PCM amplitude.
-A 3-second stall or stream error permits up to three reopen attempts with backoff.
-Only ten seconds of actual timestamp progress rearms that budget. Unsupported
-hardware timestamps alone do not cause reopen. AAudio timestamps are platform
+A 3-second stall, delivery below half the negotiated sample rate over three
+seconds, or stream error permits up to three reopen attempts with backoff.
+Only ten seconds of healthy callback/timestamp progress rearms that budget.
+At the limit a usable stream is retained to allow external HAL recovery; invalid
+streams are closed. Unsupported
+hardware timestamps alone do not cause reopen. Live testing showed synthetic
+timestamps advancing at approximately 14 kHz on a 48 kHz capture; the cadence
+check detects this starvation without using microphone amplitude. AAudio timestamps are platform
 reports, not a guarantee that the vendor HAL is producing useful microphone data.
 Audio settings include Restart microphone, which preserves the VR connection
 and rearms recovery without enabling a microphone that the server has disabled.
