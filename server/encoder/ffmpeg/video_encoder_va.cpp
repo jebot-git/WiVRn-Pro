@@ -179,6 +179,7 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
         video_encoder_ffmpeg(vk, stream_idx, settings),
         vk{vk},
         use_qsv{settings.encoder_name == encoder_qsv},
+        codec_settings{settings},
         cmd_pool{make_cmd_pool(vk, stream_idx)}
 {
 #if !WIVRN_USE_QSV
@@ -207,7 +208,7 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 	                                         0);
 	if (err)
 		throw std::system_error(err, av_error_category(), "FFMPEG vaapi hardware context creation failed");
-	av_buffer_ptr vaapi_hw_ctx(tmp);
+	vaapi_hw_ctx.reset(tmp);
 
 	AVPixelFormat sw_format;
 
@@ -229,24 +230,8 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 			break;
 	}
 
-	auto vaapi_frame_ctx = make_hwframe_ctx(vaapi_hw_ctx.get(), AV_PIX_FMT_VAAPI, sw_format, extent.width, extent.height);
+	vaapi_frame_ctx = make_hwframe_ctx(vaapi_hw_ctx.get(), AV_PIX_FMT_VAAPI, sw_format, extent.width, extent.height);
 	assert(av_pix_fmt_count_planes(sw_format) == 2);
-	// Derive QSV from the same VAAPI device/pool used by Vulkan DMA-BUF import.
-	// This keeps GPU selection deterministic and avoids CPU pixel readback.
-	av_buffer_ptr qsv_device, qsv_frames;
-	if (use_qsv)
-	{
-		tmp = nullptr;
-		err = av_hwdevice_ctx_create_derived(&tmp, AV_HWDEVICE_TYPE_QSV, vaapi_hw_ctx.get(), 0);
-		if (err < 0)
-			throw std::system_error(err, av_error_category(), "Cannot derive QSV device from selected Arc VAAPI device");
-		qsv_device.reset(tmp);
-		tmp = nullptr;
-		err = av_hwframe_ctx_create_derived(&tmp, AV_PIX_FMT_QSV, qsv_device.get(), vaapi_frame_ctx.get(), AV_HWFRAME_MAP_READ);
-		if (err < 0)
-			throw std::system_error(err, av_error_category(), "Cannot derive QSV frames from Arc VAAPI pool");
-		qsv_frames.reset(tmp);
-	}
 
 	err = av_hwframe_ctx_create_derived(&tmp,
 	                                    AV_PIX_FMT_DRM_PRIME,
@@ -258,84 +243,6 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 		throw std::system_error(err, av_error_category(), "Cannot create drm frame context");
 	}
 	drm_frame_ctx = av_buffer_ptr(tmp);
-
-	const char * encoder_name = encoder(settings.codec, use_qsv);
-	const AVCodec * codec = avcodec_find_encoder_by_name(encoder_name);
-	if (codec == nullptr)
-	{
-		throw std::runtime_error(std::string("Failed to find encoder ") + encoder_name);
-	}
-
-	encoder_ctx = av_codec_context_ptr(avcodec_alloc_context3(codec));
-	if (not encoder_ctx)
-	{
-		throw std::runtime_error("failed to allocate VAAPI encoder");
-	}
-
-	AVDictionary * opts = nullptr;
-	av_dict_set(&opts, "async_depth", "1", 0);
-	switch (settings.codec)
-	{
-		case video_codec::h264:
-			encoder_ctx->profile = use_qsv ? AV_PROFILE_H264_MAIN : AV_PROFILE_H264_CONSTRAINED_BASELINE;
-			if (!use_qsv)
-				av_dict_set(&opts, "coder", "cavlc", 0);
-			if (!use_qsv)
-				av_dict_set(&opts, "rc_mode", "CBR", 0);
-			break;
-		case video_codec::h265:
-			// bit_depth is either 8 or 10 here
-			encoder_ctx->profile = settings.bit_depth == 10 ? AV_PROFILE_HEVC_MAIN_10 : AV_PROFILE_HEVC_MAIN;
-			break;
-		case video_codec::av1:
-			encoder_ctx->profile = AV_PROFILE_AV1_MAIN;
-			break;
-		case video_codec::raw:
-			throw std::runtime_error("raw codec not supported");
-	}
-	if (use_qsv)
-	{
-		av_dict_set(&opts, "look_ahead_depth", "0", 0);
-		if (settings.codec == video_codec::h264)
-			av_dict_set(&opts, "look_ahead", "0", 0);
-		av_dict_set(&opts, "forced_idr", "1", 0);
-		av_dict_set(&opts, "preset", "veryfast", 0);
-		av_dict_set(&opts, "low_delay_brc", "1", 0);
-	}
-	for (auto option: settings.options)
-	{
-		av_dict_set(&opts, option.first.c_str(), option.second.c_str(), 0);
-	}
-
-	encoder_ctx->width = extent.width;
-	encoder_ctx->height = extent.height;
-	encoder_ctx->time_base = {std::chrono::steady_clock::duration::period::num,
-	                          std::chrono::steady_clock::duration::period::den};
-	encoder_ctx->framerate = AVRational{(int)settings.fps * 1000, 1000};
-	encoder_ctx->sample_aspect_ratio = AVRational{1, 1};
-	encoder_ctx->pix_fmt = use_qsv ? AV_PIX_FMT_QSV : AV_PIX_FMT_VAAPI;
-	encoder_ctx->color_range = AVCOL_RANGE_JPEG;
-	encoder_ctx->colorspace = AVCOL_SPC_BT709;
-	encoder_ctx->color_trc = AVCOL_TRC_BT709;
-	encoder_ctx->color_primaries = AVCOL_PRI_BT709;
-	encoder_ctx->max_b_frames = 0;
-	encoder_ctx->bit_rate = settings.bitrate;
-	encoder_ctx->gop_size = use_qsv ? 240 : std::numeric_limits<decltype(encoder_ctx->gop_size)>::max();
-	encoder_ctx->hw_frames_ctx = av_buffer_ref(use_qsv ? qsv_frames.get() : vaapi_frame_ctx.get());
-	encoder_ctx->rc_max_rate = settings.bitrate;
-	encoder_ctx->rc_buffer_size = int(settings.bitrate / settings.fps);
-
-	err = avcodec_open2(encoder_ctx.get(), codec, &opts);
-	av_dict_free(&opts);
-	if (err < 0)
-	{
-		throw std::system_error(err, av_error_category(), "Cannot open video encoder codec");
-	}
-
-	if (encoder_ctx->delay != 0)
-	{
-		U_LOG_W("Encoder %d reports a %d frame delay, reprojection will fail", stream_idx, encoder_ctx->delay);
-	}
 
 	const bool has_modifiers =
 	        std::ranges::any_of(vk.device_extensions, [](const char * ext) {
@@ -361,28 +268,12 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 		err = av_hwframe_map(va_frame.get(), drm_frame.get(), AV_HWFRAME_MAP_DIRECT);
 		if (err < 0)
 			throw std::system_error(err, av_error_category(), "Cannot recover VA surface from DRM frame");
-		if (use_qsv)
-		{
-			slot.qsv_frame = make_av_frame();
-			slot.qsv_frame->format = AV_PIX_FMT_QSV;
-			slot.qsv_frame->hw_frames_ctx = av_buffer_ref(qsv_frames.get());
-			// DIRECT makes FFmpeg's VAAPI map_from reject the QSV pixel format
-			// before dispatch reaches QSV map_to. That map shares the VA surface
-			// handle without pixel copies; READ is sufficient here.
-			err = av_hwframe_map(slot.qsv_frame.get(), va_frame.get(), AV_HWFRAME_MAP_READ);
-			if (err < 0)
-				throw std::system_error(err, av_error_category(), "Cannot map Arc VA surface for QSV");
-		}
+
 		va_frame->color_range = AVCOL_RANGE_JPEG;
 		va_frame->colorspace = AVCOL_SPC_BT709;
 		va_frame->color_primaries = AVCOL_PRI_BT709;
 		va_frame->color_trc = AVCOL_TRC_BT709;
-		if (use_qsv)
-		{
-			err = av_frame_copy_props(slot.qsv_frame.get(), va_frame.get());
-			if (err < 0)
-				throw std::system_error(err, av_error_category(), "Cannot copy QSV frame properties");
-		}
+
 		auto desc = (AVDRMFrameDescriptor *)drm_frame->data[0];
 
 		// layer == image
@@ -493,6 +384,8 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
 		}
 	}
 
+	map_qsv_frames();
+	open_codec();
 	ts_pool = gpu_timestamp_pool(vk, vk.queue.family_index, num_slots, std::format("va encoder {} pixel copy", stream_idx));
 }
 
@@ -500,8 +393,7 @@ void video_encoder_va::present_image(vk::Image y_cbcr, vk::SemaphoreSubmitInfo, 
 {
 	if (vk.device.waitForFences(*in[slot].fence, true, 1'000'000'000) == vk::Result::eTimeout)
 	{
-		U_LOG_E("Timeout on stream %d", stream_idx);
-		return;
+		throw std::runtime_error("GPU copy fence timed out before submission");
 	}
 
 	std::array im_barriers = {
@@ -639,5 +531,172 @@ void video_encoder_va::push_frame(bool idr, uint8_t slot)
 	{
 		throw std::system_error(err, av_error_category(), "avcodec_send_frame failed");
 	}
+}
+} // namespace wivrn
+
+namespace wivrn
+{
+void video_encoder_va::map_qsv_frames()
+{
+	if (!use_qsv)
+		return;
+	AVBufferRef * tmp = nullptr;
+	int err = av_hwdevice_ctx_create_derived(&tmp, AV_HWDEVICE_TYPE_QSV, vaapi_hw_ctx.get(), 0);
+	if (err < 0)
+		throw std::system_error(err, av_error_category(), "Cannot derive QSV device");
+	qsv_device.reset(tmp);
+	err = av_hwframe_ctx_create_derived(&tmp, AV_PIX_FMT_QSV, qsv_device.get(), vaapi_frame_ctx.get(), AV_HWFRAME_MAP_READ);
+	if (err < 0)
+		throw std::system_error(err, av_error_category(), "Cannot derive QSV frames");
+	qsv_frames.reset(tmp);
+	for (auto & slot: in)
+	{
+		slot.qsv_frame = make_av_frame();
+		slot.qsv_frame->format = AV_PIX_FMT_QSV;
+		slot.qsv_frame->hw_frames_ctx = av_buffer_ref(qsv_frames.get());
+		err = av_hwframe_map(slot.qsv_frame.get(), slot.va_frame.get(), AV_HWFRAME_MAP_READ);
+		if (err < 0)
+			throw std::system_error(err, av_error_category(), "Cannot map QSV surface");
+		err = av_frame_copy_props(slot.qsv_frame.get(), slot.va_frame.get());
+		if (err < 0)
+			throw std::system_error(err, av_error_category(), "Cannot copy QSV frame properties");
+	}
+}
+
+void video_encoder_va::open_codec()
+{
+	int err;
+	const char * encoder_name = encoder(codec_settings.codec, use_qsv);
+	const AVCodec * codec = avcodec_find_encoder_by_name(encoder_name);
+	if (codec == nullptr)
+	{
+		throw std::runtime_error(std::string("Failed to find encoder ") + encoder_name);
+	}
+
+	encoder_ctx = av_codec_context_ptr(avcodec_alloc_context3(codec));
+	if (not encoder_ctx)
+	{
+		throw std::runtime_error("failed to allocate VAAPI encoder");
+	}
+
+	AVDictionary * opts = nullptr;
+	av_dict_set(&opts, "async_depth", "1", 0);
+	switch (codec_settings.codec)
+	{
+		case video_codec::h264:
+			encoder_ctx->profile = use_qsv ? AV_PROFILE_H264_MAIN : AV_PROFILE_H264_CONSTRAINED_BASELINE;
+			if (!use_qsv)
+				av_dict_set(&opts, "coder", "cavlc", 0);
+			if (!use_qsv)
+				av_dict_set(&opts, "rc_mode", "CBR", 0);
+			break;
+		case video_codec::h265:
+			// bit_depth is either 8 or 10 here
+			encoder_ctx->profile = codec_settings.bit_depth == 10 ? AV_PROFILE_HEVC_MAIN_10 : AV_PROFILE_HEVC_MAIN;
+			break;
+		case video_codec::av1:
+			encoder_ctx->profile = AV_PROFILE_AV1_MAIN;
+			break;
+		case video_codec::raw:
+			throw std::runtime_error("raw codec not supported");
+	}
+	if (use_qsv)
+	{
+		av_dict_set(&opts, "look_ahead_depth", "0", 0);
+		if (codec_settings.codec == video_codec::h264)
+			av_dict_set(&opts, "look_ahead", "0", 0);
+		av_dict_set(&opts, "forced_idr", "1", 0);
+		av_dict_set(&opts, "preset", "veryfast", 0);
+		av_dict_set(&opts, "low_delay_brc", "1", 0);
+	}
+	for (auto option: codec_settings.options)
+	{
+		av_dict_set(&opts, option.first.c_str(), option.second.c_str(), 0);
+	}
+
+	encoder_ctx->width = extent.width;
+	encoder_ctx->height = extent.height;
+	encoder_ctx->time_base = {std::chrono::steady_clock::duration::period::num,
+	                          std::chrono::steady_clock::duration::period::den};
+	encoder_ctx->framerate = AVRational{int(codec_settings.fps * 1000), 1000};
+	encoder_ctx->sample_aspect_ratio = AVRational{1, 1};
+	encoder_ctx->pix_fmt = use_qsv ? AV_PIX_FMT_QSV : AV_PIX_FMT_VAAPI;
+	encoder_ctx->color_range = AVCOL_RANGE_JPEG;
+	encoder_ctx->colorspace = AVCOL_SPC_BT709;
+	encoder_ctx->color_trc = AVCOL_TRC_BT709;
+	encoder_ctx->color_primaries = AVCOL_PRI_BT709;
+	encoder_ctx->max_b_frames = 0;
+	encoder_ctx->bit_rate = codec_settings.bitrate;
+	encoder_ctx->gop_size = use_qsv ? 240 : std::numeric_limits<decltype(encoder_ctx->gop_size)>::max();
+	encoder_ctx->hw_frames_ctx = av_buffer_ref(use_qsv ? qsv_frames.get() : vaapi_frame_ctx.get());
+	encoder_ctx->rc_max_rate = codec_settings.bitrate;
+	encoder_ctx->rc_buffer_size = int(codec_settings.bitrate / codec_settings.fps);
+
+	err = avcodec_open2(encoder_ctx.get(), codec, &opts);
+	av_dict_free(&opts);
+	if (err < 0)
+	{
+		throw std::system_error(err, av_error_category(), "Cannot open video encoder codec");
+	}
+
+	if (encoder_ctx->delay != 0)
+	{
+		U_LOG_W("Encoder %d reports a %d frame delay, reprojection will fail", stream_idx, encoder_ctx->delay);
+	}
+}
+
+bool video_encoder_va::recover(unsigned attempt)
+{
+	// Present is excluded by operation_mutex. Do not release hardware references
+	// unless every Vulkan copy has completed; a timeout leaves resources intact.
+	for (auto & slot: in)
+		if (vk.device.waitForFences(*slot.fence, true, 100'000'000) == vk::Result::eTimeout)
+			throw std::runtime_error("GPU copy still in flight; refusing to recycle surfaces");
+	encoder_ctx.reset();
+	for (auto & slot: in)
+		slot.qsv_frame.reset();
+	qsv_frames.reset();
+	qsv_device.reset();
+#if WIVRN_USE_VAAPI
+	// Stay on VAAPI for the rest of this runtime session after fallback.
+	if (use_qsv && attempt >= 2)
+	{
+		use_qsv = false;
+		codec_settings.encoder_name = encoder_vaapi;
+		codec_settings.options.clear(); // QSV private options must not reach VAAPI.
+	}
+#endif
+	if (auto bitrate = pending_bitrate.exchange(0))
+		codec_settings.bitrate = bitrate;
+	if (auto fps = pending_framerate.exchange(0))
+		codec_settings.fps = fps;
+	map_qsv_frames();
+	open_codec();
+	return true;
+}
+
+bool video_encoder_va::apply_pending_settings()
+{
+	const auto bitrate = pending_bitrate.exchange(0);
+	const auto fps = pending_framerate.exchange(0);
+	const bool changed = (bitrate && bitrate != codec_settings.bitrate) || (fps && fps != codec_settings.fps);
+	if (!changed)
+		return true;
+	if (bitrate)
+		codec_settings.bitrate = bitrate;
+	if (fps)
+		codec_settings.fps = fps;
+	if (use_qsv && fps)
+	{
+		// Do not ask MFXVideoENCODE_Reset to apply unsupported rate changes.
+		// Rebuild at the encoder-thread recovery boundary with coherent settings.
+		request_reconfigure();
+		throw encoder_reconfiguration{};
+	}
+	encoder_ctx->bit_rate = codec_settings.bitrate;
+	encoder_ctx->rc_max_rate = codec_settings.bitrate;
+	encoder_ctx->framerate = AVRational{.num = int(codec_settings.fps * 1000), .den = 1000};
+	idr->reset();
+	return true;
 }
 } // namespace wivrn

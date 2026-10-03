@@ -42,6 +42,7 @@ protected:
 	        wivrn::video_encoder(vk, stream_idx, vk.queue.family_index, settings, std::make_unique<default_idr_handler>(), true) {}
 
 	virtual void push_frame(bool idr, uint8_t slot) = 0;
+	virtual bool apply_pending_settings();
 
 	av_codec_context_ptr encoder_ctx;
 

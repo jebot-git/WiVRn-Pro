@@ -21,6 +21,8 @@
 
 #include "driver/clock_offset.h"
 #include "idr_handler.h"
+#include "recovery_policy.h"
+#include "slot_ring.h"
 #include "wivrn_packets.h"
 
 #include <atomic>
@@ -30,6 +32,7 @@
 #include <fstream>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <thread>
 #include <vulkan/vulkan_raii.hpp>
 
@@ -43,6 +46,14 @@ class wivrn_session;
 inline const char * encoder_qsv = "qsv";
 inline const char * encoder_vaapi = "vaapi";
 inline const char * encoder_vulkan = "vulkan";
+
+class encoder_reconfiguration : public std::exception
+{
+	const char * what() const noexcept override
+	{
+		return "encoder rate change";
+	}
+};
 
 class video_encoder
 {
@@ -69,7 +80,7 @@ private:
 	public:
 		void push(data &&);
 		static std::shared_ptr<sender> get();
-		void wait_idle(video_encoder *);
+		bool wait_idle(video_encoder *, std::chrono::milliseconds timeout = std::chrono::milliseconds::zero());
 	};
 
 public:
@@ -84,15 +95,22 @@ public:
 	const double bitrate_multiplier;
 
 private:
-	using state_t = std::atomic_unsigned_lock_free::value_type;
-	static const state_t idle = 0;
-	static const state_t busy = 1;
-	static const state_t skip = 2;
-	std::array<std::atomic_unsigned_lock_free, num_slots> state = {idle, idle};
-	uint8_t present_slot = 0;
-	uint8_t encode_slot = 0;
+	slot_ring<num_slots> slots;
 
 	std::mutex mutex;
+	std::shared_mutex operation_mutex;
+	recovery_policy recovery;
+	std::atomic_bool recovery_requested = false;
+	std::atomic_bool manual_recovery = false;
+	std::atomic_bool resumed = false;
+	std::atomic_bool reconfigure_requested = false;
+	std::atomic<int64_t> last_demand = 0;
+	std::atomic<uint64_t> submitted_frame = 0;
+	std::atomic<uint64_t> encoded_frame = 0;
+	std::atomic<uint64_t> sent_frame = 0;
+	bool frame_send_failed = false;
+	std::atomic<uint64_t> decoded_frame = 0;
+	uint64_t observed_decoded_frame = 0;
 
 	// temporary data
 	wivrn_session * cnx;
@@ -106,10 +124,11 @@ private:
 	std::ofstream video_dump;
 
 	std::shared_ptr<sender> shared_sender;
+	std::optional<data> staged_output;
 
 protected:
-	std::atomic_uint32_t pending_bitrate;
-	std::atomic<float> pending_framerate;
+	std::atomic_uint32_t pending_bitrate{0};
+	std::atomic<float> pending_framerate{0};
 	std::unique_ptr<idr_handler> idr;
 	const vk::Extent2D extent;
 
@@ -122,12 +141,19 @@ public:
 	video_encoder(vk_bundle &, uint8_t stream_idx, uint32_t target_queue, const encoder_settings & settings, std::unique_ptr<idr_handler>, bool async_send);
 	virtual ~video_encoder();
 
-	void present_image(vk::Image y_cbcr,
+	bool present_image(vk::Image y_cbcr,
 	                   vk::SemaphoreSubmitInfo sem_info,
 	                   uint64_t frame_index);
 
 	void on_feedback(const from_headset::feedback &);
 	void reset();
+	void request_recovery(bool manual = false);
+	// Called only on the encoder thread. Returns true after codec recreation.
+	bool service_recovery(bool connected, bool expected);
+	std::string recovery_status();
+	bool drain_sender();
+	bool ready_for_present();
+	void commit_encoded(bool keep);
 
 	// bitrate_bps is the bitrate for the whole stream
 	// the encoder bitrate will be scaled accordingly
@@ -139,6 +165,24 @@ public:
 	            uint64_t frame_index);
 
 protected:
+	// Codec recreation must keep imported images and slot indices intact.
+	void request_reconfigure()
+	{
+		reconfigure_requested = true;
+	}
+	virtual bool recover(unsigned attempt)
+	{
+		return false;
+	}
+	virtual const char * backend_name() const
+	{
+		return "encoder";
+	}
+	virtual bool supports_recovery() const
+	{
+		return false;
+	}
+
 	// called on present to submit command buffers for the image.
 	virtual void present_image(vk::Image y_cbcr,
 	                           vk::SemaphoreSubmitInfo sem_info,

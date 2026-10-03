@@ -20,6 +20,9 @@
 // Copyright 2025-2026, NVIDIA CORPORATION.
 
 #include "compositor.h"
+#include "encoder/encode_batch.h"
+#include "wivrn_ipc.h"
+#include <cmath>
 
 // Monado includes
 #include "driver/xrt_cast.h"
@@ -282,13 +285,29 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 
 	U_LOG_IFL_D(log_level, "frame %ld commit %d layers", frame.rendering.id, layer_accum.layer_count);
 
-	if (encode_request >= 0 // encoders have not picked up the previous frame
+	if (description_requested || encode_request >= 0 // encoders have not picked up the previous frame
 	    or not session.connected() or not session.get_offset())
 	{
 		comp_frame_clear_locked(&frame.rendering);
 		return XRT_SUCCESS;
 	}
 
+	std::shared_lock video_lock(video_mutex, std::try_to_lock);
+	if (!video_lock)
+	{
+		comp_frame_clear_locked(&frame.rendering);
+		return XRT_SUCCESS;
+	}
+	// Both eyes advance together. Never queue only one eye under backpressure.
+	bool ready = true;
+	for (auto & encoder: encoders)
+		if (encoder->stream_idx < 2 || layer_accum.data.env_blend_mode == XRT_BLEND_MODE_ALPHA_BLEND)
+			ready &= encoder->ready_for_present();
+	if (!ready)
+	{
+		comp_frame_clear_locked(&frame.rendering);
+		return XRT_SUCCESS;
+	}
 	int i = acquire_image();
 	if (i < 0)
 	{
@@ -303,6 +322,7 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 
 	auto & view_info = images[i].view_info;
 	images[i].frame_index = frame.rendering.id;
+	last_submitted_frame = frame.rendering.id;
 	view_info = {
 	        .display_time = session.get_offset().to_headset(frame.rendering.predicted_display_time_ns),
 	        .alpha = layer_accum.data.env_blend_mode == XRT_BLEND_MODE_ALPHA_BLEND,
@@ -484,19 +504,24 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	pacer.mark_timing_point(COMP_TARGET_TIMING_POINT_SUBMIT_END, frame.rendering.id, os_monotonic_get_ns());
 	auto info = pacer.present_to_info(frame.rendering.desired_present_time_ns);
 
+	images[i].submitted.fill(false);
 	for (auto & encoder: encoders)
 	{
 		if (encoder->stream_idx == 2 and not view_info.alpha)
 			continue;
-		encoder->present_image(
+		images[i].submitted[encoder->stream_idx] = encoder->present_image(
 		        images[i].image,
 		        sem_info,
 		        info.frame_id);
 	}
 
-	auto j = encode_request.exchange(i);
-	encode_request.notify_all();
-	assert(j == -1);
+	// Publish under the wait mutex so an idle worker cannot miss this wakeup.
+	{
+		std::lock_guard wake_lock(encoder_wakeup_mutex);
+		auto j = encode_request.exchange(i);
+		assert(j == -1);
+	}
+	encoder_wakeup.notify_one();
 
 #ifdef XRT_FEATURE_RENDERDOC
 	if (auto r = renderdoc())
@@ -614,35 +639,71 @@ int compositor::acquire_image()
 
 void compositor::encoder_work(std::stop_token tok)
 {
-	while (not tok.stop_requested())
+	while (!tok.stop_requested())
 	{
+		std::unique_lock video_lock(video_mutex);
+		bool rebuilt = false;
+		std::string status;
+		for (auto & encoder: encoders)
+		{
+			rebuilt |= encoder->service_recovery(session.connected(), video_expected);
+			if (!status.empty())
+				status += "; ";
+			status += encoder->recovery_status();
+		}
+		try
+		{
+			if (rebuilt)
+				description_requested = true;
+			if (description_requested && session.connected())
+			{
+				bool drained = true;
+				for (auto & encoder: encoders)
+					drained &= encoder->drain_sender();
+				if (drained)
+				{
+					for (auto & encoder: encoders)
+						encoder->reset();
+					video_frame_floor = last_submitted_frame.load() + 1;
+					send_video_stream_description();
+					description_requested = false;
+				}
+			}
+			if (status != last_recovery_status)
+			{
+				send_to_main(from_monado::video_recovery_status{status});
+				U_LOG_I("Video recovery: %s", status.c_str());
+				last_recovery_status = status;
+			}
+		}
+		catch (const std::exception & e)
+		{
+			U_LOG_W("Video recovery notification: %s", e.what());
+		}
+		video_lock.unlock();
 		auto req = encode_request.exchange(-1);
 		if (req < 0)
 		{
-			encode_request.wait(req);
-			wivrn::trace::cpu_instant(wivrn::trace::cpu_track::compositor, "encoder_work wake", 0, 0);
+			std::unique_lock lock(encoder_wakeup_mutex);
+			encoder_wakeup.wait_for(lock, std::chrono::milliseconds(100), [&] { return tok.stop_requested() || encode_request >= 0; });
 			continue;
 		}
-
-		assert(req < images.size());
 		auto & image = images[req];
-
-		wivrn::trace::scope trace_iter(wivrn::trace::cpu_track::compositor, 0, image.frame_index, "encoder_work iter");
-
-		try
-		{
-			for (auto & encoder: encoders)
-			{
-				if (encoder->stream_idx < 2 or image.view_info.alpha)
-					encoder->encode(session, image.view_info, image.frame_index);
-			}
-		}
-		catch (std::exception & e)
-		{
-			U_LOG_W("encode error: %s", e.what());
-		}
+		encode_batch(encoders, image.submitted, [&](video_encoder & encoder) {
+    encoder.encode(session, image.view_info, image.frame_index);
+    if (description_requested || image.frame_index < video_frame_floor) throw encoder_reconfiguration{}; }, [&](video_encoder & encoder, const std::exception & e) {
+    if (dynamic_cast<const encoder_reconfiguration *>(&e)) return;
+    encoder.request_recovery();
+    U_LOG_W("Encode error on stream %u: %s", encoder.stream_idx, e.what()); });
 		image.busy = false;
 	}
+}
+
+void compositor::recover_video()
+{
+	for (auto & encoder: encoders)
+		encoder->request_recovery(true);
+	encoder_wakeup.notify_all();
 }
 
 void compositor::send_video_stream_description()
@@ -651,8 +712,9 @@ void compositor::send_video_stream_description()
 	to_headset::video_stream_description desc{
 	        .width = uint16_t(images[0].image.info().extent.width),
 	        .height = uint16_t(images[0].image.info().extent.height),
-	        .frame_rate = settings[0].fps,
+	        .frame_rate = frame_rate.load(),
 	};
+	desc.first_frame = video_frame_floor;
 	get_display_refresh_rate(&desc.refresh_rate);
 	static_assert(std::tuple_size_v<decltype(settings)> == std::tuple_size_v<decltype(desc.codec)>);
 	std::ranges::transform(settings, desc.codec.begin(), &encoder_settings::codec);
@@ -763,9 +825,13 @@ compositor::compositor(wivrn_session & session) :
 compositor::~compositor()
 {
 	u_var_remove_root(this);
-	encoder_thread.request_stop();
-	encode_request = -2;
-	encode_request.notify_all();
+	{
+		std::lock_guard wake_lock(encoder_wakeup_mutex);
+		encoder_thread.request_stop();
+		encode_request = -2;
+	}
+	encoder_wakeup.notify_all();
+	encoder_thread.join();
 	comp_base * c_base = this;
 	comp_swapchain_shared_garbage_collect(&cscs);
 	comp_swapchain_shared_destroy(&cscs, &c_base->vk);
@@ -805,6 +871,11 @@ void compositor::set_bitrate(uint32_t bitrate)
 
 void compositor::set_framerate(float hz)
 {
+	if (!std::isfinite(hz) || hz < 1 || hz > 1000)
+	{
+		U_LOG_W("Ignoring invalid video rate %f", hz);
+		return;
+	}
 	if (frame_rate.exchange(hz) == hz)
 		return;
 	U_LOG_IFL_D(log_level, "Framerate change from %.0f to %.0f", frame_rate.load(), hz);
@@ -827,7 +898,8 @@ void compositor::resume()
 {
 	for (auto & encoder: encoders)
 		encoder->reset();
-	send_video_stream_description();
+	description_requested = true;
+	encoder_wakeup.notify_all();
 }
 
 void compositor::on_feedback(const from_headset::feedback & feedback, const clock_offset & o)

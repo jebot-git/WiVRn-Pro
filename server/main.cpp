@@ -256,7 +256,6 @@ NotifyNotification * pin_notification;
 const std::chrono::milliseconds default_delay_next_try = 10ms;
 std::chrono::milliseconds delay_next_try = default_delay_next_try;
 
-
 /* TODO: Document FSM
  */
 std::optional<active_runtime> runtime_setter;
@@ -596,6 +595,7 @@ gboolean control_received(gint fd, GIOCondition condition, gpointer user_data)
 		                   [&](const wivrn::from_headset::stream_tab_changed & event) {
 			                   wivrn_server_set_client_tab(dbus_server, magic_enum::enum_name(event.tab).data());
 		                   },
+		                   [&](const from_monado::video_recovery_status & e) { wivrn_server_set_video_recovery_status(dbus_server, e.status.c_str()); },
 		                   [&](const from_monado::server_error & e) {
 			                   wivrn_server_emit_server_error(dbus_server, e.where.c_str(), e.message.c_str());
 		                   },
@@ -889,6 +889,25 @@ void on_name_acquired(GDBusConnection * connection, const gchar * name, gpointer
 	}
 
 	dbus_server = wivrn_server_skeleton_new();
+	wivrn_server_set_video_recovery_status(dbus_server, "No runtime session");
+	g_signal_connect(dbus_server, "handle-recover-video", G_CALLBACK(+[](WivrnServer *, GDBusMethodInvocation * invocation, gpointer) -> gboolean {
+		                 if (!server_watch || !wivrn_ipc_socket_main_loop)
+		                 {
+			                 g_dbus_method_invocation_return_dbus_error(invocation, "io.github.wivrn.Error.NoSession", "No runtime session");
+			                 return TRUE;
+		                 }
+		                 try
+		                 {
+			                 wivrn_ipc_socket_main_loop->send(to_monado::recover_video{});
+			                 g_dbus_method_invocation_return_value(invocation, nullptr);
+		                 }
+		                 catch (const std::exception & e)
+		                 {
+			                 g_dbus_method_invocation_return_dbus_error(invocation, "io.github.wivrn.Error.Recovery", e.what());
+		                 }
+		                 return TRUE;
+	                 }),
+	                 nullptr);
 	wivrn_server_set_way_vrstatus(dbus_server, "Waiting for a WiVRn runtime session");
 	g_signal_connect(dbus_server, "handle-restart-way-vr", G_CALLBACK(+[](WivrnServer * server, GDBusMethodInvocation * invocation, gpointer) -> gboolean {
 		                 if (server_watch)

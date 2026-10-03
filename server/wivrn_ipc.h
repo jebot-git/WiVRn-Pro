@@ -48,6 +48,11 @@ struct server_error
 	std::string message;
 };
 
+struct video_recovery_status
+{
+	std::string status;
+};
+
 using packets = std::variant<
         wivrn::from_headset::headset_info_packet,
         wivrn::from_headset::settings_changed,
@@ -55,7 +60,8 @@ using packets = std::variant<
         wivrn::from_headset::stream_tab_changed,
         headset_connected,
         headset_disconnected,
-        server_error>;
+        server_error,
+        video_recovery_status>;
 } // namespace from_monado
 
 namespace to_monado
@@ -66,12 +72,15 @@ struct stop
 struct disconnect
 {};
 
+struct recover_video
+{};
+
 struct set_bitrate
 {
 	uint32_t bitrate_bps;
 };
 
-using packets = std::variant<stop, disconnect, set_bitrate, wivrn::to_headset::stream_tab_change>;
+using packets = std::variant<stop, disconnect, set_bitrate, wivrn::to_headset::stream_tab_change, recover_video>;
 } // namespace to_monado
 
 extern std::optional<wivrn::typed_socket<wivrn::UnixDatagram, to_monado::packets, from_monado::packets>> wivrn_ipc_socket_monado;

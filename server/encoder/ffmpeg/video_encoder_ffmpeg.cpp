@@ -70,17 +70,8 @@ bool video_encoder_ffmpeg::once = set_log_level();
 std::optional<wivrn::video_encoder::data> video_encoder_ffmpeg::encode(uint8_t slot, uint64_t frame_index)
 {
 	auto & idr_handler = (default_idr_handler &)*idr;
-	if (auto bitrate = pending_bitrate.exchange(0))
-	{
-		idr_handler.reset();
-		encoder_ctx->bit_rate = bitrate;
-		encoder_ctx->rc_max_rate = bitrate;
-	}
-	if (auto framerate = pending_framerate.exchange(0))
-	{
-		idr_handler.reset();
-		encoder_ctx->framerate = AVRational{.num = int(framerate * 1000), .den = 1000};
-	}
+	if (!apply_pending_settings())
+		return {};
 
 	bool is_idr = idr_handler.get_type(frame_index) == default_idr_handler::frame_type::i;
 
@@ -117,5 +108,25 @@ video_encoder_ffmpeg::mute_logs::mute_logs()
 video_encoder_ffmpeg::mute_logs::~mute_logs()
 {
 	set_log_level();
+}
+} // namespace wivrn
+
+namespace wivrn
+{
+bool video_encoder_ffmpeg::apply_pending_settings()
+{
+	if (auto bitrate = pending_bitrate.exchange(0))
+	{
+		idr->reset();
+		encoder_ctx->bit_rate = bitrate;
+		encoder_ctx->rc_max_rate = bitrate;
+	}
+	if (auto framerate = pending_framerate.exchange(0))
+	{
+		idr->reset();
+		encoder_ctx->framerate = AVRational{.num = int(framerate * 1000), .den = 1000};
+	}
+
+	return true;
 }
 } // namespace wivrn

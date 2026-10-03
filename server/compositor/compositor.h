@@ -34,7 +34,10 @@
 
 #include <array>
 #include <atomic>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <thread>
 
 namespace wivrn
@@ -54,6 +57,7 @@ public:
 		vk::raii::ImageView view_cbcr;
 		to_headset::video_stream_data_shard::view_info_t view_info{};
 		uint64_t frame_index;
+		std::array<bool, 3> submitted{};
 	};
 
 private:
@@ -105,6 +109,14 @@ private:
 	using status_type = std::atomic_int8_t;
 #endif
 	status_type encode_request{-1}; // id of the image to encode
+	std::atomic_bool video_expected = false;
+	std::atomic_bool description_requested = false;
+	std::atomic<uint64_t> last_submitted_frame = 0;
+	uint64_t video_frame_floor = 0;
+	std::shared_mutex video_mutex;
+	std::mutex encoder_wakeup_mutex;
+	std::condition_variable encoder_wakeup;
+	std::string last_recovery_status;
 	std::jthread encoder_thread;
 
 	struct
@@ -192,6 +204,11 @@ public:
 	void update_foveation_center_override(const from_headset::override_foveation_center &);
 
 	void resume();
+	void recover_video();
+	void set_video_expected(bool expected)
+	{
+		video_expected = expected;
+	}
 
 	void on_feedback(const from_headset::feedback &, const clock_offset &);
 };

@@ -46,13 +46,13 @@
 #include "b_body_tracker.h"
 #include "b_hand_tracker.h"
 #include "b_system.h"
+#include "math/m_api.h"
 #include "target_builder_helpers.h"
 #include "util/u_logging.h"
 #include "xrt/xrt_defines.h"
 #include "xrt/xrt_device.h"
-#include "xrt/xrt_space.h"
-#include "math/m_api.h"
 #include "xrt/xrt_session.h"
+#include "xrt/xrt_space.h"
 
 #include <algorithm>
 #include <chrono>
@@ -744,30 +744,33 @@ void wivrn_session::operator()(from_headset::htc_body && body_tracking)
 }
 void wivrn_session::operator()(const spatial::snapshot & packet)
 {
-    if (!spatial_bridge.enabled()) return;
-    auto offset = offset_est.get_offset();
-    std::optional<XrPosef> mapping;
-    int64_t timestamp = 0;
-    if (offset && space_overseer && space_overseer->semantic.stage) {
-        timestamp = offset.from_headset(packet.time);
-        const xrt_pose identity{{0, 0, 0, 1}, {0, 0, 0}};
-        xrt_pose origin{};
-        xrt_space_relation root_in_stage{};
-        constexpr auto valid = XRT_SPACE_RELATION_POSITION_VALID_BIT | XRT_SPACE_RELATION_ORIENTATION_VALID_BIT;
-        // The legacy overseer attaches the HMD tracking origin to root. Compose
-        // STAGE_from_root * root_from_Quest at the snapshot's mapped timestamp.
-        if (xrt_space_overseer_get_tracking_origin_offset(space_overseer,
-                static_cast<xrt_device &>(hmd).tracking_origin, &origin) == XRT_SUCCESS &&
-            xrt_space_overseer_locate_space(space_overseer, space_overseer->semantic.stage, &identity,
-                timestamp, space_overseer->semantic.root, &identity, &root_in_stage) == XRT_SUCCESS &&
-            (root_in_stage.relation_flags & valid) == valid) {
-            xrt_pose result{};
-            math_pose_transform(&root_in_stage.pose, &origin, &result);
-            mapping = XrPosef{{result.orientation.x, result.orientation.y, result.orientation.z, result.orientation.w},
-                             {result.position.x, result.position.y, result.position.z}};
-        }
-    }
-    spatial_bridge.publish(packet, mapping, timestamp);
+	if (!spatial_bridge.enabled())
+		return;
+	auto offset = offset_est.get_offset();
+	std::optional<XrPosef> mapping;
+	int64_t timestamp = 0;
+	if (offset && space_overseer && space_overseer->semantic.stage)
+	{
+		timestamp = offset.from_headset(packet.time);
+		const xrt_pose identity{{0, 0, 0, 1}, {0, 0, 0}};
+		xrt_pose origin{};
+		xrt_space_relation root_in_stage{};
+		constexpr auto valid = XRT_SPACE_RELATION_POSITION_VALID_BIT | XRT_SPACE_RELATION_ORIENTATION_VALID_BIT;
+		// The legacy overseer attaches the HMD tracking origin to root. Compose
+		// STAGE_from_root * root_from_Quest at the snapshot's mapped timestamp.
+		if (xrt_space_overseer_get_tracking_origin_offset(space_overseer,
+		                                                  static_cast<xrt_device &>(hmd).tracking_origin,
+		                                                  &origin) == XRT_SUCCESS &&
+		    xrt_space_overseer_locate_space(space_overseer, space_overseer->semantic.stage, &identity, timestamp, space_overseer->semantic.root, &identity, &root_in_stage) == XRT_SUCCESS &&
+		    (root_in_stage.relation_flags & valid) == valid)
+		{
+			xrt_pose result{};
+			math_pose_transform(&root_in_stage.pose, &origin, &result);
+			mapping = XrPosef{{result.orientation.x, result.orientation.y, result.orientation.z, result.orientation.w},
+			                  {result.position.x, result.position.y, result.position.z}};
+		}
+	}
+	spatial_bridge.publish(packet, mapping, timestamp);
 }
 
 void wivrn_session::operator()(from_headset::inputs && inputs)
@@ -870,6 +873,7 @@ void wivrn_session::operator()(from_headset::visibility_mask_changed && mask)
 
 void wivrn_session::operator()(from_headset::session_state_changed && event)
 {
+	compositor.set_video_expected(event.state == XR_SESSION_STATE_VISIBLE || event.state == XR_SESSION_STATE_FOCUSED);
 	U_LOG_I("Session state changed: %s", xr::to_string(event.state));
 	bool visible, focused;
 	switch (event.state)
@@ -1015,6 +1019,11 @@ void wivrn_session::operator()(audio_data && data)
 {
 	if (audio_handle)
 		audio_handle->process_mic_data(std::move(data));
+}
+
+void wivrn_session::operator()(to_monado::recover_video &&)
+{
+	compositor.recover_video();
 }
 
 void wivrn_session::operator()(to_monado::stop &&)

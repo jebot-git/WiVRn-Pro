@@ -1,0 +1,11 @@
+[Unit]
+Description=Check KDE desktop ScreenCast portal health
+Requisite=graphical-session.target
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/.local/libexec/wivrn-portal-health.py
+TimeoutStartSec=90
+NoNewPrivileges=yes
