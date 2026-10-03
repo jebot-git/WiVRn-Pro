@@ -437,6 +437,12 @@ void scenes::stream::gui_settings(float)
 			break;
 		case settings_page::audio:
 			wivrn::gui::settings_audio(ctx);
+#ifdef __ANDROID__
+			ImGui::Spacing();
+			if (wivrn::ui::button("Restart microphone", wivrn::ui::button_style::secondary))
+				request_mic_restart = true;
+			ImGui::TextWrapped("Reopen microphone capture while keeping the VR session running.");
+#endif
 			break;
 		case settings_page::streaming:
 			wivrn::gui::settings_streaming(ctx);

@@ -35,7 +35,17 @@ void scenes::stream::process_packets()
 	{
 		try
 		{
+#ifdef __ANDROID__
+			if (audio_handle)
+			{
+				if (request_mic_restart.exchange(false))
+					audio_handle->restart_microphone();
+				audio_handle->send_microphone_data();
+			}
+			network_session->poll(*this, std::chrono::milliseconds(audio_handle ? 10 : 500));
+#else
 			network_session->poll(*this, std::chrono::milliseconds(500));
+#endif
 		}
 		catch (std::exception & e)
 		{

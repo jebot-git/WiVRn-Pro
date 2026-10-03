@@ -1,0 +1,38 @@
+Microphone recovery on the upstream-merged Pro build
+
+Observed trigger: a VRChat world change removed its PipeWire source reader for
+about ten seconds. On return, WiVRn received synthetic silence while the Quest
+system tracking capture held the vendor HAL audio-record use case.
+
+The server now holds an already-requested microphone through up to 30 seconds
+of consumer idle. Disconnected/error states stop it immediately. Audio received
+without a reader is discarded; generation tags reject pre-transition buffers.
+This changes consumer-idle behavior, not the headset's microphone permission or
+input preset. A long load exceeding 30 seconds can still stop capture.
+
+Android stream lifecycle operations are serialized on an owner thread. Error
+callbacks only post notifications. Requested capture survives reopening; API
+start failures are checked. Shutdown does not wait for a callback acknowledgement
+or join a recreate thread under its mutex. AAudio close itself remains a platform
+operation whose timing is controlled by Android.
+
+Capture callbacks only copy into a bounded queue. The network thread drains it,
+rejecting stale generations and samples older than 100 ms. The callback performs
+no network send. Network-send failure follows the normal session error path.
+
+Recovery observes callback progress and AAudio timestamps, never PCM amplitude.
+A 3-second stall or stream error permits up to three reopen attempts with backoff.
+Only ten seconds of actual timestamp progress rearms that budget. Unsupported
+hardware timestamps alone do not cause reopen. AAudio timestamps are platform
+reports, not a guarantee that the vendor HAL is producing useful microphone data.
+Audio settings include Restart microphone, which preserves the VR connection
+and rearms recovery without enabling a microphone that the server has disabled.
+
+Validation: offline policy/supervisor/wire tests, audio idle and recovery deadline
+tests, native server and ARM64 Android builds. Live world-load, retry, and manual
+recovery checks are recorded with the deployment in the microphone diagnosis
+workspace. Do not describe the vendor HAL collision as fixed until reproduced
+world transitions pass on hardware.
+
+API lifecycle reference:
+https://developer.android.com/ndk/guides/audio/aaudio/aaudio

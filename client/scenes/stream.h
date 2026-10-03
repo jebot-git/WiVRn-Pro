@@ -122,6 +122,7 @@ private:
 	xr::swapchain swapchain;
 
 	std::optional<audio> audio_handle;
+	std::atomic<bool> request_mic_restart = false;
 
 	std::optional<xr::hand_tracker> left_hand;
 	std::optional<xr::hand_tracker> right_hand;
