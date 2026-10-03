@@ -8,6 +8,8 @@ python3 -m unittest discover -s fork/tests -p "test_*.py"
 python3 -m unittest discover -s apps/mac-desktop -p "test_*.py"
 mkdir -p build/native-tests
 cxx=${CXX:-c++}
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Icommon fork/tests/audio_recovery_test.cpp -o build/native-tests/audio-recovery-test
+build/native-tests/audio-recovery-test
 "$cxx" -std=c++23 -Wall -Wextra -Werror -pthread -Iserver fork/tests/video_recovery_test.cpp -o build/native-tests/video-recovery-test
 build/native-tests/video-recovery-test
 python3 fork/tests/portal_health_test.py

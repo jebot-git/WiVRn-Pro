@@ -20,27 +20,13 @@
 #include "audio.h"
 
 #include "application.h"
+#include "utils/audio_recovery.h"
 #include "utils/named_thread.h"
 #include "wivrn_client.h"
 #include "xr/instance.h"
 
 #include "spdlog/spdlog.h"
 #include <aaudio/AAudio.h>
-
-void wivrn::android::audio::exit()
-{
-	exiting = true;
-	if (speaker)
-	{
-		speaker_stop_ack.wait(false);
-		AAudioStream_requestStop(speaker);
-	}
-	if (microphone and mic_running)
-	{
-		microphone_stop_ack.wait(false);
-		AAudioStream_requestStop(microphone);
-	}
-}
 
 int32_t wivrn::android::audio::speaker_data_cb(AAudioStream * stream, void * userdata, void * audio_data_v, int32_t num_frames)
 {
@@ -49,8 +35,6 @@ int32_t wivrn::android::audio::speaker_data_cb(AAudioStream * stream, void * use
 
 	if (self->exiting)
 	{
-		self->speaker_stop_ack = true;
-		self->speaker_stop_ack.notify_all();
 		return AAUDIO_CALLBACK_RESULT_STOP;
 	}
 
@@ -110,39 +94,26 @@ int32_t wivrn::android::audio::speaker_data_cb(AAudioStream * stream, void * use
 	return AAUDIO_CALLBACK_RESULT_CONTINUE;
 }
 
-int32_t wivrn::android::audio::microphone_data_cb(AAudioStream * stream, void * userdata, void * audio_data_v, int32_t num_frames)
+int32_t wivrn::android::audio::microphone_data_cb(AAudioStream * stream, void * userdata, void * audio_data, int32_t num_frames)
 {
-	auto self = (wivrn::android::audio *)userdata;
-	uint8_t * audio_data = (uint8_t *)audio_data_v;
-
+	auto self = static_cast<audio *>(userdata);
 	if (self->exiting)
-	{
-		self->microphone_stop_ack = true;
-		self->microphone_stop_ack.notify_all();
-		self->mic_running = false;
 		return AAUDIO_CALLBACK_RESULT_STOP;
-	}
-
-	size_t frame_size = AAudioStream_getChannelCount(stream) * sizeof(uint16_t);
-
-	// Copy data because we encrypt in-place, we don't want to write on the input data
-	thread_local std::vector<uint8_t> data_copy;
-	data_copy.assign(audio_data, audio_data + frame_size * num_frames);
-	try
+	self->microphone_frames += num_frames;
+	if (!self->mic_requested)
+		return AAUDIO_CALLBACK_RESULT_CONTINUE;
+	microphone_block block;
+	block.size = size_t(num_frames) * AAudioStream_getChannelCount(stream) * sizeof(int16_t);
+	if (block.size > block.data.size())
 	{
-		self->session.send_control(wivrn::audio_data{
-		        .timestamp = self->instance.now(),
-		        .payload = std::span(data_copy),
-		});
+		++self->microphone_drops;
+		return AAUDIO_CALLBACK_RESULT_CONTINUE;
 	}
-	catch (...)
-	{
-		self->microphone_stop_ack = true;
-		self->microphone_stop_ack.notify_all();
-		self->mic_running = false;
-		return AAUDIO_CALLBACK_RESULT_STOP;
-	}
-
+	block.timestamp = self->instance.now();
+	block.generation = self->microphone_generation;
+	memcpy(block.data.data(), audio_data, block.size);
+	if (!self->microphone_samples.write(std::move(block)))
+		++self->microphone_drops;
 	return AAUDIO_CALLBACK_RESULT_CONTINUE;
 }
 
@@ -165,8 +136,13 @@ void wivrn::android::audio::build_microphone(AAudioStreamBuilder * builder, int3
 	aaudio_result_t result = AAudioStreamBuilder_openStream(builder, &microphone);
 	if (result != AAUDIO_OK)
 		spdlog::error("Cannot create input stream: {}", AAudio_convertResultToText(result));
-	mic_running = false;
-	// Microphone is started manually by a tracking_control packet
+	if (microphone)
+		spdlog::info("Microphone opened: rate={} channels={} sharing={} preset={} performance={}",
+		             AAudioStream_getSampleRate(microphone),
+		             AAudioStream_getChannelCount(microphone),
+		             int(AAudioStream_getSharingMode(microphone)),
+		             int(AAudioStream_getInputPreset(microphone)),
+		             int(AAudioStream_getPerformanceMode(microphone)));
 }
 
 void wivrn::android::audio::build_speaker(AAudioStreamBuilder * builder, int32_t sample_rate, int32_t num_channels)
@@ -185,120 +161,230 @@ void wivrn::android::audio::build_speaker(AAudioStreamBuilder * builder, int32_t
 	if (result != AAUDIO_OK)
 		spdlog::error("Cannot create output stream: {}", AAudio_convertResultToText(result));
 
-	AAudioStream_requestStart(speaker);
+	if (result != AAUDIO_OK)
+	{
+		speaker = nullptr;
+		return;
+	}
+	result = AAudioStream_requestStart(speaker);
 	if (result == AAUDIO_OK)
 		spdlog::info("Speaker stream started");
 	else
 	{
 		AAudioStream_close(speaker);
+		speaker = nullptr;
 		spdlog::warn("Speaker stream failed to start: {}", AAudio_convertResultToText(result));
 	}
 }
 
-void wivrn::android::audio::recreate_stream(AAudioStreamStruct * stream)
+void wivrn::android::audio::speaker_error_cb(AAudioStream *, void * userdata, aaudio_result_t error)
 {
-	if (exiting)
-		return;
-	std::unique_lock lock(mutex);
-
-	if (recreate_thread.joinable())
-	{
-		assert(recreate_thread.get_id() != std::this_thread::get_id());
-		recreate_thread.join();
-	}
-
-	recreate_thread = utils::named_thread("recreate_audio", [=, this]() {
-		std::unique_lock lock(mutex);
-		size_t num_channels = AAudioStream_getChannelCount(stream);
-		size_t sample_rate = AAudioStream_getSampleRate(stream);
-
-		AAudioStream_requestStop(stream);
-		AAudioStream_close(stream);
-
-		AAudioStreamBuilder * builder;
-		aaudio_result_t result = AAudio_createStreamBuilder(&builder);
-		if (result != AAUDIO_OK)
-			spdlog::error("Cannot create stream builder: {}", AAudio_convertResultToText(result));
-
-		if (stream == speaker)
-			build_speaker(builder, sample_rate, num_channels);
-		else if (stream == microphone)
-			build_microphone(builder, sample_rate, num_channels);
-		else
-			spdlog::error("Stream to recreate is neither speaker, not microphone!");
-
-		AAudioStreamBuilder_delete(builder);
-	});
+	auto self = static_cast<audio *>(userdata);
+	self->speaker_error = error;
+	self->wake.notify_one();
 }
 
-void wivrn::android::audio::speaker_error_cb(AAudioStream * stream, void * userdata, aaudio_result_t error)
+void wivrn::android::audio::microphone_error_cb(AAudioStream *, void * userdata, aaudio_result_t error)
 {
-	auto self = (wivrn::android::audio *)userdata;
-	spdlog::warn("Speaker stream interrupted: {}", AAudio_convertResultToText(error));
-	if (error == AAUDIO_ERROR_DISCONNECTED)
-		self->recreate_stream(stream);
-}
-
-void wivrn::android::audio::microphone_error_cb(AAudioStream * stream, void * userdata, aaudio_result_t error)
-{
-	auto self = (wivrn::android::audio *)userdata;
-	spdlog::warn("Microphone stream interrupted: {}", AAudio_convertResultToText(error));
-	if (error == AAUDIO_ERROR_DISCONNECTED)
-		self->recreate_stream(stream);
+	auto self = static_cast<audio *>(userdata);
+	self->mic_error = error;
+	self->wake.notify_one();
 }
 
 wivrn::android::audio::audio(const wivrn::to_headset::audio_stream_description & desc, wivrn_session & session, xr::instance & instance) :
-        session(session), instance(instance)
+        description(desc), session(session), instance(instance)
 {
-	std::unique_lock lock(mutex);
-	AAudioStreamBuilder * builder;
-	aaudio_result_t result = AAudio_createStreamBuilder(&builder);
-	if (result != AAUDIO_OK)
-		throw std::runtime_error(std::string("Cannot create stream builder: ") + AAudio_convertResultToText(result));
-
-	if (desc.microphone)
-		build_microphone(builder, desc.microphone->sample_rate, desc.microphone->num_channels);
-
-	if (desc.speaker)
-		build_speaker(builder, desc.speaker->sample_rate, desc.speaker->num_channels);
-
-	AAudioStreamBuilder_delete(builder);
+	worker = utils::named_thread("audio_owner", &audio::audio_worker, this);
 }
 
 wivrn::android::audio::~audio()
 {
-	exit();
-
-	for (auto stream: {speaker, microphone})
-	{
-		if (stream)
-			AAudioStream_close(stream);
-	}
-
-	std::unique_lock lock(mutex);
-	if (recreate_thread.joinable())
-		recreate_thread.join();
+	exiting = true;
+	wake.notify_one();
+	// No callback acknowledgement wait and no join under the command mutex.
+	if (worker.joinable())
+		worker.join();
 }
 
 void wivrn::android::audio::operator()(wivrn::audio_data && data)
 {
 	auto size = data.payload.size_bytes();
-	if (output_buffer.write(std::move(data)))
-		buffer_size_bytes.fetch_add(size);
+	buffer_size_bytes += size;
+	if (!output_buffer.write(std::move(data)))
+		buffer_size_bytes -= size;
 }
 
 void wivrn::android::audio::set_mic_state(bool running)
 {
-	if (not microphone)
-		return;
+	mic_requested = running;
+	wake.notify_one();
+}
 
-	auto old = mic_running.exchange(running);
-	if (old == running)
-		return;
-	if (running)
-		AAudioStream_requestStart(microphone);
-	else
-		AAudioStream_requestStop(microphone);
+void wivrn::android::audio::restart_microphone()
+{
+	mic_restart = true;
+	wake.notify_one();
+}
+
+void wivrn::android::audio::send_microphone_data()
+{
+	for (unsigned i = 0; i < 32; ++i)
+	{
+		auto block = microphone_samples.read();
+		if (!block)
+			break;
+		// Drop stale data after a stop/reopen, or after network backpressure.
+		if (!mic_requested || block->generation != microphone_generation || instance.now() - block->timestamp > 100'000'000)
+			continue;
+		session.send_control(wivrn::audio_data{.timestamp = block->timestamp, .payload = std::span(block->data.data(), block->size)});
+	}
+}
+
+void wivrn::android::audio::audio_worker()
+{
+	using clock = std::chrono::steady_clock;
+	using namespace std::chrono_literals;
+	utils::microphone_watchdog watchdog;
+	bool mic_started = false, mic_fault = false, exhausted_logged = false, previous_requested = false;
+	unsigned speaker_attempts = 0;
+	auto speaker_retry = clock::now(), diagnostic = clock::now();
+	auto close_stream = [](AAudioStream *& stream) {
+		if (!stream)
+			return;
+		auto result = AAudioStream_requestStop(stream);
+		if (result != AAUDIO_OK && result != AAUDIO_ERROR_DISCONNECTED)
+			spdlog::warn("Audio stop: {}", AAudio_convertResultToText(result));
+		AAudioStream_close(stream);
+		stream = nullptr;
+	};
+	auto open_stream = [&](bool mic) {
+		AAudioStreamBuilder * builder = nullptr;
+		auto result = AAudio_createStreamBuilder(&builder);
+		if (result != AAUDIO_OK)
+		{
+			spdlog::warn("Audio builder: {}", AAudio_convertResultToText(result));
+			return;
+		}
+		if (mic)
+			build_microphone(builder, description.microphone->sample_rate, description.microphone->num_channels);
+		else
+			build_speaker(builder, description.speaker->sample_rate, description.speaker->num_channels);
+		AAudioStreamBuilder_delete(builder);
+	};
+	while (!exiting)
+	{
+		auto now = clock::now();
+		if (auto error = speaker_error.exchange(0))
+		{
+			spdlog::warn("Speaker interrupted: {}", AAudio_convertResultToText(error));
+			close_stream(speaker);
+		}
+		if (description.speaker && !speaker && speaker_attempts < 3 && now >= speaker_retry)
+		{
+			++speaker_attempts;
+			speaker_retry = now + 1s;
+			open_stream(false);
+		}
+		if (speaker && now - speaker_retry >= 10s)
+			speaker_attempts = 0;
+
+		bool requested = mic_requested && description.microphone.has_value();
+		bool manual = mic_restart.exchange(false);
+		if ((requested && !previous_requested) || manual)
+		{
+			watchdog = {};
+			exhausted_logged = false;
+			if (manual)
+			{
+				mic_fault = true;
+				spdlog::info("Manual microphone recovery requested");
+			}
+		}
+		previous_requested = requested;
+		if (auto error = mic_error.exchange(0))
+		{
+			spdlog::warn("Microphone interrupted: {}", AAudio_convertResultToText(error));
+			mic_fault = true;
+		}
+		if (!requested)
+		{
+			if (microphone)
+			{
+				++microphone_generation;
+				close_stream(microphone);
+			}
+			mic_started = false;
+			mic_fault = false;
+		}
+		else
+		{
+			if (microphone && mic_started)
+			{
+				int64_t position = 0, timestamp = 0;
+				auto state = AAudioStream_getState(microphone);
+				auto result = AAudioStream_getTimestamp(microphone, CLOCK_MONOTONIC, &position, &timestamp);
+				std::optional<int64_t> hardware_position;
+				if (result == AAUDIO_OK)
+					hardware_position = position;
+				if (watchdog.stalled(now, microphone_frames, hardware_position) || state == AAUDIO_STREAM_STATE_DISCONNECTED || state == AAUDIO_STREAM_STATE_STOPPED)
+					mic_fault = true;
+				if (now >= diagnostic || mic_fault)
+				{
+					spdlog::info("Microphone progress: state={} callbacks={} timestamp_result={} position={} timestamp_ns={} callback_age_ms={} hardware_age_ms={} drops={} retries={}",
+					             AAudio_convertStreamStateToText(state),
+					             microphone_frames.load(),
+					             AAudio_convertResultToText(result),
+					             position,
+					             timestamp,
+					             std::chrono::duration_cast<std::chrono::milliseconds>(now - watchdog.callback_progress).count(),
+					             std::chrono::duration_cast<std::chrono::milliseconds>(now - watchdog.timestamp_progress).count(),
+					             microphone_drops.load(),
+					             watchdog.attempts);
+					diagnostic = now + 5s;
+				}
+			}
+			if (mic_fault && microphone)
+			{
+				++microphone_generation;
+				close_stream(microphone);
+				mic_started = false;
+			}
+			if (!microphone && (!mic_fault || watchdog.retry(now)))
+			{
+				if (mic_fault)
+					spdlog::warn("Reopening microphone, bounded attempt {}/3", watchdog.attempts);
+				++microphone_generation;
+				mic_error = 0; // close completed; ignore errors from the retired stream
+				open_stream(true);
+				mic_fault = !microphone;
+				if (microphone)
+				{
+					auto result = AAudioStream_requestStart(microphone);
+					mic_started = result == AAUDIO_OK;
+					if (!mic_started)
+					{
+						spdlog::warn("Microphone start: {}", AAudio_convertResultToText(result));
+						close_stream(microphone);
+						mic_fault = true;
+					}
+					else
+					{
+						watchdog.start(now, microphone_frames);
+						spdlog::info("Microphone capture requested");
+					}
+				}
+			}
+			if (!microphone && watchdog.attempts >= 3 && !exhausted_logged)
+			{
+				spdlog::error("Microphone recovery exhausted; use Restart microphone in Audio settings");
+				exhausted_logged = true;
+			}
+		}
+		std::unique_lock lock(mutex);
+		wake.wait_for(lock, 50ms);
+	}
+	close_stream(microphone);
+	close_stream(speaker);
 }
 
 void wivrn::android::audio::get_audio_description(wivrn::from_headset::headset_info_packet & info)
