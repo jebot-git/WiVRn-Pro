@@ -1,3 +1,7 @@
+From: WiVRn Pro maintainers <wivrn-pro@localhost>
+Date: Sat, 3 Oct 2026 04:30:00 +0200
+Subject: [PATCH] d/solarxr: isolate the private Shora bridge socket
+
 --- a/src/xrt/drivers/solarxr/solarxr_ipc_socket.c
 +++ b/src/xrt/drivers/solarxr/solarxr_ipc_socket.c
 @@ -116,7 +116,7 @@

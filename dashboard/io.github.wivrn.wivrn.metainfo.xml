@@ -53,7 +53,7 @@
 			<url type="details">https://github.com/WiVRn/WiVRn/releases/tag/v26.9</url>
 			<description>
 				<ul>
-					<li>Revamped headset graphical userv interface</li>
+					<li>Revamped headset graphical user interface</li>
 					<li>Forward gamepad inputs from headset to PC</li>
 					<li>Enable XR_FB_body_tracking</li>
 					<li>USB networking on Meta headsets</li>
@@ -135,7 +135,7 @@
 					<li>Add XR_EXT_user_presence and XR_EXT_hand_interaction OpenXR extensions</li>
 					<li>Fix vulkan video encode and performances issues with multiple nvenc encoders on NVIDIA GPUs</li>
 					<li>Support 10-bit encoding on VAAPI for H.265 and AV1 codecs</li>
-					<li>Xrizer is now the default OpenVR compatibility layer (may be overriden by distribution packages)</li>
+					<li>Xrizer is now the default OpenVR compatibility layer (may be overridden by distribution packages)</li>
 					<li>Added Slovak and Turkish translations</li>
 				</ul>
 			</description>

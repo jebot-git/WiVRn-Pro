@@ -60,6 +60,9 @@ xr::session::session(xr::instance & inst, xr::system & sys, vk::raii::Instance &
 
 	if (inst.has_extension(XR_EXT_PERFORMANCE_SETTINGS_EXTENSION_NAME))
 		xrPerfSettingsSetPerformanceLevelEXT = inst.get_proc<PFN_xrPerfSettingsSetPerformanceLevelEXT>("xrPerfSettingsSetPerformanceLevelEXT");
+
+	if (inst.has_extension(XR_META_BOUNDARY_VISIBILITY_EXTENSION_NAME) and sys.boundary_visibility_properties().supportsBoundaryVisibility)
+		xrRequestBoundaryVisibilityMETA = inst.get_proc<PFN_xrRequestBoundaryVisibilityMETA>("xrRequestBoundaryVisibilityMETA");
 }
 
 std::vector<XrReferenceSpaceType> xr::session::get_reference_spaces() const
@@ -158,28 +161,32 @@ void xr::session::end_frame(XrTime display_time, const std::vector<XrComposition
 	        .layers = layers.data(),
 	};
 
-	auto lock = queue->lock();
-	const auto result = xrEndFrame(id, &end_info);
-	if (result == XR_ERROR_POSE_INVALID)
 	{
-		auto log_pose = [](const char * kind, const XrPosef & pose) {
-			const auto & q = pose.orientation;
-			const auto & p = pose.position;
-			spdlog::warn("Invalid frame: {} orientation [{}, {}, {}, {}], position [{}, {}, {}]", kind, q.x, q.y, q.z, q.w, p.x, p.y, p.z);
-		};
-		for (const auto * layer: layers)
+		auto lock = queue->lock();
+		const auto result = xrEndFrame(id, &end_info);
+		if (result == XR_ERROR_POSE_INVALID)
 		{
-			if (layer->type == XR_TYPE_COMPOSITION_LAYER_QUAD)
-				log_pose("quad", reinterpret_cast<const XrCompositionLayerQuad *>(layer)->pose);
-			else if (layer->type == XR_TYPE_COMPOSITION_LAYER_PROJECTION)
+			auto log_pose = [](const char * kind, const XrPosef & pose) {
+				const auto & q = pose.orientation;
+				const auto & p = pose.position;
+				spdlog::warn("Invalid frame: {} orientation [{}, {}, {}, {}], position [{}, {}, {}]", kind, q.x, q.y, q.z, q.w, p.x, p.y, p.z);
+			};
+			for (const auto * layer: layers)
 			{
-				const auto * projection = reinterpret_cast<const XrCompositionLayerProjection *>(layer);
-				for (uint32_t i = 0; i < projection->viewCount; ++i)
-					log_pose("projection", projection->views[i].pose);
+				if (layer->type == XR_TYPE_COMPOSITION_LAYER_QUAD)
+					log_pose("quad", reinterpret_cast<const XrCompositionLayerQuad *>(layer)->pose);
+				else if (layer->type == XR_TYPE_COMPOSITION_LAYER_PROJECTION)
+				{
+					const auto * projection = reinterpret_cast<const XrCompositionLayerProjection *>(layer);
+					for (uint32_t i = 0; i < projection->viewCount; ++i)
+						log_pose("projection", projection->views[i].pose);
+				}
 			}
 		}
+		CHECK_XR(result);
 	}
-	CHECK_XR(result);
+
+	update_boundary_visibility();
 }
 
 void xr::session::begin_session(XrViewConfigurationType view_config)
@@ -396,6 +403,42 @@ void xr::session::disable_passthrough()
 	if (std::holds_alternative<std::monostate>(passthrough))
 		return;
 	passthrough.emplace<std::monostate>();
+}
+
+void xr::session::set_passthrough_boundary_enabled(bool enabled)
+{
+	passthrough_boundary_enabled = enabled;
+	boundary_request_failed = false;
+}
+
+void xr::session::on_boundary_visibility_changed(XrBoundaryVisibilityMETA v)
+{
+	runtime_boundary_visibility = v;
+}
+
+// the runtime only allows suppression while passthrough is shown and restores
+// the boundary when it stops, so this re-requests every time passthrough comes back
+void xr::session::update_boundary_visibility()
+{
+	if (not xrRequestBoundaryVisibilityMETA)
+		return;
+
+	auto v = not passthrough_boundary_enabled and not std::holds_alternative<std::monostate>(passthrough)
+	                 ? XR_BOUNDARY_VISIBILITY_SUPPRESSED_META
+	                 : XR_BOUNDARY_VISIBILITY_NOT_SUPPRESSED_META;
+	if (v == runtime_boundary_visibility)
+		return;
+
+	if (auto res = xrRequestBoundaryVisibilityMETA(id, v); res == XR_SUCCESS)
+	{
+		runtime_boundary_visibility = v;
+		boundary_request_failed = false;
+	}
+	else if (not boundary_request_failed)
+	{
+		spdlog::warn("Boundary visibility change failed: {}", xr::to_string(res));
+		boundary_request_failed = true;
+	}
 }
 
 void xr::session::set_performance_level(XrPerfSettingsDomainEXT domain, XrPerfSettingsLevelEXT level)
