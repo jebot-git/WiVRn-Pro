@@ -142,7 +142,7 @@ private:
 
 	bool session_running = false;
 	bool session_focused = false;
-	bool session_visible = false;
+	std::atomic<bool> session_visible = false;
 	std::optional<std::chrono::steady_clock::time_point> timestamp_unsynchronized; // Timestamp when session_synchronized becomes false
 
 	bool debug_extensions_found = false;

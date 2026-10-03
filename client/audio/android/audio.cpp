@@ -100,7 +100,7 @@ int32_t wivrn::android::audio::microphone_data_cb(AAudioStream * stream, void * 
 	if (self->exiting)
 		return AAUDIO_CALLBACK_RESULT_STOP;
 	self->microphone_frames += num_frames;
-	if (!self->mic_requested)
+	if (!self->mic_requested || !application::is_visible())
 		return AAUDIO_CALLBACK_RESULT_CONTINUE;
 	microphone_block block;
 	block.size = size_t(num_frames) * AAudioStream_getChannelCount(stream) * sizeof(int16_t);
@@ -234,7 +234,7 @@ void wivrn::android::audio::send_microphone_data()
 		if (!block)
 			break;
 		// Drop stale data after a stop/reopen, or after network backpressure.
-		if (!mic_requested || block->generation != microphone_generation || instance.now() - block->timestamp > 100'000'000)
+		if (!mic_requested || !application::is_visible() || block->generation != microphone_generation || instance.now() - block->timestamp > 100'000'000)
 			continue;
 		session.send_control(wivrn::audio_data{.timestamp = block->timestamp, .payload = std::span(block->data.data(), block->size)});
 	}
@@ -288,7 +288,9 @@ void wivrn::android::audio::audio_worker()
 		if (speaker && now - speaker_retry >= 10s)
 			speaker_attempts = 0;
 
-		bool requested = mic_requested && description.microphone.has_value();
+		// Do not spend recovery attempts while the runtime suspends capture.
+		// A visible session rearms the budget and restores the retained request.
+		bool requested = mic_requested && application::is_visible() && description.microphone.has_value();
 		bool manual = mic_restart.exchange(false);
 		if ((requested && !previous_requested) || manual)
 		{
@@ -369,7 +371,7 @@ void wivrn::android::audio::audio_worker()
 					}
 					else
 					{
-						watchdog.start(now, microphone_frames);
+						watchdog.start(clock::now(), microphone_frames);
 						spdlog::info("Microphone capture requested");
 					}
 				}
