@@ -303,9 +303,11 @@ void wivrn::android::audio::audio_worker()
 			}
 		}
 		previous_requested = requested;
-		if (auto error = mic_error.exchange(0))
+		auto microphone_error = mic_error.exchange(0);
+		bool invalid_microphone = microphone_error != AAUDIO_OK;
+		if (invalid_microphone)
 		{
-			spdlog::warn("Microphone interrupted: {}", AAudio_convertResultToText(error));
+			spdlog::warn("Microphone interrupted: {}", AAudio_convertResultToText(microphone_error));
 			mic_fault = true;
 		}
 		if (!requested)
@@ -328,11 +330,13 @@ void wivrn::android::audio::audio_worker()
 				std::optional<int64_t> hardware_position;
 				if (result == AAUDIO_OK)
 					hardware_position = position;
-				if (watchdog.stalled(now, microphone_frames, hardware_position) || state == AAUDIO_STREAM_STATE_DISCONNECTED || state == AAUDIO_STREAM_STATE_STOPPED)
-					mic_fault = true;
-				if (now >= diagnostic || mic_fault)
+				invalid_microphone = invalid_microphone || state == AAUDIO_STREAM_STATE_DISCONNECTED || state == AAUDIO_STREAM_STATE_STOPPED;
+				mic_fault = manual || invalid_microphone || watchdog.stalled(now, microphone_frames, hardware_position);
+				if (!mic_fault && watchdog.attempts == 0)
+					exhausted_logged = false;
+				if (now >= diagnostic)
 				{
-					spdlog::info("Microphone progress: state={} callbacks={} timestamp_result={} position={} timestamp_ns={} callback_age_ms={} hardware_age_ms={} drops={} retries={}",
+					spdlog::info("Microphone progress: state={} callbacks={} timestamp_result={} position={} timestamp_ns={} callback_age_ms={} timestamp_age_ms={} starved={} drops={} retries={}",
 					             AAudio_convertStreamStateToText(state),
 					             microphone_frames.load(),
 					             AAudio_convertResultToText(result),
@@ -340,12 +344,13 @@ void wivrn::android::audio::audio_worker()
 					             timestamp,
 					             std::chrono::duration_cast<std::chrono::milliseconds>(now - watchdog.callback_progress).count(),
 					             std::chrono::duration_cast<std::chrono::milliseconds>(now - watchdog.timestamp_progress).count(),
+					             watchdog.starved,
 					             microphone_drops.load(),
 					             watchdog.attempts);
 					diagnostic = now + 5s;
 				}
 			}
-			if (mic_fault && microphone)
+			if (mic_fault && microphone && (invalid_microphone || watchdog.can_retry(now)))
 			{
 				++microphone_generation;
 				close_stream(microphone);
@@ -371,14 +376,14 @@ void wivrn::android::audio::audio_worker()
 					}
 					else
 					{
-						watchdog.start(clock::now(), microphone_frames);
+						watchdog.start(clock::now(), microphone_frames, AAudioStream_getSampleRate(microphone));
 						spdlog::info("Microphone capture requested");
 					}
 				}
 			}
-			if (!microphone && watchdog.attempts >= 3 && !exhausted_logged)
+			if (mic_fault && watchdog.attempts >= 3 && !exhausted_logged)
 			{
-				spdlog::error("Microphone recovery exhausted; use Restart microphone in Audio settings");
+				spdlog::error("Microphone automatic recovery limit reached; retaining usable stream, use Restart microphone in Audio settings");
 				exhausted_logged = true;
 			}
 		}
