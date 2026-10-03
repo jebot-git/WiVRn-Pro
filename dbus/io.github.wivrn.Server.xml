@@ -26,6 +26,8 @@
 	</interface>
 
 	<interface name="io.github.wivrn.Server">
+		<method name="RecoverVideo"/>
+        <property name="VideoRecoveryStatus" type="s" access="read"/>
 		<method name="RestartWayVR"/>
         <property name="WayVRStatus" type="s" access="read"/>
 		<method name="Disconnect"/>

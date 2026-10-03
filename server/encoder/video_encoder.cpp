@@ -27,6 +27,7 @@
 #include "utils/wivrn_trace.h"
 #include "wivrn_config.h"
 
+#include <cmath>
 #include <string>
 
 #if WIVRN_USE_VAAPI || WIVRN_USE_QSV
@@ -52,9 +53,18 @@ video_encoder::sender::sender() :
 			        else
 				        d = &pending.front();
 		        }
-		        if (d and not d->span.empty())
+		        if (d)
 		        {
-			        d->encoder->SendData(d->span, true, d->prefer_control);
+			        try
+			        {
+				        if (!d->span.empty())
+					        d->encoder->SendData(d->span, true, d->prefer_control);
+			        }
+			        catch (const std::exception & e)
+			        {
+				        U_LOG_W("Video send failed: %s", e.what());
+				        d->encoder->reset();
+			        }
 			        std::unique_lock lock(mutex);
 			        pending.pop_front();
 			        cv.notify_all();
@@ -74,11 +84,16 @@ void video_encoder::sender::push(data && d)
 	cv.notify_all();
 }
 
-void video_encoder::sender::wait_idle(video_encoder * encoder)
+bool video_encoder::sender::wait_idle(video_encoder * encoder, std::chrono::milliseconds timeout)
 {
 	std::unique_lock lock(mutex);
-	while (std::ranges::any_of(pending, [=](auto & data) { return data.encoder == encoder; }))
-		cv.wait_for(lock, std::chrono::milliseconds(100));
+	auto idle = [&] { return std::ranges::none_of(pending, [=](auto & data) { return data.encoder == encoder; }); };
+	if (timeout == std::chrono::milliseconds::zero())
+	{
+		cv.wait(lock, idle);
+		return true;
+	}
+	return cv.wait_for(lock, timeout, idle);
 }
 
 std::shared_ptr<video_encoder::sender> video_encoder::sender::get()
@@ -186,62 +201,195 @@ video_encoder::~video_encoder()
 
 void video_encoder::on_feedback(const from_headset::feedback & feedback)
 {
+	if (feedback.received_from_decoder)
+	{
+		auto old = decoded_frame.load();
+		while (old < feedback.frame_index && !decoded_frame.compare_exchange_weak(old, feedback.frame_index))
+		{
+		}
+	}
 	assert(feedback.stream_index == stream_idx);
 	idr->on_feedback(feedback);
 }
 
 void video_encoder::reset()
 {
+	resumed = true;
 	idr->reset();
 }
 
 void video_encoder::set_bitrate(uint32_t bitrate_bps)
 {
-	pending_bitrate = bitrate_bps * bitrate_multiplier;
+	if (bitrate_bps > 0)
+		pending_bitrate = std::clamp(bitrate_bps * bitrate_multiplier, 1.0, double(UINT32_MAX));
 }
 
 void video_encoder::set_framerate(float framerate)
 {
-	pending_framerate = framerate;
+	if (std::isfinite(framerate) && framerate >= 1 && framerate <= 1000)
+		pending_framerate = framerate;
 }
 
-void video_encoder::present_image(vk::Image y_cbcr, vk::SemaphoreSubmitInfo info, uint64_t frame_index)
+namespace
 {
-	wivrn::trace::scope trace_present(wivrn::trace::cpu_track::encoder, stream_idx, frame_index, "present_image");
-	// Wait for encoder to be done
-	present_slot = (present_slot + 1) % num_slots;
-	state[present_slot].wait(busy);
-	if (idr->should_skip(frame_index))
+int64_t recovery_now()
+{
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+} // namespace
+
+void video_encoder::request_recovery(bool manual)
+{
+	if (!supports_recovery())
 	{
-		state[present_slot] = skip;
+		idr->reset();
 		return;
 	}
-	state[present_slot] = busy;
-	return present_image(y_cbcr, info, present_slot, frame_index);
+	if (manual)
+		manual_recovery = true;
+	recovery_requested = true;
+}
+
+bool video_encoder::service_recovery(bool connected, bool expected)
+{
+	std::unique_lock lock(operation_mutex);
+	const auto now = recovery_now();
+	if (resumed.exchange(false))
+	{
+		recovery.resume(now);
+		observed_decoded_frame = decoded_frame.load();
+	}
+	const auto decoded = decoded_frame.load();
+	if (decoded > observed_decoded_frame)
+	{
+		recovery.decoded(now, decoded);
+		observed_decoded_frame = decoded;
+	}
+	if (!supports_recovery())
+		return false;
+	if (connected && reconfigure_requested.exchange(false) && !recovery.blocked())
+	{
+		// A planned rate change does not consume the hardware-failure retry budget.
+		try
+		{
+			if (recover(0))
+			{
+				recovery.resume(now);
+				recovery.status = recovery_policy::state::awaiting_decode;
+				idr->reset();
+				return true;
+			}
+		}
+		catch (const std::exception & e)
+		{
+			U_LOG_W("Encoder reconfiguration failed: %s", e.what());
+		}
+		recovery.request(now);
+	}
+	if (recovery_requested.exchange(false))
+		recovery.request(now, manual_recovery.exchange(false));
+	recovery.tick(now, connected, expected && now - last_demand.load() < 500);
+	if (!recovery.due(now, connected) || !recovery.begin())
+		return false;
+	U_LOG_W("Video recovery stream %u: %s attempt %u (submitted %llu, encoded %llu, sent %llu, decoded %llu)",
+	        stream_idx,
+	        backend_name(),
+	        recovery.attempts,
+	        (unsigned long long)submitted_frame.load(),
+	        (unsigned long long)encoded_frame.load(),
+	        (unsigned long long)sent_frame.load(),
+	        (unsigned long long)decoded_frame.load());
+	bool success = false;
+	try
+	{
+		success = recover(recovery.attempts);
+	}
+	catch (const std::exception & e)
+	{
+		U_LOG_W("Video recovery stream %u failed: %s", stream_idx, e.what());
+	}
+	recovery.finished(recovery_now(), success);
+	if (success)
+		idr->reset();
+	return success;
+}
+
+void video_encoder::commit_encoded(bool keep)
+{
+	if (staged_output)
+	{
+		if (keep)
+			shared_sender->push(std::move(*staged_output));
+		else
+			idr->reset();
+		staged_output.reset();
+	}
+}
+
+bool video_encoder::ready_for_present()
+{
+	last_demand = recovery_now();
+	std::shared_lock lock(operation_mutex);
+	return !recovery.blocked() && !recovery_requested && !reconfigure_requested && slots.ready();
+}
+
+bool video_encoder::drain_sender()
+{
+	return !shared_sender || shared_sender->wait_idle(this, std::chrono::milliseconds(100));
+}
+
+std::string video_encoder::recovery_status()
+{
+	std::unique_lock lock(operation_mutex);
+	return std::to_string(stream_idx) + ": " + backend_name() + " " + recovery.name();
+}
+
+bool video_encoder::present_image(vk::Image y_cbcr, vk::SemaphoreSubmitInfo info, uint64_t frame_index)
+{
+	last_demand = recovery_now();
+	std::shared_lock lock(operation_mutex, std::try_to_lock);
+	if (!lock || recovery.blocked() || recovery_requested || reconfigure_requested)
+		return false;
+	auto reserved = slots.reserve();
+	if (!reserved)
+		return false;
+	const auto present_slot = *reserved;
+	submitted_frame = frame_index;
+	recovery.submitted(recovery_now(), frame_index);
+	if (idr->should_skip(frame_index))
+	{
+		slots.skip_reserved(present_slot);
+		return true;
+	}
+	try
+	{
+		present_image(y_cbcr, info, present_slot, frame_index);
+	}
+	catch (const std::exception & e)
+	{
+		// Consume this slot on the encoder thread even on partial submission.
+		slots.skip_reserved(present_slot);
+		request_recovery();
+		U_LOG_W("Video submission failed on stream %u: %s", stream_idx, e.what());
+	}
+	return true;
 }
 
 void video_encoder::encode(wivrn_session & cnx,
                            const to_headset::video_stream_data_shard::view_info_t & view_info,
                            uint64_t frame_index)
 {
-	encode_slot = (encode_slot + 1) % num_slots;
-
-	struct idle_setter
-	{
-		std::atomic_unsigned_lock_free & state;
-		~idle_setter()
-		{
-			state = idle;
-			state.notify_all();
-		}
-	};
-	idle_setter i{state[encode_slot]};
-
-	if (state[encode_slot] == skip)
+	std::shared_lock operation_lock(operation_mutex);
+	staged_output.reset();
+	auto lease = slots.consume();
+	const auto encode_slot = lease.slot;
+	if (recovery.blocked() || recovery_requested)
+		throw std::runtime_error("encoder recovery pending");
+	if (lease.skipped)
 		return;
 
-	if (shared_sender)
-		shared_sender->wait_idle(this);
+	if (shared_sender && !shared_sender->wait_idle(this, std::chrono::milliseconds(100)))
+		throw std::runtime_error("video sender stalled");
 	this->cnx = &cnx;
 	clock = cnx.get_offset();
 
@@ -253,6 +401,7 @@ void video_encoder::encode(wivrn_session & cnx,
 
 	// Prepare the video shard template
 	shard.stream_item_idx = stream_idx;
+	frame_send_failed = false;
 	shard.frame_idx = frame_index;
 	shard.shard_idx = 0;
 	shard.view_info = view_info;
@@ -263,7 +412,8 @@ void video_encoder::encode(wivrn_session & cnx,
 	{
 		timing_info.encode_end = clock.to_headset(os_monotonic_get_ns());
 		assert(shared_sender);
-		shared_sender->push(std::move(*data));
+		encoded_frame = frame_index;
+		staged_output = std::move(*data);
 	}
 }
 
@@ -308,12 +458,15 @@ void video_encoder::SendData(std::span<uint8_t> data, bool end_of_frame, bool co
 		}
 		catch (...)
 		{
-			// Ignore network errors
+			frame_send_failed = true;
+			// The session network thread handles reconnects; do not count a failed send.
 		}
 		++shard.shard_idx;
 		shard.view_info.reset();
 		begin = next;
 	}
+	if (end_of_frame && !frame_send_failed)
+		sent_frame = shard.frame_idx;
 	if (end_of_frame)
 		wivrn::trace::cpu_end(wivrn::trace::cpu_track::network, stream_idx, shard.frame_idx, "SendData");
 }

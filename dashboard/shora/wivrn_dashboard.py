@@ -8,10 +8,12 @@ from pathlib import Path
 import sys
 import tomllib
 
-from PySide6.QtCore import QObject, QProcess, QTimer, Signal, QSaveFile, QIODevice, QFileDevice
+from PySide6.QtCore import QObject, QProcess, QTimer, Signal, QSaveFile, QIODevice, QFileDevice, QEvent, Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtDBus import QDBusConnection, QDBusMessage, QDBusPendingCallWatcher, QDBusVariant
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QFormLayout, QHBoxLayout,
-    QLabel, QPushButton, QComboBox, QCheckBox, QLineEdit, QPlainTextEdit, QSpinBox, QInputDialog)
+    QLabel, QPushButton, QComboBox, QCheckBox, QLineEdit, QPlainTextEdit, QSpinBox, QInputDialog,
+    QMenu, QSystemTrayIcon)
 from shora_qt import HubWindow, STYLE
 from tracking_panel import DEFAULTS
 
@@ -311,7 +313,7 @@ class StreamingPanel(QWidget):
 
 
 class Dashboard(HubWindow):
-    def __init__(self, backend=None, profile=PROFILE, socket_path=SOCKET, attach=True):
+    def __init__(self, backend=None, profile=PROFILE, socket_path=SOCKET, attach=True, surface='desktop'):
         self.backend = backend or ServerClient()
         self.profile_path = Path(profile)
         super().__init__(server='/unused', config=str(profile), socket_path=str(socket_path), attach=False)
@@ -345,14 +347,78 @@ class Dashboard(HubWindow):
         for text, callback in [('Reload profile', self.load_profile), ('Save profile', self.save_profile), ('Save active tuning into profile', self.save_tuning)]:
             button = QPushButton(text); button.clicked.connect(callback); actions.addWidget(button)
         layout.addLayout(actions)
-        note = QLabel('Profile changes apply when WiVRn restarts. Saving active tuning preserves other settings but rewrites TOML formatting. Runtime reset offsets are not persistent.')
+        note = QLabel(f'Profile: {self.profile_path}\nTracking tuning and relaxed poses are saved automatically when applied. Manual profile changes apply when WiVRn restarts. Runtime reset offsets are not persistent.')
         note.setWordWrap(True); layout.addWidget(note)
         self.tabs.addTab(page, 'Tracking profile')
         self.profile_original = None
         self.initial_devices = self.device_values()
         self.load_profile()
         self.message.setText('Start WiVRn to connect streaming and tracking services.')
+        self.setup_tray(surface)
         if attach: self.attach_server()
+
+    def setup_tray(self, surface):
+        self.tray = None
+        self.quit_requested = False
+        self.restore_maximized = False
+        root = Path(__file__).resolve().parents[2]
+        icon_path = root / 'icons/hicolor/128x128/apps/wivrn-pro-menu.png'
+        if not icon_path.exists():
+            icon_path = root / 'images/wivrn-pro-menu/128.png'
+        icon = QIcon.fromTheme('wivrn-pro-menu', QIcon(str(icon_path)))
+        self.setWindowIcon(icon)
+        if surface != 'desktop':
+            return
+        self.tray = QSystemTrayIcon(icon, self)
+        self.tray.setToolTip('WiVRn Pro')
+        menu = QMenu(self)
+        menu.addAction('Show WiVRn Pro', self.restore_from_tray)
+        menu.addSeparator()
+        menu.addAction('Quit dashboard', self.quit_dashboard)
+        self.tray.setContextMenu(menu)
+        self.tray.activated.connect(self.tray_activated)
+        self.tray.show()
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowStateChange and self.isMinimized():
+            if getattr(self, 'tray', None) and QSystemTrayIcon.isSystemTrayAvailable():
+                self.restore_maximized = bool(event.oldState() & Qt.WindowState.WindowMaximized)
+                QTimer.singleShot(0, self.hide_to_tray)
+
+    def hide_to_tray(self):
+        # Recheck after the window manager finishes minimizing. Without a tray,
+        # leave the ordinary taskbar entry available so the window is reachable.
+        if self.isMinimized() and self.tray and self.tray.isVisible() and QSystemTrayIcon.isSystemTrayAvailable():
+            self.hide()
+
+    def restore_from_tray(self):
+        if self.restore_maximized:
+            self.showMaximized()
+        else:
+            self.showNormal()
+        self.raise_()
+        self.activateWindow()
+
+    def tray_activated(self, reason):
+        if reason in (QSystemTrayIcon.ActivationReason.Trigger, QSystemTrayIcon.ActivationReason.DoubleClick):
+            self.restore_from_tray()
+
+    def quit_dashboard(self):
+        self.quit_requested = True
+        if self.close():
+            QApplication.instance().quit()
+
+    def closeEvent(self, event):
+        if not self.quit_requested and self.tray and self.tray.isVisible() and QSystemTrayIcon.isSystemTrayAvailable():
+            if not self.isMinimized():
+                self.restore_maximized = self.isMaximized()
+            event.ignore()
+            self.hide()
+            return
+        super().closeEvent(event)
+        if event.isAccepted() and self.tray:
+            self.tray.hide()
 
     def load_profile(self):
         try:
@@ -360,6 +426,19 @@ class Dashboard(HubWindow):
             self.profile.setPlainText(self.profile_original or '')
             self.load_devices()
         except (ValueError, OSError) as error: self.show_error(str(error))
+
+    def update_snapshot(self, snapshot):
+        super().update_snapshot(snapshot)
+        # The worker also writes this file. Refresh clean editors, but retain
+        # drafts and their original contents for the existing conflict check.
+        if (self.profile.toPlainText() == (self.profile_original or '') and
+                self.device_values() == self.initial_devices):
+            try:
+                text = self.profile_path.read_text() if self.profile_path.exists() else None
+                if text != self.profile_original:
+                    self.load_profile()
+            except OSError as error:
+                self.show_error(str(error))
 
     def save_profile(self):
         try:
@@ -445,7 +524,7 @@ def main():
         print(error, file=sys.stderr)
         return 1
     app.setStyle('Fusion'); app.setStyleSheet(STYLE)
-    window = Dashboard(); instance.window = window; window.show()
+    window = Dashboard(surface=instance.surface); instance.window = window; window.show()
     try:
         return app.exec()
     finally:

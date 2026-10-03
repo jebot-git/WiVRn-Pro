@@ -71,7 +71,7 @@ void scenes::stream::operator()(to_headset::video_stream_data_shard && shard)
 {
 	std::shared_lock lock(decoder_mutex);
 	uint8_t idx = shard.stream_item_idx;
-	if (idx >= decoders.size())
+	if (idx >= decoders.size() || !decoders[idx].decoder || !video_stream_description || shard.frame_idx < video_stream_description->first_frame)
 	{
 		// We don't know (yet?) about this stream, ignore packet
 		return;

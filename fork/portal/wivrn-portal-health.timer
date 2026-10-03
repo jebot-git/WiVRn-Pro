@@ -1,0 +1,11 @@
+[Unit]
+Description=Monitor KDE ScreenCast portals
+PartOf=graphical-session.target
+
+[Timer]
+OnActiveSec=30
+OnUnitInactiveSec=15
+AccuracySec=2
+
+[Install]
+WantedBy=graphical-session.target

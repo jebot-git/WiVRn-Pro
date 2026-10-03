@@ -23,6 +23,16 @@ use a different protocol. The standalone spatial bridge remains on `main`.
 - `wivrn-pro.service` manages the entire fork. Native CMake installation is the supported packaging
   route; upstream store, Flatpak, Nix and Debian release recipes were removed.
 
+Tracking tuning and Stay Aligned relaxed poses are saved automatically to
+`$XDG_CONFIG_HOME/wivrn-pro/shora.toml` (normally `~/.config/wivrn-pro/shora.toml`)
+when applied in the dashboard. The worker reads this same profile on restart.
+Save failures are reported without applying the change. Runtime reset offsets
+and learned correction history still need fresh calibration after restarting.
+
+WayVR's wrist controls use a 4×2 button grid, with Full reset and Mounting reset
+in the last column. Both use a three-second countdown; press either reset button
+again to cancel. The wrist panel displays the result or the tracking worker's error.
+
 See [build and service setup](docs/building.md), [encoder configuration](docs/configuration.md),
 [spatial API and capture](fork/SPATIAL.md), [Shora integration](fork/SHORA.md),
 [upstream updates](fork/UPSTREAM.md) and [source licenses](fork/PROVENANCE.md).

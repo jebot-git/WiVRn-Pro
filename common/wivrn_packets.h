@@ -813,6 +813,8 @@ struct video_stream_description
 	std::array<video_codec, 3> codec; // left, right, alpha
 	float frame_rate;
 	float refresh_rate;
+	// Frames before this boundary belong to a retired encoder/decoder generation.
+	uint64_t first_frame = 0;
 
 	bool operator==(const video_stream_description &) const = default;
 };

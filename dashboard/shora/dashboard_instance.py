@@ -67,9 +67,7 @@ class DashboardInstance(QObject):
     def Activate(self, requested_surface):
         # Never pull a desktop window into VR or reveal a VR window on Linux.
         if self.window is not None and requested_surface == self.surface:
-            self.window.showNormal()
-            self.window.raise_()
-            self.window.activateWindow()
+            self.window.restore_from_tray()
 
     @Slot(result=str)
     def Surface(self):

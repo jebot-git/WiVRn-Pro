@@ -520,6 +520,18 @@ pub(super) fn setup_custom_button<S: 'static>(
                         Ok(EventResult::Consumed)
                     })
                 }
+                "::TrackingFullReset" | "::TrackingMountingReset" => {
+                    let kind = if command == "::TrackingFullReset" {
+                        crate::shora_battery::ResetKind::Full
+                    } else {
+                        crate::shora_battery::ResetKind::Mounting
+                    };
+                    Box::new(move |_common, data, app, _| {
+                        if !test_button(data) || !test_duration(&button, app) { return Ok(EventResult::Pass); }
+                        app.shora_battery.request_reset(kind);
+                        Ok(EventResult::Consumed)
+                    })
+                }
                 "::PerformanceToggle" => Box::new(move |common, data, app, _| {
                     if !test_button(data) || !test_duration(&button, app) { return Ok(EventResult::Pass); }
                     crate::performance_panel::toggle(app);

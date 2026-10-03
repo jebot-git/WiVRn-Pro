@@ -232,11 +232,10 @@ mod tests {
                     parser.get_widget_id(id).unwrap();
                 }
             } else {
-                parser
-                    .fetch_component_as::<wgui::components::button::ComponentButton>(
-                        "btn_performance",
-                    )
-                    .unwrap();
+                for id in ["btn_performance", "btn_full_reset", "btn_mounting_reset"] {
+                    parser.fetch_component_as::<wgui::components::button::ComponentButton>(id).unwrap();
+                }
+                parser.get_widget_id("tracking_reset_status").unwrap();
             }
             eprintln!(
                 "{path}: {} x {}",

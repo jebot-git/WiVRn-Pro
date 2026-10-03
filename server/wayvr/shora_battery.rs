@@ -11,6 +11,9 @@ use std::{
 
 const LIMIT: u64 = 2 * 1024 * 1024;
 const MAX_AGE: Duration = Duration::from_secs(3);
+#[path = "shora_reset.rs"]
+mod reset;
+pub use reset::ResetKind;
 #[derive(Clone, Deserialize)]
 struct Tracker {
     name: String,
@@ -28,6 +31,7 @@ struct Status {
 #[derive(Deserialize)]
 struct Reply {
     ok: bool,
+    error: Option<String>,
     status: Option<Status>,
 }
 #[derive(Default)]
@@ -35,9 +39,9 @@ struct State {
     sample: Option<(Instant, Status)>,
 }
 
-fn read_status(path: &Path) -> anyhow::Result<Status> {
-    let mut stream = UnixStream::connect(path)?;
-    stream.set_read_timeout(Some(Duration::from_millis(700)))?;
+fn connect(path: &Path) -> anyhow::Result<BufReader<UnixStream>> {
+    let stream = UnixStream::connect(path)?;
+    stream.set_read_timeout(Some(Duration::from_secs(2)))?;
     stream.set_write_timeout(Some(Duration::from_millis(250)))?;
     let mut peer: libc::ucred = unsafe { std::mem::zeroed() };
     let mut len = std::mem::size_of_val(&peer) as libc::socklen_t;
@@ -54,9 +58,12 @@ fn read_status(path: &Path) -> anyhow::Result<Status> {
         rc == 0 && peer.uid == unsafe { libc::getuid() },
         "Shora peer UID mismatch"
     );
-    stream.write_all(b"{\"command\":\"status\"}\n")?;
+    Ok(BufReader::new(stream))
+}
+
+fn exchange(reader: &mut BufReader<UnixStream>, command: &str) -> anyhow::Result<Status> {
+    writeln!(reader.get_mut(), "{}", serde_json::json!({"command": command}))?;
     let mut line = Vec::new();
-    let reader = BufReader::new(stream);
     use std::io::Read;
     let mut bounded = reader.take(LIMIT);
     bounded.read_until(b'\n', &mut line)?;
@@ -65,7 +72,7 @@ fn read_status(path: &Path) -> anyhow::Result<Status> {
         "Incomplete or oversized Shora status"
     );
     let reply: Reply = serde_json::from_slice(&line)?;
-    anyhow::ensure!(reply.ok, "Shora status rejected");
+    anyhow::ensure!(reply.ok, "{}", reply.error.as_deref().unwrap_or("Tracking command rejected"));
     let mut status = reply
         .status
         .ok_or_else(|| anyhow::anyhow!("Missing Shora status"))?;
@@ -82,8 +89,13 @@ fn read_status(path: &Path) -> anyhow::Result<Status> {
     Ok(status)
 }
 
+fn read_status(path: &Path) -> anyhow::Result<Status> {
+    exchange(&mut connect(path)?, "status")
+}
+
 /// The render thread only reads this cache. Missing/stalled producers expire visibly.
 pub struct BatteryFeed {
+    reset: reset::ResetControl,
     state: Arc<RwLock<State>>,
     stop: Option<mpsc::Sender<()>>,
     widget_keys: Vec<String>,
@@ -123,10 +135,14 @@ fn battery_tiles(sample: Option<&(Instant, Status)>) -> Vec<BatteryTile> {
         .collect()
 }
 impl BatteryFeed {
+    pub fn request_reset(&self, kind: ResetKind) { self.reset.request(kind); }
+    pub fn reset_text(&self) -> String { self.reset.text() }
     pub fn new() -> Self {
         let state = Arc::new(RwLock::new(State::default()));
+        let reset = reset::ResetControl::new(std::env::var_os("WIVRN_SHORA_CONTROL_SOCKET").map(Into::into));
         let Some(path) = std::env::var_os("WIVRN_SHORA_CONTROL_SOCKET") else {
             return Self {
+                reset,
                 state,
                 stop: None,
                 widget_keys: vec![],
@@ -154,6 +170,7 @@ impl BatteryFeed {
             log::warn!("Could not start Shora battery reader: {error}");
         }
         Self {
+            reset,
             state,
             stop: Some(tx),
             widget_keys: vec![],
@@ -322,6 +339,7 @@ mod tests {
             )),
         }));
         let mut feed = BatteryFeed {
+            reset: reset::ResetControl::new(None),
             state: state.clone(),
             stop: None,
             widget_keys: vec![],
@@ -395,6 +413,7 @@ mod tests {
             )),
         };
         let feed = BatteryFeed {
+            reset: reset::ResetControl::new(None),
             state: Arc::new(RwLock::new(state)),
             stop: Some(tx),
             widget_keys: vec![],

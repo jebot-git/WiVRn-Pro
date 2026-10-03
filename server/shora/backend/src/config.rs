@@ -199,6 +199,8 @@ pub struct FileConfig {
 /// Resolved runtime configuration.
 #[derive(Debug, Clone)]
 pub struct Config {
+    /// The exact startup profile used for persistent live tracking changes.
+    pub config_path: Option<PathBuf>,
     pub tracker_port: u16,
     pub solarxr_socket: String,
     pub feeder_socket: String,
@@ -222,6 +224,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            config_path: None,
             tracker_port: DEFAULT_TRACKER_PORT,
             solarxr_socket: default_solarxr_socket(),
             feeder_socket: default_feeder_socket(),
@@ -244,6 +247,32 @@ impl Default for Config {
 }
 
 impl Config {
+    /// Save only tracking tuning, keeping device, OSC, assignment and socket
+    /// configuration from the latest file. Never serialize CLI socket overrides.
+    pub fn save_tracking_settings(&self, settings: crate::settings::TrackingSettings) -> anyhow::Result<()> {
+        use anyhow::Context;
+        use std::io::Write;
+        settings.validate()?;
+        let Some(path) = &self.config_path else { return Ok(()); };
+        (|| -> anyhow::Result<()> {
+            let original = std::fs::read_to_string(path)?;
+            // Reject malformed profiles instead of silently replacing their contents.
+            let _: FileConfig = toml::from_str(&original)?;
+            let mut document: toml_edit::DocumentMut = original.parse()?;
+            let tuning: toml_edit::DocumentMut = toml::to_string(&settings)?.parse()?;
+            for (key, value) in tuning.iter() {
+                document[key] = value.clone();
+            }
+            let mut temporary = tempfile::NamedTempFile::new_in(path.parent().context("profile has no parent directory")?)?;
+            temporary.write_all(document.to_string().as_bytes())?;
+            temporary.as_file().sync_all()?;
+            anyhow::ensure!(std::fs::read_to_string(path)? == original,
+                "The tracking profile changed while saving; retry the change");
+            temporary.persist(path)?;
+            Ok(())
+        })().with_context(|| format!("Failed to save tracking settings to {}", path.display()))
+    }
+
     pub fn tracking_settings(&self) -> crate::settings::TrackingSettings {
         crate::settings::TrackingSettings { height_m: self.height_m, smoothing: self.smoothing,
             prediction: self.prediction, drift_correction: self.drift_correction, drift_amount: self.drift_amount, stay_aligned: self.stay_aligned }
@@ -258,6 +287,9 @@ impl Config {
             let file: FileConfig = toml::from_str(&text)
                 .map_err(|e| anyhow::anyhow!("failed to parse config file {path:?}: {e}"))?;
             cfg.apply_file(file)?;
+            // Resolve relative paths and symlinks once so reads and writes target
+            // the same profile even if the working directory changes later.
+            cfg.config_path = Some(std::fs::canonicalize(path)?);
         }
 
         if let Some(v) = cli.tracker_port {
@@ -375,6 +407,75 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn live_tuning_and_all_relaxed_poses_survive_reload_without_overwriting_other_settings() {
+        use crate::stay_aligned::{PoseKind, RelaxedPose};
+        use std::os::unix::fs::PermissionsExt;
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("intended.toml");
+        let alias = directory.path().join("profile.toml");
+        let original = "# Keep device configuration\nheight_m = 1.8\nsolarxr_socket = '/tmp/profile-rpc'\n\
+            [[tracker_assignments]]\nmac = 'AA:BB:CC:DD:EE:FF'\nsensor_id = 1\nposition = 9\n\
+            [haritorax]\nenabled = false\nports = ['/dev/example'] # keep port comment\n\
+            [face]\nenabled = false\ndestination = '127.0.0.1:9123'\n";
+        std::fs::write(&path, original).unwrap();
+        std::os::unix::fs::symlink(&path, &alias).unwrap();
+        let cli = Cli::parse_from(["worker", "--config", alias.to_str().unwrap(),
+            "--solarxr-socket", "/tmp/cli-rpc", "--control-socket", "/tmp/cli-control"]);
+        let config = Config::load(&cli).unwrap();
+        assert_eq!(config.config_path.as_ref().unwrap(), &path);
+        let mut settings = config.tracking_settings();
+        settings.height_m = 1.73;
+        settings.smoothing = 0.65;
+        settings.prediction = 0.04;
+        settings.drift_amount = 0.7;
+        for (index, kind) in [PoseKind::Standing, PoseKind::Sitting, PoseKind::Flat].into_iter().enumerate() {
+            settings.stay_aligned.save(kind, RelaxedPose {
+                upper_leg_deg: 10.0 + index as f32, lower_leg_deg: 5.0, foot_deg: 2.0,
+            });
+            config.save_tracking_settings(settings).unwrap();
+            assert_eq!(Config::load(&cli).unwrap().tracking_settings(), settings);
+        }
+        settings.stay_aligned.enabled = true;
+        settings.stay_aligned.rate_deg_per_sec = 0.4;
+        // A separate editor's device changes made since startup must survive.
+        let current = std::fs::read_to_string(&path).unwrap().replace("9123", "9124");
+        std::fs::write(&path, &current).unwrap();
+        config.save_tracking_settings(settings).unwrap();
+        let reloaded = Config::load(&cli).unwrap();
+        assert_eq!(reloaded.tracking_settings(), settings);
+        assert_eq!(reloaded.face.destination.port(), 9124);
+        assert_eq!(reloaded.tracker_assignments, config.tracker_assignments);
+        let saved = std::fs::read_to_string(&path).unwrap();
+        assert!(saved.contains("# Keep device configuration"));
+        assert!(saved.contains("# keep port comment"));
+        assert!(saved.contains("/tmp/profile-rpc"));
+        assert!(!saved.contains("/tmp/cli-"));
+        assert!(alias.is_symlink());
+        assert_eq!(std::fs::metadata(&path).unwrap().permissions().mode() & 0o777, 0o600);
+    }
+
+    #[test]
+    fn failed_tracking_save_keeps_original_profile_and_does_not_hide_errors() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("profile.toml");
+        let original = "height_m = 1.8\n";
+        std::fs::write(&path, original).unwrap();
+        let config = Config::load(&Cli::parse_from(["worker", "--config", path.to_str().unwrap()])).unwrap();
+        let mut settings = config.tracking_settings();
+        settings.smoothing = -1.0;
+        assert!(config.save_tracking_settings(settings).is_err());
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
+        settings.smoothing = 0.5;
+        std::fs::write(&path, "[broken TOML").unwrap();
+        let error = config.save_tracking_settings(settings).unwrap_err();
+        assert!(error.to_string().contains(path.to_str().unwrap()));
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "[broken TOML");
+        std::fs::remove_file(&path).unwrap();
+        assert!(config.save_tracking_settings(settings).is_err());
+        assert!(!path.exists());
+    }
+
     #[test]
     fn fork_worker_keeps_profile_settings_with_private_socket_overrides() {
         use clap::Parser;

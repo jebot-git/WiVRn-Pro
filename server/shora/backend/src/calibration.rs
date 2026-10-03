@@ -318,6 +318,23 @@ impl Calibration {
         self.stay_aligned.update(samples, hmd, now);
     }
 
+    pub fn capture_relaxed_pose(&mut self, trackers: &[crate::tracker::Tracker], kind: crate::stay_aligned::PoseKind,
+        now: Instant) -> anyhow::Result<crate::stay_aligned::RelaxedPose> {
+        self.sync_reference();
+        if let Some(health) = self.reference_health() {
+            anyhow::ensure!(health.ready,
+                "Cannot save relaxed pose: room reference is {}. Wait for stable headset tracking, then stand facing the saved Quest guide and perform a yaw or full standing reset", health.state);
+        }
+        anyhow::ensure!(!self.reference_needs_reset,
+            "Cannot save relaxed pose: the room or headset reference changed. Stand facing the saved Quest guide and perform a yaw or full standing reset, then return to the relaxed pose");
+        for tracker in trackers.iter().filter(|t| matches!(t.position, 4 | 6 | 7..=12)) {
+            anyhow::ensure!(self.trackers.get(&tracker.id()).is_some_and(|c| c.full_reset_done),
+                "Cannot save relaxed pose: perform a full standing reset with all body trackers connected first");
+        }
+        self.update_alignment(trackers, None, now);
+        self.stay_aligned.capture(kind, now)
+    }
+
     pub fn has_drift_sample(&self, id: TrackerId) -> bool {
         self.trackers.get(&id).is_some_and(|t| t.drift.enabled && t.drift.diagnostics().samples > 0)
     }
@@ -387,6 +404,55 @@ fn reference_yaw(q: &UnitQuaternion<f32>) -> UnitQuaternion<f32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn lying_pose_capture_persists_after_full_reset_and_rest() {
+        use clap::Parser;
+        use crate::config::{Cli, Config};
+        use crate::stay_aligned::PoseKind;
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("shora.toml");
+        std::fs::write(&path, "height_m = 1.8\n").unwrap();
+        let cli = Cli::parse_from(["worker", "--config", path.to_str().unwrap()]);
+        let config = Config::load(&cli).unwrap();
+        let mut calibration = Calibration::new();
+        let mut registry = crate::tracker::TrackerRegistry::default();
+        let start = Instant::now();
+        for position in [4, 6, 7, 8, 9, 10] {
+            let id = TrackerId::new([position; 6], 0);
+            let tracker = registry.ensure_local(id, position);
+            calibration.set_mounting(id, position);
+            let raw = calibration.tracker_mut(id).mounting_orientation.inverse();
+            tracker.rotation = Some(raw);
+            tracker.rotation_updated_at = Some(start);
+        }
+        let trackers: Vec<_> = registry.iter().cloned().collect();
+        assert!(calibration.capture_relaxed_pose(&trackers, PoseKind::Flat, start)
+            .unwrap_err().to_string().contains("full standing reset"));
+        for tracker in &trackers {
+            calibration.tracker_mut(tracker.id()).full_reset(tracker.rotation.unwrap(), UnitQuaternion::identity());
+        }
+        let mut trackers = trackers;
+        for step in 0..40 {
+            let now = start + std::time::Duration::from_secs_f32(step as f32 / 30.0);
+            for tracker in &mut trackers {
+                let spread: f32 = match tracker.position { 7 | 9 => 12.0, 8 | 10 => -12.0, _ => 0.0 };
+                tracker.rotation = Some(yaw_quat(spread.to_radians())
+                    * UnitQuaternion::from_axis_angle(&Vector3::x_axis(), std::f32::consts::FRAC_PI_2)
+                    * calibration.tracker_mut(tracker.id()).mounting_orientation.inverse());
+                tracker.rotation_updated_at = Some(now);
+            }
+            calibration.update_alignment(&trackers, None, now);
+        }
+        let captured = calibration.capture_relaxed_pose(&trackers, PoseKind::Flat,
+            start + std::time::Duration::from_secs_f32(1.3)).unwrap();
+        assert!((captured.upper_leg_deg - 12.0).abs() < 1e-4);
+        assert!((captured.lower_leg_deg - 12.0).abs() < 1e-4);
+        let mut settings = config.tracking_settings();
+        settings.stay_aligned.save(PoseKind::Flat, captured);
+        config.save_tracking_settings(settings).unwrap();
+        assert_eq!(Config::load(&cli).unwrap().stay_aligned.flat, Some(captured));
+    }
 
     #[test]
     fn stay_aligned_waits_for_full_reset_after_reconnect_or_reassignment() {

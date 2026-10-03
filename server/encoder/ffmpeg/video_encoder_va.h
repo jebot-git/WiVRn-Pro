@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "encoder/encoder_settings.h"
 #include "ffmpeg_helper.h"
 #include "utils/gpu_timestamp_pool.h"
 #include "video_encoder_ffmpeg.h"
@@ -35,6 +36,19 @@ class video_encoder_va : public video_encoder_ffmpeg
 {
 	vk_bundle & vk;
 	bool use_qsv;
+	encoder_settings codec_settings;
+	av_buffer_ptr vaapi_hw_ctx, vaapi_frame_ctx, qsv_device, qsv_frames;
+	void open_codec();
+	void map_qsv_frames();
+	bool recover(unsigned attempt) override;
+	bool supports_recovery() const override
+	{
+		return true;
+	}
+	const char * backend_name() const override
+	{
+		return use_qsv ? "qsv" : "vaapi";
+	}
 	vk::raii::CommandPool cmd_pool;
 	struct in_t
 	{
@@ -59,5 +73,6 @@ public:
 
 protected:
 	void push_frame(bool idr, uint8_t slot) override;
+	bool apply_pending_settings() override;
 };
 } // namespace wivrn

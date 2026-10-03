@@ -86,6 +86,7 @@ class TrackingPanel(QWidget):
         row.addWidget(self.cancel_button)
         calibration.addLayout(row)
         self.calibration_status = QLabel("Waiting for tracker samples")
+        self.calibration_feedback = ""
         self.calibration_status.setWordWrap(True)
         calibration.addWidget(self.calibration_status)
         right.addWidget(self.calibration_group)
@@ -130,6 +131,7 @@ class TrackingPanel(QWidget):
         tuning.addWidget(self.clear_stay)
         row = QHBoxLayout()
         self.apply_button = QPushButton("Apply settings")
+        self.apply_button.setToolTip("Apply tracking settings and save them to the server's startup TOML profile, when configured.")
         self.apply_button.setObjectName("primary")
         self.apply_button.clicked.connect(self.apply_settings)
         self.reload_button = QPushButton("Reload")
@@ -141,7 +143,7 @@ class TrackingPanel(QWidget):
         self.export_button.setToolTip("Save active settings as a startup profile, or copy them into your existing server config.")
         self.export_button.clicked.connect(self.choose_export)
         tuning.addWidget(self.export_button)
-        self.notice = QLabel("Changes apply to the running server. Export to keep settings for future sessions.")
+        self.notice = QLabel("Apply settings updates tracking and saves to the server's startup profile. Without a profile, export to keep settings for future sessions.")
         self.notice.setWordWrap(True)
         self.notice.setObjectName("muted")
         tuning.addWidget(self.notice)
@@ -218,13 +220,14 @@ class TrackingPanel(QWidget):
         if not snapshot:
             self.dirty = False
             self.applying = False
+            self.calibration_feedback = ""
             self.calibration_status.setText("Waiting for tracker samples")
             return
         if supported and not self.dirty and not self.applying:
             self.load_fields(snapshot["settings"])
         self.apply_button.setEnabled(supported and self.dirty and not self.applying)
         stay = snapshot.get("settings", {}).get("stay_aligned", {})
-        saved = [name for name in ("standing", "sitting", "flat") if stay.get(name)]
+        saved = [label for name, label in (("standing", "standing"), ("sitting", "seated"), ("flat", "floor / lying")) if stay.get(name)]
         locked = sum(t.get("stay_aligned", {}).get("mode") == "rest_lock" for t in snapshot.get("trackers", []) if t.get("stay_aligned"))
         if stay_supported:
             self.stay_status.setText(f"Relaxed poses saved: {', '.join(saved) or 'none'}. {locked} trackers resting. "
@@ -238,7 +241,8 @@ class TrackingPanel(QWidget):
             if snapshot.get("reference_needs_reset"):
                 reference += "\nAutomatic correction paused. When tracking is stable, face the saved Quest guide and perform a yaw or full reset."
         if self.deadline is None:
-            self.calibration_status.setText(f"{reference}\n{snapshot.get('calibrated_trackers', 0)} trackers calibrated · {snapshot.get('drift_samples', 0)} with learned drift")
+            feedback = self.calibration_feedback + "\n" if self.calibration_feedback else ""
+            self.calibration_status.setText(f"{feedback}{reference}\n{snapshot.get('calibrated_trackers', 0)} trackers calibrated · {snapshot.get('drift_samples', 0)} with learned drift")
 
     def apply_settings(self):
         if not self.snapshot or self.applying:
@@ -260,14 +264,18 @@ class TrackingPanel(QWidget):
             if ok:
                 self.dirty = False
             self.set_snapshot(self.snapshot)
-            self.notice.setText("Settings applied · export a tuning profile to keep them." if ok else error)
+            persistent = self.snapshot and self.snapshot.get("config_path")
+            self.notice.setText(("Settings applied and saved to the startup profile." if persistent else
+                                 "Settings applied · export a tuning profile to keep them.") if ok else error)
         elif command in ("full_reset", "yaw_reset", "mounting_reset", "clear_drift", "save_relaxed_pose", "clear_stay_aligned"):
             result = "Drift history cleared" if command == "clear_drift" else "Calibration applied"
             if command == "save_relaxed_pose":
-                result = "Relaxed pose saved · export tuning to keep it for future sessions"
+                result = ("Relaxed pose saved to the startup profile" if self.snapshot and self.snapshot.get("config_path") else
+                          "Relaxed pose saved · export tuning to keep it for future sessions")
             elif command == "clear_stay_aligned":
                 result = "Stay Aligned corrections cleared; saved poses retained"
-            self.calibration_status.setText(result if ok else error)
+            self.calibration_feedback = result if ok else error
+            self.calibration_status.setText(self.calibration_feedback)
 
     def reload_settings(self):
         self.dirty = False
@@ -277,6 +285,7 @@ class TrackingPanel(QWidget):
     def start_calibration(self):
         if not self.snapshot or not any(t.get("active") for t in self.snapshot.get("trackers", [])):
             return
+        self.calibration_feedback = ""
         self.calibration_command = CALIBRATIONS[self.calibration_type.currentIndex()][1]
         self.deadline = time.monotonic() + self.delay.value()
         self.cancel_button.setEnabled(True)

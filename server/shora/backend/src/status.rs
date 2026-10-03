@@ -51,6 +51,7 @@ pub struct StatusSnapshot {
     pub solarxr_socket: String,
     pub feeder_socket: String,
     pub control_socket: Option<String>,
+    pub config_path: Option<String>,
     pub log_file: Option<String>,
     pub last_action: String,
 }

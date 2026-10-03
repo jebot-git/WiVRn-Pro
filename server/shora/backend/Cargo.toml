@@ -29,6 +29,8 @@ tokio = { version = "1", features = ["full"] }
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive", "rc"] }
 toml = "0.8"
+toml_edit = "0.22"
+tempfile = "3"
 
 # ── SteamVR feeder protocol (protobuf over the SlimeVRInput socket) ────────────
 prost = "0.12"

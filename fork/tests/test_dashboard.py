@@ -140,6 +140,67 @@ ports=["/dev/fake"]
         self.assertTrue(panel.calibrate_button.isEnabled()) # Standalone compatibility.
         panel.close()
 
+    def test_apply_button_sends_settings_and_reports_profile_persistence(self):
+        from tracking_panel import TrackingPanel, DEFAULTS
+        panel = TrackingPanel()
+        commands = []
+        panel.command_requested.connect(commands.append)
+        snapshot = {'settings': dict(DEFAULTS), 'config_path': '/tmp/intended.toml'}
+        panel.set_snapshot(snapshot)
+        panel.height.setValue(173)
+        panel.apply_button.click()
+        self.assertEqual(commands[-1]['command'], 'set_settings')
+        self.assertEqual(commands[-1]['settings']['height_m'], 1.73)
+        panel.command_finished('set_settings', True, '')
+        self.assertIn('saved to the startup profile', panel.notice.text())
+        panel.command_finished('save_relaxed_pose', True, '')
+        self.assertIn('saved to the startup profile', panel.calibration_status.text())
+        panel.command_finished('set_settings', False, 'Cannot save TOML')
+        self.assertEqual(panel.notice.text(), 'Cannot save TOML')
+        panel.close()
+
+    def test_worker_profile_updates_refresh_clean_editor_and_preserve_drafts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'shora.toml'
+            path.write_text('height_m=1.8\n')
+            window = Dashboard(self.server, path, Path(directory)/'control', attach=False)
+            window.poll.stop()
+            path.write_text('height_m=1.7\n')
+            window.update_snapshot({})
+            self.assertEqual(window.profile.toPlainText(), 'height_m=1.7\n')
+            self.assertEqual(window.profile_original, 'height_m=1.7\n')
+            window.profile.setPlainText('height_m=1.9\n')
+            path.write_text('height_m=1.6\n')
+            window.update_snapshot({})
+            self.assertEqual(window.profile.toPlainText(), 'height_m=1.9\n')
+            window.save_profile()
+            self.assertEqual(path.read_text(), 'height_m=1.6\n')
+            window.load_profile()
+            window.haritorax.setChecked(True)
+            path.write_text('height_m=1.5\n')
+            window.update_snapshot({})
+            self.assertTrue(window.haritorax.isChecked())
+            self.assertEqual(window.profile_original, 'height_m=1.6\n')
+            window.close()
+
+    def test_pose_capture_result_survives_status_polling(self):
+        from tracking_panel import TrackingPanel, DEFAULTS
+        panel = TrackingPanel()
+        snapshot = {'settings': dict(DEFAULTS), 'trackers': [{'active': True}]}
+        panel.set_snapshot(snapshot)
+        error = 'Cannot save relaxed pose: the room or headset reference changed'
+        panel.command_finished('save_relaxed_pose', False, error)
+        for _ in range(5):
+            panel.set_snapshot(snapshot)
+        self.assertIn(error, panel.calibration_status.text())
+        panel.start_calibration()
+        self.assertEqual(panel.calibration_feedback, '')
+        panel.cancel_calibration()
+        panel.command_finished('save_relaxed_pose', True, '')
+        panel.set_snapshot(snapshot)
+        self.assertIn('Relaxed pose saved', panel.calibration_status.text())
+        panel.close()
+
     def test_window_reuses_tracking_ui_without_starting_service(self):
         with tempfile.TemporaryDirectory() as directory:
             window=Dashboard(self.server, Path(directory)/'shora.toml', Path(directory)/'control', attach=False)

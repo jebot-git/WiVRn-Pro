@@ -52,6 +52,11 @@ pub(super) fn setup_custom_label<S: 'static>(
     };
 
     let callback: EventCallback<AppState, S> = match source {
+        "tracking_reset" => Box::new(|common, data, app, _| {
+            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(
+                common, Translation::from_raw_text(&app.shora_battery.reset_text()));
+            Ok(EventResult::Pass)
+        }),
         "shora_battery" => {
             let Some(key) = attribs.get_value("_device").map(String::from) else {
                 log_missing_attrib(parser_state, TAG, "_device");

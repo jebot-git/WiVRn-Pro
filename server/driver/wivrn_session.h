@@ -20,13 +20,13 @@
 #pragma once
 
 #include "app_pacer.h"
-#include "performance_feed.h"
 #include "clock_offset.h"
 #include "compositor/compositor.h"
+#include "hand_joystick.h"
 #include "inplace_vector.hpp"
+#include "performance_feed.h"
 #include "shora_bridge.h"
 #include "spatial_bridge.h"
-#include "hand_joystick.h"
 #include "tracking_control.h"
 #include "utils/thread_safe.h"
 #include "wivrn_android_face_tracker.h"
@@ -204,6 +204,7 @@ public:
 	void operator()(const spatial::snapshot &);
 
 	void operator()(to_monado::stop &&);
+	void operator()(to_monado::recover_video &&);
 	void operator()(to_monado::disconnect &&);
 	void operator()(to_monado::set_bitrate &&);
 	void operator()(to_headset::stream_tab_change &&);

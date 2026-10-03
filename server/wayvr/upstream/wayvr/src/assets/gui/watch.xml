@@ -134,8 +134,8 @@
             <Clock />
           </div>
 
-          <!-- Interaction buttons: keyboard / edit / sticks; recenter / floor / performance -->
-          <div flex_direction="column" gap="8">
+          <!-- Four columns, two rows; tracking resets occupy the last column. -->
+          <div id="interaction_buttons" flex_direction="column" gap="8">
             <div gap="8">
               <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
                 <sprite src_builtin="@/watch/keyboard.svg" width="40" height="40" />
@@ -145,6 +145,9 @@
               </Button>
               <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
                 <sprite width="40" height="40" src_builtin="@/watch/sticks.svg" />
+              </Button>
+              <Button id="btn_full_reset" macro="button_style" _press="::TrackingFullReset" tooltip_str="Full reset: stand upright and face forward. Three-second countdown; press again to cancel." tooltip_side="left">
+                <sprite width="40" height="40" src_builtin="@/watch/full-reset.svg" />
               </Button>
             </div>
             <div gap="8">
@@ -157,9 +160,14 @@
               <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
                 <sprite width="40" height="40" src_builtin="@/watch/performance.svg" />
               </Button>
+              <Button id="btn_mounting_reset" macro="button_style" _press="::TrackingMountingReset" tooltip_str="Mounting reset: after a full reset, bend knees and lean forward in a ski pose. Three-second countdown; press again to cancel." tooltip_side="left">
+                <sprite width="40" height="40" src_builtin="@/watch/mounting-reset.svg" />
+              </Button>
             </div>
           </div>
         </rectangle>
+
+        <label id="tracking_reset_status" _source="tracking_reset" size="16" width="440" color="on_background" />
 
         <!-- Bottom buttons -->
         <div flex_direction="row" gap="8">

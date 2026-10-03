@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 32 32">
+  <!-- SPDX-License-Identifier: GPL-3.0-only; mounting reset ski pose -->
+  <circle cx="22" cy="5" r="3" fill="currentColor"/>
+  <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m19 10-8 7 8 5-5 7m-3-12 2 7-6 5m10-17 5 5 6-1M4 29h22"/>
+    <path d="M5 5v8m-3-3 3 3 3-3"/>
+  </g>
+</svg>

@@ -225,6 +225,8 @@ mod tests {
         assert!(cal.prepare_reference_reset(true).is_err());
         let now=now_ns();settle(&mut shared.write().unwrap(),now-SETTLE,1,3);
         assert!(cal.prepare_reference_reset(true).is_ok());assert!(cal.reference_needs_reset());
+        let error = cal.capture_relaxed_pose(&[], crate::stay_aligned::PoseKind::Flat, std::time::Instant::now()).unwrap_err();
+        assert!(error.to_string().contains("reference changed"));
         cal.confirm_reference_reset();assert!(!cal.reference_needs_reset());
         cal.check_hmd_reference(false);assert!(cal.reference_needs_reset());
         assert!(cal.prepare_reference_reset(false).is_err());

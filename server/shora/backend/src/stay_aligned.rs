@@ -233,7 +233,13 @@ impl StayAligned {
     }
 
     pub fn capture(&self, kind: PoseKind, now: Instant) -> anyhow::Result<RelaxedPose> {
-        anyhow::ensure!(classify(&self.samples) == Some(kind), "Hold the selected relaxed pose with chest/hip, both thighs and both shins tracked");
+        anyhow::ensure!(complete_body(&self.samples),
+            "Cannot save relaxed pose: fresh, calibrated chest/hip, both thigh and both shin trackers are required");
+        anyhow::ensure!(classify(&self.samples) == Some(kind), "{}", match kind {
+            PoseKind::Standing => "Standing pose not detected. Stand upright with relaxed legs",
+            PoseKind::Sitting => "Seated pose not detected. Sit upright with thighs forward and shins upright",
+            PoseKind::Flat => "Floor / lying pose not detected. Lie on your back or sit on the floor with both legs extended",
+        });
         for s in self.samples.iter().filter(|s| center_weight(s.position) > 0.0 || matches!(s.position, 11 | 12)) {
             anyhow::ensure!(now.saturating_duration_since(s.at).as_secs_f32() <= FRESH_SECS,
                 "Fresh tracker samples are required to save a relaxed pose");

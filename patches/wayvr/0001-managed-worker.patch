@@ -109,37 +109,49 @@
 +      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
 +    </rectangle>
    </template>
- 
+
    <template name="Screen">
-@@ -127,7 +134,7 @@
+@@ -127,14 +134,20 @@
              <Clock />
            </div>
- 
+
 -          <!-- Four buttons -->
-+          <!-- Interaction buttons: keyboard / edit / sticks; recenter / floor / performance -->
-           <div flex_direction="column" gap="8">
+-          <div flex_direction="column" gap="8">
++          <!-- Four columns, two rows; tracking resets occupy the last column. -->
++          <div id="interaction_buttons" flex_direction="column" gap="8">
              <div gap="8">
                <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
-@@ -136,6 +143,9 @@
+                 <sprite src_builtin="@/watch/keyboard.svg" width="40" height="40" />
+               </Button>
                <Button id="btn_edit_mode" macro="button_style" _press="::EditToggle" tooltip="WATCH.EDIT_MODE" tooltip_side="left">
                  <sprite width="40" height="40" src="@/watch/edit.svg" />
-               </Button>
++              </Button>
 +              <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
 +                <sprite width="40" height="40" src_builtin="@/watch/sticks.svg" />
 +              </Button>
++              <Button id="btn_full_reset" macro="button_style" _press="::TrackingFullReset" tooltip_str="Full reset: stand upright and face forward. Three-second countdown; press again to cancel." tooltip_side="left">
++                <sprite width="40" height="40" src_builtin="@/watch/full-reset.svg" />
+               </Button>
              </div>
              <div gap="8">
-               <Button macro="button_style" _press="::PlayspaceRecenter" tooltip="WATCH.RECENTER" tooltip_side="left">
-@@ -143,6 +153,9 @@
-               </Button>
+@@ -144,9 +157,17 @@
                <Button macro="button_style" _press="::PlayspaceFixFloor" tooltip="WATCH.FIX_FLOOR" tooltip_side="left">
                  <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
-+              </Button>
+               </Button>
 +              <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
 +                <sprite width="40" height="40" src_builtin="@/watch/performance.svg" />
-               </Button>
++              </Button>
++              <Button id="btn_mounting_reset" macro="button_style" _press="::TrackingMountingReset" tooltip_str="Mounting reset: after a full reset, bend knees and lean forward in a ski pose. Three-second countdown; press again to cancel." tooltip_side="left">
++                <sprite width="40" height="40" src_builtin="@/watch/mounting-reset.svg" />
++              </Button>
              </div>
            </div>
+         </rectangle>
++
++        <label id="tracking_reset_status" _source="tracking_reset" size="16" width="440" color="on_background" />
+
+         <!-- Bottom buttons -->
+         <div flex_direction="row" gap="8">
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
 @@ -75,6 +75,10 @@
@@ -1379,10 +1391,16 @@
      }
 --- a/wayvr/src/gui/asset.rs
 +++ b/wayvr/src/gui/asset.rs
-@@ -4,6 +4,15 @@
- 
+@@ -4,6 +4,21 @@
+
  impl wgui::assets::AssetProvider for GuiAsset {
      fn load_from_path(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
++        if path == "watch/full-reset.svg" {
++            return Ok(include_bytes!("../../../../icons/full-reset.svg").to_vec());
++        }
++        if path == "watch/mounting-reset.svg" {
++            return Ok(include_bytes!("../../../../icons/mounting-reset.svg").to_vec());
++        }
 +        if path == "gui/performance.xml" {
 +            return Ok(include_bytes!("../../../../performance.xml").to_vec());
 +        }
@@ -1397,10 +1415,22 @@
              None => anyhow::bail!("embedded file {path} not found"),
 --- a/wayvr/src/gui/panel/button.rs
 +++ b/wayvr/src/gui/panel/button.rs
-@@ -520,6 +520,20 @@
+@@ -520,6 +520,32 @@
                          Ok(EventResult::Consumed)
                      })
                  }
++                "::TrackingFullReset" | "::TrackingMountingReset" => {
++                    let kind = if command == "::TrackingFullReset" {
++                        crate::shora_battery::ResetKind::Full
++                    } else {
++                        crate::shora_battery::ResetKind::Mounting
++                    };
++                    Box::new(move |_common, data, app, _| {
++                        if !test_button(data) || !test_duration(&button, app) { return Ok(EventResult::Pass); }
++                        app.shora_battery.request_reset(kind);
++                        Ok(EventResult::Consumed)
++                    })
++                }
 +                "::PerformanceToggle" => Box::new(move |common, data, app, _| {
 +                    if !test_button(data) || !test_duration(&button, app) { return Ok(EventResult::Pass); }
 +                    crate::performance_panel::toggle(app);
@@ -1440,10 +1470,15 @@
              _ => {}
 --- a/wayvr/src/gui/panel/label.rs
 +++ b/wayvr/src/gui/panel/label.rs
-@@ -52,6 +52,38 @@
+@@ -52,6 +52,43 @@
      };
- 
+
      let callback: EventCallback<AppState, S> = match source {
++        "tracking_reset" => Box::new(|common, data, app, _| {
++            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(
++                common, Translation::from_raw_text(&app.shora_battery.reset_text()));
++            Ok(EventResult::Pass)
++        }),
 +        "shora_battery" => {
 +            let Some(key) = attribs.get_value("_device").map(String::from) else {
 +                log_missing_attrib(parser_state, TAG, "_device");

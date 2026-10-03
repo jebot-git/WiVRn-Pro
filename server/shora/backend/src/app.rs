@@ -31,6 +31,7 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
         version: env!("CARGO_PKG_VERSION").into(), pid: std::process::id(), tracker_port: config.tracker_port,
         solarxr_socket: config.solarxr_socket.clone(), feeder_socket: config.feeder_socket.clone(),
         control_socket: config.control_socket.as_ref().map(|p| p.display().to_string()),
+        config_path: config.config_path.as_ref().map(|p| p.display().to_string()),
         log_file: config.log_file.as_ref().map(|p| p.display().to_string()),
         face_source: if config.face.enabled { format!("{:?}", config.face.source).to_lowercase() } else { "disabled".into() },
         face_output: if config.face.translation_sheet.is_some() && config.face.output == face::config::OutputMode::Auto {
@@ -102,10 +103,10 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                 Command::ShutdownTrackers => acquisition.shutdown_trackers().await,
                 Command::PauseTracking => { paused = !paused; Ok(()) }
                 Command::SetSettings { settings: next } => {
-                    match next.validate() {
+                    match config.save_tracking_settings(next) {
                         Err(error) => Err(error),
                         Ok(()) => {
-                            // Validate the whole update before changing any live state.
+                            // Validate and persist before changing any live state.
                             if next.smoothing != settings.smoothing || next.prediction != settings.prediction {
                                 filter = smoothing::RotationFilter::new(next.smoothing, next.prediction);
                             }
@@ -128,13 +129,15 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                     if paused { Err(anyhow::anyhow!("Resume tracking before saving a relaxed pose")) }
                     else {
                         let now = Instant::now();
-                        calibration.update_alignment(&trackers, None, now);
-                        match calibration.stay_aligned.capture(kind, now) {
+                        match calibration.capture_relaxed_pose(&trackers, kind, now) {
                         Ok(pose) => {
-                            settings.stay_aligned.save(kind, pose);
-                            calibration.stay_aligned.configure(settings.stay_aligned);
-                            tracing::info!(?kind, ?pose, "Stay Aligned relaxed pose saved");
-                            Ok(())
+                            let mut next = settings;
+                            next.stay_aligned.save(kind, pose);
+                            config.save_tracking_settings(next).map(|()| {
+                                settings = next;
+                                calibration.stay_aligned.configure(settings.stay_aligned);
+                                tracing::info!(?kind, ?pose, "Stay Aligned relaxed pose saved");
+                            })
                         }
                         Err(error) => Err(error),
                     } }
@@ -152,8 +155,13 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                     else { reset::handle_user_action(&reg, &mut calib.write().unwrap(), hmd.read().unwrap().as_ref(), &action) }
                 }
             };
+            if let (Command::SaveRelaxedPose { pose }, Err(error)) = (envelope.command, &result) {
+                tracing::warn!(?pose, error = %error, "Relaxed pose was not saved");
+            }
             status.write().unwrap().last_action = match &result {
-                Ok(()) => match envelope.command { Command::SetSettings { .. } => "Tracking settings applied".into(),
+                Ok(()) => match envelope.command {
+                    Command::SetSettings { .. } if config.config_path.is_some() => "Tracking settings applied and saved".into(),
+                    Command::SetSettings { .. } => "Tracking settings applied (no startup profile)".into(),
                     Command::ShutdownTrackers => "Tracker shutdown commands sent".into(),
                     other => format!("{other:?}") },
                 Err(e) => format!("{e:#}")
@@ -203,4 +211,74 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
     while services.join_next().await.is_some() {}
     tracing::info!("native tracking hub stopped");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::Parser;
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+    use tokio::net::UnixStream;
+
+    async fn request(client: &mut BufReader<UnixStream>, value: serde_json::Value) -> serde_json::Value {
+        let mut bytes = serde_json::to_vec(&value).unwrap();
+        bytes.push(b'\n');
+        client.get_mut().write_all(&bytes).await.unwrap();
+        let mut line = String::new();
+        client.read_line(&mut line).await.unwrap();
+        serde_json::from_str(&line).unwrap()
+    }
+
+    #[tokio::test]
+    async fn apply_settings_saves_before_reply_and_survives_worker_restart() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("shora.toml");
+        let control = directory.path().join("control");
+        std::fs::write(&path, "height_m = 1.8\n").unwrap();
+        let cli = crate::config::Cli::parse_from(["worker", "--config", path.to_str().unwrap(),
+            "--tracker-port", "0", "--control-socket", control.to_str().unwrap(),
+            "--solarxr-socket", directory.path().join("rpc").to_str().unwrap(),
+            "--feeder-socket", directory.path().join("input").to_str().unwrap()]);
+        let mut next = Config::load(&cli).unwrap().tracking_settings();
+        next.height_m = 1.67;
+        next.smoothing = 0.6;
+        next.stay_aligned.standing = Some(crate::stay_aligned::RelaxedPose {
+            upper_leg_deg: 12.0, lower_leg_deg: 4.0, foot_deg: 1.0,
+        });
+        next.stay_aligned.enabled = true;
+        for restarted in [false, true] {
+            let worker = run(Config::load(&cli).unwrap());
+            let client = async {
+                let stream = loop {
+                    if let Ok(stream) = UnixStream::connect(&control).await { break stream; }
+                    tokio::time::sleep(Duration::from_millis(10)).await;
+                };
+                let mut client = BufReader::new(stream);
+                let response = if restarted {
+                    request(&mut client, serde_json::json!({"command": "status"})).await
+                } else {
+                    request(&mut client, serde_json::json!({"command": "set_settings", "settings": next})).await
+                };
+                assert_eq!(response["ok"], true);
+                assert_eq!(serde_json::from_value::<crate::settings::TrackingSettings>(response["status"]["settings"].clone()).unwrap(), next);
+                assert_eq!(response["status"]["config_path"], path.to_str().unwrap());
+                assert_eq!(Config::load(&cli).unwrap().tracking_settings(), next);
+                let saved = std::fs::read_to_string(&path).unwrap();
+                std::fs::remove_file(&path).unwrap();
+                let mut rejected = next;
+                rejected.height_m = 1.95;
+                let response = request(&mut client, serde_json::json!({"command": "set_settings", "settings": rejected})).await;
+                assert_eq!(response["ok"], false);
+                assert!(response["error"].as_str().unwrap().contains(path.to_str().unwrap()));
+                assert_eq!(serde_json::from_value::<crate::settings::TrackingSettings>(response["status"]["settings"].clone()).unwrap(), next);
+                assert!(!path.exists());
+                std::fs::write(&path, saved).unwrap();
+                assert_eq!(request(&mut client, serde_json::json!({"command": "shutdown"})).await["ok"], true);
+            };
+            tokio::time::timeout(Duration::from_secs(5), async {
+                let (result, ()) = tokio::join!(worker, client);
+                result.unwrap();
+            }).await.unwrap();
+        }
+    }
 }

@@ -1239,24 +1239,44 @@ void scenes::stream::exit()
 
 void scenes::stream::setup(const to_headset::video_stream_description & description)
 {
-	spdlog::info("setup, refresh rate {}", description.refresh_rate);
+	spdlog::info("Video stream (re)initialization, refresh rate {}", description.refresh_rate);
 	session.set_refresh_rate(description.refresh_rate);
-
-	std::unique_lock lock(decoder_mutex);
-	if (video_stream_description == description)
-		return;
-	spdlog::info("Creating decoders, size {}x{}", description.width, description.height);
-	video_stream_description = description;
-
-	for (const auto & [stream_index, item]: utils::enumerate(decoders))
+	// An unchanged description is also a restart boundary. Retire both eyes
+	// together; do not destroy codecs while holding the lock used by callbacks.
+	decltype(decoders) retired;
 	{
-		item = accumulator_images{
-		        .decoder = std::make_unique<shard_accumulator>(device, physical_device, instance, queue_family_index, description, shared_from_this(), stream_index),
-		};
+		std::unique_lock lock(decoder_mutex);
+		if (*fence && device.waitForFences(*fence, VK_TRUE, 100'000'000) == vk::Result::eTimeout)
+		{
+			spdlog::warn("Deferring decoder reset: previous blit still in flight");
+			return;
+		}
+		current_blit_handles.fill(nullptr);
+		retired.swap(decoders);
+		video_stream_description.reset();
 	}
-
-	if (defoveator)
-		defoveator->reset_pipelines();
+	for (auto & item: retired)
+		item = {};
+	decltype(decoders) replacement;
+	try
+	{
+		for (const auto & [stream_index, item]: utils::enumerate(replacement))
+			item.decoder = std::make_unique<shard_accumulator>(device, physical_device, instance, queue_family_index, description, shared_from_this(), stream_index);
+	}
+	catch (const std::exception & e)
+	{
+		// Audio/tracking and the OpenXR session survive. The server's progress
+		// watchdog will retry a description if no decoded feedback arrives.
+		spdlog::error("Decoder recreation failed: {}", e.what());
+		return;
+	}
+	{
+		std::unique_lock lock(decoder_mutex);
+		decoders.swap(replacement);
+		video_stream_description = description;
+		if (defoveator)
+			defoveator->reset_pipelines();
+	}
 }
 
 void scenes::stream::setup_reprojection_swapchain(uint32_t swapchain_width, uint32_t swapchain_height)

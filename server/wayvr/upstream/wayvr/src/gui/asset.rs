@@ -4,6 +4,12 @@ pub struct GuiAsset;
 
 impl wgui::assets::AssetProvider for GuiAsset {
     fn load_from_path(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
+        if path == "watch/full-reset.svg" {
+            return Ok(include_bytes!("../../../../icons/full-reset.svg").to_vec());
+        }
+        if path == "watch/mounting-reset.svg" {
+            return Ok(include_bytes!("../../../../icons/mounting-reset.svg").to_vec());
+        }
         if path == "gui/performance.xml" {
             return Ok(include_bytes!("../../../../performance.xml").to_vec());
         }
