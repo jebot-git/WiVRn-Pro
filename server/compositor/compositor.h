@@ -98,6 +98,8 @@ private:
 	std::atomic<float> frame_rate;
 	wivrn::pacer pacer;
 
+	std::unique_ptr<layer_squasher> ocr_squasher;
+	buffer_allocation ocr_readback;
 	layer_squasher squasher;
 	wivrn::foveation foveation;
 

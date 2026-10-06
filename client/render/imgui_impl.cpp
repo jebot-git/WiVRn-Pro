@@ -555,6 +555,18 @@ void imgui_context::initialize_fonts()
 	config.GlyphMinAdvanceX = 40; // Use if you want to make the icon monospaced
 	for (auto & fa: font_awesome)
 		io.Fonts->AddFontFromMemoryTTF(const_cast<std::byte *>(fa.data()), fa.size(), constants::gui::font_size_small, &config);
+    // Dedicated subtitle face; UI fonts and icons retain their existing style.
+    subtitle_font_data = utils::mapped_file("assets://Jupiteroid-Regular.ttf");
+    ImFontConfig subtitle_config;
+    subtitle_config.FontDataOwnedByAtlas = false;
+    subtitle_font_ = io.Fonts->AddFontFromMemoryTTF(const_cast<std::byte *>(subtitle_font_data.data()),
+        subtitle_font_data.size(), constants::gui::font_size_small, &subtitle_config);
+    // Merge available system glyphs for languages outside Jupiteroid's coverage.
+    subtitle_config.MergeMode = true;
+    subtitle_config.FontDataOwnedByAtlas = true;
+    for (const auto & font : fonts)
+        io.Fonts->AddFontFromFileTTF(font.c_str(), constants::gui::font_size_small, &subtitle_config);
+
 }
 
 std::vector<imgui_context::controller_state> imgui_context::read_controllers_state(XrTime display_time)

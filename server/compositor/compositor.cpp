@@ -23,6 +23,7 @@
 #include "encoder/encode_batch.h"
 #include "wivrn_ipc.h"
 #include <cmath>
+#include <nlohmann/json.hpp>
 
 // Monado includes
 #include "driver/xrt_cast.h"
@@ -330,6 +331,23 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 
 	trace::instant_feedback("begin", frame.rendering.id, os_monotonic_get_ns());
 
+    auto ocr_request = session.ocr_images.take_request();
+    // Requests expire if no scene was rendered while the worker was waiting.
+    auto ocr_now = uint64_t(os_monotonic_get_ns());
+    if (ocr_request > ocr_now || ocr_now-ocr_request > 2'000'000'000) ocr_request = 0;
+    if (ocr_request && !ocr_squasher)
+    {
+        try
+        {
+            ocr_readback = buffer_allocation(vk.device,
+                {.size = 1024*1024*4, .usage = vk::BufferUsageFlagBits::eTransferDst},
+                {.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT, .usage = VMA_MEMORY_USAGE_AUTO});
+            ocr_readback.map();
+            ocr_squasher = std::make_unique<layer_squasher>(vk, vk::Extent3D{1024,1024,1}, true);
+        }
+        catch (const std::exception &) { ocr_request = 0; }
+    }
+    std::string ocr_metadata;
 	cmd_pool.reset();
 	cmd.begin({.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
 
@@ -479,13 +497,38 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	        .pImageMemoryBarriers = image_barriers.data(),
 	});
 	cmd.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, *query_pool, 2);
+    if (ocr_request)
+    {
+        auto [poses, fovs, rects] = ocr_squasher->do_layers(vk.device, cmd, session.get_hmd(),
+            pacer.get_frame_duration(), frame.rendering, layer_accum, xrt_rect{.extent{1024,1024}});
+        const auto & p = poses[0]; const auto & f = fovs[0];
+        ocr_metadata = nlohmann::json{{"ocr_frame",ocr_request}, {"captured", double(os_monotonic_get_ns())/1e9},
+            {"capture_pose",{p.position.x,p.position.y,p.position.z,p.orientation.x,p.orientation.y,p.orientation.z,p.orientation.w}},
+            {"capture_fov",{f.angle_left,f.angle_right,f.angle_up,f.angle_down}}}.dump();
+        vk::ImageMemoryBarrier2 barrier{
+            .srcStageMask = vk::PipelineStageFlagBits2::eComputeShader,
+            .srcAccessMask = vk::AccessFlagBits2::eShaderStorageWrite,
+            .dstStageMask = vk::PipelineStageFlagBits2::eTransfer,
+            .dstAccessMask = vk::AccessFlagBits2::eTransferRead,
+            .oldLayout = vk::ImageLayout::eGeneral, .newLayout = vk::ImageLayout::eTransferSrcOptimal,
+            .image = ocr_squasher->get_image(),
+            .subresourceRange = {.aspectMask=vk::ImageAspectFlagBits::eColor,.levelCount=1,.layerCount=1}};
+        cmd.pipelineBarrier2({.imageMemoryBarrierCount=1,.pImageMemoryBarriers=&barrier});
+        cmd.copyImageToBuffer(ocr_squasher->get_image(), vk::ImageLayout::eTransferSrcOptimal, ocr_readback,
+            vk::BufferImageCopy{.imageSubresource={.aspectMask=vk::ImageAspectFlagBits::eColor,.layerCount=1},
+                .imageExtent={1024,1024,1}});
+        vk::MemoryBarrier2 host{.srcStageMask=vk::PipelineStageFlagBits2::eTransfer,
+            .srcAccessMask=vk::AccessFlagBits2::eTransferWrite,.dstStageMask=vk::PipelineStageFlagBits2::eHost,
+            .dstAccessMask=vk::AccessFlagBits2::eHostRead};
+        cmd.pipelineBarrier2({.memoryBarrierCount=1,.pMemoryBarriers=&host});
+    }
 
 	cmd.end();
 
 	const vk::SemaphoreSubmitInfo sem_info{
 	        .semaphore = *sem,
 	        .value = ++sem_value,
-	        .stageMask = vk::PipelineStageFlagBits2::eComputeShader,
+	        .stageMask = vk::PipelineStageFlagBits2::eAllCommands,
 	};
 
 	{
@@ -541,6 +584,18 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	}
 	else
 	{
+        if (ocr_request)
+        {
+            try
+            {
+                if (vmaInvalidateAllocation(vk_allocator::instance(), ocr_readback, 0, VK_WHOLE_SIZE) == VK_SUCCESS)
+                {
+                    const auto * data = ocr_readback.data();
+                    session.ocr_images.submit({std::move(ocr_metadata), std::vector<uint8_t>(data,data+1024*1024*4)});
+                }
+            }
+            catch (const std::exception &) {} // Optional capture allocation must not end a VR session.
+        }
 		auto [res, ts] = query_pool.getResults<uint64_t>(
 		        0,
 		        3,

@@ -333,3 +333,6 @@ if(NOT ANDROID)
 
     install(DIRECTORY "${ASSETS_DIR}" DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn)
 endif()
+
+# Subtitle packet validation relies on finite-value checks.
+set_source_files_properties(scenes/stream_subtitles.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math")

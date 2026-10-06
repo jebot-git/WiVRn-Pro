@@ -203,6 +203,8 @@ private:
 #endif
 
 	beman::inplace_vector::inplace_vector<utils::mapped_file, 3> font_awesome;
+	utils::mapped_file subtitle_font_data;
+	ImFont * subtitle_font_ = nullptr;
 	void initialize_fonts();
 
 	std::vector<controller_state> read_controllers_state(XrTime display_time);
@@ -220,6 +222,8 @@ public:
 	        std::shared_ptr<imgui_textures::image_cache_type> image_cache);
 
 	~imgui_context();
+
+	ImFont * subtitle_font() const { return subtitle_font_; }
 
 	std::span<viewport> layers()
 	{

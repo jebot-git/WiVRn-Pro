@@ -27,6 +27,7 @@
 #include "performance_feed.h"
 #include "shora_bridge.h"
 #include "spatial_bridge.h"
+#include "subtitle_bridge.h"
 #include "tracking_control.h"
 #include "utils/thread_safe.h"
 #include "wivrn_android_face_tracker.h"
@@ -74,6 +75,9 @@ class wivrn_session : public xrt_system_devices
 	thread_safe<from_headset::settings_changed> settings;
 
 	shora_bridge shora;
+public:
+    ocr_exchange ocr_images;
+private:
 	wivrn::compositor compositor;
 	pacing_app_factory app_pacers;
 	performance_feed performance{app_pacers};
@@ -82,6 +86,7 @@ class wivrn_session : public xrt_system_devices
 	ipc_server * mnd_ipc_server;
 	xrt_space_overseer * space_overseer = nullptr;
 	spatial::bridge spatial_bridge;
+	std::unique_ptr<subtitle_bridge> subtitles;
 	hand_joystick joystick_emulation;
 	xrt_system_compositor * system_compositor;
 
@@ -130,6 +135,7 @@ class wivrn_session : public xrt_system_devices
 	wivrn_session(std::unique_ptr<wivrn_connection> connection, b_system &);
 
 public:
+
 	std::optional<hand_joystick::value> emulated_joystick(unsigned hand) const
 	{
 		return joystick_emulation.get(hand, os_monotonic_get_ns());

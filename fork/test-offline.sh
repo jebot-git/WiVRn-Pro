@@ -50,3 +50,11 @@ build/native-tests/wayvr-supervisor-test
 "$cxx" -std=c++23 -Wall -Wextra -Werror -fno-fast-math -Iserver/driver \
   fork/tests/hand_joystick_test.cpp server/driver/hand_joystick.cpp -o build/native-tests/hand-joystick-test
 build/native-tests/hand-joystick-test
+
+# GLM may come from system headers or the existing Android dependency cache.
+"$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -Wno-sign-compare -Wno-unused-parameter -fno-fast-math -I"${GLM_INCLUDE_DIR:-build/android-deps/glm-src}" -Iclient -Icommon -Iexternal \
+  fork/tests/subtitle_test.cpp common/crypto.cpp common/smp.cpp -lcrypto -o build/native-tests/subtitle-test
+build/native-tests/subtitle-test
+"$cxx" -std=c++23 -Wall -Wextra -Werror -fno-fast-math -pthread -Iserver -Icommon \
+  '-DWIVRN_SUBTITLE_SOURCE=""' fork/tests/subtitle_bridge_test.cpp server/driver/subtitle_bridge.cpp -o build/native-tests/subtitle-bridge-test
+build/native-tests/subtitle-bridge-test

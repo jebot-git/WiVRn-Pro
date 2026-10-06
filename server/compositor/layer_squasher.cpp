@@ -317,7 +317,7 @@ vk::raii::DescriptorPool make_ds_pool(wivrn::vk_bundle & vk, uint32_t image_arra
 namespace wivrn
 {
 
-layer_squasher::layer_squasher(vk_bundle & vk, vk::Extent3D target_size) :
+layer_squasher::layer_squasher(vk_bundle & vk, vk::Extent3D target_size, bool readback) :
         partially_bound_desc{bool(std::get<vk::PhysicalDeviceVulkan12Features>(vk.feat).descriptorBindingPartiallyBound)},
         image_array_size{std::min<uint32_t>(vk.physical_device.getProperties().limits.maxPerStageDescriptorSampledImages, RENDER_MAX_IMAGES_SIZE)},
         clamp_to_border_black{vk.device,
@@ -350,7 +350,7 @@ layer_squasher::layer_squasher(vk_bundle & vk, vk::Extent3D target_size) :
                                       .extent = target_size,
                                       .mipLevels = 1,
                                       .arrayLayers = view_count,
-                                      .usage = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled,
+                                      .usage = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled | (readback ? vk::ImageUsageFlagBits::eTransferSrc : vk::ImageUsageFlags{}),
                               },
                               vk::ImageFormatListCreateInfo{
                                       .viewFormatCount = formats.size(),

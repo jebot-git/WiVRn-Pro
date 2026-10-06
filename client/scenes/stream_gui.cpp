@@ -462,6 +462,9 @@ void scenes::stream::gui_settings(float)
 			break;
 		case settings_page::audio:
 		{
+            ImGui::Checkbox("Show live subtitles", &subtitle_overlay.enabled);
+            ImGui::Checkbox("Show scene translations", &ocr_overlay.enabled);
+            ImGui::TextWrapped("Configure recognition, voice colours, translation language and your OpenAI key in the desktop dashboard's Subtitles tab.");
 			wivrn::gui::settings_audio(ctx);
 #ifdef __ANDROID__
 			ImGui::Spacing();
@@ -771,7 +774,7 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 		if (alpha == 0)
 		{
 			toast->reset();
-			return;
+            if (!subtitle_overlay.visible(predicted_display_time) && !ocr_overlay.visible(predicted_display_time)) return;
 		}
 	}
 
@@ -1109,6 +1112,8 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 	ImGui::PopStyleVar(2);  // ImGuiStyleVar_ChildBorderSize, ImGuiStyleVar_WindowPadding
 	ImGui::PopStyleColor(); // ImGuiCol_WindowBg
 
+	draw_subtitles(predicted_display_time);
+    draw_scene_translations(predicted_display_time);
 	auto layers = imgui_ctx->end_frame();
 
 	// Display controllers and handle recentering
@@ -1189,13 +1194,14 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 		}
 	}
 
-	for (auto [_, layer]: layers)
+	for (auto [z_index, layer]: layers)
 	{
+        if (z_index < 100 && alpha == 0) continue;
 		add_quad_layer(layer.layerFlags, layer.space, layer.eyeVisibility, layer.subImage, layer.pose, layer.size);
 		if (composition_layer_depth_test_supported)
-			set_depth_test(true, XR_COMPARE_OP_LESS_FB);
+			set_depth_test(true, z_index >= 100 ? XR_COMPARE_OP_ALWAYS_FB : XR_COMPARE_OP_LESS_FB);
 
-		else if (alpha < 1 and composition_layer_color_scale_bias_supported)
+		else if (z_index < 100 and alpha < 1 and composition_layer_color_scale_bias_supported)
 			set_color_scale_bias({alpha, alpha, alpha, alpha}, {});
 	}
 

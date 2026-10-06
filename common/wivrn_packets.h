@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "subtitle_protocol.h"
+
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -958,7 +960,8 @@ using packets = std::variant<
         stream_tab_change,
         application_list,
         application_icon,
-        running_applications>;
+        running_applications,
+        subtitles::packet>;
 } // namespace to_headset
 } // namespace wivrn
 

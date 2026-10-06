@@ -53,7 +53,7 @@ class layer_squasher
 	std::array<vk::DescriptorSet, 2> descriptor_sets;
 
 public:
-	layer_squasher(vk_bundle &, vk::Extent3D target_size);
+	layer_squasher(vk_bundle &, vk::Extent3D target_size, bool readback = false);
 
 	std::tuple<std::array<xrt_pose, 2>,
 	           std::array<xrt_fov, 2>,

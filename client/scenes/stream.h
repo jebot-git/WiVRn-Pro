@@ -25,6 +25,8 @@
 #include "render/imgui_impl.h"
 #include "scene.h"
 #include "spatial_source.h"
+#include "subtitle_overlay.h"
+#include "ocr_overlay.h"
 #include "scenes/input_profile.h"
 #include "stream_defoveator.h"
 #include "utils/thread_safe.h"
@@ -137,6 +139,14 @@ private:
 	uint32_t width;
 	uint32_t height;
 
+    wivrn::subtitles::overlay subtitle_overlay;
+    wivrn::subtitles::scene_overlay ocr_overlay;
+    thread_safe<std::optional<std::pair<wivrn::subtitles::packet, XrTime>>> pending_ocr;
+    XrTime subtitle_reference_barrier = 0;
+    thread_safe<std::optional<std::pair<wivrn::subtitles::packet, XrTime>>> pending_subtitles;
+    void update_subtitles(XrTime now);
+    void draw_subtitles(XrTime now);
+    void draw_scene_translations(XrTime now);
 	std::optional<imgui_context> imgui_ctx;
 	ImTextureID wivrn_logo = 0; // wordmark logo shown in the top bar, like the lobby
 	struct gui_toast
@@ -239,6 +249,7 @@ public:
 	void operator()(to_headset::pin_check_4 &&) {};
 	void operator()(to_headset::handshake &&) {};
 	void operator()(to_headset::server_message &&);
+	void operator()(wivrn::subtitles::packet &&);
 	void operator()(to_headset::video_stream_data_shard &&);
 	void operator()(to_headset::haptics &&);
 	void operator()(to_headset::timesync_query &&);
