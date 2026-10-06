@@ -56,6 +56,15 @@ class SubtitlePanel(QWidget):
         form.addRow('Subtitle font', self.font)
         self.voices = QCheckBox('Distinguish voices with labels and colours')
         form.addRow(self.voices)
+        self.speaker_model = QLineEdit(); self.speaker_model.setPlaceholderText('Local speaker-cjk model (leave blank)')
+        speaker_row = QHBoxLayout(); speaker_row.addWidget(self.speaker_model)
+        self.browse_speaker = QPushButton('Choose model…'); speaker_row.addWidget(self.browse_speaker)
+        self.browse_speaker.clicked.connect(self.choose_speaker_model)
+        form.addRow('Local voice model directory',speaker_row)
+        self.speaker_threshold = QDoubleSpinBox(); self.speaker_threshold.setRange(.3,.95); self.speaker_threshold.setSingleStep(.01)
+        self.speaker_threshold.setDecimals(3)
+        self.speaker_threshold.setToolTip('Higher values split voices more readily. Uncertain matches use the neutral colour.')
+        form.addRow('Local voice similarity threshold',self.speaker_threshold)
         self.recognition.currentIndexChanged.connect(self.backend_changed)
         self.spatial = QCheckBox('Place subtitles using estimated stereo direction')
         form.addRow(self.spatial)
@@ -116,7 +125,9 @@ class SubtitlePanel(QWidget):
             'Direction is a left/right estimate from the speaker mix, not a game-object location. '
             'Uncertain directions stay centered. Overlapping voices and background music can reduce accuracy. '
             'Voice labels are anonymous and provisional until a clear reference is available; up to four voices are remembered for this session. '
-            'Local recognition requires the optional OpenVINO setup, has no voice identification yet, and skips low-confidence text. '
+            'Local voice colours require a speaker model; they estimate the dominant voice per recognised phrase. '
+            'Simultaneous speakers are not separated, and short or ambiguous phrases may use the neutral colour. '
+            'Local recognition requires the optional OpenVINO setup and skips low-confidence text. '
             'ChatGPT translation requires codex login and consumes ChatGPT plan usage.')
         limitations.setWordWrap(True); layout.addWidget(limitations)
         actions = QHBoxLayout(); layout.addLayout(actions)
@@ -141,10 +152,13 @@ class SubtitlePanel(QWidget):
     def backend_changed(self):
         local = self.recognition.currentData() == 'openvino'
         self.local_translation.setEnabled(local); self.local_device.setEnabled(local); self.local_confidence.setEnabled(local)
-        self.voices.setEnabled(not local)
+        self.speaker_model.setEnabled(local); self.browse_speaker.setEnabled(local); self.speaker_threshold.setEnabled(local)
         self.local_model.setEnabled(local); self.browse_model.setEnabled(local)
         self.local_ocr_model.setEnabled(local); self.browse_ocr_model.setEnabled(local)
-        if local: self.voices.setChecked(False)
+
+    def choose_speaker_model(self):
+        directory = QFileDialog.getExistingDirectory(self,'Select local speaker model directory',self.speaker_model.text())
+        if directory: self.speaker_model.setText(directory)
 
     def choose_model(self):
         directory = QFileDialog.getExistingDirectory(self,'Select completed OpenVINO Whisper export',self.local_model.text())
@@ -164,6 +178,8 @@ class SubtitlePanel(QWidget):
             for name in ('save_training_audio','log_speech','log_ocr'):getattr(self,name).setChecked(getattr(settings,name))
             self.recording_days.setValue(settings.recording_retention_days);self.recording_mb.setValue(settings.recording_max_mb)
             self.local_model.setText(settings.local_speech_model)
+            self.speaker_model.setText(settings.local_speaker_model)
+            self.speaker_threshold.setValue(settings.local_speaker_threshold)
             self.local_ocr_model.setText(settings.local_ocr_model)
             self.ocr_enabled.setChecked(settings.ocr_enabled); self.ocr_language.setCurrentText(settings.ocr_language)
             self.enabled.setChecked(settings.enabled); self.language.setCurrentText(settings.language)
@@ -188,6 +204,7 @@ class SubtitlePanel(QWidget):
                 save_training_audio=self.save_training_audio.isChecked(),log_speech=self.log_speech.isChecked(),log_ocr=self.log_ocr.isChecked(),
                 recording_retention_days=self.recording_days.value(),recording_max_mb=self.recording_mb.value(),
                 local_speech_model=self.local_model.text().strip(),
+                local_speaker_model=self.speaker_model.text().strip(),local_speaker_threshold=self.speaker_threshold.value(),
                 local_ocr_model=self.local_ocr_model.text().strip(),
                 font=self.font.currentData(), distinguish_voices=self.voices.isChecked(), spatial=self.spatial.isChecked(), model=self.model.text().strip(),
                 transcription_model=self.transcription.currentText().strip(), **{name:box.value() for name,box in self.numbers.items()}))

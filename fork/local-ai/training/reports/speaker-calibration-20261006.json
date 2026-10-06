@@ -1,0 +1,336 @@
+{
+  "kind": "language-balanced speaker centring fitted on training embeddings; frozen backbone",
+  "device": "Intel(R) Arc(TM) A770 Graphics (dGPU)",
+  "hours": {
+    "train": 12.70457388889009,
+    "test": 1.5010395833333008,
+    "validation": 1.5007187326388571
+  },
+  "manifest_sha256": "ef70041a65bb0e7ddc9f68bf2983cfd31c5b66991a84a28e009c67418102ea12",
+  "validation_candidates": [
+    {
+      "alpha": 0,
+      "validation": {
+        "ja": {
+          "eer": 0.08228684732319894,
+          "threshold": 0.2906516290726817,
+          "false_match": 0.08393919365499009,
+          "false_reject": 0.0806345009914078,
+          "pairs": 3026,
+          "positive_mean": 0.5798380970954895,
+          "negative_mean": 0.13751228153705597
+        },
+        "ko": {
+          "eer": 0.029799247176913426,
+          "threshold": 0.3616791979949875,
+          "false_match": 0.030740276035131745,
+          "false_reject": 0.028858218318695106,
+          "pairs": 3188,
+          "positive_mean": 0.6293962001800537,
+          "negative_mean": 0.15792357921600342
+        },
+        "zh": {
+          "eer": 0.08925,
+          "threshold": 0.2496741854636592,
+          "false_match": 0.0895,
+          "false_reject": 0.089,
+          "pairs": 4000,
+          "positive_mean": 0.48033803701400757,
+          "negative_mean": 0.12403873354196548
+        }
+      },
+      "mean_eer": 0.06711203150003746
+    },
+    {
+      "alpha": 0.25,
+      "validation": {
+        "ja": {
+          "eer": 0.0783212161269002,
+          "threshold": 0.2524060150375941,
+          "false_match": 0.07799074686054197,
+          "false_reject": 0.07865168539325842,
+          "pairs": 3026,
+          "positive_mean": 0.55712890625,
+          "negative_mean": 0.08960583060979843
+        },
+        "ko": {
+          "eer": 0.029485570890840654,
+          "threshold": 0.3179699248120301,
+          "false_match": 0.030112923462986198,
+          "false_reject": 0.028858218318695106,
+          "pairs": 3188,
+          "positive_mean": 0.6074439883232117,
+          "negative_mean": 0.1068742424249649
+        },
+        "zh": {
+          "eer": 0.08525,
+          "threshold": 0.21142857142857144,
+          "false_match": 0.085,
+          "false_reject": 0.0855,
+          "pairs": 4000,
+          "positive_mean": 0.45334431529045105,
+          "negative_mean": 0.07789178192615509
+        }
+      },
+      "mean_eer": 0.06435226233924696
+    },
+    {
+      "alpha": 0.5,
+      "validation": {
+        "ja": {
+          "eer": 0.07799074686054197,
+          "threshold": 0.21689223057644116,
+          "false_match": 0.07865168539325842,
+          "false_reject": 0.07732980832782552,
+          "pairs": 3026,
+          "positive_mean": 0.5391868948936462,
+          "negative_mean": 0.05138104408979416
+        },
+        "ko": {
+          "eer": 0.025407779171894605,
+          "threshold": 0.2851879699248121,
+          "false_match": 0.025721455457967377,
+          "false_reject": 0.025094102885821833,
+          "pairs": 3188,
+          "positive_mean": 0.5894023180007935,
+          "negative_mean": 0.0645168200135231
+        },
+        "zh": {
+          "eer": 0.08225,
+          "threshold": 0.18137844611528828,
+          "false_match": 0.0825,
+          "false_reject": 0.082,
+          "pairs": 4000,
+          "positive_mean": 0.43251845240592957,
+          "negative_mean": 0.04203171655535698
+        }
+      },
+      "mean_eer": 0.0618828420108122
+    },
+    {
+      "alpha": 0.75,
+      "validation": {
+        "ja": {
+          "eer": 0.07534699272967614,
+          "threshold": 0.19230576441102762,
+          "false_match": 0.07534699272967614,
+          "false_reject": 0.07534699272967614,
+          "pairs": 3026,
+          "positive_mean": 0.5274615287780762,
+          "negative_mean": 0.025938866659998894
+        },
+        "ko": {
+          "eer": 0.02446675031367629,
+          "threshold": 0.2606015037593985,
+          "false_match": 0.02383939774153074,
+          "false_reject": 0.025094102885821833,
+          "pairs": 3188,
+          "positive_mean": 0.5767048597335815,
+          "negative_mean": 0.03421180322766304
+        },
+        "zh": {
+          "eer": 0.07875,
+          "threshold": 0.1622556390977444,
+          "false_match": 0.0795,
+          "false_reject": 0.078,
+          "pairs": 4000,
+          "positive_mean": 0.41958490014076233,
+          "negative_mean": 0.01941874623298645
+        }
+      },
+      "mean_eer": 0.059521247681117474
+    },
+    {
+      "alpha": 1,
+      "validation": {
+        "ja": {
+          "eer": 0.073694646397885,
+          "threshold": 0.18411027568922309,
+          "false_match": 0.07336417713152676,
+          "false_reject": 0.07402511566424323,
+          "pairs": 3026,
+          "positive_mean": 0.5230135321617126,
+          "negative_mean": 0.01559245865792036
+        },
+        "ko": {
+          "eer": 0.025407779171894605,
+          "threshold": 0.2496741854636592,
+          "false_match": 0.025094102885821833,
+          "false_reject": 0.025721455457967377,
+          "pairs": 3188,
+          "positive_mean": 0.5704943537712097,
+          "negative_mean": 0.01868993043899536
+        },
+        "zh": {
+          "eer": 0.0755,
+          "threshold": 0.15952380952380954,
+          "false_match": 0.0745,
+          "false_reject": 0.0765,
+          "pairs": 4000,
+          "positive_mean": 0.4157319962978363,
+          "negative_mean": 0.01212505903095007
+        }
+      },
+      "mean_eer": 0.05820080852325987
+    }
+  ],
+  "selected_alpha": 1,
+  "baseline": {
+    "validation": {
+      "ja": {
+        "eer": 0.08228684732319894,
+        "threshold": 0.2906516290726817,
+        "false_match": 0.08393919365499009,
+        "false_reject": 0.0806345009914078,
+        "pairs": 3026,
+        "positive_mean": 0.5798380970954895,
+        "negative_mean": 0.13751228153705597
+      },
+      "ko": {
+        "eer": 0.029799247176913426,
+        "threshold": 0.3616791979949875,
+        "false_match": 0.030740276035131745,
+        "false_reject": 0.028858218318695106,
+        "pairs": 3188,
+        "positive_mean": 0.6293962001800537,
+        "negative_mean": 0.15792357921600342
+      },
+      "zh": {
+        "eer": 0.08925,
+        "threshold": 0.2496741854636592,
+        "false_match": 0.0895,
+        "false_reject": 0.089,
+        "pairs": 4000,
+        "positive_mean": 0.48033803701400757,
+        "negative_mean": 0.12403873354196548
+      }
+    },
+    "test": {
+      "ja": {
+        "eer": 0.031271960646521435,
+        "threshold": 0.3616791979949875,
+        "false_match": 0.030920590302178495,
+        "false_reject": 0.03162333099086437,
+        "pairs": 2846,
+        "positive_mean": 0.6128191947937012,
+        "negative_mean": 0.11802829056978226
+      },
+      "ko": {
+        "eer": 0.05798004987531172,
+        "threshold": 0.3152380952380953,
+        "false_match": 0.05860349127182045,
+        "false_reject": 0.057356608478802994,
+        "pairs": 3208,
+        "positive_mean": 0.6096484065055847,
+        "negative_mean": 0.13789696991443634
+      },
+      "zh": {
+        "eer": 0.12906453226613307,
+        "threshold": 0.2141604010025063,
+        "false_match": 0.12856428214107055,
+        "false_reject": 0.1295647823911956,
+        "pairs": 3998,
+        "positive_mean": 0.3971346318721771,
+        "negative_mean": 0.10731136798858643
+      }
+    }
+  },
+  "evaluation": {
+    "validation": {
+      "ja": {
+        "eer": 0.073694646397885,
+        "threshold": 0.18411027568922309,
+        "false_match": 0.07336417713152676,
+        "false_reject": 0.07402511566424323,
+        "pairs": 3026,
+        "positive_mean": 0.5230135321617126,
+        "negative_mean": 0.01559245865792036
+      },
+      "ko": {
+        "eer": 0.025407779171894605,
+        "threshold": 0.2496741854636592,
+        "false_match": 0.025094102885821833,
+        "false_reject": 0.025721455457967377,
+        "pairs": 3188,
+        "positive_mean": 0.5704943537712097,
+        "negative_mean": 0.01868993043899536
+      },
+      "zh": {
+        "eer": 0.0755,
+        "threshold": 0.15952380952380954,
+        "false_match": 0.0745,
+        "false_reject": 0.0765,
+        "pairs": 4000,
+        "positive_mean": 0.4157319962978363,
+        "negative_mean": 0.01212505903095007
+      }
+    },
+    "test": {
+      "ja": {
+        "eer": 0.023893183415319746,
+        "threshold": 0.2851879699248121,
+        "false_match": 0.023893183415319746,
+        "false_reject": 0.023893183415319746,
+        "pairs": 2846,
+        "positive_mean": 0.5611002445220947,
+        "negative_mean": 0.004564163275063038
+      },
+      "ko": {
+        "eer": 0.05268079800498753,
+        "threshold": 0.1977694235588973,
+        "false_match": 0.0529925187032419,
+        "false_reject": 0.05236907730673317,
+        "pairs": 3208,
+        "positive_mean": 0.550467848777771,
+        "negative_mean": 0.0074979644268751144
+      },
+      "zh": {
+        "eer": 0.11180590295147574,
+        "threshold": 0.13493734335839602,
+        "false_match": 0.11105552776388194,
+        "false_reject": 0.11255627813906953,
+        "pairs": 3998,
+        "positive_mean": 0.3388356864452362,
+        "negative_mean": 0.019815636798739433
+      }
+    }
+  },
+  "openvino_test": {
+    "ja": {
+      "eer": 0.023893183415319746,
+      "threshold": 0.2851879699248121,
+      "false_match": 0.023893183415319746,
+      "false_reject": 0.023893183415319746,
+      "pairs": 2846,
+      "positive_mean": 0.5611011385917664,
+      "negative_mean": 0.004566552583128214
+    },
+    "ko": {
+      "eer": 0.05268079800498753,
+      "threshold": 0.1977694235588973,
+      "false_match": 0.0529925187032419,
+      "false_reject": 0.05236907730673317,
+      "pairs": 3208,
+      "positive_mean": 0.5504677891731262,
+      "negative_mean": 0.0074972421862185
+    },
+    "zh": {
+      "eer": 0.11180590295147574,
+      "threshold": 0.13493734335839602,
+      "false_match": 0.11105552776388194,
+      "false_reject": 0.11255627813906953,
+      "pairs": 3998,
+      "positive_mean": 0.33883678913116455,
+      "negative_mean": 0.019818216562271118
+    }
+  },
+  "openvino_max_abs_difference": 0.00013956427574157715,
+  "recommended_threshold": 0.4,
+  "eligible_for_promotion": true,
+  "limitations": [
+    "Source speaker labels are partly automatic, not guaranteed global identities.",
+    "EER measures same/different speaker pairs, not diarization or transcription accuracy.",
+    "No simultaneous voice separation; short or ambiguous phrases stay neutral."
+  ],
+  "threshold_note": "At least validation 99th percentile of negative scores, with 0.4 floor for multi-window live phrases"
+}

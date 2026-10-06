@@ -73,6 +73,8 @@ class Settings:
     local_translation: str = 'chatgpt'
     local_device: str = 'A770'
     local_speech_model: str = ''
+    local_speaker_model: str = ''
+    local_speaker_threshold: float = .65
     local_ocr_model: str = ''
     local_ocr_confidence: float = .9
     ocr_enabled: bool = False
@@ -116,7 +118,7 @@ class Settings:
         if result.recognition_backend not in ('openai','openvino'): raise ValueError('Unknown recognition backend')
         if result.local_translation not in ('openai','chatgpt'): raise ValueError('Unknown local translation backend')
         if result.local_device not in ('A770','GPU.0','GPU.1','GPU.2','GPU.3'): raise ValueError('Select an explicit Intel GPU')
-        for field in ('local_speech_model','local_ocr_model'):
+        for field in ('local_speech_model','local_ocr_model','local_speaker_model'):
             value=getattr(result,field)
             if not isinstance(value,str) or len(value)>4096 or any(ord(c)<32 for c in value):
                 raise ValueError('Invalid local model directory')
@@ -124,9 +126,9 @@ class Settings:
                 raise ValueError('Use an absolute path for the local model export')
         if type(result.local_ocr_confidence) not in (int,float) or not math.isfinite(result.local_ocr_confidence) or not .5<=result.local_ocr_confidence<=1:
             raise ValueError('Local OCR confidence must be between 0.5 and 1')
-        if result.recognition_backend == 'openvino' and result.distinguish_voices:
-            raise ValueError('Local recognition does not yet support voice identification; disable voice colours')
-        if result.distinguish_voices and result.transcription_model != 'gpt-4o-transcribe-diarize':
+        if type(result.local_speaker_threshold) not in (int,float) or not math.isfinite(result.local_speaker_threshold) or not .3<=result.local_speaker_threshold<=.95:
+            raise ValueError('Speaker similarity threshold must be between 0.3 and 0.95')
+        if result.recognition_backend == 'openai' and result.distinguish_voices and result.transcription_model != 'gpt-4o-transcribe-diarize':
             raise ValueError('Voice colours require gpt-4o-transcribe-diarize')
         return result
 

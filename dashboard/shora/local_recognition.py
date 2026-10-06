@@ -28,12 +28,14 @@ def select_device(requested='A770'):
 
 
 class LocalRecognizer:
-    def __init__(self, device='A770', root=None, download=False, speech_model='', ocr_model=''):
+    def __init__(self, device='A770', root=None, download=False, speech_model='', ocr_model='', speaker_model=''):
         self.device, self.device_name = select_device(device)
         self.root = Path(root) if root else local_root()
         self.download = download
         self.speech_model = Path(speech_model).expanduser() if speech_model else self.root / 'models/whisper-large-v3-turbo'
         self.ocr_model = Path(ocr_model).expanduser() if ocr_model else None
+        self.speaker_directory = Path(speaker_model).expanduser() if speaker_model else self.root/'models/speaker-cjk'
+        self.speaker = None
         self.whisper = None
         self.ocr = None
         self.recognizers = []
@@ -48,18 +50,35 @@ class LocalRecognizer:
         cache = self.root / 'cache'; cache.mkdir(parents=True, exist_ok=True)
         self.whisper = genai.WhisperPipeline(str(model), self.device, CACHE_DIR=str(cache))
 
-    def speech(self, pcm, language=None):
+    def speech(self, pcm, language=None, distinguish=False):
         import numpy as np
         if not pcm or len(pcm) % 2 or len(pcm) > 16000 * 2 * 30:
             raise ValueError('Expected at most 30 seconds of mono 16 kHz PCM16')
         self.load_speech()
         samples = np.frombuffer(pcm, dtype='<i2').astype(np.float32) / 32768
         options = dict(task='transcribe', max_new_tokens=160, do_sample=False)
+        if distinguish: options['return_timestamps'] = True
         if language: options['language'] = '<|' + language + '|>'
         start = time.monotonic()
         result = self.whisper.generate(samples, **options)
-        return {'text': ' '.join(result.texts).strip(), 'seconds': time.monotonic()-start,
-                'device': self.device, 'device_name': self.device_name}
+        response = {'text': ' '.join(result.texts).strip(), 'seconds': time.monotonic()-start,
+                    'device': self.device, 'device_name': self.device_name}
+        if distinguish:
+            if self.speaker is None:
+                from local_speaker import SpeakerModel
+                self.speaker = SpeakerModel(self.speaker_directory, self.device)
+            chunks = []
+            for chunk in result.chunks or []:
+                begin = max(0., float(chunk.start_ts))
+                end = min(len(samples)/16000, float(chunk.end_ts))
+                if end <= begin: continue
+                chunks.append(dict(text=chunk.text, offset=begin,
+                    embedding=self.speaker.embed(samples[int(begin*16000):int(end*16000)])))
+            if not chunks:
+                chunks = [dict(text=response['text'],offset=0.,embedding=self.speaker.embed(samples))]
+            response['segments'] = chunks[:16]
+        response['seconds'] = time.monotonic()-start
+        return response
 
     def load_ocr(self):
         if self.ocr is not None: return

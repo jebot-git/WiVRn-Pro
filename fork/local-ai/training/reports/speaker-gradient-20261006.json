@@ -1,0 +1,1160 @@
+{
+  "kind": "frozen WeSpeaker ResNet34 + trained 256x256 speaker metric",
+  "device": "Intel(R) Arc(TM) A770 Graphics (dGPU)",
+  "base_revision": "f0c48c298fd835726c27956a5d617bad7115627e",
+  "manifest_sha256": "ef70041a65bb0e7ddc9f68bf2983cfd31c5b66991a84a28e009c67418102ea12",
+  "hours": {
+    "train": 12.70457388889009,
+    "test": 1.5010395833333008,
+    "validation": 1.5007187326388571
+  },
+  "speakers": {
+    "train": 566,
+    "test": 62,
+    "validation": 61
+  },
+  "windows": 16201,
+  "corpus_counts": {
+    "CN-Celeb/zh/interview/train": 2787,
+    "CN-Celeb/zh/entertainment/train": 560,
+    "CN-Celeb/zh/vlog/train": 166,
+    "CN-Celeb/zh/live_broadcast/train": 381,
+    "CN-Celeb/zh/interview/test": 404,
+    "CN-Celeb/zh/speech/train": 374,
+    "CN-Celeb/zh/speech/test": 81,
+    "CN-Celeb/zh/entertainment/test": 92,
+    "CN-Celeb/zh/interview/validation": 331,
+    "CN-Celeb/zh/entertainment/validation": 144,
+    "CN-Celeb/zh/speech/validation": 43,
+    "Emilia/ja/unclassified online speech/validation": 513,
+    "Emilia/ja/unclassified online speech/train": 4081,
+    "Emilia/ja/unclassified online speech/test": 515,
+    "Emilia/ko/unclassified online speech/train": 4087,
+    "Emilia/ko/unclassified online speech/validation": 505,
+    "Emilia/ko/unclassified online speech/test": 500,
+    "Koniwa audiobook/ja/audiobook/train": 450,
+    "Koniwa radio/ja/radio broadcast/train": 85,
+    "Koniwa radio/ja/radio talk show / on-demand episode/train": 102
+  },
+  "baseline": {
+    "validation": {
+      "ja": {
+        "eer": 0.08228684732319894,
+        "threshold": 0.2906516290726817,
+        "false_match": 0.08393919365499009,
+        "false_reject": 0.0806345009914078,
+        "pairs": 3026,
+        "positive_mean": 0.5798380970954895,
+        "negative_mean": 0.13751228153705597
+      },
+      "ko": {
+        "eer": 0.029799247176913426,
+        "threshold": 0.3616791979949875,
+        "false_match": 0.030740276035131745,
+        "false_reject": 0.028858218318695106,
+        "pairs": 3188,
+        "positive_mean": 0.6293962001800537,
+        "negative_mean": 0.15792357921600342
+      },
+      "zh": {
+        "eer": 0.08925,
+        "threshold": 0.2496741854636592,
+        "false_match": 0.0895,
+        "false_reject": 0.089,
+        "pairs": 4000,
+        "positive_mean": 0.48033803701400757,
+        "negative_mean": 0.12403873354196548
+      }
+    },
+    "test": {
+      "ja": {
+        "eer": 0.031271960646521435,
+        "threshold": 0.3616791979949875,
+        "false_match": 0.030920590302178495,
+        "false_reject": 0.03162333099086437,
+        "pairs": 2846,
+        "positive_mean": 0.6128191947937012,
+        "negative_mean": 0.11802829056978226
+      },
+      "ko": {
+        "eer": 0.05798004987531172,
+        "threshold": 0.3152380952380953,
+        "false_match": 0.05860349127182045,
+        "false_reject": 0.057356608478802994,
+        "pairs": 3208,
+        "positive_mean": 0.6096484065055847,
+        "negative_mean": 0.13789696991443634
+      },
+      "zh": {
+        "eer": 0.12906453226613307,
+        "threshold": 0.2141604010025063,
+        "false_match": 0.12856428214107055,
+        "false_reject": 0.1295647823911956,
+        "pairs": 3998,
+        "positive_mean": 0.3971346318721771,
+        "negative_mean": 0.10731136798858643
+      }
+    }
+  },
+  "evaluation": {
+    "validation": {
+      "ja": {
+        "eer": 0.06972901520158625,
+        "threshold": 0.506466165413534,
+        "false_match": 0.06939854593522803,
+        "false_reject": 0.07005948446794448,
+        "pairs": 3026,
+        "positive_mean": 0.7117646336555481,
+        "negative_mean": 0.26633238792419434
+      },
+      "ko": {
+        "eer": 0.0451693851944793,
+        "threshold": 0.5419799498746868,
+        "false_match": 0.04454203262233375,
+        "false_reject": 0.045796737766624844,
+        "pairs": 3188,
+        "positive_mean": 0.73722243309021,
+        "negative_mean": 0.2765367329120636
+      },
+      "zh": {
+        "eer": 0.07975,
+        "threshold": 0.45456140350877206,
+        "false_match": 0.08,
+        "false_reject": 0.0795,
+        "pairs": 4000,
+        "positive_mean": 0.6358866095542908,
+        "negative_mean": 0.27355295419692993
+      }
+    },
+    "test": {
+      "ja": {
+        "eer": 0.04040758959943781,
+        "threshold": 0.5501754385964913,
+        "false_match": 0.0421644413211525,
+        "false_reject": 0.03865073787772312,
+        "pairs": 2846,
+        "positive_mean": 0.7316707372665405,
+        "negative_mean": 0.23598721623420715
+      },
+      "ko": {
+        "eer": 0.0729426433915212,
+        "threshold": 0.47368421052631593,
+        "false_match": 0.07169576059850374,
+        "false_reject": 0.07418952618453865,
+        "pairs": 3208,
+        "positive_mean": 0.7158827185630798,
+        "negative_mean": 0.2476297914981842
+      },
+      "zh": {
+        "eer": 0.15032516258129064,
+        "threshold": 0.4436340852130327,
+        "false_match": 0.15107553776888444,
+        "false_reject": 0.14957478739369684,
+        "pairs": 3998,
+        "positive_mean": 0.5924124121665955,
+        "negative_mean": 0.2965806722640991
+      }
+    }
+  },
+  "selected_epoch": 6,
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 0.05991472770432824,
+      "validation": {
+        "ja": {
+          "eer": 0.08426966292134833,
+          "threshold": 0.4900751879699249,
+          "false_match": 0.08526107072042301,
+          "false_reject": 0.08327825512227363,
+          "pairs": 3026,
+          "positive_mean": 0.6928051114082336,
+          "negative_mean": 0.2969651520252228
+        },
+        "ko": {
+          "eer": 0.051129234629861985,
+          "threshold": 0.5337844611528824,
+          "false_match": 0.052070263488080304,
+          "false_reject": 0.050188205771643665,
+          "pairs": 3188,
+          "positive_mean": 0.7258598208427429,
+          "negative_mean": 0.32719746232032776
+        },
+        "zh": {
+          "eer": 0.10175000000000001,
+          "threshold": 0.4627568922305766,
+          "false_match": 0.1015,
+          "false_reject": 0.102,
+          "pairs": 4000,
+          "positive_mean": 0.632135808467865,
+          "negative_mean": 0.31074175238609314
+        }
+      }
+    },
+    {
+      "epoch": 2,
+      "loss": 0.04047621755851704,
+      "validation": {
+        "ja": {
+          "eer": 0.07435558493060146,
+          "threshold": 0.4955388471177946,
+          "false_match": 0.07336417713152676,
+          "false_reject": 0.07534699272967614,
+          "pairs": 3026,
+          "positive_mean": 0.7021863460540771,
+          "negative_mean": 0.281431645154953
+        },
+        "ko": {
+          "eer": 0.04736511919698871,
+          "threshold": 0.5365162907268172,
+          "false_match": 0.04830614805520703,
+          "false_reject": 0.04642409033877039,
+          "pairs": 3188,
+          "positive_mean": 0.7305854558944702,
+          "negative_mean": 0.3076769709587097
+        },
+        "zh": {
+          "eer": 0.0905,
+          "threshold": 0.4654887218045114,
+          "false_match": 0.0915,
+          "false_reject": 0.0895,
+          "pairs": 4000,
+          "positive_mean": 0.6380695700645447,
+          "negative_mean": 0.300066202878952
+        }
+      }
+    },
+    {
+      "epoch": 3,
+      "loss": 0.03628120466488079,
+      "validation": {
+        "ja": {
+          "eer": 0.07270323859881031,
+          "threshold": 0.4982706766917294,
+          "false_match": 0.07402511566424323,
+          "false_reject": 0.0713813615333774,
+          "pairs": 3026,
+          "positive_mean": 0.7052614092826843,
+          "negative_mean": 0.2727925479412079
+        },
+        "ko": {
+          "eer": 0.04830614805520703,
+          "threshold": 0.5447117794486217,
+          "false_match": 0.04893350062735257,
+          "false_reject": 0.04767879548306148,
+          "pairs": 3188,
+          "positive_mean": 0.735596239566803,
+          "negative_mean": 0.2994445860385895
+        },
+        "zh": {
+          "eer": 0.084,
+          "threshold": 0.4627568922305766,
+          "false_match": 0.083,
+          "false_reject": 0.085,
+          "pairs": 4000,
+          "positive_mean": 0.6369688510894775,
+          "negative_mean": 0.2866464853286743
+        }
+      }
+    },
+    {
+      "epoch": 4,
+      "loss": 0.03341416548033362,
+      "validation": {
+        "ja": {
+          "eer": 0.07005948446794448,
+          "threshold": 0.5010025062656642,
+          "false_match": 0.07005948446794448,
+          "false_reject": 0.07005948446794448,
+          "pairs": 3026,
+          "positive_mean": 0.7088039517402649,
+          "negative_mean": 0.269661009311676
+        },
+        "ko": {
+          "eer": 0.04705144291091594,
+          "threshold": 0.5447117794486217,
+          "false_match": 0.04767879548306148,
+          "false_reject": 0.04642409033877039,
+          "pairs": 3188,
+          "positive_mean": 0.737400233745575,
+          "negative_mean": 0.2891228199005127
+        },
+        "zh": {
+          "eer": 0.08175,
+          "threshold": 0.46002506265664167,
+          "false_match": 0.0835,
+          "false_reject": 0.08,
+          "pairs": 4000,
+          "positive_mean": 0.6384102702140808,
+          "negative_mean": 0.2800670266151428
+        }
+      }
+    },
+    {
+      "epoch": 5,
+      "loss": 0.03235475424206951,
+      "validation": {
+        "ja": {
+          "eer": 0.07005948446794448,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.06939854593522803,
+          "false_reject": 0.07072042300066093,
+          "pairs": 3026,
+          "positive_mean": 0.710744321346283,
+          "negative_mean": 0.27047544717788696
+        },
+        "ko": {
+          "eer": 0.04767879548306148,
+          "threshold": 0.5501754385964913,
+          "false_match": 0.04767879548306148,
+          "false_reject": 0.04767879548306148,
+          "pairs": 3188,
+          "positive_mean": 0.7397252917289734,
+          "negative_mean": 0.2893728017807007
+        },
+        "zh": {
+          "eer": 0.0795,
+          "threshold": 0.4627568922305766,
+          "false_match": 0.0785,
+          "false_reject": 0.0805,
+          "pairs": 4000,
+          "positive_mean": 0.6401827335357666,
+          "negative_mean": 0.28106871247291565
+        }
+      }
+    },
+    {
+      "epoch": 6,
+      "loss": 0.03255734853084805,
+      "validation": {
+        "ja": {
+          "eer": 0.06972901520158625,
+          "threshold": 0.506466165413534,
+          "false_match": 0.06939854593522803,
+          "false_reject": 0.07005948446794448,
+          "pairs": 3026,
+          "positive_mean": 0.7117646336555481,
+          "negative_mean": 0.26633238792419434
+        },
+        "ko": {
+          "eer": 0.0451693851944793,
+          "threshold": 0.5419799498746868,
+          "false_match": 0.04454203262233375,
+          "false_reject": 0.045796737766624844,
+          "pairs": 3188,
+          "positive_mean": 0.73722243309021,
+          "negative_mean": 0.2765367329120636
+        },
+        "zh": {
+          "eer": 0.07975,
+          "threshold": 0.45456140350877206,
+          "false_match": 0.08,
+          "false_reject": 0.0795,
+          "pairs": 4000,
+          "positive_mean": 0.6358866095542908,
+          "negative_mean": 0.27355295419692993
+        }
+      }
+    },
+    {
+      "epoch": 7,
+      "loss": 0.030851979441579105,
+      "validation": {
+        "ja": {
+          "eer": 0.06840713813615334,
+          "threshold": 0.506466165413534,
+          "false_match": 0.0680766688697951,
+          "false_reject": 0.06873760740251157,
+          "pairs": 3026,
+          "positive_mean": 0.7112142443656921,
+          "negative_mean": 0.26406070590019226
+        },
+        "ko": {
+          "eer": 0.04673776662484316,
+          "threshold": 0.5501754385964913,
+          "false_match": 0.045796737766624844,
+          "false_reject": 0.04767879548306148,
+          "pairs": 3188,
+          "positive_mean": 0.7402308583259583,
+          "negative_mean": 0.27652406692504883
+        },
+        "zh": {
+          "eer": 0.08,
+          "threshold": 0.45729323308270686,
+          "false_match": 0.08,
+          "false_reject": 0.08,
+          "pairs": 4000,
+          "positive_mean": 0.6372286081314087,
+          "negative_mean": 0.2757221758365631
+        }
+      }
+    },
+    {
+      "epoch": 8,
+      "loss": 0.031409455481374145,
+      "validation": {
+        "ja": {
+          "eer": 0.06939854593522801,
+          "threshold": 0.506466165413534,
+          "false_match": 0.07072042300066093,
+          "false_reject": 0.0680766688697951,
+          "pairs": 3026,
+          "positive_mean": 0.7127141952514648,
+          "negative_mean": 0.2674654424190521
+        },
+        "ko": {
+          "eer": 0.047678795483061476,
+          "threshold": 0.5501754385964913,
+          "false_match": 0.04705144291091593,
+          "false_reject": 0.04830614805520703,
+          "pairs": 3188,
+          "positive_mean": 0.742287814617157,
+          "negative_mean": 0.27445679903030396
+        },
+        "zh": {
+          "eer": 0.083,
+          "threshold": 0.45729323308270686,
+          "false_match": 0.0815,
+          "false_reject": 0.0845,
+          "pairs": 4000,
+          "positive_mean": 0.6360544562339783,
+          "negative_mean": 0.2693178057670593
+        }
+      }
+    },
+    {
+      "epoch": 9,
+      "loss": 0.03083044163955068,
+      "validation": {
+        "ja": {
+          "eer": 0.07005948446794448,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.07005948446794448,
+          "false_reject": 0.07005948446794448,
+          "pairs": 3026,
+          "positive_mean": 0.7133081555366516,
+          "negative_mean": 0.2650410234928131
+        },
+        "ko": {
+          "eer": 0.04611041405269761,
+          "threshold": 0.5474436090225565,
+          "false_match": 0.0451693851944793,
+          "false_reject": 0.04705144291091593,
+          "pairs": 3188,
+          "positive_mean": 0.7404747009277344,
+          "negative_mean": 0.26863980293273926
+        },
+        "zh": {
+          "eer": 0.081,
+          "threshold": 0.45729323308270686,
+          "false_match": 0.0815,
+          "false_reject": 0.0805,
+          "pairs": 4000,
+          "positive_mean": 0.6386793851852417,
+          "negative_mean": 0.27376124262809753
+        }
+      }
+    },
+    {
+      "epoch": 10,
+      "loss": 0.030362627893975636,
+      "validation": {
+        "ja": {
+          "eer": 0.07005948446794448,
+          "threshold": 0.506466165413534,
+          "false_match": 0.07072042300066093,
+          "false_reject": 0.06939854593522803,
+          "pairs": 3026,
+          "positive_mean": 0.7156782150268555,
+          "negative_mean": 0.2658446133136749
+        },
+        "ko": {
+          "eer": 0.05834378920953576,
+          "threshold": 0.5419799498746868,
+          "false_match": 0.055834378920953574,
+          "false_reject": 0.06085319949811794,
+          "pairs": 3188,
+          "positive_mean": 0.7432692646980286,
+          "negative_mean": 0.27420321106910706
+        },
+        "zh": {
+          "eer": 0.08475,
+          "threshold": 0.45729323308270686,
+          "false_match": 0.0855,
+          "false_reject": 0.084,
+          "pairs": 4000,
+          "positive_mean": 0.637814462184906,
+          "negative_mean": 0.2771209180355072
+        }
+      }
+    },
+    {
+      "epoch": 11,
+      "loss": 0.030393551293652035,
+      "validation": {
+        "ja": {
+          "eer": 0.07005948446794448,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.06939854593522803,
+          "false_reject": 0.07072042300066093,
+          "pairs": 3026,
+          "positive_mean": 0.7142113447189331,
+          "negative_mean": 0.26083993911743164
+        },
+        "ko": {
+          "eer": 0.045483061480552076,
+          "threshold": 0.5501754385964913,
+          "false_match": 0.045796737766624844,
+          "false_reject": 0.0451693851944793,
+          "pairs": 3188,
+          "positive_mean": 0.7418641448020935,
+          "negative_mean": 0.2691381871700287
+        },
+        "zh": {
+          "eer": 0.08275,
+          "threshold": 0.45729323308270686,
+          "false_match": 0.082,
+          "false_reject": 0.0835,
+          "pairs": 4000,
+          "positive_mean": 0.6366595029830933,
+          "negative_mean": 0.272027850151062
+        }
+      }
+    },
+    {
+      "epoch": 12,
+      "loss": 0.02986721300239702,
+      "validation": {
+        "ja": {
+          "eer": 0.06873760740251157,
+          "threshold": 0.4982706766917294,
+          "false_match": 0.06873760740251157,
+          "false_reject": 0.06873760740251157,
+          "pairs": 3026,
+          "positive_mean": 0.712084949016571,
+          "negative_mean": 0.254669189453125
+        },
+        "ko": {
+          "eer": 0.04642409033877039,
+          "threshold": 0.539248120300752,
+          "false_match": 0.04956085319949812,
+          "false_reject": 0.04328732747804266,
+          "pairs": 3188,
+          "positive_mean": 0.73945552110672,
+          "negative_mean": 0.2635158896446228
+        },
+        "zh": {
+          "eer": 0.085,
+          "threshold": 0.45729323308270686,
+          "false_match": 0.085,
+          "false_reject": 0.085,
+          "pairs": 4000,
+          "positive_mean": 0.6372958421707153,
+          "negative_mean": 0.27622050046920776
+        }
+      }
+    },
+    {
+      "epoch": 13,
+      "loss": 0.029996830337111233,
+      "validation": {
+        "ja": {
+          "eer": 0.07105089226701916,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.0713813615333774,
+          "false_reject": 0.07072042300066093,
+          "pairs": 3026,
+          "positive_mean": 0.7161774635314941,
+          "negative_mean": 0.2614153325557709
+        },
+        "ko": {
+          "eer": 0.05426599749058971,
+          "threshold": 0.5447117794486217,
+          "false_match": 0.04893350062735257,
+          "false_reject": 0.05959849435382685,
+          "pairs": 3188,
+          "positive_mean": 0.7428791522979736,
+          "negative_mean": 0.2703969478607178
+        },
+        "zh": {
+          "eer": 0.087,
+          "threshold": 0.46002506265664167,
+          "false_match": 0.0865,
+          "false_reject": 0.0875,
+          "pairs": 4000,
+          "positive_mean": 0.6363011598587036,
+          "negative_mean": 0.27666449546813965
+        }
+      }
+    },
+    {
+      "epoch": 14,
+      "loss": 0.03019322688212094,
+      "validation": {
+        "ja": {
+          "eer": 0.06840713813615334,
+          "threshold": 0.4982706766917294,
+          "false_match": 0.06873760740251157,
+          "false_reject": 0.0680766688697951,
+          "pairs": 3026,
+          "positive_mean": 0.7116631269454956,
+          "negative_mean": 0.2532915771007538
+        },
+        "ko": {
+          "eer": 0.055834378920953574,
+          "threshold": 0.5310526315789474,
+          "false_match": 0.055834378920953574,
+          "false_reject": 0.055834378920953574,
+          "pairs": 3188,
+          "positive_mean": 0.7382152080535889,
+          "negative_mean": 0.26005202531814575
+        },
+        "zh": {
+          "eer": 0.08549999999999999,
+          "threshold": 0.45456140350877206,
+          "false_match": 0.087,
+          "false_reject": 0.084,
+          "pairs": 4000,
+          "positive_mean": 0.6350180506706238,
+          "negative_mean": 0.2730458676815033
+        }
+      }
+    },
+    {
+      "epoch": 15,
+      "loss": 0.030193082102149434,
+      "validation": {
+        "ja": {
+          "eer": 0.07005948446794448,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.07072042300066093,
+          "false_reject": 0.06939854593522803,
+          "pairs": 3026,
+          "positive_mean": 0.7148261666297913,
+          "negative_mean": 0.2628258168697357
+        },
+        "ko": {
+          "eer": 0.054579673776662486,
+          "threshold": 0.5419799498746868,
+          "false_match": 0.052070263488080304,
+          "false_reject": 0.05708908406524467,
+          "pairs": 3188,
+          "positive_mean": 0.7409983277320862,
+          "negative_mean": 0.269791841506958
+        },
+        "zh": {
+          "eer": 0.08775,
+          "threshold": 0.4627568922305766,
+          "false_match": 0.0875,
+          "false_reject": 0.088,
+          "pairs": 4000,
+          "positive_mean": 0.6373448371887207,
+          "negative_mean": 0.28082436323165894
+        }
+      }
+    },
+    {
+      "epoch": 16,
+      "loss": 0.029988165185289475,
+      "validation": {
+        "ja": {
+          "eer": 0.0713813615333774,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.07204230006609386,
+          "false_reject": 0.07072042300066093,
+          "pairs": 3026,
+          "positive_mean": 0.7164967656135559,
+          "negative_mean": 0.2641543447971344
+        },
+        "ko": {
+          "eer": 0.044855708908406525,
+          "threshold": 0.5474436090225565,
+          "false_match": 0.04893350062735257,
+          "false_reject": 0.04077791718946048,
+          "pairs": 3188,
+          "positive_mean": 0.7437341213226318,
+          "negative_mean": 0.27049505710601807
+        },
+        "zh": {
+          "eer": 0.087,
+          "threshold": 0.4654887218045114,
+          "false_match": 0.0875,
+          "false_reject": 0.0865,
+          "pairs": 4000,
+          "positive_mean": 0.6399626135826111,
+          "negative_mean": 0.280783474445343
+        }
+      }
+    },
+    {
+      "epoch": 17,
+      "loss": 0.030086433677708063,
+      "validation": {
+        "ja": {
+          "eer": 0.06642432253800397,
+          "threshold": 0.5010025062656642,
+          "false_match": 0.06609385327164574,
+          "false_reject": 0.0667547918043622,
+          "pairs": 3026,
+          "positive_mean": 0.7144902348518372,
+          "negative_mean": 0.25796160101890564
+        },
+        "ko": {
+          "eer": 0.05520702634880803,
+          "threshold": 0.5365162907268172,
+          "false_match": 0.05332496863237139,
+          "false_reject": 0.05708908406524467,
+          "pairs": 3188,
+          "positive_mean": 0.7396145462989807,
+          "negative_mean": 0.26445963978767395
+        },
+        "zh": {
+          "eer": 0.0875,
+          "threshold": 0.45456140350877206,
+          "false_match": 0.089,
+          "false_reject": 0.086,
+          "pairs": 4000,
+          "positive_mean": 0.6340208649635315,
+          "negative_mean": 0.2734532356262207
+        }
+      }
+    },
+    {
+      "epoch": 18,
+      "loss": 0.030190177388416912,
+      "validation": {
+        "ja": {
+          "eer": 0.0713813615333774,
+          "threshold": 0.506466165413534,
+          "false_match": 0.07204230006609386,
+          "false_reject": 0.07072042300066093,
+          "pairs": 3026,
+          "positive_mean": 0.7172001004219055,
+          "negative_mean": 0.26101329922676086
+        },
+        "ko": {
+          "eer": 0.05646173149309912,
+          "threshold": 0.5365162907268172,
+          "false_match": 0.05520702634880803,
+          "false_reject": 0.05771643663739021,
+          "pairs": 3188,
+          "positive_mean": 0.7423368096351624,
+          "negative_mean": 0.2690685987472534
+        },
+        "zh": {
+          "eer": 0.08825,
+          "threshold": 0.45729323308270686,
+          "false_match": 0.088,
+          "false_reject": 0.0885,
+          "pairs": 4000,
+          "positive_mean": 0.6352108716964722,
+          "negative_mean": 0.2685544192790985
+        }
+      }
+    },
+    {
+      "epoch": 19,
+      "loss": 0.02973167712176309,
+      "validation": {
+        "ja": {
+          "eer": 0.06972901520158625,
+          "threshold": 0.4955388471177946,
+          "false_match": 0.06939854593522803,
+          "false_reject": 0.07005948446794448,
+          "pairs": 3026,
+          "positive_mean": 0.7114405632019043,
+          "negative_mean": 0.25278910994529724
+        },
+        "ko": {
+          "eer": 0.055520702634880806,
+          "threshold": 0.5337844611528824,
+          "false_match": 0.05332496863237139,
+          "false_reject": 0.05771643663739021,
+          "pairs": 3188,
+          "positive_mean": 0.7379395365715027,
+          "negative_mean": 0.2615259885787964
+        },
+        "zh": {
+          "eer": 0.0875,
+          "threshold": 0.45182957393483714,
+          "false_match": 0.0885,
+          "false_reject": 0.0865,
+          "pairs": 4000,
+          "positive_mean": 0.634351909160614,
+          "negative_mean": 0.2727322578430176
+        }
+      }
+    },
+    {
+      "epoch": 20,
+      "loss": 0.02972538429267198,
+      "validation": {
+        "ja": {
+          "eer": 0.07072042300066095,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.07204230006609386,
+          "false_reject": 0.06939854593522803,
+          "pairs": 3026,
+          "positive_mean": 0.7161757946014404,
+          "negative_mean": 0.2591150104999542
+        },
+        "ko": {
+          "eer": 0.057402760351317444,
+          "threshold": 0.5365162907268172,
+          "false_match": 0.056461731493099125,
+          "false_reject": 0.05834378920953576,
+          "pairs": 3188,
+          "positive_mean": 0.740861177444458,
+          "negative_mean": 0.26458999514579773
+        },
+        "zh": {
+          "eer": 0.088,
+          "threshold": 0.45729323308270686,
+          "false_match": 0.0885,
+          "false_reject": 0.0875,
+          "pairs": 4000,
+          "positive_mean": 0.6366057395935059,
+          "negative_mean": 0.2737865746021271
+        }
+      }
+    },
+    {
+      "epoch": 21,
+      "loss": 0.029792091546996125,
+      "validation": {
+        "ja": {
+          "eer": 0.07336417713152676,
+          "threshold": 0.5010025062656642,
+          "false_match": 0.07468605419695969,
+          "false_reject": 0.07204230006609386,
+          "pairs": 3026,
+          "positive_mean": 0.7152589559555054,
+          "negative_mean": 0.2601891756057739
+        },
+        "ko": {
+          "eer": 0.05771643663739021,
+          "threshold": 0.5365162907268172,
+          "false_match": 0.05771643663739021,
+          "false_reject": 0.05771643663739021,
+          "pairs": 3188,
+          "positive_mean": 0.7408291101455688,
+          "negative_mean": 0.2597857713699341
+        },
+        "zh": {
+          "eer": 0.08825,
+          "threshold": 0.45456140350877206,
+          "false_match": 0.089,
+          "false_reject": 0.0875,
+          "pairs": 4000,
+          "positive_mean": 0.6328756213188171,
+          "negative_mean": 0.2710346579551697
+        }
+      }
+    },
+    {
+      "epoch": 22,
+      "loss": 0.029537642953320613,
+      "validation": {
+        "ja": {
+          "eer": 0.07204230006609386,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.07072042300066093,
+          "false_reject": 0.07336417713152676,
+          "pairs": 3026,
+          "positive_mean": 0.7162824273109436,
+          "negative_mean": 0.26229485869407654
+        },
+        "ko": {
+          "eer": 0.052070263488080304,
+          "threshold": 0.5337844611528824,
+          "false_match": 0.05332496863237139,
+          "false_reject": 0.05081555834378921,
+          "pairs": 3188,
+          "positive_mean": 0.7417677044868469,
+          "negative_mean": 0.26314905285835266
+        },
+        "zh": {
+          "eer": 0.08775,
+          "threshold": 0.46002506265664167,
+          "false_match": 0.0875,
+          "false_reject": 0.088,
+          "pairs": 4000,
+          "positive_mean": 0.6358040571212769,
+          "negative_mean": 0.2771642804145813
+        }
+      }
+    },
+    {
+      "epoch": 23,
+      "loss": 0.029797019545459054,
+      "validation": {
+        "ja": {
+          "eer": 0.07072042300066095,
+          "threshold": 0.5010025062656642,
+          "false_match": 0.0713813615333774,
+          "false_reject": 0.07005948446794448,
+          "pairs": 3026,
+          "positive_mean": 0.7165358066558838,
+          "negative_mean": 0.2593801021575928
+        },
+        "ko": {
+          "eer": 0.042032622333751574,
+          "threshold": 0.5337844611528824,
+          "false_match": 0.045796737766624844,
+          "false_reject": 0.038268506900878296,
+          "pairs": 3188,
+          "positive_mean": 0.7389391660690308,
+          "negative_mean": 0.25659799575805664
+        },
+        "zh": {
+          "eer": 0.087,
+          "threshold": 0.45456140350877206,
+          "false_match": 0.088,
+          "false_reject": 0.086,
+          "pairs": 4000,
+          "positive_mean": 0.6342394948005676,
+          "negative_mean": 0.274146169424057
+        }
+      }
+    },
+    {
+      "epoch": 24,
+      "loss": 0.030076758827543952,
+      "validation": {
+        "ja": {
+          "eer": 0.06939854593522803,
+          "threshold": 0.4982706766917294,
+          "false_match": 0.06873760740251157,
+          "false_reject": 0.07005948446794448,
+          "pairs": 3026,
+          "positive_mean": 0.711578369140625,
+          "negative_mean": 0.2519857883453369
+        },
+        "ko": {
+          "eer": 0.055520702634880806,
+          "threshold": 0.5283208020050126,
+          "false_match": 0.053952321204516936,
+          "false_reject": 0.05708908406524467,
+          "pairs": 3188,
+          "positive_mean": 0.7382909059524536,
+          "negative_mean": 0.25528907775878906
+        },
+        "zh": {
+          "eer": 0.0915,
+          "threshold": 0.45456140350877206,
+          "false_match": 0.09,
+          "false_reject": 0.093,
+          "pairs": 4000,
+          "positive_mean": 0.6331100463867188,
+          "negative_mean": 0.27353617548942566
+        }
+      }
+    },
+    {
+      "epoch": 25,
+      "loss": 0.029746971879769296,
+      "validation": {
+        "ja": {
+          "eer": 0.07005948446794448,
+          "threshold": 0.5037343358395991,
+          "false_match": 0.06939854593522803,
+          "false_reject": 0.07072042300066093,
+          "pairs": 3026,
+          "positive_mean": 0.715446412563324,
+          "negative_mean": 0.2598346769809723
+        },
+        "ko": {
+          "eer": 0.056461731493099125,
+          "threshold": 0.5310526315789474,
+          "false_match": 0.056461731493099125,
+          "false_reject": 0.056461731493099125,
+          "pairs": 3188,
+          "positive_mean": 0.7414301037788391,
+          "negative_mean": 0.26262742280960083
+        },
+        "zh": {
+          "eer": 0.0885,
+          "threshold": 0.46002506265664167,
+          "false_match": 0.0875,
+          "false_reject": 0.0895,
+          "pairs": 4000,
+          "positive_mean": 0.6384860873222351,
+          "negative_mean": 0.27538812160491943
+        }
+      }
+    },
+    {
+      "epoch": 26,
+      "loss": 0.029574365906634377,
+      "validation": {
+        "ja": {
+          "eer": 0.06774619960343688,
+          "threshold": 0.4982706766917294,
+          "false_match": 0.06741573033707865,
+          "false_reject": 0.0680766688697951,
+          "pairs": 3026,
+          "positive_mean": 0.71173495054245,
+          "negative_mean": 0.2548222541809082
+        },
+        "ko": {
+          "eer": 0.056775407779171894,
+          "threshold": 0.5255889724310778,
+          "false_match": 0.05708908406524467,
+          "false_reject": 0.056461731493099125,
+          "pairs": 3188,
+          "positive_mean": 0.7364124655723572,
+          "negative_mean": 0.2550104260444641
+        },
+        "zh": {
+          "eer": 0.091,
+          "threshold": 0.45456140350877206,
+          "false_match": 0.09,
+          "false_reject": 0.092,
+          "pairs": 4000,
+          "positive_mean": 0.6334168314933777,
+          "negative_mean": 0.27438557147979736
+        }
+      }
+    },
+    {
+      "epoch": 27,
+      "loss": 0.030067684110796567,
+      "validation": {
+        "ja": {
+          "eer": 0.07005948446794448,
+          "threshold": 0.5010025062656642,
+          "false_match": 0.06939854593522803,
+          "false_reject": 0.07072042300066093,
+          "pairs": 3026,
+          "positive_mean": 0.7122348546981812,
+          "negative_mean": 0.2529830038547516
+        },
+        "ko": {
+          "eer": 0.05301129234629862,
+          "threshold": 0.5283208020050126,
+          "false_match": 0.04956085319949812,
+          "false_reject": 0.056461731493099125,
+          "pairs": 3188,
+          "positive_mean": 0.7381982207298279,
+          "negative_mean": 0.2537057101726532
+        },
+        "zh": {
+          "eer": 0.09075,
+          "threshold": 0.45456140350877206,
+          "false_match": 0.0925,
+          "false_reject": 0.089,
+          "pairs": 4000,
+          "positive_mean": 0.6341921091079712,
+          "negative_mean": 0.27341437339782715
+        }
+      }
+    },
+    {
+      "epoch": 28,
+      "loss": 0.029484008646850447,
+      "validation": {
+        "ja": {
+          "eer": 0.0713813615333774,
+          "threshold": 0.5010025062656642,
+          "false_match": 0.0713813615333774,
+          "false_reject": 0.0713813615333774,
+          "pairs": 3026,
+          "positive_mean": 0.7135425209999084,
+          "negative_mean": 0.25951728224754333
+        },
+        "ko": {
+          "eer": 0.054579673776662486,
+          "threshold": 0.5365162907268172,
+          "false_match": 0.05269761606022585,
+          "false_reject": 0.056461731493099125,
+          "pairs": 3188,
+          "positive_mean": 0.7403699159622192,
+          "negative_mean": 0.26183372735977173
+        },
+        "zh": {
+          "eer": 0.08725,
+          "threshold": 0.46002506265664167,
+          "false_match": 0.0865,
+          "false_reject": 0.088,
+          "pairs": 4000,
+          "positive_mean": 0.636640727519989,
+          "negative_mean": 0.2793979048728943
+        }
+      }
+    },
+    {
+      "epoch": 29,
+      "loss": 0.029844324891139,
+      "validation": {
+        "ja": {
+          "eer": 0.06939854593522803,
+          "threshold": 0.4982706766917294,
+          "false_match": 0.06939854593522803,
+          "false_reject": 0.06939854593522803,
+          "pairs": 3026,
+          "positive_mean": 0.7106720805168152,
+          "negative_mean": 0.2527064085006714
+        },
+        "ko": {
+          "eer": 0.056461731493099125,
+          "threshold": 0.5365162907268172,
+          "false_match": 0.056461731493099125,
+          "false_reject": 0.056461731493099125,
+          "pairs": 3188,
+          "positive_mean": 0.7397969365119934,
+          "negative_mean": 0.2600252032279968
+        },
+        "zh": {
+          "eer": 0.08574999999999999,
+          "threshold": 0.46002506265664167,
+          "false_match": 0.0855,
+          "false_reject": 0.086,
+          "pairs": 4000,
+          "positive_mean": 0.635988712310791,
+          "negative_mean": 0.2702571749687195
+        }
+      }
+    },
+    {
+      "epoch": 30,
+      "loss": 0.030092214405970666,
+      "validation": {
+        "ja": {
+          "eer": 0.06873760740251156,
+          "threshold": 0.4955388471177946,
+          "false_match": 0.0680766688697951,
+          "false_reject": 0.06939854593522803,
+          "pairs": 3026,
+          "positive_mean": 0.7068598866462708,
+          "negative_mean": 0.24481190741062164
+        },
+        "ko": {
+          "eer": 0.05614805520702635,
+          "threshold": 0.5228571428571429,
+          "false_match": 0.055834378920953574,
+          "false_reject": 0.056461731493099125,
+          "pairs": 3188,
+          "positive_mean": 0.7356767058372498,
+          "negative_mean": 0.2507069706916809
+        },
+        "zh": {
+          "eer": 0.08425,
+          "threshold": 0.45182957393483714,
+          "false_match": 0.0845,
+          "false_reject": 0.084,
+          "pairs": 4000,
+          "positive_mean": 0.6308416724205017,
+          "negative_mean": 0.26189684867858887
+        }
+      }
+    }
+  ],
+  "openvino_max_abs_difference": 0.0001709461212158203,
+  "elapsed_seconds": 243.06935013399925,
+  "limitations": [
+    "Emilia labels are automatic; this evaluation is not human-labelled diarization error rate.",
+    "Source-scoped labels cannot guarantee globally disjoint identities.",
+    "No overlap separation or identity recognition."
+  ],
+  "promoted": false
+}

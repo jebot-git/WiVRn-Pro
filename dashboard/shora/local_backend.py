@@ -35,17 +35,17 @@ class LocalBackend:
             except subprocess.TimeoutExpired: self.process.kill(); self.process.wait()
             self.process=None
 
-    def start(self, device, speech_model='', ocr_model=''):
-        if self.process and self.process.poll() is None and self.device == (device,speech_model,ocr_model): return
+    def start(self, device, speech_model='', ocr_model='', speaker_model=''):
+        if self.process and self.process.poll() is None and self.device == (device,speech_model,ocr_model,speaker_model): return
         self.close(); check_runtime()
         parent,child = socket.socketpair()
-        self.channel=parent; self.device=(device,speech_model,ocr_model)
+        self.channel=parent; self.device=(device,speech_model,ocr_model,speaker_model)
         log=runtime_root()/'worker.log'
         with log.open('ab') as err:
             try:
                 self.process=subprocess.Popen([str(runtime_root()/'venv/bin/python'),
                     str(Path(__file__).with_name('local_worker.py')),'--fd',str(child.fileno()),'--device',device,
-                    '--speech-model',speech_model,'--ocr-model',ocr_model],
+                    '--speech-model',speech_model,'--ocr-model',ocr_model,'--speaker-model',speaker_model],
                     pass_fds=(child.fileno(),),stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=err)
             finally: child.close()
         parent.settimeout(45)
@@ -58,7 +58,7 @@ class LocalBackend:
         with self.lock:
             if cancelled and cancelled.is_set(): return None
             try:
-                self.start(settings.local_device,settings.local_speech_model,settings.local_ocr_model)
+                self.start(settings.local_device,settings.local_speech_model,settings.local_ocr_model,settings.local_speaker_model)
                 if cancelled and cancelled.is_set(): return None
                 send(self.channel,dict(kind=kind,data=base64.b64encode(raw).decode(),**dimensions))
                 result=receive(self.channel)
@@ -72,10 +72,21 @@ class LocalBackend:
                 raise APIError('Local GPU worker failed or timed out; run local-ai doctor') from None
 
     def subtitle(self, segment, settings, voices, cancelled=None):
-        result=self.infer('speech',segment.pcm,settings,cancelled)
+        result=self.infer('speech',segment.pcm,settings,cancelled,distinguish=settings.distinguish_voices)
         if not result or not clean_text(result.get('text')): return []
         bearing,spatial=direction(segment.pans,settings.spatial)
-        lines=[dict(id=0,text=clean_text(result['text'],1500),source_text=clean_text(result['text'],1500),speaker=0,offset=0,bearing=bearing,spatial=spatial)]
+        from local_speaker import SpeakerTracker
+        if not hasattr(voices,'local_tracker'):
+            voices.local_tracker=SpeakerTracker(settings.local_speaker_threshold)
+        parts=result.get('segments') if settings.distinguish_voices else None
+        if not parts: parts=[dict(text=result['text'],offset=0)]
+        lines=[]
+        for part in parts[:16]:
+            text=clean_text(part.get('text'),1500)
+            if not text: continue
+            speaker=voices.local_tracker.assign(part.get('embedding')) if settings.distinguish_voices else 0
+            lines.append(dict(id=len(lines),text=text,source_text=text,speaker=speaker,
+                offset=part.get('offset',0),bearing=bearing,spatial=spatial))
         from local_translation import translate
         return translate(lines,settings.language,settings,cancelled)
 

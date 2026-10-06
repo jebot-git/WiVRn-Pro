@@ -17,8 +17,8 @@ import local_translation as translation
 from local_backend import LocalBackend
 
 class LocalTests(unittest.TestCase):
-    def test_settings_reject_cpu_and_false_diarization(self):
-        for value in ({'local_device':'CPU'}, {'recognition_backend':'openvino'},
+    def test_settings_reject_cpu_and_invalid_models(self):
+        for value in ({'local_device':'CPU'}, {'local_speaker_threshold':float('nan')},
                       {'local_ocr_confidence':float('nan')}, {'local_speech_model':'relative/path'}, {'local_ocr_model':42}):
             with self.assertRaises(ValueError): sub.Settings.parse(value)
         self.assertEqual(sub.Settings.parse({'recognition_backend':'openvino','distinguish_voices':False}).local_device,'A770')
@@ -55,7 +55,7 @@ class LocalTests(unittest.TestCase):
             with self.assertRaises(sub.APIError): backend.infer('speech',b'12',sub.Settings(),None)
             close.assert_called_once()
 
-    def test_gui_local_switch_disables_unsupported_voice_colours(self):
+    def test_gui_local_voice_options_roundtrip(self):
         os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
         from PySide6.QtWidgets import QApplication
         from subtitle_panel import SubtitlePanel
@@ -63,7 +63,8 @@ class LocalTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             panel=SubtitlePanel(tmp,Path(tmp)/'status.json')
             panel.recognition.setCurrentIndex(1)
-            self.assertFalse(panel.voices.isChecked()); self.assertFalse(panel.voices.isEnabled())
+            self.assertTrue(panel.voices.isChecked()); self.assertTrue(panel.voices.isEnabled())
+            panel.speaker_model.setText('/tmp/speaker-export');panel.speaker_threshold.setValue(.72)
             panel.local_model.setText("/tmp/completed-whisper-export")
             panel.local_ocr_model.setText("/tmp/completed-ocr-export")
             panel.save()
@@ -71,6 +72,8 @@ class LocalTests(unittest.TestCase):
             self.assertEqual(settings.recognition_backend,'openvino')
             self.assertEqual(settings.local_speech_model,'/tmp/completed-whisper-export')
             self.assertEqual(settings.local_ocr_model,'/tmp/completed-ocr-export')
+            self.assertEqual(settings.local_speaker_model,'/tmp/speaker-export')
+            self.assertEqual(settings.local_speaker_threshold,.72)
             panel.timer.stop(); panel.close()
 
 if __name__=='__main__': unittest.main()

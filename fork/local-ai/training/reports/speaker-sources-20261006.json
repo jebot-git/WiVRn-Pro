@@ -1,0 +1,35 @@
+{
+  "archives": [
+    {
+      "file": "cn-celeb_v2.tar.gz",
+      "bytes": 22264439915,
+      "sha256": "d6b3986fd23f613865a978f44170585b055646b1710814cf3091f7ca6492285f"
+    },
+    {
+      "file": "amagasaki.zip",
+      "bytes": 139164253,
+      "sha256": "c00d10d987fdad37963c5a0b2676fc4f6510c0fe19dae989b5cbec52c52e1ffe"
+    },
+    {
+      "file": "free_culture_2012.zip",
+      "bytes": 78046086,
+      "sha256": "049b4ed6441d3c57062f74da92c70634a007c188a6aad3af5dceb1bd59e4fa9d"
+    },
+    {
+      "file": "librivox.zip",
+      "bytes": 6282455022,
+      "sha256": "f6a209a04d4e3529e0dacc575e4832a3e7b864a77de8ade29562772309514dde"
+    },
+    {
+      "file": "emilia-ja/downloads/Emilia/JA/JA-B000000.tar",
+      "bytes": 1097052160,
+      "sha256": "800130fd8259e9b1f3fd1b7e581f069732d7ba9ad1a9e683f50a3339463d4125"
+    },
+    {
+      "file": "emilia-ko/downloads/Emilia/KO/KO-B000000.tar",
+      "bytes": 267448320,
+      "sha256": "bb4372dd9673708e786f88033b367981149c32de592d86646a873d17884bd0fc"
+    }
+  ],
+  "koniwa_revision": "e2a6b4ff74e36805a7721342af210b4bf5b989e0"
+}
