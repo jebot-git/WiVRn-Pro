@@ -1,0 +1,5 @@
+Speech: Google FLEURS, Conneau et al. (2022), CC BY 4.0.
+https://huggingface.co/datasets/google/fleurs
+Mirror/test-set preparation: Fluid Inference, https://huggingface.co/datasets/FluidInference/fleurs-full
+https://creativecommons.org/licenses/by/4.0/
+Three randomly selected recordings, downloaded unchanged. Exact source URLs, durations and hashes: sources.json.
