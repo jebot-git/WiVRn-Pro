@@ -101,7 +101,10 @@ class Recorder:
                 recognition_model=s.local_speech_model
                 if kind == "speech"
                 else s.local_ocr_model,
-                translation_model=s.local_translation_model,
+                translation_provider=s.translation_provider,
+                translation_model=s.local_translation_model
+                if s.translation_provider == "Local OpenVINO"
+                else "DeepL API Free",
                 output_language=s.language if kind == "speech" else s.ocr_language,
                 lines=[
                     {

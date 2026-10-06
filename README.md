@@ -57,4 +57,4 @@ MIT/Apache-2.0 licenses. Original author and bundled dependency notices remain.
 
 ## Optional speech and scene translation
 
-Speech subtitles, voice colours, and scene OCR are now an independent [Spatial Subtitles OpenXR overlay](apps/spatial-subtitles/README.md). Recognition and translation use local OpenVINO models on the Intel GPU, with English and Serbian output and Japanese, Korean, Chinese, and Thai support. Configure and disable them in the separate application; WiVRn no longer owns their pipeline or GUI.
+Speech subtitles, voice colours, and scene OCR are now an independent [Spatial Subtitles OpenXR overlay](apps/spatial-subtitles/README.md). Recognition uses local OpenVINO models on the Intel GPU; translation can use local models or DeepL API Free, with English and Serbian output and Japanese, Korean, Chinese, and Thai support. Configure and disable them in the separate application; WiVRn no longer owns their pipeline or GUI.

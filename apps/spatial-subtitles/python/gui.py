@@ -20,16 +20,17 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
 )
 from settings import Settings, CONFIG, RUNTIME, atomic_json
+from deepl_translation import KEY_FILE, save_key, read_key
 
 
 class Window(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Spatial Subtitles — local OpenVINO")
+        self.setWindowTitle("Spatial Subtitles")
         self.resize(680, 840)
         layout = QVBoxLayout(self)
         note = QLabel(
-            "Independent VR overlay. Speech, scene text, translation and voice colours run on this PC. No external inference or account is used."
+            "Speech recognition, OCR and voice colours run on this PC. Choose local translation or DeepL API Free. DeepL sends recognised text over HTTPS; audio and images stay local."
         )
         note.setWordWrap(True)
         layout.addWidget(note)
@@ -41,6 +42,7 @@ class Window(QWidget):
         layout.addWidget(scroll)
         self.fields = {}
         choices = {
+            "translation_provider": ["Local OpenVINO", "DeepL API Free"],
             "language": ["English", "Serbian", "Original"],
             "ocr_language": ["English", "Serbian", "Original"],
             "source_language": [
@@ -62,7 +64,8 @@ class Window(QWidget):
             "ocr_enabled": "Enable scene OCR",
             "language": "Subtitle output language",
             "ocr_language": "Scene output language",
-            "source_language": "Source language (Auto uses script detection)",
+            "source_language": "Source language (Auto detects language)",
+            "translation_provider": "Translation provider (speech and OCR)",
             "audio_sink": "Playback sink to monitor",
             "local_translation_model": "Trained translation export",
             "local_speech_model": "Trained speech export",
@@ -101,6 +104,17 @@ class Window(QWidget):
                 form.addRow(label, row)
             else:
                 form.addRow(label, w)
+        self.deepl_key = QLineEdit()
+        self.deepl_key.setEchoMode(QLineEdit.Password)
+        self.deepl_key.setPlaceholderText(
+            "Key saved; leave blank to keep it"
+            if KEY_FILE.exists()
+            else "Paste your DeepL API Free key"
+        )
+        form.addRow("DeepL API Free key", self.deepl_key)
+        remove_key = QPushButton("Remove saved DeepL key")
+        remove_key.clicked.connect(self.remove_deepl_key)
+        form.addRow("", remove_key)
         info = QLabel(
             "Scene capture is opt-in per application through the bundled Vulkan OpenXR layer. Voice direction is estimated from stereo audio. Auto language detection can confuse Japanese text containing only kanji; select Japanese explicitly when needed. Recordings stay local and require review before training."
         )
@@ -116,6 +130,12 @@ class Window(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh)
         self.timer.start(1000)
+
+    def remove_deepl_key(self):
+        KEY_FILE.unlink(missing_ok=True)
+        self.deepl_key.clear()
+        self.deepl_key.setPlaceholderText("Paste your DeepL API Free key")
+        self.status.setText("DeepL key removed.")
 
     def browse(self, w):
         path = QFileDialog.getExistingDirectory(self, "Select local model", w.text())
@@ -154,6 +174,12 @@ class Window(QWidget):
                 for k, w in self.fields.items()
             }
             s = Settings.parse(d)
+            if self.deepl_key.text().strip():
+                save_key(self.deepl_key.text())
+                self.deepl_key.clear()
+                self.deepl_key.setPlaceholderText("Key saved; leave blank to keep it")
+            if s.translation_provider == "DeepL API Free":
+                read_key()
             atomic_json(CONFIG, asdict(s))
             self.status.setText("Applied locally.")
         except Exception as e:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Strict local-only configuration. No provider, credential or URL settings."""
+"""Local recognition with explicitly selectable local or DeepL Free translation."""
 
 from dataclasses import dataclass, asdict
 import json, math, os, tempfile
@@ -41,6 +41,7 @@ class Settings:
     language: str = "English"
     ocr_language: str = "English"
     source_language: str = "Auto"
+    translation_provider: str = "Local OpenVINO"
     local_device: str = "A770"
     local_speech_model: str = str(ROOT / "models/whisper-large-v3-turbo")
     local_ocr_model: str = ""
@@ -72,7 +73,7 @@ class Settings:
     @classmethod
     def parse(cls, d):
         if not isinstance(d, dict) or set(d) - set(cls.__dataclass_fields__):
-            raise ValueError("Unknown settings; cloud providers are not supported")
+            raise ValueError("Unknown settings")
         s = cls(**d)
         for k, v in asdict(s).items():
             default = getattr(cls(), k)
@@ -96,6 +97,8 @@ class Settings:
             "Russian",
         ]:
             raise ValueError("Unsupported source language")
+        if s.translation_provider not in ["Local OpenVINO", "DeepL API Free"]:
+            raise ValueError("Unsupported translation provider")
         if s.local_device not in ["A770", "GPU.0", "GPU.1", "GPU.2", "GPU.3"]:
             raise ValueError("Select an Intel GPU")
         for k in [

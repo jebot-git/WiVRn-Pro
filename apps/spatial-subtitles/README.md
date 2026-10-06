@@ -6,13 +6,17 @@ Python modules, IPC extensions, or headset modifications. Its current runtime
 requirement is **XR_EXTX_overlay**, supported by the Monado/WiVRn runtime. It
 is not a Quest-native standalone application or a universal SteamVR overlay.
 
-All inference runs on an explicitly selected Intel GPU through OpenVINO.
-PyTorch XPU is used by training tools. Speech audio, images, recognized text,
-and translations never go to an external inference service. There are no API
-keys, provider URLs, OpenAI/DeepSeek clients, or ChatGPT/Codex subprocesses.
-The installed services restrict sockets to local Unix/netlink families;
-Hugging Face and Transformers are also in offline mode. Setup/training tools
-explicitly download public checkpoints and datasets.
+Speech recognition, OCR and voice distinction run locally on an explicitly
+selected Intel GPU through OpenVINO. Translation is selectable: **Local OpenVINO**
+(default) or **DeepL API Free**. DeepL receives only recognised text over HTTPS;
+audio, scene images and voice embeddings stay on the PC. There is no generic
+API endpoint, OpenAI/DeepSeek client, or ChatGPT/Codex subprocess.
+
+The inference backend permits Internet sockets for the optional DeepL client;
+the renderer remains restricted to local Unix/netlink sockets. Local models
+still load with Hugging Face and Transformers offline. Selecting Local OpenVINO
+makes no DeepL requests. Setup/training tools explicitly download checkpoints
+and datasets.
 
 ## Install and start
 
@@ -57,6 +61,34 @@ interval, workload limits, and recording controls are editable in the GUI.
 Recordings default off. Retention and storage limits apply; review/correct
 captured transcripts before training. No scene images or voice embeddings are
 saved to transcript logs.
+
+## DeepL API Free translation
+
+In settings, select **DeepL API Free**, paste your API Free key into the masked
+field, and click **Apply now**. This applies to speech and OCR translations and
+reloads without restarting VR. English and Serbian remain output presets;
+Original bypasses translation. Source Auto uses DeepL's language detection.
+DeepL chooses the Serbian script; unlike the local preset, Cyrillic is not forced.
+
+The key is stored separately in `~/.config/spatial-subtitles/deepl-key.json`
+(mode 0600), never in normal settings, transcript logs, Git, or the headset APK.
+An empty key field preserves the saved key; use Remove saved DeepL key to delete
+it. Previous OpenAI/DeepSeek credentials are not reused.
+
+The endpoint is fixed to `https://api-free.deepl.com/v2/translate`. Requests use
+header authentication and TLS verification, never redirects. Repeated text is
+cached in memory (512 entries), and OCR regions share one batched request.
+Timeouts and quota/authentication failures appear in the status field, with
+backoff and no hidden provider fallback. Network errors do not automatically
+retry a potentially billed request. Pending old pipeline work is cancelled on
+configuration changes; an already sent request may finish, but its result is
+discarded.
+
+A [DeepL API Free account](https://developers.deepl.com/docs/getting-started/auth)
+is required; a free Translator website account alone is insufficient. DeepL
+currently provides [500,000 characters per month on API Free](https://support.deepl.com/hc/en-us/articles/360021200939-DeepL-API-plans).
+Only recognised text can be translated: an incorrect ASR/OCR transcript may
+still produce an incorrect translation.
 
 ## Scene text capture
 

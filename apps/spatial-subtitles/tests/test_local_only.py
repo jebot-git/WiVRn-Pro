@@ -25,6 +25,7 @@ class LocalOnlyTests(unittest.TestCase):
     def test_bad_models_and_limits(self):
         for d in [
             {"local_translation_model": "repo/id"},
+            {"translation_provider": "Generic API"},
             {"duration": float("nan")},
             {"audio_sink": "--remote=host"},
             {"enabled": "yes"},
@@ -47,16 +48,13 @@ class LocalOnlyTests(unittest.TestCase):
         t = Translator.__new__(Translator)
         self.assertEqual(t.translate("hello", "Original"), "hello")
 
-    def test_no_provider_import_or_exec_hooks(self):
+    def test_no_generic_provider_or_agent_hooks(self):
         root = Path(__file__).resolve().parents[1] / "python"
         forbidden = [
             "api.openai.com",
             "deepseek-flash",
             "codex",
             "OPENAI_API_KEY",
-            "urlopen",
-            "urllib.request",
-            "requests.post",
         ]
         for path in root.glob("*.py"):
             text = path.read_text()

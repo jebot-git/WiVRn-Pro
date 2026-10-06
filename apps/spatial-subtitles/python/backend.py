@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Independent local-only inference daemon; its sole sockets belong to PipeWire."""
+"""Local speech/OCR daemon with selectable text translation."""
 
 import os, faulthandler
 
@@ -12,12 +12,14 @@ os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 from concurrent.futures import ThreadPoolExecutor
 from collections import deque
 import json, select, signal, subprocess, time
+from threading import Event
 from settings import Settings, ROOT, RUNTIME, atomic_json
 from audio import Segmenter, FRAME_BYTES, direction
 from local_recognition import LocalRecognizer
 from local_speaker import SpeakerTracker
 from subtitle_recording import Recorder
 from translation import Translator
+from deepl_translation import DeepLTranslator, key_stamp
 import capture
 
 
@@ -34,6 +36,7 @@ def pose_at(captured):
 class Pipeline:
     def __init__(self, s):
         self.s = s
+        self.cancelled = Event()
         self.rec = LocalRecognizer(
             s.local_device,
             root=ROOT,
@@ -55,18 +58,34 @@ class Pipeline:
         if (self.s.enabled and self.s.language != "Original") or (
             self.s.ocr_enabled and self.s.ocr_language != "Original"
         ):
-            self.translator = Translator(
-                self.s.local_translation_model, self.rec.device, ROOT / "cache"
-            )
+            self.translator = self.make_translator()
         return []
+
+    def make_translator(self):
+        if self.s.translation_provider == "DeepL API Free":
+            return DeepLTranslator(cancelled=self.cancelled)
+        return Translator(
+            self.s.local_translation_model, self.rec.device, ROOT / "cache"
+        )
+
+    def translate_many(self, texts, target):
+        if self.cancelled.is_set():
+            raise RuntimeError("Translation settings changed")
+        if target == "Original" or not texts:
+            return texts
+        if self.translator is None:
+            self.translator = self.make_translator()
+        if hasattr(self.translator, "translate_many"):
+            return self.translator.translate_many(texts, target, self.s.source_language)
+        return [
+            self.translator.translate(t, target, self.s.source_language) for t in texts
+        ]
 
     def translate(self, text, target):
         if target == "Original":
             return text
         if self.translator is None:
-            self.translator = Translator(
-                self.s.local_translation_model, self.rec.device, ROOT / "cache"
-            )
+            self.translator = self.make_translator()
         return self.translator.translate(text, target, self.s.source_language)
 
     def speech(self, segment):
@@ -87,13 +106,21 @@ class Pipeline:
         )
         bearing, spatial = direction(segment.pans, self.s.spatial)
         lines = []
-        for part in result.get("segments") or [dict(text=result["text"])]:
+        parts = [
+            p
+            for p in (result.get("segments") or [dict(text=result["text"])])
+            if p["text"].strip()
+        ]
+        translated = self.translate_many(
+            [p["text"].strip() for p in parts], self.s.language
+        )
+        for part, text in zip(parts, translated):
             source = part["text"].strip()
             if not source:
                 continue
             lines.append(
                 dict(
-                    text=self.translate(source, self.s.language),
+                    text=text,
                     source_text=source,
                     speaker=self.tracker.assign(part.get("embedding"))
                     if self.s.distinguish_voices
@@ -108,14 +135,20 @@ class Pipeline:
     def image(self, frame):
         result = self.rec.image(frame["image"])
         lines = []
-        for r in result["regions"][: self.s.ocr_max_regions]:
-            if r["confidence"] < self.s.local_ocr_confidence:
-                continue
+        regions = [
+            r
+            for r in result["regions"][: self.s.ocr_max_regions]
+            if r["confidence"] >= self.s.local_ocr_confidence
+        ]
+        translated = self.translate_many(
+            [r["text"] for r in regions], self.s.ocr_language
+        )
+        for r, text in zip(regions, translated):
             lines.append(
                 dict(
                     r,
                     source_text=r["text"],
-                    text=self.translate(r["text"], self.s.ocr_language),
+                    text=text,
                 )
             )
         return lines
@@ -125,6 +158,7 @@ class Daemon:
     def __init__(self):
         self.stop = False
         self.settings = None
+        self.key_version = 0
         self.pipe = None
         self.audio = None
         self.buffer = bytearray()
@@ -160,11 +194,15 @@ class Daemon:
 
     def reload(self):
         s = Settings.load()
-        if s == self.settings:
+        version = key_stamp() if s.translation_provider == "DeepL API Free" else 0
+        if s == self.settings and version == self.key_version:
             return
         self.generation += 1
+        if self.pipe is not None:
+            self.pipe.cancelled.set()
         self.close_audio()
         self.settings = s
+        self.key_version = version
         self.segmenter = Segmenter(s)
         self.pipe = None
         self.speech = []
@@ -172,7 +210,7 @@ class Daemon:
         self.retry = 0
         self.audio_retry = 0
         self.recorder.configure(s)
-        self.state = "Settings applied; local inference only"
+        self.state = "Settings applied; recognition stays local"
 
     def run(self):
         RUNTIME.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -230,7 +268,7 @@ class Daemon:
                     try:
                         lines = future.result()
                         if gen == self.generation and kind == "warmup":
-                            self.state = "Local models ready"
+                            self.state = "Recognition models and translator ready"
                         elif gen == self.generation:
                             captured = (
                                 item.captured if kind == "speech" else item["captured"]
@@ -259,13 +297,18 @@ class Daemon:
                                         for x in lines
                                     ]
                                 self.state = (
-                                    "Listening — local OpenVINO on " + s.local_device
+                                    "Listening — "
+                                    + s.translation_provider
+                                    + " translation"
                                 )
                             else:
                                 self.state = "Inference exceeded 12 seconds; stale result skipped"
                     except Exception as e:
-                        self.state = "Local inference error: " + str(e)[:220]
-                        self.retry = now + 5
+                        if gen == self.generation:
+                            self.state = (
+                                "Recognition/translation error: " + str(e)[:220]
+                            )
+                            self.retry = now + 5
                 if (
                     not self.future
                     and now >= self.retry
@@ -363,6 +406,8 @@ class Daemon:
                 else:
                     time.sleep(0.05)
         finally:
+            if self.pipe is not None:
+                self.pipe.cancelled.set()
             (RUNTIME / "capture.request").unlink(missing_ok=True)
             self.close_audio()
             self.recorder.close()

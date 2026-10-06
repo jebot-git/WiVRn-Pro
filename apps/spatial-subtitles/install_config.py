@@ -74,12 +74,12 @@ Environment=HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1
 write(
     units / "spatial-subtitles-backend.service",
     f"""[Unit]
-Description=Spatial Subtitles offline inference
+Description=Spatial Subtitles recognition and translation
 PartOf=spatial-subtitles.target
 [Service]
 Type=exec
 ExecStart={python} {modules / "backend.py"}
-{common}TimeoutStopSec=20
+{common.replace("AF_UNIX AF_NETLINK", "AF_UNIX AF_NETLINK AF_INET AF_INET6")}TimeoutStopSec=20
 """,
 )
 write(
