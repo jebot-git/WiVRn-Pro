@@ -152,7 +152,10 @@ if (WIVRN_BUILD_SERVER)
 			utils/gpu_timestamp_pool.cpp
 		)
     target_compile_definitions(wivrn-server PRIVATE WIVRN_SUBTITLE_SOURCE="${CMAKE_SOURCE_DIR}/dashboard/shora/subtitle_backend.py")
-    install(FILES ../dashboard/shora/subtitle_backend.py ../dashboard/shora/ocr_backend.py DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/subtitles)
+    install(FILES ../dashboard/shora/subtitle_backend.py ../dashboard/shora/ocr_backend.py
+        ../dashboard/shora/local_backend.py ../dashboard/shora/local_worker.py
+        ../dashboard/shora/local_recognition.py ../dashboard/shora/local_translation.py
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/subtitles)
 	target_compile_features(wivrn-server PRIVATE cxx_std_20)
 	target_compile_definitions(wivrn-server PRIVATE VULKAN_HPP_NO_CONSTRUCTORS)
 

@@ -94,6 +94,9 @@ tasks.register("generatePngs", GeneratePngsTask) {
 }
 
 def use_asan = project.hasProperty('wivrn_address_sanitizer') && wivrn_address_sanitizer == 'ON'
+// Private store signing material stays outside the source tree and command line.
+def releaseStore = System.getenv('WIVRN_SIGNING_STORE')
+def releasePassword = System.getenv('WIVRN_SIGNING_PASSWORD')
 
 android {
     namespace = "org.meumeu.wivrn"
@@ -161,6 +164,15 @@ android {
     }
 
     signingConfigs {
+        if (releaseStore && releasePassword) {
+            metaRelease {
+                storeFile file(releaseStore)
+                keyAlias System.getenv('WIVRN_SIGNING_ALIAS') ?: 'wivrn-pro'
+                storePassword releasePassword
+                keyPassword releasePassword
+                enableV2Signing = true
+            }
+        }
         if (project.hasProperty("signingKeyPassword")) {
             release {
                 storeFile file("ks.keystore")
@@ -180,6 +192,7 @@ android {
         }
 
         release {
+            if (releaseStore && releasePassword) signingConfig = signingConfigs.metaRelease
             manifestPlaceholders.ComOculusSupportedDevices = "questpro"
             applicationIdSuffix = ".spatial"
         }

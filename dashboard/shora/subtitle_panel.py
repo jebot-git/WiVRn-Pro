@@ -7,7 +7,7 @@ from pathlib import Path
 import time
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel, QCheckBox,
-    QLineEdit, QComboBox, QDoubleSpinBox, QPushButton, QHBoxLayout)
+    QLineEdit, QComboBox, QDoubleSpinBox, QPushButton, QHBoxLayout, QFileDialog)
 from subtitle_backend import Settings, atomic_json, atomic_write, config_dir, status_path
 
 
@@ -20,11 +20,33 @@ class SubtitlePanel(QWidget):
         self.expected = None
         layout = QVBoxLayout(self)
         title = QLabel('Speech and scene translation'); title.setObjectName('heading'); layout.addWidget(title)
-        note = QLabel('When enabled, WiVRn speaker audio is sent to OpenAI for recognition and translation. '
-            'Your headset microphone is not used. Audio and anonymous voice reference clips stay in memory locally. '
-            'API usage is billed to your OpenAI account.')
+        note = QLabel('Cloud recognition sends WiVRn speaker audio and enabled scene captures to OpenAI. '
+            'Local OpenVINO recognition keeps audio and images on this PC; only recognized text is sent for translation. '
+            'Original output stays fully local. Your headset microphone is not used.')
         note.setWordWrap(True); layout.addWidget(note)
         form = QFormLayout(); layout.addLayout(form)
+        self.recognition = QComboBox()
+        self.recognition.addItem('OpenAI API', 'openai')
+        self.recognition.addItem('Local OpenVINO (experimental)', 'openvino')
+        form.addRow('Speech and OCR recognition', self.recognition)
+        self.local_translation = QComboBox()
+        self.local_translation.addItem('ChatGPT sign-in (Codex)', 'chatgpt')
+        self.local_translation.addItem('OpenAI API', 'openai')
+        form.addRow('Translate locally recognized text with', self.local_translation)
+        self.local_device = QComboBox(); self.local_device.addItems(['A770','GPU.0','GPU.1','GPU.2','GPU.3'])
+        form.addRow('OpenVINO GPU (A770 selects by name)',self.local_device)
+        self.local_model = QLineEdit(); self.local_model.setPlaceholderText('Bundled Whisper large-v3-turbo (leave blank)')
+        model_row = QHBoxLayout(); model_row.addWidget(self.local_model)
+        self.browse_model = QPushButton('Choose export…'); model_row.addWidget(self.browse_model)
+        self.browse_model.clicked.connect(self.choose_model)
+        form.addRow('Trained speech model (OpenVINO directory)', model_row)
+        self.local_ocr_model = QLineEdit(); self.local_ocr_model.setPlaceholderText('Bundled OCR models (leave blank)')
+        ocr_model_row = QHBoxLayout(); ocr_model_row.addWidget(self.local_ocr_model)
+        self.browse_ocr_model = QPushButton('Choose export…'); ocr_model_row.addWidget(self.browse_ocr_model)
+        self.browse_ocr_model.clicked.connect(self.choose_ocr_model)
+        form.addRow('Trained OCR heads (model directory)',ocr_model_row)
+        self.local_confidence = QDoubleSpinBox(); self.local_confidence.setRange(.5,1); self.local_confidence.setSingleStep(.05)
+        form.addRow('Minimum local OCR confidence',self.local_confidence)
         self.enabled = QCheckBox('Enable recognition and translation')
         form.addRow(self.enabled)
         self.language = QComboBox(); self.language.setEditable(True)
@@ -34,6 +56,7 @@ class SubtitlePanel(QWidget):
         form.addRow('Subtitle font', self.font)
         self.voices = QCheckBox('Distinguish voices with labels and colours')
         form.addRow(self.voices)
+        self.recognition.currentIndexChanged.connect(self.backend_changed)
         self.spatial = QCheckBox('Place subtitles using estimated stereo direction')
         form.addRow(self.spatial)
         self.model = QLineEdit(); form.addRow('Translation model', self.model)
@@ -53,7 +76,7 @@ class SubtitlePanel(QWidget):
             box = QDoubleSpinBox(); box.setDecimals(3 if name == 'threshold' else 1)
             box.setRange(lo, hi); box.setSingleStep(step); self.numbers[name] = box; form.addRow(label, box)
         ocr_heading = QLabel('Scene text translation (experimental)'); ocr_heading.setObjectName('heading'); layout.addWidget(ocr_heading)
-        ocr_note = QLabel('When enabled, occasional images of the streamed OpenXR scene are sent to OpenAI to read and translate text. '
+        ocr_note = QLabel('When enabled, occasional images of the streamed OpenXR scene are read by the selected recognition backend. '
             'Images stay in memory locally. Only the streamed scene is captured; headset passthrough and system UI are excluded. '
             'Translations cover text with approximately matching text and background colours. Placement uses an approximate plane; '
             'moving text may become misaligned. API usage is billed to your account.')
@@ -67,11 +90,13 @@ class SubtitlePanel(QWidget):
                 ('ocr_distance','Approximate overlay plane (metres)',.5,10,.5)]:
             box = QDoubleSpinBox(); box.setRange(lo,hi); box.setSingleStep(step); box.setDecimals(1)
             self.numbers[name] = box; ocr_form.addRow(label,box)
-        limitations = QLabel('Scene text uses the same translation model, API key and font selected above. '
+        limitations = QLabel('Scene text uses the same translation backend, model and font selected above. '
             'Up to four clear text regions are shown. Head movement hides old results; moving scene objects are not tracked. '
             'Direction is a left/right estimate from the speaker mix, not a game-object location. '
             'Uncertain directions stay centered. Overlapping voices and background music can reduce accuracy. '
-            'Voice labels are anonymous and provisional until a clear reference is available; up to four voices are remembered for this session.')
+            'Voice labels are anonymous and provisional until a clear reference is available; up to four voices are remembered for this session. '
+            'Local recognition requires the optional OpenVINO setup, has no voice identification yet, and skips low-confidence text. '
+            'ChatGPT translation requires codex login and consumes ChatGPT plan usage.')
         limitations.setWordWrap(True); layout.addWidget(limitations)
         actions = QHBoxLayout(); layout.addLayout(actions)
         self.apply = QPushButton('Apply during session'); self.apply.clicked.connect(self.save); actions.addWidget(self.apply)
@@ -85,10 +110,31 @@ class SubtitlePanel(QWidget):
 
     def read(self): return self.path.read_text() if self.path.exists() else None
 
+    def backend_changed(self):
+        local = self.recognition.currentData() == 'openvino'
+        self.local_translation.setEnabled(local); self.local_device.setEnabled(local); self.local_confidence.setEnabled(local)
+        self.voices.setEnabled(not local)
+        self.local_model.setEnabled(local); self.browse_model.setEnabled(local)
+        self.local_ocr_model.setEnabled(local); self.browse_ocr_model.setEnabled(local)
+        if local: self.voices.setChecked(False)
+
+    def choose_model(self):
+        directory = QFileDialog.getExistingDirectory(self,'Select completed OpenVINO Whisper export',self.local_model.text())
+        if directory: self.local_model.setText(directory)
+
+    def choose_ocr_model(self):
+        directory = QFileDialog.getExistingDirectory(self,'Select completed OCR head export',self.local_ocr_model.text())
+        if directory: self.local_ocr_model.setText(directory)
+
     def load(self):
         try:
             self.expected = self.read()
             settings = Settings.parse(json.loads(self.expected)) if self.expected is not None else Settings()
+            self.recognition.setCurrentIndex(self.recognition.findData(settings.recognition_backend))
+            self.local_translation.setCurrentIndex(self.local_translation.findData(settings.local_translation))
+            self.local_device.setCurrentText(settings.local_device); self.local_confidence.setValue(settings.local_ocr_confidence)
+            self.local_model.setText(settings.local_speech_model)
+            self.local_ocr_model.setText(settings.local_ocr_model)
             self.ocr_enabled.setChecked(settings.ocr_enabled); self.ocr_language.setCurrentText(settings.ocr_language)
             self.enabled.setChecked(settings.enabled); self.language.setCurrentText(settings.language)
             self.font.setCurrentIndex(self.font.findData(settings.font))
@@ -96,6 +142,7 @@ class SubtitlePanel(QWidget):
             self.model.setText(settings.model); self.transcription.setCurrentText(settings.transcription_model)
             for name, box in self.numbers.items(): box.setValue(getattr(settings, name))
             self.key.clear(); self.notice.setText('Changes apply within a second; no VR restart is needed.')
+            self.backend_changed()
         except (OSError, ValueError, TypeError): self.notice.setText('Cannot read subtitle settings. Fix the configuration file and reload.')
         self.refresh_key()
 
@@ -106,6 +153,10 @@ class SubtitlePanel(QWidget):
     def save(self):
         try:
             settings = Settings.parse(dict(ocr_enabled=self.ocr_enabled.isChecked(),ocr_language=self.ocr_language.currentText().strip(),enabled=self.enabled.isChecked(), language=self.language.currentText().strip(),
+                recognition_backend=self.recognition.currentData(),local_translation=self.local_translation.currentData(),
+                local_device=self.local_device.currentText(),local_ocr_confidence=self.local_confidence.value(),
+                local_speech_model=self.local_model.text().strip(),
+                local_ocr_model=self.local_ocr_model.text().strip(),
                 font=self.font.currentData(), distinguish_voices=self.voices.isChecked(), spatial=self.spatial.isChecked(), model=self.model.text().strip(),
                 transcription_model=self.transcription.currentText().strip(), **{name:box.value() for name,box in self.numbers.items()}))
             if self.read() != self.expected: raise ValueError('Settings changed elsewhere. Reload before applying.')

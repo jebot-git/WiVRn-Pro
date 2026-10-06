@@ -64,6 +64,12 @@ def atomic_write(path, text):
 @dataclass(frozen=True)
 class Settings:
     enabled: bool = False
+    recognition_backend: str = 'openai'
+    local_translation: str = 'chatgpt'
+    local_device: str = 'A770'
+    local_speech_model: str = ''
+    local_ocr_model: str = ''
+    local_ocr_confidence: float = .9
     ocr_enabled: bool = False
     ocr_language: str = 'English'
     ocr_interval: float = 5.0
@@ -99,6 +105,19 @@ class Settings:
             if type(value) not in (int, float) or not math.isfinite(value) or not lo <= value <= hi:
                 raise ValueError(f'{name} must be between {lo} and {hi}')
         if result.font not in ('jupiteroid', 'system'): raise ValueError('Unknown subtitle font')
+        if result.recognition_backend not in ('openai','openvino'): raise ValueError('Unknown recognition backend')
+        if result.local_translation not in ('openai','chatgpt'): raise ValueError('Unknown local translation backend')
+        if result.local_device not in ('A770','GPU.0','GPU.1','GPU.2','GPU.3'): raise ValueError('Select an explicit Intel GPU')
+        for field in ('local_speech_model','local_ocr_model'):
+            value=getattr(result,field)
+            if not isinstance(value,str) or len(value)>4096 or any(ord(c)<32 for c in value):
+                raise ValueError('Invalid local model directory')
+            if value and not Path(value).expanduser().is_absolute():
+                raise ValueError('Use an absolute path for the local model export')
+        if type(result.local_ocr_confidence) not in (int,float) or not math.isfinite(result.local_ocr_confidence) or not .5<=result.local_ocr_confidence<=1:
+            raise ValueError('Local OCR confidence must be between 0.5 and 1')
+        if result.recognition_backend == 'openvino' and result.distinguish_voices:
+            raise ValueError('Local recognition does not yet support voice identification; disable voice colours')
         if result.distinguish_voices and result.transcription_model != 'gpt-4o-transcribe-diarize':
             raise ValueError('Voice colours require gpt-4o-transcribe-diarize')
         return result
@@ -390,7 +409,10 @@ class Worker:
             self.state = 'Waiting for WiVRn speaker sink'
         if self.settings.enabled and not self.capture and now >= self.retry_at:
             try:
-                api_key()  # fail before starting capture when unconfigured
+                if self.settings.recognition_backend == 'openvino':
+                    from local_backend import check_runtime
+                    check_runtime()
+                else: api_key()  # fail before starting capture when unconfigured
                 self.start_capture()
             except (OSError, ValueError) as exc:
                 self.state = str(exc) if isinstance(exc, ValueError) else 'pw-record is unavailable'
@@ -414,12 +436,15 @@ class Worker:
             segment = self.queue.popleft()
             if now - segment.captured < MAX_AGE:
                 try:
-                    backend = OpenAIBackend(api_key())
+                    if self.settings.recognition_backend == 'openvino':
+                        from local_backend import backend as local_backend
+                        backend = local_backend()
+                    else: backend = OpenAIBackend(api_key())
                     self.future = (self.executor.submit(backend.subtitle, segment, self.settings, self.voices, self.cancelled),
                         self.generation, segment, self.settings)
                     self.state = 'Recognizing and translating speech'
                 except (ValueError, OSError):
-                    self.stop_capture(); self.retry_at = now + 5; self.state = 'Check OpenAI API key'
+                    self.stop_capture(); self.retry_at = now + 5; self.state = 'Check recognition backend configuration'
             else: self.dropped += 1
         self.ocr.tick(now, self.settings)
         if now >= self.next_status:
@@ -464,6 +489,7 @@ class Worker:
         finally:
             self.cancelled.set()
             self.ocr.close()
+            if 'local_backend' in sys.modules: sys.modules['local_backend'].close()
             self.stop_capture()
             self.executor.shutdown(wait=False, cancel_futures=True)
             self.channel.close()

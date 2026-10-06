@@ -23,6 +23,9 @@ def png_rgba(rgba, width=1024, height=1024):
 
 def translate_scene(rgba, settings, cancelled, backend=None):
     if cancelled.is_set(): return []
+    if settings.recognition_backend == 'openvino':
+        from local_backend import backend as local_backend
+        return local_backend().scene(rgba,settings,cancelled)
     schema = {'type':'object','properties':{'regions':{'type':'array','items':{'type':'object',
         'properties':{'text':{'type':'string'},'box':{'type':'array','items':{'type':'number'},'minItems':4,'maxItems':4},
             'confidence':{'type':'number'},
@@ -108,9 +111,14 @@ class SceneOCR:
             self.request = 0; self.next_capture = now+settings.ocr_interval
             self.state = 'Waiting for a rendered OpenXR scene'
         if settings.ocr_enabled and not self.future and not self.request and now>=self.next_capture:
-            try: api_key()
+            try:
+                if settings.recognition_backend == 'openvino':
+                    from local_backend import check_runtime
+                    check_runtime()
+                else: api_key()
             except (ValueError,OSError):
-                self.state = 'Set an OpenAI API key for scene translation'; self.next_capture=now+5; return
+                self.state = ('Install the local OpenVINO runtime' if settings.recognition_backend == 'openvino'
+                    else 'Set an OpenAI API key for scene translation'); self.next_capture=now+5; return
             self.request = time.monotonic_ns(); self.deadline = now+2
             self.emit(ocr_request=self.request)
             self.state = 'Capturing the OpenXR scene'
