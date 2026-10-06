@@ -5,8 +5,9 @@
 Feasible, with compositor/client changes. The running PC XR application does not
 need MR support: WiVRn owns the headset OpenXR session and can reveal native
 passthrough while continuing to stream the application. Current Monado color
-keying alone cannot define an anchored window. No portal implementation is added
-by this investigation, and the proposed rendering has not been tested in a headset.
+keying alone cannot define an anchored window. The client prototype described at
+the end of this document now implements an anchored aperture; it has not been tested in a headset. The server compositor
+alternatives below remain design proposals.
 
 This inspection uses WiVRn-Pro's current sources and the configured Monado source
 at revision `f037264d23e2472a444a157370647fcd601ed81b` (see `monado-rev`).
@@ -131,3 +132,49 @@ There is no reliable physical/virtual depth occlusion from color keying or ancho
 poses alone. An open window deliberately shows the real world over whatever the
 game draws there. Native passthrough availability/permission, anchor localization,
 and headset runtime support remain prerequisites.
+
+## Implemented client prototype
+
+The branch now implements **one upright, two-sided rectangular cutout** in the
+streaming client. It removes all streamed PC content inside the aperture; local
+WiVRn menus/controllers remain separate layers. No Monado key configuration or
+application MR support is needed.
+
+1. Localize at least one persisted room marker with Room capture.
+2. Open the in-stream WiVRn menu (both thumbsticks), then **Settings → Room
+   capture → Anchored passthrough cutout → Design cutout**.
+3. Release both triggers/pinches. Put the controllers or tracked hands at opposite
+   diagonal corners and pull them apart horizontally and vertically. The upright
+   plane's heading is fixed when the gesture begins; its center follows the pair.
+   Width and height must each be 10 cm–3 m. A teal outline surrounds the live
+   passthrough preview.
+4. Hold **both triggers** or **both thumb/index pinches** together for 0.2 seconds
+   to confirm. Input loss or a switch between controllers and hands requires
+   another release. Closing an XR session or losing its room reference cancels
+   an unfinished design. **Cancel cutout design** keeps an earlier saved mask.
+5. Use **Enable cutout**, **Redesign cutout**, or **Delete active cutout** in that
+   same menu. Deleting the rectangle does not erase its room anchor.
+
+The client saves the anchor UUID, relative pose, dimensions and enabled state in
+`spatial-bridge-v1/cutout-v1.txt` using a versioned atomic replacement. It reloads
+across client launches and stream reconnects. No absolute PC or STAGE transform
+is persisted. Tracking loss hides a saved mask until that same anchor is tracked
+again. Room-capture mode takes precedence over cutouts.
+
+The shader intersects per-eye rays with the rectangle using a homogeneous
+transform. It handles asymmetric FOVs, stereo disparity and near-plane crossings,
+rejects behind-eye intersections, and removes premultiplied RGB and alpha together.
+The mask uses the **same video view poses/FOVs submitted to OpenXR** and freshly
+localized anchor poses. It is recomputed even for repeated video frames, including
+one final redraw when hidden/deleted, to avoid leaving an old aperture onscreen.
+The headset's compositor then timewarps the submitted layer. This prototype does
+not separately reproject the video to newly predicted eye poses or provide depth
+for positional timewarp; near-field stability under rapid translation still needs
+headset measurement. Existing alpha is preserved outside the rectangle.
+
+Validation: native geometry/editor tests (persistence, cancellation, rearming,
+tracking loss, reference transforms, stereo/asymmetric FOVs and invalid geometry),
+GLSL vertex/fragment compilation, host syntax checks of all four modified
+streaming translation units against pinned dependency headers, and the repository
+offline suite. Android APK/device rendering
+and hand/controller interaction still require hardware validation.

@@ -430,7 +430,32 @@ void scenes::stream::gui_settings(float)
 	switch (current_settings_page)
 	{
 		case settings_page::spatial:
-			if (spatial) spatial->draw_controls(system.passthrough_supported() != xr::passthrough_type::none);
+			if (spatial)
+			{
+				auto & portal = spatial->portal;
+				ImGui::SeparatorText("Anchored passthrough cutout");
+				ImGui::TextWrapped("Place your controllers or hands at opposite diagonal corners of an upright window. Its plane faces you when drawing begins. Release, pull apart, then hold both triggers or pinch both hands to confirm.");
+				if (portal.designing)
+				{
+					if (ImGui::Button("Cancel cutout design")) portal.cancel();
+				}
+				else
+				{
+					ImGui::BeginDisabled(system.passthrough_supported() == xr::passthrough_type::none || spatial->capture_active() || !portal.available(spatial->sample()));
+					if (ImGui::Button(portal.has_saved() ? "Redesign cutout" : "Design cutout")) portal.begin(spatial->sample());
+					ImGui::EndDisabled();
+					if (!portal.available(spatial->sample())) ImGui::TextWrapped("Localize a saved room marker first using Room capture below.");
+					if (portal.has_saved())
+					{
+						if (ImGui::Checkbox("Enable cutout", &portal.enabled) && !portal.save()) portal.message = "Could not save enabled state.";
+						if (ImGui::Button("Delete active cutout")) portal.erase();
+						if (portal.enabled && !portal.locate(spatial->sample())) ImGui::TextWrapped("Cutout hidden: waiting for its room anchor to localize.");
+					}
+				}
+				if (!portal.message.empty()) ImGui::TextWrapped("%s", portal.message.c_str());
+				ImGui::Separator();
+				if (!portal.designing) spatial->draw_controls(system.passthrough_supported() != xr::passthrough_type::none);
+			}
 			break;
 		case settings_page::video:
 			wivrn::gui::settings_video(ctx);
@@ -698,8 +723,8 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 		             composition_layer_depth_test_supported,
 		             layer_spatial,
 		             {});
-	imgui_ctx->set_controllers_enabled(interactable and not recentering_context);
-	if (interactable)
+	imgui_ctx->set_controllers_enabled(interactable and not recentering_context and not cutout_block_gui);
+	if (interactable || (spatial && spatial->portal.designing) || cutout_input_suppressed)
 	{
 		if (system.hand_tracking_supported())
 		{

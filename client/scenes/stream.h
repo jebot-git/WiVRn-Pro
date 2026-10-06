@@ -277,6 +277,10 @@ private:
 	void process_packets();
 	void tracking();
 	void read_actions();
+	void update_cutout(XrTime time);
+	bool cutout_was_visible = false;
+	bool cutout_input_suppressed = false;
+	bool cutout_block_gui = false;
 
 	void on_interaction_profile_changed(const XrEventDataInteractionProfileChanged &);
 	void send_derived_pose();

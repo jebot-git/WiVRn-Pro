@@ -3,6 +3,7 @@
 #include "anchor_manager.h"
 #include "guided_capture.h"
 #include "room_calibration.h"
+#include "passthrough_cutout.h"
 #include "spatial_protocol.h"
 #include <memory>
 #include <optional>
@@ -35,6 +36,7 @@ class spatial_source {
     void query_scene(XrTime);
     void scene_results();
 public:
+    cutout::editor portal;
     spatial_source(XrInstance, XrSession, XrSpace stage, XrSpace view,
                    std::filesystem::path directory, bool supported, bool scene_supported);
     ~spatial_source();

@@ -31,6 +31,8 @@ cat build/native-tests/wire-host.txt
 build/native-tests/spatial-source-test
 "$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -Iclient -Icommon fork/tests/room_calibration_test.cpp -o build/native-tests/room-calibration-test
 build/native-tests/room-calibration-test
+"$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -Iclient -Icommon fork/tests/passthrough_cutout_test.cpp -o build/native-tests/passthrough-cutout-test
+build/native-tests/passthrough-cutout-test
 build/native-tests/anchors-test
 build/native-tests/capture-test
 build/native-tests/bridge-test

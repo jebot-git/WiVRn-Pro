@@ -24,6 +24,9 @@ layout(push_constant) uniform pc
 	ivec4 a_rect;
 	vec4 scale;
 	vec4 bias;
+	vec4 cutout_u;
+	vec4 cutout_v;
+	vec4 cutout_w;
 };
 
 #ifdef VERT_SHADER
@@ -32,10 +35,12 @@ layout (location = 0) in vec2 vPosition;
 layout (location = 1) in uvec2 vUV;
 
 layout(location = 0) out vec4 outUV;
+layout(location = 1) out vec2 screen_position;
 
 void main()
 {
 	gl_Position = vec4(vPosition, 0.0, 1.0);
+	screen_position = vPosition;
 	vec2 uv = vUV;
 	outUV.xy = (uv + rgb_rect.xy) / rgb_rect.zw;
 	outUV.zw = (uv + a_rect.xy) / a_rect.zw;
@@ -50,6 +55,7 @@ layout(constant_id = 1) const bool do_srgb = false;
 layout(set = 0, binding = 0) uniform sampler2D rgb[alpha + 1];
 
 layout(location = 0) in vec4 inUV;
+layout(location = 1) in vec2 screen_position;
 
 layout(location = 0) out vec4 outColor;
 
@@ -102,6 +108,26 @@ void main()
 		outColor = outColor * scale + bias;
 		outColor.rgb *= outColor.a;
 	}
+	if (cutout_w.w > 0.5 && alpha == 0) outColor.a = 1.0;
+	if (cutout_u.w > 0.5)
+	{
+		// The RGB-only stream has no meaningful alpha; keep it opaque outside
+		// the aperture. Preserve received alpha for native MR streams.
+		if (alpha == 0) outColor.a = 1.0;
+		vec3 ray = vec3(screen_position, 1.0);
+		float w = dot(cutout_w.xyz, ray);
+		if (w > 0.00001) // positive ray intersection; reject geometry behind the eye
+		{
+			vec2 uv = vec2(dot(cutout_u.xyz, ray), dot(cutout_v.xyz, ray)) / w;
+			float edge = max(abs(uv.x), abs(uv.y));
+			float aa = max(fwidth(edge), 0.0001);
+			float coverage = 1.0 - smoothstep(1.0 - aa, 1.0, edge);
+			outColor *= 1.0 - coverage; // erase both premultiplied RGB and alpha
+			if (cutout_v.w > 0.5 && edge > 0.97 && edge < 1.0)
+				outColor = vec4(0.05, 0.8, 0.65, 1.0); // live design outline
+		}
+	}
+
 }
 
 #endif

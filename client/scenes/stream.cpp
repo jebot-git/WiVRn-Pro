@@ -585,6 +585,7 @@ void scenes::stream::on_focused()
 
 void scenes::stream::on_unfocused()
 {
+	if (spatial) spatial->portal.cancel();
 	spatial_markers.clear();
 	renderer->wait_idle(); // Must be before the scene data because the renderer uses its descriptor sets;
 	world.clear();
@@ -840,6 +841,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		if (auto packet = spatial->tick(frame_state.predictedDisplayTime,
 		                                application::get_session_state() == XR_SESSION_STATE_FOCUSED && frame_state.shouldRender))
 			network_session->send_control(std::move(*packet));
+		update_cutout(frame_state.predictedDisplayTime);
 		if (spatial->markers_visible())
 		{
 			if (spatial_markers.empty())
@@ -928,8 +930,8 @@ void scenes::stream::render(const XrFrameState & frame_state)
 	// Search for frame with desired display time on all decoders
 	// If no such frame exists, use the latest frame for each decoder
 	current_blit_handles = common_frame(frame_state.predictedDisplayTime);
-	std::array<XrPosef, view_count> pose;
-	std::array<XrFovf, view_count> fov;
+	std::array<XrPosef, view_count> pose{};
+	std::array<XrFovf, view_count> fov{};
 	std::array<wivrn::to_headset::foveation_parameter, view_count> foveation;
 	bool use_alpha = false;
 
@@ -1008,11 +1010,23 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		}
 	}
 
+	auto cutout = spatial && system.passthrough_supported() != xr::passthrough_type::none
+	        && !spatial->capture_active() ? spatial->portal.locate(spatial->sample()) : std::nullopt;
+	std::array<wivrn::cutout::projection, view_count> cutout_masks{};
+	if (cutout)
+		for (size_t i = 0; i < view_count; ++i)
+			cutout_masks[i] = wivrn::cutout::project(*cutout, pose[i], fov[i], spatial->portal.designing);
+	const bool cutout_visible = std::ranges::any_of(cutout_masks, [](const auto & m) { return m[0][3] != 0; });
+	const bool output_alpha = use_alpha || cutout_visible;
+	if (output_alpha && !use_alpha)
+		for (auto & mask : cutout_masks) mask[2][3] = 1;
+
 	// Allow the headset to time warp if we are redisplaying a frame
 	if ((not application::get_hmd_traits().discard_frame) or
 	    std::ranges::any_of(current_blit_handles, [](const auto & h) { return h and h->feedback.times_displayed < 2; }) or
-	    is_gui_interactable())
+	    is_gui_interactable() || cutout_visible || cutout_was_visible)
 	{
+		cutout_was_visible = cutout_visible;
 		XrExtent2Di extents[view_count];
 		{
 			int32_t max_width = 0;
@@ -1080,7 +1094,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		                      images,
 		                      {scale, scale, scale, 1.},
 		                      {bias, bias, bias, 0.},
-		                      image_index);
+		                      image_index, cutout_masks);
 
 		command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, *query_pool, 1);
 
@@ -1117,12 +1131,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		swapchain.release();
 
 		const bool room_capture = spatial && spatial->capture_active();
-		if (use_alpha || room_capture)
+		if (output_alpha || room_capture)
 			session.enable_passthrough(system);
 		else
 			session.disable_passthrough();
 
-		render_start(use_alpha || room_capture, frame_state.predictedDisplayTime);
+		render_start(output_alpha || room_capture, frame_state.predictedDisplayTime);
 
 		// Add the layer with the streamed content
 		std::array<XrCompositionLayerProjectionView, view_count> layer_view;
@@ -1146,7 +1160,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		}
 		if (!room_capture)
 			add_projection_layer(
-			        use_alpha ? XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT : 0,
+			        output_alpha ? XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT : 0,
 			        application::space(xr::spaces::world),
 			        layer_view);
 
