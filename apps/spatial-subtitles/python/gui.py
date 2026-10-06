@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 from dataclasses import asdict
+from pathlib import Path
 import json, sys, time
 from PySide6.QtCore import QTimer
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QWidget,
@@ -199,6 +201,15 @@ class Window(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setApplicationName("spatial-subtitles")
+    app.setApplicationDisplayName("Spatial Subtitles")
+    app.setDesktopFileName("spatial-subtitles")
+    icon = Path(__file__).with_name("spatial-subtitles.png")
+    if not icon.is_file():
+        icon = (
+            Path(__file__).resolve().parents[1] / "assets/icons/spatial-subtitles.png"
+        )
+    app.setWindowIcon(QIcon(str(icon)))
     window = Window()
     window.show()
     sys.exit(app.exec())

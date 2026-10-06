@@ -98,10 +98,13 @@ write(
     f"""[Desktop Entry]
 Type=Application
 Name=Spatial Subtitles
-Comment=Local speech and scene translation in VR
+GenericName=VR Translator
+Comment=Speech subtitles and scene text translation in VR
 Exec={prefix / "bin/spatial-subtitles"}
-Icon=preferences-desktop-locale
-Categories=AudioVideo;Accessibility;
+Icon={modules / "spatial-subtitles.png"}
+StartupWMClass=spatial-subtitles
+Keywords=translator;translation;subtitles;OCR;DeepL;OpenXR;
+Categories=Utility;Accessibility;
 Terminal=false
 """,
 )
@@ -113,3 +116,5 @@ for font in (prefix / "share/fonts/spatial-subtitles").glob("*"):
     if font.is_file():
         shutil.copy2(font, fonts / font.name)
 subprocess.run(["fc-cache", str(fonts)], check=True)
+if shutil.which("update-desktop-database"):
+    subprocess.run(["update-desktop-database", str(data / "applications")], check=True)
