@@ -236,7 +236,10 @@ class TrackingPanel(QWidget):
             state = health.get("state", "unavailable").replace("_", " ")
             reference += f" · Room reference: {state} ({health.get('anchors', 0)} anchors)"
             if snapshot.get("reference_needs_reset"):
-                reference += "\nAutomatic correction paused. When tracking is stable, face the saved Quest guide and perform a yaw or full reset."
+                if health.get("state") == "reference_recovery_settling":
+                    reference += "\nAutomatic correction paused while room anchors verify a reference change."
+                else:
+                    reference += "\nAutomatic correction paused. When tracking is stable, face the saved Quest guide and perform a yaw or full reset."
         if self.deadline is None:
             self.calibration_status.setText(f"{reference}\n{snapshot.get('calibrated_trackers', 0)} trackers calibrated · {snapshot.get('drift_samples', 0)} with learned drift")
 

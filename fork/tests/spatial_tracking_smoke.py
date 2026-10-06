@@ -2,6 +2,7 @@
 """Exercise the linked Shora worker's room-reference guard with fake XR/serial data."""
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import pty
@@ -33,10 +34,8 @@ def test(binary):
                 feeder = socket.socket(socket.AF_UNIX); feeder.connect(str(directory / "input"))
                 def send(body): feeder.sendall(struct.pack("<I", len(body)+4)+body)
                 send(b"\x1a\x02\x20\x13")
-                body = b"".join(bytes([(field << 3) | 5])+struct.pack("<f", value)
-                                for field, value in enumerate((0,1.6,0,0,0,0,1),2))
-                hmd = b"\x0a"+bytes([len(body)])+body
                 seq = 0; generation = 1; offset = 0; publish = True; publish_hmd = True
+                distributed = False; yaw = 0.0; outlier = False
                 last_spatial = last_pose = 0
                 def pump():
                     nonlocal seq, last_spatial, last_pose
@@ -44,14 +43,22 @@ def test(binary):
                     while select.select([master], [], [], 0)[0]: os.read(master,4096)
                     if now-last_pose >= .04:
                         serial_frame(master)
-                        if publish_hmd: send(hmd)
+                        if publish_hmd:
+                            body = b"".join(bytes([(field << 3) | 5])+struct.pack("<f", value)
+                                            for field, value in enumerate((offset,1.6,0,0,math.sin(yaw/2),0,math.cos(yaw/2)),2))
+                            send(b"\x0a"+bytes([len(body)])+body)
                         last_pose=now
                     if publish and now-last_spatial >= .2:
                         seq += 1; last_spatial=now
-                        pose = {"valid":True,"flags":15,"quest_stage":{"position":[0,1.6,0],"rotation":[0,0,0,1]}}
+                        rotation = [0,math.sin(yaw/2),0,math.cos(yaw/2)]
+                        pose = {"valid":True,"flags":15,"quest_stage":{"position":[offset,1.6,0],"rotation":rotation}}
+                        points = [(0,0),(1,0),(0,1)] if distributed else [(0,0),(1,0),(2,0)]
                         markers = [{"uuid":f"{i+1:032x}","persisted":True,"pose":{
-                            "valid":True,"flags":15,"quest_stage":{"position":[i+offset,1,0],"rotation":[0,0,0,1]}}}
-                            for i in range(3)]
+                            "valid":True,"flags":15,"quest_stage":{"position":[
+                                math.cos(yaw)*x+math.sin(yaw)*z+offset,
+                                1.1 if outlier and i == 0 else 1,
+                                -math.sin(yaw)*x+math.cos(yaw)*z],"rotation":rotation}}}
+                            for i, (x,z) in enumerate(points)]
                         peer.send(json.dumps({"schema":"wivrn.spatial.v1","source_session":"123","sequence":seq,
                             "generation":generation,"sample_monotonic_ns":time.monotonic_ns(),"live":True,
                             "head":pose,"markers":markers}).encode())
@@ -90,13 +97,37 @@ def test(binary):
                 publish_hmd=True
                 wait(lambda s:s["hmd_pose_received"])
                 pump(); assert request(control,"full_reset")["ok"]
+                # A spatially distributed set supports automatic same-session recovery.
+                distributed=True
+                wait(lambda s:s["reference_needs_reset"])
+                wait(lambda s:s["spatial_reference"]["ready"])
+                pump(); assert request(control,"full_reset")["ok"]
+                for next_yaw in (0.3, -0.4):
+                    yaw=next_yaw; generation+=1
+                    wait(lambda s:s["reference_needs_reset"] and not s["spatial_reference"]["ready"])
+                    recovered=wait(lambda s:s["spatial_reference"]["ready"] and not s["reference_needs_reset"])
+                    assert recovered["drift_samples"]==0
+                    def aligned(s):
+                        bones=[b for b in s["bones"] if b["tracked"]]
+                        return bones and all(abs(sum(a*b for a,b in zip(bone["rotation"],
+                            [0,math.sin(yaw/2),0,math.cos(yaw/2)]))) > .9999 for bone in bones)
+                    wait(aligned)
+                    revision=recovered["spatial_reference"]["revision"]
+                    sequence=seq
+                    stable=wait(lambda s:seq >= sequence+5 and aligned(s))
+                    assert stable["spatial_reference"]["revision"]==revision
+                # Even one disagreeing anchor restores the deliberate-reset gate.
+                outlier=True
+                wait(lambda s:s["reference_needs_reset"])
+                stable=wait(lambda s:s["spatial_reference"]["ready"])
+                assert stable["reference_needs_reset"]
                 peer.close(); peer=None
                 # Stop publishing before the next pump after closing the bridge peer.
                 publish=False
                 lost=wait(lambda s:s["spatial_reference"]["state"]=="spatial_bridge_disconnected")
                 assert lost["reference_needs_reset"]
                 assert not request(control,"yaw_reset")["ok"]
-                print("PASS integrated spatial reference: settling, reset gating, generation change, anchor movement, expiry, feeder loss and disconnect")
+                print("PASS integrated spatial reference: reset gating, automatic yaw rebase, outlier rejection, expiry, feeder loss and disconnect")
             except BaseException:
                 log.flush(); log.seek(0); print(log.read()); raise
             finally:

@@ -163,6 +163,16 @@ impl StayAligned {
             state.mode = "paused";
         }
     }
+    /// Change the reference frame without changing any learned relative yaw.
+    /// Caller accepts yaw-only frame changes, so correction angles are invariant.
+    pub fn rebase(&mut self, rotation: UnitQuaternion<f32>) {
+        for state in self.states.values_mut() {
+            state.previous = rotation * state.previous;
+            state.anchor = rotation * state.anchor;
+            state.locked = state.locked.map(|q| rotation * q);
+        }
+        for sample in &mut self.samples { sample.rotation = rotation * sample.rotation; }
+    }
     pub fn update(&mut self, mut samples: Vec<Sample>, hmd: Option<UnitQuaternion<f32>>, now: Instant) {
         samples.retain(|s| now.saturating_duration_since(s.at).as_secs_f32() <= FRESH_SECS
             && s.rotation.coords.iter().all(|v| v.is_finite())
@@ -348,6 +358,34 @@ mod tests {
         [4, 6, 7, 8, 9, 10].map(|p| sample(p, q, now)).to_vec()
     }
     fn pitch(deg: f32) -> UnitQuaternion<f32> { UnitQuaternion::from_axis_angle(&Vector3::x_axis(), deg.to_radians()) }
+
+    #[test]
+    fn reference_rebase_preserves_offsets_and_rotates_all_orientation_targets() {
+        let start = Instant::now();
+        let mut sa = configured();
+        for i in 0..300 {
+            let t = i as f32 / 30.0;
+            sa.update(body(at(start, t), yaw((t * 0.05).to_radians())), None, at(start, t));
+        }
+        let id = TrackerId::new([6; 6], 0);
+        let previous = sa.states[&id].previous;
+        let locked = sa.states[&id].locked.unwrap();
+        let correction = sa.correction(id, 1);
+        assert!(correction.abs() > 0.001);
+        let delta = yaw(0.4);
+        sa.rebase(delta);
+        assert_eq!(sa.correction(id, 1), correction);
+        assert!(sa.states[&id].previous.angle_to(&(delta * previous)) < 1e-6);
+        assert!(sa.states[&id].locked.unwrap().angle_to(&(delta * locked)) < 1e-6);
+        assert!(sa.samples.iter().all(|s| s.rotation.angle_to(&(delta * previous)) < 1e-6));
+        sa.suspend(at(start, 10.0));
+        sa.rebase(delta.inverse());
+        assert_eq!(sa.correction(id, 1), correction);
+        assert!(sa.states[&id].locked.is_none());
+        let now = at(start, 10.03);
+        sa.update(body(now, previous), None, now);
+        assert_eq!(sa.correction(id, 1), correction);
+    }
 
     #[test]
     fn supported_rest_corrects_left_and_right_drift_at_different_frame_rates() {

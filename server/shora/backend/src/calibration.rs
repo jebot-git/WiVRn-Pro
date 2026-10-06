@@ -190,11 +190,12 @@ pub struct Calibration {
     reference: Option<crate::spatial_reference::Shared>,
     reference_revision: u64,
     reference_needs_reset: bool,
+    recovery_from: Option<u64>,
     pub stay_aligned: crate::stay_aligned::StayAligned,
 }
 impl Default for Calibration {
     fn default() -> Self {
-        Self { reference: None, reference_revision: 0, reference_needs_reset: false, trackers: HashMap::new(), drift_enabled: false, drift_amount: 0.5, stay_aligned: Default::default() }
+        Self { reference: None, reference_revision: 0, reference_needs_reset: false, recovery_from: None, trackers: HashMap::new(), drift_enabled: false, drift_amount: 0.5, stay_aligned: Default::default() }
     }
 }
 
@@ -211,8 +212,18 @@ impl Calibration {
     }
     pub fn reference_needs_reset(&self) -> bool { self.reference_needs_reset }
     pub fn sync_reference(&mut self) {
-        if let Some(health) = self.reference_health() {
+        self.sync_reference_at(crate::spatial_reference::now_ns());
+    }
+    fn sync_reference_at(&mut self, now: i64) {
+        if let Some(reference) = &self.reference {
+            let (health, from) = {
+                let reference = reference.read().unwrap();
+                (reference.health(now), reference.recovery_from())
+            };
             if health.revision != self.reference_revision || (!health.ready && !self.reference_needs_reset) {
+                self.recovery_from = if !self.reference_needs_reset && from == Some(self.reference_revision) {
+                    from
+                } else { None };
                 for t in self.trackers.values_mut() {t.drift.suspend();}
                 self.stay_aligned.suspend(Instant::now());
                 self.reference_needs_reset = true;
@@ -222,11 +233,34 @@ impl Calibration {
     }
     pub fn managed_reference(&self) -> bool { self.reference.is_some() }
     pub fn check_hmd_reference(&mut self, has_hmd: bool) {
-        self.sync_reference();
-        if self.reference.is_some() && !has_hmd && !self.reference_needs_reset {
-            for t in self.trackers.values_mut() {t.drift.suspend();}
-            self.stay_aligned.suspend(Instant::now());
-            self.reference_needs_reset = true;
+        self.check_hmd_reference_at(has_hmd, crate::spatial_reference::now_ns());
+    }
+    fn check_hmd_reference_at(&mut self, has_hmd: bool, now: i64) {
+        self.sync_reference_at(now);
+        if self.reference.is_some() && !has_hmd {
+            self.recovery_from = None;
+            if !self.reference_needs_reset {
+                for t in self.trackers.values_mut() {t.drift.suspend();}
+                self.stay_aligned.suspend(Instant::now());
+                self.reference_needs_reset = true;
+            }
+        } else if let Some(from) = self.recovery_from {
+            let recovery = self.reference.as_ref().and_then(|r| r.read().unwrap().recovery(now));
+            if let Some(recovery) = recovery.filter(|r| r.from_revision == from) {
+                // Quest STAGE is also the native Monado feeder frame. The PC
+                // STAGE alignment is downstream and must NOT be applied here.
+                // Yaw commutes with the held drift/Stay Aligned yaw offsets.
+                let delta = yaw_quat(recovery.yaw);
+                for t in self.trackers.values_mut() {
+                    t.yaw_fix = delta * t.yaw_fix;
+                    t.yaw_fix_start = delta * t.yaw_fix_start;
+                }
+                self.stay_aligned.rebase(delta);
+                self.reference_needs_reset = false;
+                self.recovery_from = None;
+                tracing::info!(yaw_deg = recovery.yaw.to_degrees(), from_revision = from,
+                    revision = self.reference_revision, "spatial reference automatically rebased; no drift observation");
+            }
         }
     }
     pub fn prepare_reference_reset(&mut self, has_hmd: bool) -> anyhow::Result<()> {
@@ -237,6 +271,7 @@ impl Calibration {
         Ok(())
     }
     pub fn confirm_reference_reset(&mut self) {
+        self.recovery_from = None;
         if self.reference.is_some() && self.reference_needs_reset {
             self.stay_aligned.clear();
             self.reference_needs_reset = false;
@@ -386,6 +421,70 @@ fn reference_yaw(q: &UnitQuaternion<f32>) -> UnitQuaternion<f32> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn automatic_rebase_preserves_pose_and_is_not_a_reset_or_drift_sample() {
+        use crate::spatial_reference::{Reference, tests::{feed, room_frame, room_settle}};
+        use std::sync::{Arc, RwLock};
+        let shared = Arc::new(RwLock::new(Reference::default()));
+        let mut now = room_settle(&mut shared.write().unwrap(), 10_000_000_000);
+        let mut cal = Calibration::new();
+        cal.attach_reference(shared.clone());
+        cal.check_hmd_reference_at(true, now);
+        let id = TrackerId::new([1; 6], 0);
+        cal.configure_drift(true, 1.0);
+        let t = cal.tracker_mut(id);
+        t.full_reset(UnitQuaternion::identity(), UnitQuaternion::identity());
+        t.drift.since = Some(Instant::now() - std::time::Duration::from_secs(60));
+        t.yaw_reset(yaw_quat(0.1), UnitQuaternion::identity());
+        t.yaw_reset_since = None;
+        assert_eq!(t.drift.diagnostics().samples, 1);
+        let reset_count = t.reset_count;
+        let revision = t.alignment_revision;
+        cal.confirm_reference_reset();
+        // An arbitrary bent limb must retain its posture; never force it to HMD yaw.
+        let raw = yaw_quat(0.4) * UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 1.0);
+        let before = cal.adjust(id, raw);
+        for (generation, angle) in [(2, 0.3), (3, -0.4)] {
+            let delta = yaw_quat(angle);
+            for i in 0..=15 {
+                let at = now + (i+1) * 200_000_000;
+                let f = room_frame(generation*100+i as u64, at, generation, delta, Vector3::new(0.2,0.0,0.3));
+                feed(&mut shared.write().unwrap(), &f, at);
+                cal.check_hmd_reference_at(true, at);
+                assert_eq!(cal.reference_needs_reset(), i < 10);
+                if i >= 10 { assert!(cal.adjust(id, raw).angle_to(&(delta * before)) < 0.001); }
+            }
+            now += 16 * 200_000_000;
+            let t = cal.trackers.get(&id).unwrap();
+            assert_eq!(t.reset_count, reset_count);
+            assert_eq!(t.alignment_revision, revision);
+            assert_eq!(t.drift.diagnostics().samples, 0);
+            assert_eq!(t.drift.diagnostics().last_result, "reference_suspended");
+        }
+        cal.tracker_mut(id).yaw_reset(raw, UnitQuaternion::identity());
+        assert_eq!(cal.drift_diagnostics(id).unwrap().last_result, "baseline");
+        assert_eq!(cal.drift_diagnostics(id).unwrap().samples, 0);
+    }
+
+    #[test]
+    fn recovery_cannot_unlock_initial_calibration_or_hmd_loss() {
+        use crate::spatial_reference::{Reference, tests::{feed, room_frame, room_settle}};
+        use std::sync::{Arc, RwLock};
+        for initially_calibrated in [false, true] {
+            let shared = Arc::new(RwLock::new(Reference::default()));
+            let now = room_settle(&mut shared.write().unwrap(), 10_000_000_000);
+            let mut cal = Calibration::new();
+            cal.attach_reference(shared.clone());
+            cal.check_hmd_reference_at(true, now);
+            if initially_calibrated { cal.confirm_reference_reset(); }
+            for i in 0..=12 {
+                let at = now + (i+1) * 200_000_000;
+                feed(&mut shared.write().unwrap(), &room_frame(12+i as u64, at, 2, yaw_quat(0.3), Vector3::zeros()), at);
+                cal.check_hmd_reference_at(i != 3, at);
+            }
+            assert!(cal.reference_needs_reset());
+        }
+    }
     use super::*;
 
     #[test]
