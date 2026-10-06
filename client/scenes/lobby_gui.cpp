@@ -1203,7 +1203,7 @@ std::vector<std::pair<int, XrCompositionLayerQuad>> scenes::lobby::draw_gui(XrTi
 				break;
 
 			case tab::spatial:
-				ImGui::TextWrapped("Capture or check anchors here without connecting to a PC. The same markers remain available when streaming starts.");
+				ImGui::TextWrapped("Capture or check anchors here without connecting to a PC. The same markers remain available when streaming starts. To design an anchored passthrough window, connect to your PC and open the WiVRn menu > Passthrough / room.");
 				application::get_spatial_source().draw_controls(system.passthrough_supported() != xr::passthrough_type::none, "Finish room capture");
 				break;
 

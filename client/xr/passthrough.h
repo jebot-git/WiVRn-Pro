@@ -41,6 +41,7 @@ class passthrough_fb : public utils::handle<XrPassthroughFB>
 	PFN_xrPassthroughLayerPauseFB xrPassthroughLayerPauseFB{};
 	PFN_xrPassthroughLayerResumeFB xrPassthroughLayerResumeFB{};
 
+	bool running = false;
 	passthrough_layer_fb passthrough_layer;
 	XrCompositionLayerPassthroughFB composition_layer;
 

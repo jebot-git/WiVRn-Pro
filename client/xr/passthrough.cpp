@@ -69,14 +69,18 @@ xr::passthrough_fb::passthrough_fb(instance & inst, session & s) :
 
 void xr::passthrough_fb::start()
 {
+	if (running) return;
 	CHECK_XR(xrPassthroughStartFB(id));
 	CHECK_XR(xrPassthroughLayerResumeFB(passthrough_layer));
+	running = true;
 }
 
 void xr::passthrough_fb::pause()
 {
+	if (!running) return;
 	CHECK_XR(xrPassthroughLayerPauseFB(passthrough_layer));
 	CHECK_XR(xrPassthroughPauseFB(id));
+	running = false;
 }
 
 xr::passthrough_htc::passthrough_htc(instance & inst, session & s) :

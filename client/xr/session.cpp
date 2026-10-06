@@ -371,6 +371,11 @@ void xr::session::sync_actions(XrActionSet action_set, const std::string & subac
 
 void xr::session::enable_passthrough(xr::system & system)
 {
+	if (auto * fb = std::get_if<xr::passthrough_fb>(&passthrough))
+	{
+		fb->start();
+		return;
+	}
 	if (not std::holds_alternative<std::monostate>(passthrough))
 		return;
 
@@ -393,6 +398,12 @@ void xr::session::enable_passthrough(xr::system & system)
 
 void xr::session::disable_passthrough()
 {
+	// Anchor tracking can flicker: retain the runtime objects across hidden frames.
+	if (auto * fb = std::get_if<xr::passthrough_fb>(&passthrough))
+	{
+		fb->pause();
+		return;
+	}
 	if (std::holds_alternative<std::monostate>(passthrough))
 		return;
 	passthrough.emplace<std::monostate>();

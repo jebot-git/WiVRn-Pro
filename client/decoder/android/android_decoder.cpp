@@ -125,9 +125,13 @@ decoder::decoder(
 	              scenes::stream::image_buffer_size + 4 /* maxImages */,
 	              &ir),
 	      "AImageReader_newWithUsage");
-	image_reader.reset(ir, AImageReader_deleter{});
+	image_callback->owner = this;
+	image_reader.reset(ir, [state = image_callback](AImageReader * reader) {
+		// Keep queued callbacks' context alive until the reader joins its looper.
+		AImageReader_delete(reader);
+	});
 
-	AImageReader_ImageListener listener{this, on_image_available};
+	AImageReader_ImageListener listener{image_callback.get(), on_image_available};
 	check(AImageReader_setImageListener(ir, &listener), "AImageReader_setImageListener");
 
 	vkGetAndroidHardwareBufferPropertiesANDROID =
@@ -195,6 +199,13 @@ decoder::decoder(
 
 decoder::~decoder()
 {
+	// Wake an image callback waiting for metadata before waiting for that callback.
+	frame_infos.close();
+	{
+		std::lock_guard lock(image_callback->mutex);
+		image_callback->owner = nullptr;
+	}
+	AImageReader_setImageListener(image_reader.get(), nullptr);
 	if (media_codec)
 	{
 		AMediaCodec_stop(media_codec.get());
@@ -269,11 +280,21 @@ void decoder::on_image_available(void * context, AImageReader * reader)
 {
 	try
 	{
-		static_cast<decoder *>(context)->on_image_available(reader);
+		auto & state = *static_cast<image_callback_state *>(context);
+		std::lock_guard lock(state.mutex);
+		if (state.owner) state.owner->on_image_available(reader);
+	}
+	catch (const utils::sync_queue_closed &)
+	{
+		// Decoder teardown wakes callbacks waiting for frame metadata.
 	}
 	catch (std::exception & e)
 	{
 		spdlog::error("Exception in decoder::on_image_available: {}", e.what());
+	}
+	catch (...)
+	{
+		spdlog::error("Unknown exception in decoder::on_image_available");
 	}
 }
 
@@ -283,47 +304,44 @@ void decoder::on_image_available(AImageReader * reader)
 	// Executed on image reader thread
 
 	decltype(android_blit_handle::aimage) image;
-	try
+	AImage * tmp;
+	auto status = AImageReader_acquireLatestImage(image_reader.get(), &tmp);
+	// acquireLatestImage can consume images belonging to already queued callbacks.
+	if (status == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE) return;
+	check(status, "AImageReader_acquireLatestImage");
+	image.reset(tmp);
+
+	int64_t fake_timestamp_ns;
+	check(AImage_getTimestamp(image.get(), &fake_timestamp_ns), "AImage_getTimestamp");
+	uint64_t frame_index = (fake_timestamp_ns + 5'000'000) / (10'000'000);
+
+	frame_infos.drop_until([frame_index](auto & x) { return x.feedback.frame_index >= frame_index; });
+
+	auto info = frame_infos.pop_if([frame_index](auto & x) { return x.feedback.frame_index == frame_index; });
+
+	if (!info)
 	{
-		AImage * tmp;
-		check(AImageReader_acquireLatestImage(image_reader.get(), &tmp), "AImageReader_acquireLatestImage");
-		image.reset(tmp);
-
-		int64_t fake_timestamp_ns;
-		check(AImage_getTimestamp(image.get(), &fake_timestamp_ns), "AImage_getTimestamp");
-		uint64_t frame_index = (fake_timestamp_ns + 5'000'000) / (10'000'000);
-
-		frame_infos.drop_until([frame_index](auto & x) { return x.feedback.frame_index >= frame_index; });
-
-		auto info = frame_infos.pop_if([frame_index](auto & x) { return x.feedback.frame_index == frame_index; });
-
-		if (!info)
-		{
-			spdlog::warn("No frame info for frame {}, dropping frame", frame_index);
-			return;
-		}
-
-		assert(info->feedback.frame_index == frame_index);
-
-		auto vk_data = map_hardware_buffer(image.get());
-
-		auto handle = std::make_shared<android_blit_handle>(
-		        info->feedback,
-		        info->view_info,
-		        *vk_data->image_view,
-		        *vk_data->vimage,
-		        vk_data->extent,
-		        vk_data->layout,
-		        std::move(vk_data),
-		        image_reader,
-		        std::move(image));
-
-		if (auto scene = weak_scene.lock())
-			scene->push_blit_handle(accumulator, std::move(handle));
+		spdlog::warn("No frame info for frame {}, dropping frame", frame_index);
+		return;
 	}
-	catch (...)
-	{
-	}
+
+	assert(info->feedback.frame_index == frame_index);
+
+	auto vk_data = map_hardware_buffer(image.get());
+
+	auto handle = std::make_shared<android_blit_handle>(
+	        info->feedback,
+	        info->view_info,
+	        *vk_data->image_view,
+	        *vk_data->vimage,
+	        vk_data->extent,
+	        vk_data->layout,
+	        std::move(vk_data),
+	        image_reader,
+	        std::move(image));
+
+	if (auto scene = weak_scene.lock())
+		scene->push_blit_handle(accumulator, std::move(handle));
 }
 
 void decoder::create_sampler(const AHardwareBuffer_Desc & buffer_desc, vk::AndroidHardwareBufferFormatPropertiesANDROID & ahb_format)

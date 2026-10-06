@@ -26,7 +26,7 @@ impl WGfxDmabuf for WGfx {
             anyhow::bail!("DMA-buf plane has no FD");
         };
 
-        log::info!(
+        log::debug!(
             "DMA-buf import start: {}x{}, format={:?}, modifier={:?}, planes={}",
             frame.format.width,
             frame.format.height,

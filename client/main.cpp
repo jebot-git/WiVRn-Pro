@@ -29,6 +29,8 @@
 
 #ifdef __ANDROID__
 #include "spdlog/sinks/android_sink.h"
+#include "spdlog/sinks/rotating_file_sink.h"
+#include <filesystem>
 #include <android/native_window.h>
 #include <android_native_app_glue.h>
 #else
@@ -45,6 +47,7 @@ void real_main()
 		spdlog::info("Starting WiVRn version {}", wivrn::display_version());
 	else
 		spdlog::info("Starting WiVRn version {} ({})", wivrn::display_version(), wivrn::git_commit);
+	[[maybe_unused]] int exit_status = 0;
 	try
 	{
 		application_info info;
@@ -61,14 +64,17 @@ void real_main()
 	}
 	catch (std::exception & e)
 	{
+		exit_status = 1;
 		spdlog::error("Caught exception: \"{}\"", e.what());
 	}
 	catch (...)
 	{
+		exit_status = 1;
 		spdlog::error("Caught unknown exception");
 	}
 
 #ifdef __ANDROID__
+	spdlog::default_logger()->flush();
 	ANativeActivity_finish(native_app->activity);
 
 	// Read all pending events.
@@ -84,7 +90,7 @@ void real_main()
 				source->process(native_app, source);
 		}
 	}
-	exit(0);
+	exit(exit_status);
 #endif
 }
 
@@ -93,6 +99,21 @@ void android_main(android_app * native_app)
 {
 	static auto logger = spdlog::android_logger_mt("WiVRn", "WiVRn");
 
+	// Keep diagnostics across process exits without unbounded storage growth.
+	try
+	{
+		if (const char * path = native_app->activity->externalDataPath; path && *path)
+		{
+			std::filesystem::create_directories(path);
+			logger->sinks().push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+			        (std::filesystem::path(path) / "client.log").string(), 512 * 1024, 2));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		logger->warn("Persistent diagnostics unavailable: {}", e.what());
+	}
+	logger->flush_on(spdlog::level::warn);
 	spdlog::set_default_logger(logger);
 
 	real_main(native_app);

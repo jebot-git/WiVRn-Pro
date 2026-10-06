@@ -75,6 +75,13 @@ private:
 	vk::raii::Sampler ycbcr_sampler = nullptr;
 
 	std::mutex hbm_mutex;
+	// The reader may outlive this decoder through in-flight blit handles.
+	struct image_callback_state
+	{
+		std::mutex mutex;
+		decoder * owner = nullptr;
+	};
+	std::shared_ptr<image_callback_state> image_callback = std::make_shared<image_callback_state>();
 	std::shared_ptr<AImageReader> image_reader;
 
 	AMediaCodec_ptr media_codec;

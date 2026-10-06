@@ -1841,3 +1841,14 @@
  	fn window_list(&mut self, data: &mut T) -> anyhow::Result<Vec<WvrWindow>>;
  	fn window_set_visible(&mut self, data: &mut T, handle: WvrWindowHandle, visible: bool) -> anyhow::Result<()>;
  	fn window_request_close(&mut self, data: &mut T, handle: WvrWindowHandle) -> anyhow::Result<()>;
+--- a/wayvr/src/graphics/dmabuf.rs
++++ b/wayvr/src/graphics/dmabuf.rs
+@@ -26,7 +26,7 @@
+             anyhow::bail!("DMA-buf plane has no FD");
+         };
+
+-        log::info!(
++        log::debug!(
+             "DMA-buf import start: {}x{}, format={:?}, modifier={:?}, planes={}",
+             frame.format.width,
+             frame.format.height,

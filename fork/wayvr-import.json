@@ -749,6 +749,7 @@
     "wayvr/src/backend/wayvr/input_capture.rs": "76c38118749e17569b941f73dad2d883add515e0ea48815e9f4a8a269b6c530e",
     "wayvr/src/subsystem/input.rs": "5bb25ba69e88aa4dea52b8d367b25f46aba583b9990299bb0b5bde4814dbe7b7",
     "wayvr/src/gui/asset.rs": "44d34b8346d45e69d6fd6990ecae504fb5cec6b0ff6e83c6c4fe1f65a0429db3",
-    "wayvr/src/gui/panel/device_list.rs": "5e15deb9a9377cc45bdc15d2d069bb940b856e3ae511ea60bf97ffe03aa6a2c7"
+    "wayvr/src/gui/panel/device_list.rs": "5e15deb9a9377cc45bdc15d2d069bb940b856e3ae511ea60bf97ffe03aa6a2c7",
+    "wayvr/src/graphics/dmabuf.rs": "107d0416590aee6e2209d50020d891238d7801848ee7fc1b9663720ff7576e3a"
   }
 }

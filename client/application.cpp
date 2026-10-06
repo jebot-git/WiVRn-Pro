@@ -1747,6 +1747,7 @@ void application::loop()
 #ifdef __ANDROID__
 void application::run()
 {
+	std::exception_ptr failure;
 	auto application_thread = utils::named_thread("application_thread", [&]() {
 		setup_jni();
 
@@ -1759,11 +1760,13 @@ void application::run()
 			catch (std::exception & e)
 			{
 				spdlog::error("Caught exception in application_thread: \"{}\"", e.what());
+				failure = std::current_exception();
 				exit_requested = true;
 			}
 			catch (...)
 			{
 				spdlog::error("Caught unknown exception in application_thread");
+				failure = std::current_exception();
 				exit_requested = true;
 			}
 		}
@@ -1793,9 +1796,9 @@ void application::run()
 		}
 	}
 
-	spdlog::info("Exiting normally");
-
 	application_thread.join();
+	if (failure) std::rethrow_exception(failure);
+	spdlog::info("Exiting normally");
 }
 #else
 void application::run()
@@ -2020,7 +2023,11 @@ void application::poll_events()
 			case XR_TYPE_EVENT_DATA_PASSTHROUGH_STATE_CHANGED_FB: {
 				spdlog::info("Passthrough state changed:");
 				if (e.passthrough_state_changed.flags & XR_PASSTHROUGH_STATE_CHANGED_REINIT_REQUIRED_BIT_FB)
-					spdlog::info("    XR_PASSTHROUGH_STATE_CHANGED_REINIT_REQUIRED_BIT_FB");
+				{
+					spdlog::warn("Passthrough runtime requested reinitialization");
+					// Events and rendering share this thread. Recreate on the next visible frame.
+					xr_session.get_passthrough().emplace<std::monostate>();
+				}
 				if (e.passthrough_state_changed.flags & XR_PASSTHROUGH_STATE_CHANGED_NON_RECOVERABLE_ERROR_BIT_FB)
 					spdlog::info("    XR_PASSTHROUGH_STATE_CHANGED_NON_RECOVERABLE_ERROR_BIT_FB");
 				if (e.passthrough_state_changed.flags & XR_PASSTHROUGH_STATE_CHANGED_RECOVERABLE_ERROR_BIT_FB)

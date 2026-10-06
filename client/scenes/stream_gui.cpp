@@ -444,7 +444,14 @@ void scenes::stream::gui_settings(float)
 					ImGui::BeginDisabled(system.passthrough_supported() == xr::passthrough_type::none || spatial->capture_active() || !portal.available(spatial->sample()));
 					if (ImGui::Button(portal.has_saved() ? "Redesign cutout" : "Design cutout")) portal.begin(spatial->sample());
 					ImGui::EndDisabled();
-					if (!portal.available(spatial->sample())) ImGui::TextWrapped("Localize a saved room marker first using Room capture below.");
+					if (system.passthrough_supported() == xr::passthrough_type::none)
+						ImGui::TextWrapped("Passthrough is not available from this headset runtime.");
+					else if (spatial->capture_active())
+						ImGui::TextWrapped("Finish room capture below before designing a cutout.");
+					else if (!portal.available(spatial->sample()))
+						ImGui::TextWrapped("Waiting for head tracking and a saved room marker. Look around your room, or use Room capture below to create or reload markers.");
+					else
+						ImGui::TextWrapped("Room anchor ready. Select Design cutout to place your window.");
 					if (portal.has_saved())
 					{
 						if (ImGui::Checkbox("Enable cutout", &portal.enabled) && !portal.save()) portal.message = "Could not save enabled state.";
@@ -1090,7 +1097,7 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 			settings_item(ICON_FA_WAND_MAGIC_SPARKLES, _cS("tab label", "Post-processing"), settings_page::post_processing);
 			settings_item(ICON_FA_KEYBOARD, _cS("tab label", "Devices"), settings_page::devices);
 			settings_item(ICON_FA_LOCATION_CROSSHAIRS, _cS("tab label", "Tracking"), settings_page::tracking);
-			settings_item(ICON_FA_LOCATION_CROSSHAIRS, "Room capture", settings_page::spatial);
+			settings_item(ICON_FA_LOCATION_CROSSHAIRS, "Passthrough / room", settings_page::spatial);
 			settings_item(ICON_FA_GEARS, _cS("tab label", "System"), settings_page::system);
 			settings_item(ICON_FA_PALETTE, _cS("tab label", "Theme"), settings_page::theme);
 

@@ -12,6 +12,19 @@ cxx=${CXX:-c++}
 build/native-tests/audio-recovery-test
 "$cxx" -std=c++23 -Wall -Wextra -Werror -pthread -Iserver fork/tests/video_recovery_test.cpp -o build/native-tests/video-recovery-test
 build/native-tests/video-recovery-test
+spdlog_flags=()
+if pkg-config --exists spdlog; then
+  read -r -a spdlog_flags <<< "$(pkg-config --cflags --libs spdlog)"
+elif [[ -f build/android-deps/spdlog-src/include/spdlog/spdlog.h ]]; then
+  spdlog_flags=(-isystem build/android-deps/spdlog-src/include)
+else
+  echo "Passthrough lifecycle test requires spdlog development headers or the Android dependency cache" >&2
+  exit 1
+fi
+"$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -Wno-missing-field-initializers -pthread \
+  -Iclient -Icommon -Iexternal fork/tests/passthrough_lifecycle_test.cpp client/xr/passthrough.cpp \
+  "${spdlog_flags[@]}" -o build/native-tests/passthrough-lifecycle-test
+build/native-tests/passthrough-lifecycle-test
 python3 fork/tests/portal_health_test.py
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Icommon fork/tests/policy_test.cpp -o build/native-tests/policy-test
 build/native-tests/policy-test

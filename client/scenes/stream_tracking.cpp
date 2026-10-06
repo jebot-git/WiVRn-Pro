@@ -373,13 +373,16 @@ void scenes::stream::tracking()
 
 					std::ranges::sort(pattern, std::less{}, [frame_duration](const auto & i) { return -i.prediction_ns % frame_duration; });
 
-					spdlog::info("Tracking pattern ({}µs):", frame_duration / 1'000);
-					for (const auto & [device, pred]: pattern)
+					if (spdlog::should_log(spdlog::level::debug))
 					{
-						spdlog::info("\tt+{}µs {} ({}µs)",
-						             (frame_duration - (pred % frame_duration)) / 1'000,
-						             magic_enum::enum_name(device),
-						             pred / 1'000);
+						spdlog::debug("Tracking pattern ({}µs):", frame_duration / 1'000);
+						for (const auto & [device, pred]: pattern)
+						{
+							spdlog::debug("\tt+{}µs {} ({}µs)",
+							             (frame_duration - (pred % frame_duration)) / 1'000,
+							             magic_enum::enum_name(device),
+							             pred / 1'000);
+						}
 					}
 				}
 			}
