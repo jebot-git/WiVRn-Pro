@@ -281,8 +281,18 @@ void decoder::on_image_available(void * context, AImageReader * reader)
 	try
 	{
 		auto & state = *static_cast<image_callback_state *>(context);
-		std::lock_guard lock(state.mutex);
-		if (state.owner) state.owner->on_image_available(reader);
+		// A scene's last reference can be released by this callback. Keep it
+		// alive until after unlocking, so its decoder teardown cannot reenter
+		// the callback gate while we hold it.
+		std::shared_ptr<scenes::stream> scene;
+		{
+			std::lock_guard lock(state.mutex);
+			if (state.owner)
+			{
+				scene = state.owner->weak_scene.lock();
+				if (scene) state.owner->on_image_available(reader);
+			}
+		}
 	}
 	catch (const utils::sync_queue_closed &)
 	{
