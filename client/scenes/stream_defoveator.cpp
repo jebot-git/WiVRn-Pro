@@ -294,6 +294,10 @@ void stream_defoveator::reset_pipelines()
 		p = {};
 	for (auto & p: pipeline_a)
 		p = {};
+	// Sets are owned by this pool (allocation releases the RAII wrappers).
+	// Decoder recovery has already waited for the blit fence. Reclaim every
+	// old set now, or successive recoveries exhaust maxSets and close the app.
+	ds_pool.reset();
 }
 
 static size_t required_vertices(const wivrn::to_headset::foveation_parameter & p)
