@@ -1,0 +1,82 @@
+{
+  "dataset": "google/fleurs",
+  "revision": "168de341b3db6859a9bac1c50a2ef5e3b47647e0",
+  "licence": "CC-BY-4.0",
+  "font_sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+  "font_source": "https://github.com/notofonts/noto-cjk",
+  "font_licence": "SIL Open Font License 1.1",
+  "device": "Intel(R) Arc(TM) A770 Graphics (dGPU)",
+  "epochs": 6,
+  "kind": "synthetic sign CTC-head adaptation; frozen detector and feature extractor",
+  "models": {
+    "cjk": {
+      "source_sha256": "6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884",
+      "train_samples": 240,
+      "validation_samples": 40,
+      "baseline": {
+        "zh": 0.0036101083032490976,
+        "ja": 0.0
+      },
+      "candidate": {
+        "zh": 0.0036101083032490976,
+        "ja": 0.0
+      },
+      "passes_pilot_gate": true
+    },
+    "korean": {
+      "source_sha256": "cd6e2ea50f6943ca7271eb8c56a877a5a90720b7047fe9c41a2e541a25773c9b",
+      "train_samples": 120,
+      "validation_samples": 20,
+      "baseline": {
+        "ko": 0.0049261083743842365
+      },
+      "candidate": {
+        "ko": 0.0049261083743842365
+      },
+      "passes_pilot_gate": true
+    },
+    "thai": {
+      "source_sha256": "de541dd83161c241ff426f7ecfd602a0ba77d686cf3ab9a6c255ea82fd08006e",
+      "train_samples": 120,
+      "validation_samples": 20,
+      "baseline": {
+        "th": 0.017241379310344827
+      },
+      "candidate": {
+        "th": 0.017241379310344827
+      },
+      "passes_pilot_gate": true
+    }
+  },
+  "script_router": {
+    "train": 992,
+    "validation": 112,
+    "accuracy": 0.9732142857142857,
+    "confident_coverage": 0.7767857142857143,
+    "confident_errors": 0,
+    "threshold": 0.95,
+    "labels": [
+      "cjk",
+      "korean",
+      "thai",
+      "cyrillic"
+    ],
+    "warning": "Synthetic crops only; uncertain routes run all heads. Real scene validation required."
+  },
+  "timing_conditions": "Arc A770, no training jobs, live VR and overlay active; five synthetic signs, six iterations per mode, first excluded",
+  "benchmark": {
+    "baseline": {
+      "median_seconds": 0.12335278099999414,
+      "correct_phrases": 5
+    },
+    "trained": {
+      "median_seconds": 0.12118450899652089,
+      "correct_phrases": 5
+    },
+    "routed": {
+      "median_seconds": 0.07495143100095447,
+      "correct_phrases": 5
+    }
+  },
+  "deployment": "trained CTC heads and router active; synthetic CER unchanged, no real-scene or handwriting accuracy claim"
+}

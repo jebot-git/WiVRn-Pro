@@ -83,7 +83,7 @@ func _make_room() -> void:
 		box(self,"GridX"+str(i),Vector3(0.012,0.008,10),Vector3(i,-0.025,0),Color("#38506d"))
 		box(self,"GridZ"+str(i),Vector3(10,0.008,0.012),Vector3(0,-0.025,i),Color("#38506d"))
 	box(self,"BackWall",Vector3(10,3.6,0.1),Vector3(0,1.75,-4.9),Color("#182438"))
-	label(self,"WiVRn / TRANSLATION LAB",Vector3(0,3,-4.82),100)
+	label(self,"SPATIAL SUBTITLES / TRANSLATION LAB",Vector3(0,3,-4.82),100)
 	label(self,"SPEECH  /  COLOURED TEXT  /  HANDWRITING",Vector3(0,2.65,-4.81),46)
 func _make_panes() -> void:
 	var positions = [Vector3(-2.7,1.8,-2.8),Vector3(2.7,1.8,-2.8),Vector3(-2.7,1.55,0.1),Vector3(2.7,1.55,0.1)]
@@ -113,7 +113,7 @@ func _make_help() -> void:
 	board.position = Vector3(0,1.5,3.6)
 	board.rotation.y = PI
 	box(board,"InstructionsPanel",Vector3(3.6,1.45,0.04),Vector3.ZERO,Color("#142137"))
-	label(board,"TRANSLATION TEST ROOM\nLeft stick: move / Right stick: snap turn\nApproach capsules to hear a full speech sample.\nRight grip near pen: pick up / put down\nRight trigger: draw / Left X: clear ink\nRight A: pane colours / Right B: return to start\nInk stays for 45 seconds.\nEnable translation in the desktop Subtitles tab.",Vector3(0,0,0.03),38)
+	label(board,"TRANSLATION TEST ROOM\nLeft stick: move / Right stick: snap turn\nApproach capsules to hear a full speech sample.\nRight grip near pen: pick up / put down\nRight trigger: draw / Left X: clear ink\nRight A: pane colours / Right B: return to start\nInk stays for 45 seconds.\nEnable local translation in Spatial Subtitles.",Vector3(0,0,0.03),38)
 func _process(_delta: float) -> void:
 	for speaker in speakers:
 		speaker.proximity(rig.camera.global_position)

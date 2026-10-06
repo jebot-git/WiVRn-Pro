@@ -8,9 +8,10 @@ from pathlib import Path
 import re
 import sys
 import wave
-sys.path.insert(0,str(Path(__file__).resolve().parents[3]/'dashboard/shora'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[3]/'apps/spatial-subtitles/python'))
 from subtitle_recording import recording_root
-from subtitle_backend import atomic_json, clean_text
+from settings import atomic_json
+from text_utils import clean_text
 
 
 def export_rows(root):

@@ -53,7 +53,7 @@ class layer_squasher
 	std::array<vk::DescriptorSet, 2> descriptor_sets;
 
 public:
-	layer_squasher(vk_bundle &, vk::Extent3D target_size, bool readback = false);
+	layer_squasher(vk_bundle &, vk::Extent3D target_size);
 
 	std::tuple<std::array<xrt_pose, 2>,
 	           std::array<xrt_fov, 2>,
@@ -68,6 +68,7 @@ public:
 	        const xrt_rect & min_size);
 
 	std::array<vk::ImageView, 2> get_views();
+
 	vk::Image get_image()
 	{
 		return render_target;

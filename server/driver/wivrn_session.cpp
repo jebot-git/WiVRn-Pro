@@ -376,8 +376,6 @@ void wivrn_session::stop()
 {
 	net_thread = std::jthread();
 	worker_thread = std::jthread();
-	subtitles.reset();
-    ocr_images.ask(0);
 }
 
 void wivrn_session::request_stop()
@@ -405,8 +403,6 @@ void wivrn_session::request_stop()
 
 void wivrn_session::pause_session()
 {
-	subtitles.reset();
-    ocr_images.ask(0);
 	spatial_bridge.invalidate("disconnected");
 	assert(mnd_ipc_server);
 
@@ -1106,33 +1102,11 @@ struct refresh_rate_adjuster
 
 void wivrn_session::run_net(std::stop_token stop)
 {
-	auto subtitle_retry = std::chrono::steady_clock::now();
 	while (not stop.stop_requested())
 	{
 		try
 		{
 			connection->poll(*this, 20);
-            if (!subtitles && std::chrono::steady_clock::now() >= subtitle_retry)
-            {
-                subtitle_retry = std::chrono::steady_clock::now() + std::chrono::seconds(15);
-                try { subtitles = std::make_unique<subtitle_bridge>(); }
-                catch (const std::exception & e) { U_LOG_W("Subtitles unavailable: %s", e.what()); }
-            }
-            if (subtitles)
-                for (int i = 0; i < 4; ++i)
-                {
-                    auto packet = subtitles->poll(&ocr_images);
-                    if (!packet) break;
-                    send_control(std::move(*packet));
-                }
-            if (subtitles)
-                if (auto image = ocr_images.take_frame()) subtitles->send_image(std::move(*image));
-            if (subtitles && !subtitles->running())
-            {
-                subtitles.reset();
-                ocr_images.ask(0);
-                subtitle_retry = std::chrono::steady_clock::now() + std::chrono::seconds(15);
-            }
 
 			if (uinput_handler)
 			{

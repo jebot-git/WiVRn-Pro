@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 import time
 import wave
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'dashboard/shora'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'apps/spatial-subtitles/python'))
 from local_recognition import LocalRecognizer
 p=argparse.ArgumentParser()
 p.add_argument('--device',default='A770')

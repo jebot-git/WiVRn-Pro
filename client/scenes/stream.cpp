@@ -596,10 +596,6 @@ void scenes::stream::on_focused()
 
 void scenes::stream::on_unfocused()
 {
-	subtitle_overlay.clear();
-    ocr_overlay.clear();
-    pending_ocr.lock()->reset();
-	pending_subtitles.lock()->reset();
 	if (spatial) spatial->portal.cancel();
 	spatial_markers.clear();
 	renderer->wait_idle(); // Must be before the scene data because the renderer uses its descriptor sets;
@@ -845,7 +841,6 @@ void scenes::stream::render(const XrFrameState & frame_state)
 	if (state_ == state::shutdown)
 		application::pop_scene();
 
-	update_subtitles(frame_state.predictedDisplayTime);
 	display_time_phase = frame_state.predictedDisplayPeriod ? frame_state.predictedDisplayTime % frame_state.predictedDisplayPeriod : 0;
 	display_time_period = frame_state.predictedDisplayPeriod;
 	real_display_period = last_display_time ? frame_state.predictedDisplayTime - last_display_time : frame_state.predictedDisplayPeriod;
@@ -1040,7 +1035,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
 	// Allow the headset to time warp if we are redisplaying a frame
 	if ((not application::get_hmd_traits().discard_frame) or
 	    std::ranges::any_of(current_blit_handles, [](const auto & h) { return h and h->feedback.times_displayed < 2; }) or
-	    is_gui_interactable() || cutout_visible || cutout_was_visible || subtitle_overlay.visible(frame_state.predictedDisplayTime) || ocr_overlay.visible(frame_state.predictedDisplayTime))
+	    is_gui_interactable() || cutout_visible || cutout_was_visible)
 	{
 		cutout_was_visible = cutout_visible;
 		XrExtent2Di extents[view_count];
@@ -1435,11 +1430,6 @@ void scenes::stream::on_xr_event(const xr::event & event)
 	switch (event.header.type)
 	{
 		case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:
-            subtitle_reference_barrier = event.space_changed_pending.changeTime;
-            subtitle_overlay.clear();
-    ocr_overlay.clear();
-    pending_ocr.lock()->reset();
-            pending_subtitles.lock()->reset();
 			if (event.space_changed_pending.referenceSpaceType == XrReferenceSpaceType::XR_REFERENCE_SPACE_TYPE_LOCAL)
 				recenter_requested = true;
 			break;

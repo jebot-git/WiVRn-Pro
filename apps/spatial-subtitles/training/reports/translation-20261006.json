@@ -1,0 +1,160 @@
+{
+  "dataset": {
+    "dataset": "google/fleurs",
+    "revision": "168de341b3db6859a9bac1c50a2ef5e3b47647e0",
+    "license": "CC-BY-4.0",
+    "base_revision": "f8d333a098d19b4fd9a8b18f94170487ad3f821d",
+    "attribution": "Google FLEURS / Conneau et al. 2022; official split aligned by sentence ID"
+  },
+  "steps": 240,
+  "trainable_parameters": 786432,
+  "baseline_validation": {
+    "ja": {
+      "chrf": 50.6707202062371,
+      "seconds": 1.070335915166955,
+      "samples": 12
+    },
+    "ko": {
+      "chrf": 54.56840836002127,
+      "seconds": 0.9570767870003086,
+      "samples": 12
+    },
+    "zh": {
+      "chrf": 58.04641109595076,
+      "seconds": 0.9954886023336561,
+      "samples": 12
+    },
+    "th": {
+      "chrf": 60.633795825132566,
+      "seconds": 0.9296982841669887,
+      "samples": 12
+    },
+    "en": {
+      "chrf": 51.25449458664496,
+      "seconds": 1.138741198250197,
+      "samples": 12
+    }
+  },
+  "candidate_validation": {
+    "ja": {
+      "chrf": 51.089330378924046,
+      "seconds": 1.6451931172496188,
+      "samples": 12
+    },
+    "ko": {
+      "chrf": 52.51555356492024,
+      "seconds": 1.8893374672503949,
+      "samples": 12
+    },
+    "zh": {
+      "chrf": 57.920117060996965,
+      "seconds": 2.4937831165837756,
+      "samples": 12
+    },
+    "th": {
+      "chrf": 60.66021335057369,
+      "seconds": 1.6769774197500738,
+      "samples": 12
+    },
+    "en": {
+      "chrf": 51.58854098835653,
+      "seconds": 2.0950381940829175,
+      "samples": 12
+    }
+  },
+  "candidate_test": {
+    "ja": {
+      "chrf": 46.68527370671451,
+      "seconds": 1.8989220155832907,
+      "samples": 24
+    },
+    "ko": {
+      "chrf": 51.485689869061346,
+      "seconds": 1.94585921783361,
+      "samples": 24
+    },
+    "zh": {
+      "chrf": 51.267394682651904,
+      "seconds": 2.281423267291757,
+      "samples": 24
+    },
+    "th": {
+      "chrf": 47.97159971209783,
+      "seconds": 1.8592710893749427,
+      "samples": 24
+    },
+    "en": {
+      "chrf": 48.46346551904197,
+      "seconds": 2.1405489312918085,
+      "samples": 24
+    }
+  },
+  "warning": "Small adaptation pilot; test held out from gradients and checkpoint selection. Speed must be measured with OpenVINO.",
+  "passes_gate": false,
+  "available_train_pairs": {
+    "ja": 512,
+    "ko": 512,
+    "zh": 512,
+    "th": 512,
+    "en": 512
+  },
+  "sample_presentations": 960,
+  "distinct_training_pairs_used": 960,
+  "distinct_pairs_per_direction": 192,
+  "deployment": "rejected: Korean and Chinese validation regressed; local pretrained NLLB FP16 remains active",
+  "selection": {
+    "strength": 0,
+    "validation": {
+      "0.1": {
+        "ja": 50.6707202062371,
+        "ko": 53.075596229095126,
+        "zh": 58.04641109595076,
+        "th": 60.633795825132566,
+        "en": 51.25449458664496
+      },
+      "0.25": {
+        "ja": 50.616269511529744,
+        "ko": 52.62968068196561,
+        "zh": 58.0002980783905,
+        "th": 60.5799115694535,
+        "en": 51.68812949854139
+      },
+      "0.5": {
+        "ja": 51.16441482023644,
+        "ko": 51.896410554451755,
+        "zh": 57.786913859455694,
+        "th": 60.82883768659989,
+        "en": 51.60920619301417
+      }
+    },
+    "baseline": {
+      "ja": {
+        "chrf": 50.6707202062371,
+        "seconds": 1.070335915166955,
+        "samples": 12
+      },
+      "ko": {
+        "chrf": 54.56840836002127,
+        "seconds": 0.9570767870003086,
+        "samples": 12
+      },
+      "zh": {
+        "chrf": 58.04641109595076,
+        "seconds": 0.9954886023336561,
+        "samples": 12
+      },
+      "th": {
+        "chrf": 60.633795825132566,
+        "seconds": 0.9296982841669887,
+        "samples": 12
+      },
+      "en": {
+        "chrf": 51.25449458664496,
+        "seconds": 1.138741198250197,
+        "samples": 12
+      }
+    },
+    "reason": "No non-regressing adaptation found; use pretrained local baseline",
+    "warning": "Small validation set, not proof of broad translation quality"
+  }
+}

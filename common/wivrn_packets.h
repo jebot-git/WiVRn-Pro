@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "subtitle_protocol.h"
+#include "legacy_subtitle_packet.h"
 
 #include <array>
 #include <chrono>
@@ -961,7 +961,7 @@ using packets = std::variant<
         application_list,
         application_icon,
         running_applications,
-        subtitles::packet>;
+        legacy_subtitles::packet>;
 } // namespace to_headset
 } // namespace wivrn
 

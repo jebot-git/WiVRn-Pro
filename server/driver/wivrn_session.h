@@ -27,7 +27,6 @@
 #include "performance_feed.h"
 #include "shora_bridge.h"
 #include "spatial_bridge.h"
-#include "subtitle_bridge.h"
 #include "tracking_control.h"
 #include "utils/thread_safe.h"
 #include "wivrn_android_face_tracker.h"
@@ -76,7 +75,6 @@ class wivrn_session : public xrt_system_devices
 
 	shora_bridge shora;
 public:
-    ocr_exchange ocr_images;
 private:
 	wivrn::compositor compositor;
 	pacing_app_factory app_pacers;
@@ -86,7 +84,6 @@ private:
 	ipc_server * mnd_ipc_server;
 	xrt_space_overseer * space_overseer = nullptr;
 	spatial::bridge spatial_bridge;
-	std::unique_ptr<subtitle_bridge> subtitles;
 	hand_joystick joystick_emulation;
 	xrt_system_compositor * system_compositor;
 

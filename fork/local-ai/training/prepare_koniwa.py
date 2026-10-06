@@ -17,7 +17,7 @@ import numpy as np
 import soundfile as sf
 from scipy.signal import resample_poly
 from prepare_speakers import Corpus
-sys.path.insert(0,str(Path(__file__).resolve().parents[3]/'dashboard/shora'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[3]/'apps/spatial-subtitles/python'))
 from local_recognition import select_device
 from local_speaker import SpeakerModel
 

@@ -16,7 +16,6 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QFormLayout, 
     QMenu, QSystemTrayIcon, QScrollArea)
 from shora_qt import HubWindow, STYLE
 from tracking_panel import DEFAULTS
-from subtitle_panel import SubtitlePanel
 
 SERVICE = 'io.github.wivrn.Server'
 OBJECT = '/io/github/wivrn/Server'
@@ -337,9 +336,6 @@ class Dashboard(HubWindow):
         self.detach_button.clicked.disconnect()
         self.detach_button.clicked.connect(lambda: self.backend.service('restart'))
         self.tabs.insertTab(0, StreamingPanel(self.backend), 'WiVRn streaming')
-        subtitle_scroll = QScrollArea(); subtitle_scroll.setWidgetResizable(True)
-        subtitle_scroll.setWidget(SubtitlePanel())
-        self.tabs.addTab(subtitle_scroll, 'Subtitles')
         self.tabs.setCurrentIndex(0)
         self.logs.setPlaceholderText('Service logs: journalctl --user -u wivrn-pro.service\nTracking diagnostics and calibration messages appear below.')
         self.backend.failure.connect(self.show_error)

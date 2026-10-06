@@ -22,8 +22,14 @@
     "file": "ko_kr.wav",
     "seconds": 13.14,
     "source": "https://huggingface.co/datasets/FluidInference/fleurs-full/resolve/1cca811bb8ea4d370345f108f00518167040282c/ko_kr/ko_kr_0261.wav",
-    "sha256": "21d19bd726b051c22cbdb42f583254ac2a0571721de14b80da0972f3acffeb52",
+    "sha256": "7a35cd486d7321e6426bf30f4eb529d7b66215272c84f9d49bd43d68e01fcc96",
     "license": "CC-BY-4.0",
-    "transcript": "같은 달에 또 다른 여객기가 마샤드 공항에서 활주로를 벗어나 벽에 충돌하여 17명의 사망자가 발생했습니다"
+    "transcript": "같은 달에 또 다른 여객기가 마샤드 공항에서 활주로를 벗어나 벽에 충돌하여 17명의 사망자가 발생했습니다",
+    "source_sha256": "21d19bd726b051c22cbdb42f583254ac2a0571721de14b80da0972f3acffeb52",
+    "processing": {
+      "operation": "uniform PCM gain; no clipping",
+      "gain_db": 32.733058967038765,
+      "target_rms": 0.075
+    }
   }
 ]

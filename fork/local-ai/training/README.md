@@ -1,5 +1,9 @@
 # CJK adaptation pilots
 
+These are historical WiVRn integration experiments. The active application and
+new four-language training live in [Spatial Subtitles](../../../apps/spatial-subtitles/README.md);
+its inference is fully local, and the old dashboard/provider controls no longer exist.
+
 The training scripts perform real gradient updates and save candidates outside Git. They
 never replace the bundled inference models or change live subtitle settings.
 Training uses native PyTorch XPU on the Arc A770; exported inference uses

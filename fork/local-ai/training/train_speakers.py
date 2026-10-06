@@ -20,7 +20,7 @@ import soundfile as sf
 import torch
 import torch.nn.functional as F
 import openvino as ov
-sys.path.insert(0,str(Path(__file__).resolve().parents[3]/'dashboard/shora'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[3]/'apps/spatial-subtitles/python'))
 from local_recognition import select_device
 from local_speaker import SpeakerModel
 
