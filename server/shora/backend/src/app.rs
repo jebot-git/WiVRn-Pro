@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use firmware_protocol::ActionType;
 use tokio::sync::mpsc;
 use crate::{autobone, calibration::Calibration, config::Config, control::{Command, Envelope, ControlServer},
-    face, feeder, haritorax::{bridge::Bridge, serial::Acquisition}, reset, skeleton, smoothing,
+    face, feeder, haritorax::{self, bridge::Bridge, serial::Acquisition}, reset, skeleton, smoothing,
     solarxr::{self, Pose}, status::{StatusHandle, StatusSnapshot}, tracker::{self, TrackerRegistry}, ui::{UiMode, TuiHandle}};
 
 pub async fn run(config: Config) -> anyhow::Result<()> {
@@ -63,8 +63,10 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
         tokio::select! { r = tokio::signal::ctrl_c() => r, _ = term.recv() => Ok(()) }
     }; tokio::pin!(shutdown);
     let mut paused = false;
+    let mut hardware_ops = tokio::task::JoinSet::new();
     loop {
         let mut pending = None;
+        let mut hardware_done = None;
         let frame_due = tokio::select! {
             result = &mut shutdown => { result?; break; }
             result = services.join_next() => {
@@ -78,6 +80,9 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                 bridge.handle(event, &mut registry.write().unwrap(), &mut calib.write().unwrap(), &assignments);
                 false
             }
+            Some(result) = hardware_ops.join_next(), if !hardware_ops.is_empty() => {
+                hardware_done = Some(result?); false
+            }
             Some(command) = command_rx.recv() => { pending = Some(command); false }
             _ = tick.tick() => true,
         };
@@ -87,6 +92,17 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                 .filter(|h| h.at.elapsed().as_secs_f32() <= crate::stay_aligned::FRESH_SECS)
                 .map(|h| h.pose);
         }
+        for port in acquisition.ports() {
+            for tracker in port.trackers {
+                if let Some(hardware) = tracker.settings.filter(|_| tracker.settings_age_ms.is_some_and(|age| age < 5000)) {
+                    let mut calibration = calib.write().unwrap();
+                    calibration.observe_hardware(tracker::TrackerId::new(tracker.mac, 0), hardware);
+                    if let Some(thigh) = haritorax::thigh_name_for_ankle(&tracker.name) {
+                        calibration.observe_hardware(tracker::TrackerId::new(haritorax::identity::mac_from_name(thigh), 0), hardware);
+                    }
+                }
+            }
+        }
         calib.write().unwrap().check_hmd_reference(hmd.read().unwrap().is_some());
         if let Some(relay) = face_relay.as_mut() { relay.check_health()?; }
         if let Some(tui) = tui.as_mut() { tui.check_health()?; }
@@ -95,11 +111,39 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
         }
         let mut stop = false;
         let mut reply = None;
+        if let Some((envelope, result, ids)) = hardware_done {
+            let envelope: Envelope = envelope;
+            let result: anyhow::Result<()> = result;
+            let ids: Vec<tracker::TrackerId> = ids;
+            for id in ids { calib.write().unwrap().clear_tracker_drift(id); }
+            status.write().unwrap().last_action = match &result {
+                Ok(()) => "Tracker confirmed sensor settings; repeat standing and mounting calibration".into(),
+                Err(e) => format!("{e:#}"),
+            };
+            reply = envelope.reply.map(|tx| (tx, result.map_err(|e| format!("{e:#}"))));
+        }
         if let Some(envelope) = pending {
+            if let Command::SetHaritoraSettings {tracker_mac, hardware} = envelope.command {
+                if hardware.validate().is_ok() && hardware_ops.is_empty() {
+                    let mut ids = vec![tracker::TrackerId::new(tracker_mac, 0)];
+                    for port in acquisition.ports() {
+                        for tracker in port.trackers.iter().filter(|t| t.mac == tracker_mac) {
+                            if let Some(thigh) = haritorax::thigh_name_for_ankle(&tracker.name) {
+                                ids.push(tracker::TrackerId::new(haritorax::identity::mac_from_name(thigh), 0));
+                            }
+                        }
+                    }
+                    for id in &ids { calib.write().unwrap().clear_tracker_drift(*id); }
+                    let operation = acquisition.set_settings(tracker_mac, hardware);
+                    hardware_ops.spawn(async move { (envelope, operation.await, ids) });
+                    continue;
+                }
+            }
             let result = match envelope.command {
                 Command::Status => Ok(()),
                 Command::Shutdown => { stop = true; Ok(()) }
                 Command::ShutdownTrackers => acquisition.shutdown_trackers().await,
+                Command::SetHaritoraSettings { hardware, .. } => hardware.validate().and_then(|_| Err(anyhow::anyhow!("A sensor settings request is already pending"))),
                 Command::PauseTracking => { paused = !paused; Ok(()) }
                 Command::SetSettings { settings: next } => {
                     match next.validate() {

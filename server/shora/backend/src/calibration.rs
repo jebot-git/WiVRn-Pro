@@ -47,6 +47,7 @@ pub struct TrackerCalibration {
     /// When the last yaw reset started (for easing the correction in).
     yaw_reset_since: Option<Instant>,
     drift: DriftCompensator,
+    hardware: Option<crate::haritorax::settings::HardwareSettings>,
 }
 
 impl Default for TrackerCalibration {
@@ -64,11 +65,16 @@ impl Default for TrackerCalibration {
             yaw_fix_start: UnitQuaternion::identity(),
             yaw_reset_since: None,
             drift: DriftCompensator::new(),
+            hardware: None,
         }
     }
 }
 
 impl TrackerCalibration {
+    fn hardware_heading(&self) -> bool {
+        self.hardware.is_some_and(|s| s.sensor_mode == 1 || s.magnetometer)
+    }
+
     /// Full reset (standing): zero this tracker's yaw/pitch/roll against `reference`.
     ///
     /// With a correct `mounting_orientation` (chip → body) and the NED→SlimeVR
@@ -288,7 +294,7 @@ impl Calibration {
     /// Get (or create) a tracker's calibration state.
     pub fn tracker_mut(&mut self, id: TrackerId) -> &mut TrackerCalibration {
         let tracker = self.trackers.entry(id).or_default();
-        tracker.drift.configure(self.drift_enabled, self.drift_amount);
+        tracker.drift.configure(self.drift_enabled && !tracker.hardware_heading(), self.drift_amount);
         tracker
     }
 
@@ -307,7 +313,7 @@ impl Calibration {
     pub fn configure_drift(&mut self, enabled: bool, amount: f32) {
         self.drift_enabled = enabled;
         self.drift_amount = amount;
-        for tracker in self.trackers.values_mut() { tracker.drift.configure(enabled, amount); }
+        for tracker in self.trackers.values_mut() { tracker.drift.configure(enabled && !tracker.hardware_heading(), amount); }
     }
 
     pub fn clear_drift(&mut self) {
@@ -320,6 +326,17 @@ impl Calibration {
 
     pub fn drift_diagnostics(&self, id: TrackerId) -> Option<DriftDiagnostics> {
         self.trackers.get(&id).map(|t| t.drift.diagnostics())
+    }
+
+    /// Hardware heading correction and server yaw correction must not compete.
+    /// Also observe external changes, including settings altered in another app.
+    pub fn observe_hardware(&mut self, id: TrackerId, settings: crate::haritorax::settings::HardwareSettings) {
+        let tracker = self.trackers.entry(id).or_default();
+        if tracker.hardware != Some(settings) {
+            tracker.hardware = Some(settings);
+            self.clear_tracker_drift(id);
+        }
+        self.tracker_mut(id);
     }
 
     pub fn clear_tracker_drift(&mut self, id: TrackerId) {
@@ -340,15 +357,17 @@ impl Calibration {
 
     pub fn update_alignment(&mut self, trackers: &[crate::tracker::Tracker], hmd: Option<UnitQuaternion<f32>>, now: Instant) {
         self.sync_reference();
+        self.stay_aligned.set_anchor_reference(self.reference_health().is_some_and(|h| h.rest_lock_ready));
         if self.reference_needs_reset || self.reference_health().is_some_and(|h| !h.ready) {
             self.stay_aligned.suspend(now); return;
         }
         let samples = trackers.iter().filter_map(|t| {
             let calibration = self.trackers.get(&t.id())?;
-            if !calibration.full_reset_done || calibration.yaw_reset_since.is_some_and(|s| now.saturating_duration_since(s).as_secs_f32() < YAW_SMOOTH_SECS) { return None; }
+            if calibration.hardware_heading() || !calibration.full_reset_done || calibration.yaw_reset_since.is_some_and(|s| now.saturating_duration_since(s).as_secs_f32() < YAW_SMOOTH_SECS) { return None; }
             Some(crate::stay_aligned::Sample { id: t.id(), position: t.position,
                 rotation: calibration.adjust_reference_with_yaw(t.rotation?, calibration.yaw_fix),
-                at: t.rotation_updated_at?, revision: calibration.alignment_revision })
+                at: t.rotation_updated_at?, revision: calibration.alignment_revision,
+                acceleration: if t.accel_is_linear { t.accel.zip(t.accel_updated_at) } else { None } })
         }).collect();
         self.stay_aligned.update(samples, hmd, now);
     }
@@ -421,6 +440,27 @@ fn reference_yaw(q: &UnitQuaternion<f32>) -> UnitQuaternion<f32> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn hardware_heading_excludes_server_yaw_learning_and_requires_new_calibration() {
+        let mut calibration = Calibration::new();
+        let id = TrackerId::new([2;6], 0);
+        calibration.configure_drift(true, 1.0);
+        calibration.tracker_mut(id).full_reset(UnitQuaternion::identity(), UnitQuaternion::identity());
+        let mut hardware = crate::haritorax::settings::HardwareSettings::decode("00000110103000").unwrap();
+        calibration.observe_hardware(id, hardware);
+        assert!(!calibration.tracker_mut(id).full_reset_done);
+        assert!(!calibration.tracker_mut(id).drift.enabled);
+        calibration.configure_drift(true, 1.0);
+        assert!(!calibration.tracker_mut(id).drift.enabled);
+        hardware.sensor_mode = 2;
+        calibration.observe_hardware(id, hardware);
+        assert!(calibration.tracker_mut(id).drift.enabled);
+        assert!(!calibration.tracker_mut(id).full_reset_done);
+        calibration.tracker_mut(id).full_reset(UnitQuaternion::identity(), UnitQuaternion::identity());
+        calibration.observe_hardware(id, hardware);
+        assert!(calibration.tracker_mut(id).full_reset_done);
+    }
+
     #[test]
     fn automatic_rebase_preserves_pose_and_is_not_a_reset_or_drift_sample() {
         use crate::spatial_reference::{Reference, tests::{feed, room_frame, room_settle}};

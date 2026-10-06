@@ -54,6 +54,8 @@ impl Bridge {
                 tracker.accel = Some(Vector3::from(sample.acceleration));
                 tracker.last_seen = Instant::now();
                 tracker.rotation_updated_at = Some(tracker.last_seen);
+                tracker.accel_updated_at = Some(tracker.last_seen);
+                tracker.accel_is_linear = true;
                 calibration.set_mounting(id, position);
             }
             HaritoraXEvent::Battery { voltage_v, percentage, .. } => {

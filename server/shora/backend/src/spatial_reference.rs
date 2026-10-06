@@ -20,6 +20,7 @@ pub struct Health {
     pub revision: u64,
     pub state: &'static str,
     pub anchors: usize,
+    pub rest_lock_ready: bool,
 }
 #[derive(Deserialize)]
 struct Pose { position: [f32; 3], rotation: [f32; 4] }
@@ -99,17 +100,20 @@ pub struct Reference {
     reason: &'static str,
     candidate: Option<Candidate>,
     recovered: Option<Recovery>,
+    rest_baseline: Anchors,
+    rest_since: Option<i64>,
 }
 impl Default for Reference {
     fn default() -> Self { Self {revision:1, epoch:None, sequence:0, sampled:0, since:None,
         baseline:Anchors::new(), anchored:false, reason:"waiting_for_spatial_reference",
-        candidate:None, recovered:None} }
+        candidate:None, recovered:None, rest_baseline:Anchors::new(), rest_since:None} }
 }
 impl Reference {
     pub fn invalidate(&mut self, reason: &'static str) {
         if self.since.is_some() || self.candidate.is_some() || self.recovered.is_some() { self.revision += 1; }
         self.since = None; self.baseline.clear(); self.reason = reason;
         self.candidate = None; self.recovered = None;
+        self.rest_baseline.clear(); self.rest_since = None;
     }
     pub fn recovery_from(&self) -> Option<u64> {
         self.candidate.as_ref().map(|c| c.from_revision).or(self.recovered.map(|r| r.from_revision))
@@ -127,7 +131,8 @@ impl Reference {
         let age = now.saturating_sub(self.sampled);
         let fresh = (-100_000_000..=TTL).contains(&age);
         let ready = self.candidate.is_none() && fresh && self.since.is_some_and(|at| now.saturating_sub(at) >= SETTLE);
-        Health {ready, revision:self.revision, anchors:self.baseline.len(), state:
+        Health {ready, revision:self.revision, anchors:self.baseline.len(),
+            rest_lock_ready: ready && self.rest_since.is_some_and(|at| now.saturating_sub(at) >= SETTLE), state:
             if !fresh && (self.since.is_some() || self.candidate.is_some()) {"spatial_reference_stale"}
             else if self.candidate.is_some() {"reference_recovery_settling"}
             else if self.since.is_none() {self.reason}
@@ -213,7 +218,20 @@ impl Reference {
                     } else { candidate.stable = Some((yaw, translation, now)); }
                 } else { self.invalidate("reference_recovery_ambiguous"); }
             }
-            if self.baseline.is_empty() {self.baseline = anchors;}
+            if self.baseline.is_empty() {self.baseline = anchors.clone();}
+            // Rest authority requires a tighter continuously stable room reference
+            // than the broad relocalization guard. Sub-threshold movement restarts
+            // this window without forcing a full body reset.
+            let stable = consensus(&self.rest_baseline, &anchors)
+                .is_some_and(|(yaw, translation)| yaw.abs() <= 1f32.to_radians() && translation.norm() <= 0.02);
+            if !stable {
+                self.rest_since = None;
+                self.rest_baseline.clear();
+                if consensus(&anchors, &anchors).is_some() {
+                    self.rest_baseline = anchors;
+                    self.rest_since = Some(now);
+                }
+            }
         }
         self.since.get_or_insert(now);
     }
@@ -322,6 +340,23 @@ pub(crate) mod tests {
             assert_eq!(r.revision, revision);
             assert!(r.recovery(at).is_none());
         }
+    }
+    #[test]
+    fn rest_validation_requires_distributed_stable_anchors_and_restarts_on_small_motion() {
+        let mut r=Reference::default(); let now=room_settle(&mut r,10_000_000_000);
+        assert!(r.health(now).rest_lock_ready);
+        let revision=r.revision;
+        for i in 0..=12 {
+            let at=now+(i+1)*200_000_000;
+            feed(&mut r,&room_frame(12+i as u64,at,1,UnitQuaternion::identity(),Vector3::new(0.03,0.0,0.0)),at);
+            assert!(r.health(at).ready);
+            assert_eq!(r.revision,revision);
+            assert_eq!(r.health(at).rest_lock_ready,i>=10);
+        }
+        assert!(!r.health(now+4_000_000_000).rest_lock_ready);
+        let mut r=Reference::default(); let now=settle(&mut r,10_000_000_000,1,3);
+        assert!(r.health(now).ready);
+        assert!(!r.health(now).rest_lock_ready); // Coincident anchors are insufficient.
     }
     #[test]
     fn finite_but_overflowing_anchor_coordinates_cannot_authorize_recovery() {

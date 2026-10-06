@@ -195,3 +195,20 @@ repeated transitions, arbitrary bent-limb preservation, no drift learning,
 outliers, degenerate layouts, pitch/roll, stale/replayed samples, HMD loss,
 disconnects, initial calibration gating, and downstream PC alignment changes.
 Hardware accuracy and worn-tracker behavior remain unverified.
+
+### Anchor-validated rest, more poses, and HaritoraX controls
+
+The unified Tracking page now includes opt-in anchor-validated rest locks and
+calibration entries for high kneeling, sitting on heels, prone, and prone with
+bent knees. The dongle sensor panel exposes readback-verified sensor modes,
+individual correction flags and 50/100 FPS. See
+[calibration steps and limitations](../server/shora/backend/docs/pose-expansion.md).
+The hardware controls keep dongle communication and do not switch to Bluetooth.
+
+Software validation for this extension: 139 Rust workspace tests including doc
+tests, 20 Python unit tests, native server build, fork policy check, integrated
+tracking/Qt and spatial-reference smoke tests, and
+`fork/tests/haritorax_settings_smoke.py` with a simulated serial dongle. The latter
+checks preserved settings bits, physical-versus-extension targeting, invalid FPS,
+fresh echo confirmation, unconfirmed writes, no retries, and continued command
+processing while waiting. Hardware validation remains outstanding.

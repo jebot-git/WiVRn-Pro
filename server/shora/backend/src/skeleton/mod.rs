@@ -207,6 +207,8 @@ mod tests {
             position: 4, // chest
             rotation: Some(UnitQuaternion::identity()),
             accel: None,
+            accel_updated_at: None,
+            accel_is_linear: false,
             rotation_updated_at: Some(std::time::Instant::now()),
             last_seen: std::time::Instant::now(),
         };

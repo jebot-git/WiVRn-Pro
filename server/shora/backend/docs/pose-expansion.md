@@ -1,174 +1,93 @@
-# Stay Aligned: kneeling and prone pose exploration
+# Stay Aligned: additional poses and anchor-validated rest
 
-Scope: code inspection of the bundled backend, with a proposed implementation
-sequence. The reference-recovery branch does not enable new pose classes. No
-on-body accuracy or contact detection has been validated.
+Implemented on `feature/spatial-reference-recovery`. Software tests use synthetic
+orientations, acceleration and spatial snapshots; no on-body accuracy or contact
+behavior has been validated.
 
-## Current behavior
+## Pose calibration
 
-`stay_aligned.rs` offers `standing`, `sitting`, and `flat`. Classification uses the
-dominant vertical component of each segment's local axes, not joint angles or
-contact sensing. Chest or hip, both thighs and both shins are required. The flat
-rule uses `FrontUp`/upright torso orientations; it does not cover `FrontDown`
-(belly-down torso). High kneeling (upright torso/thighs, shins pointing back along
-the floor) and sitting on the heels also lack a matching rule.
+The unified GUI Calibration menu supports standing, seated, floor/back-lying,
+high kneeling, sitting on heels, belly-down with extended legs, and belly-down
+with bent knees. The existing `flat` profile retains its original meaning.
 
-Unrecognized posture does not stop skeleton tracking. Fresh tracker rotations
-still drive forward kinematics, and Stay Aligned rest locking works independently
-of the relaxed-pose classifier. It can constrain a sufficiently stationary prone
-or kneeling tracker after one second within the rest range. Moving trackers in
-these postures have no relaxed-pose correction. This distinction should be visible
-in the UI: `no_pose` is not a tracker disconnection.
+1. Assign chest/hip, both thighs and both shins; check mounting directions.
+2. Perform a full standing reset, then the mounting reset in the guided ski pose.
+3. Save a relaxed standing pose before enabling Stay Aligned.
+4. Select each additional pose to calibrate, follow its displayed instructions,
+   and hold naturally still for at least one second before capture. Both feet
+   are required if either foot is included. Capture rejects missing, stale,
+   ambiguous, moving or sideways-heading samples.
+5. Apply Stay Aligned. Export tuning TOML to retain the saved profiles at startup.
 
-The current saved pose stores only three symmetric yaw spreads: upper legs, lower
-legs and feet. It cannot describe asymmetric kneeling or the different segment
-tilts of straight-legged versus bent-knee prone poses. Its heading uses the local
-right axis projected onto the horizontal plane. This works for ideal prone pitch,
-but becomes unreliable when that axis becomes vertical during a side roll. Rest
-locking already chooses a stable axis; moving-pose correction does not.
+New poses require a dominant gravity-relative segment axis of at least 0.75,
+matching both legs and the torso. A detected class must persist for 0.5 seconds
+before posture correction starts. Ambiguity immediately suspends posture
+correction; returning to a class requires another dwell. Prone profiles exclude
+HMD heading from centering so a sideways head turn does not pull the torso.
+Diagnostics expose the active class; `no_pose` does not mean tracking stopped.
 
-## Recommended pose additions
+Each profile stores the existing three symmetric yaw spreads for thighs, shins
+and feet. This implementation does not add asymmetric half-kneeling templates,
+individual joint-angle templates or a knee/floor contact solver. The HMD-rooted
+skeleton continues tracking in unknown poses. Recognition can reduce yaw
+misalignment; it cannot guarantee floor contact, eliminate knee sliding, or fix
+incorrect body proportions. Rest locking remains independent of the pose class.
 
-| Pose | Distinguishing evidence | Correction approach |
-| --- | --- | --- |
-| High kneeling | Upright torso/thighs, approximately horizontal shins extending backward | Separate thigh and shin yaw targets; retain torso heading |
-| Sitting on heels | Lower pelvis, folded legs; thigh/shin relationship differs from high kneeling | Separate profile, not a wider sitting threshold |
-| Prone, legs extended | Belly-down torso and thighs, approximately extended knees | Torso/neighbor constraints; suppress HMD heading influence |
-| Prone, knees bent | Belly-down torso/thighs, elevated lower legs | Separate shin template; suspend heading correction near singularities |
-| Half kneeling, left/right | Different leg configurations | Later addition requiring per-side templates |
+## Optional anchor-validated rest lock
 
-Start with high kneeling and straight-legged prone. Keep the existing flat
-profile compatible and label it more precisely rather than silently treating it
-as belly-down calibration. Do not simply accept `FrontDown` in every flat rule:
-mixed postures and pose transitions would receive inappropriate targets.
+Enable **Validate rest locks with room anchors** in Tracking settings. This is a
+bounded yaw correction, not a solved-position freeze or automatic standing reset.
 
-## Detection and calibration design
+The spatial bridge must report at least three persisted, tracked, spatially
+distributed anchors with stable identities, a valid settled reference, and fresh
+HMD tracking. A two-second rest-reference window tolerates at most 2 cm of
+translation and 1 degree of yaw; degenerate/collinear sets cannot establish it.
+This is stricter than the broad reference-change guard. Smaller anchor movement
+restarts rest validation without forcing a full standing reset.
 
-1. Compute continuous gravity-relative segment features and relative knee/hip
-   angles from calibrated orientations. Match a bounded anatomical envelope,
-   then score distance to the selected saved template. Do not classify by yaw
-   error alone: yaw is the quantity being corrected.
-2. Add confidence and hysteresis: a stable entry dwell, wider exit envelope and
-   a transition/unknown state. Unknown or rapidly changing posture holds offsets
-   and permits rest locking, but does not force a neighboring pose class.
-3. Extend saved data to optional per-side segment tilt templates and yaw targets
-   relative to the torso. Preserve old three-angle profiles and schema defaults.
-   Capture a short window of fresh, still samples with variance checks. Reject
-   ambiguous heading measurements rather than saving unstable angles.
-4. Reduce or disable HMD heading contribution for prone poses: looking sideways
-   to breathe or at a screen must not twist the body. Use torso and adjacent
-   segments; accept that common whole-body IMU yaw drift then remains unobservable
-   without another body reference. Spatial room anchors do not supply that reference.
-5. Use a pose-specific heading axis with continuity checks, or withhold moving
-   correction where the horizontal projection is weak. Blindly switching axes
-   risks a 90/180-degree heading discontinuity.
+Each sensor also requires fresh rotation and verified gravity-compensated linear
+acceleration, both within 250 ms. HaritoraX serial input provides this acceleration
+in m/s². UDP acceleration packets have unverified gravity/units semantics here
+and cannot establish guarded rest. Missing data never means zero motion.
 
-Initial profile capture should remain deliberate. A known floor and HMD height
-can help distinguish low poses but cannot prove kneeling, foot contact, or body
-direction. Beds, cushions, furniture and crouching break a simple height threshold.
-The existing bridge exports scene geometry, but Shora's reference guard does not
-consume floor planes. A separate frame-aware geometry input would be required.
+Rest entry needs at least one second of distinct observations, acceleration at
+most 0.15 m/s², low variance, and angular speed at most 0.3 degrees/s. Exit uses
+0.30 m/s² and 0.8 degrees/s, with additional checks for tilt, discontinuity and
+stale data. These defaults require hardware tuning. There is no raw gyro or live
+firmware rest flag in the current input interface; angular speed is derived from
+quaternions. HaritoraX acceleration also depends on its orientation estimate.
 
-## Maintaining tracking versus correcting yaw
+At rest the target is the corrected orientation. Only yaw is corrected, at the
+configured 0.01–1 degree/s limit, with at most 3 degrees of residual error and
+5 degrees accumulated correction per lock. Tilt and legitimate skeletal
+translation remain live. Motion or uncertainty releases the lock; offsets remain
+continuous. A validated room-frame recovery rebases the target with the same yaw.
+Automatic corrections do not train the reset-based drift learner.
 
-The solver currently pins the root to HMD position and propagates calibrated
-bone rotations. It has no knee/floor contact solver or reliable foot-lock state.
-Consequently, better pose recognition can reduce yaw distortion but will not by
-itself eliminate knee sliding, floor penetration, or body-proportion errors.
+Status includes evidence state, rotation/acceleration ages and unlock reason.
+When guarded evidence is unavailable, no automatic alignment is applied; it does
+not silently fall back to the old quaternion-only lock. Three stable anchors
+validate the room frame, not body motion. Very slow intended rotation or
+constant-speed translation can resemble rest; absolute drift prevention is not
+observable from these inputs alone.
 
-Contact constraints should be a later, separately tested stage. Infer contact
-only with sustained low velocity and consistent height against a known surface;
-release it on deliberate movement. Do not clamp every low knee or foot to STAGE
-floor zero. Lack of positional body measurements and changing support surfaces
-make those constraints uncertain. Keep solving the measured skeleton while
-classification is unknown or one optional segment is missing; do not freeze all
-body output to maintain an appearance of stability.
+## HaritoraX controls
 
-## Implementation sites and validation
+The **HaritoraX sensors · dongle** group selects a physical tracker and exposes:
 
-Backend changes would touch `PoseKind`, `Settings`, `RelaxedPose`, `classify`,
-`capture`, `center_yaw` and neighbor targets in `src/stay_aligned.rs`. Update config
-round-trip validation, control requests, tuning export and the Qt pose menu/status
-together. Existing standing/sitting/flat profiles must deserialize unchanged.
+- Sensor mode 1 (magnetometer on) or 2 (off).
+- Accelerometer, gyroscope and magnetometer correction flags.
+- Tracker transmission rate: 50 or 100 FPS. The skeleton update rate is unchanged.
 
-Tests should cover ideal and perturbed kneeling/prone poses, bent knees, asymmetric
-legs, side rolls, crawling, transitions through sitting, sustained head turns,
-missing/stale samples and duplicate assignments. Verify signed drift correction,
-unchanged pitch/roll, frame-rate independence, no correction during deliberate
-turns, and compatibility with automatic room-frame recovery. Add simulated
-serial/control tests, then record headset sessions with known poses to measure
-false recognition, false correction, and contact errors separately.
+Only fresh device reports enable writes. Apply preserves all unrelated settings,
+including ankle detection and communication fields. The backend verifies a fresh
+matching echo, never treats its outgoing command as confirmation, and reports
+uncertainty on timeout without retries. Tracking continues while waiting. No
+Bluetooth switch, automatic replay on reconnect, or startup hardware profile is
+added. Device-side persistence is firmware-dependent.
 
-Suggested order: continuous classifier and diagnostics; deliberate capture of
-high kneeling/prone templates; bounded posture correction; optional asymmetric
-profiles; finally contact constraints if measurements support them.
-
-## Feasibility of anchor-validated rest locking
-
-Proposal: with at least three localized stable anchors and affirmative tracker
-rest evidence, reject orientation drift while the tracker remains at rest.
-This is feasible as an extension of Stay Aligned's existing rest lock, including
-for kneeling and prone postures that have no relaxed-pose profile. It does not
-require forcing the user into a standing reset pose.
-
-The current inputs impose limits:
-
-- `Tracker` stores a quaternion and optional acceleration, but no gyro sample,
-  live firmware rest indication, or acceleration-specific timestamp. UDP supports
-  acceleration packets; HaritoraX's decoder computes gravity-compensated
-  acceleration from its decoded gravity vector and quaternion. Stay Aligned's
-  `Sample` currently receives neither acceleration nor a rest flag.
-- Missing packets are unknown motion, not zero motion. The `SensorInfo`
-  rest-calibration field is not a continuously updated stillness measurement and
-  is not used as one by this backend.
-- A raw accelerometer at rest normally measures gravity; a properly compensated
-  linear-acceleration signal is near zero. Units, axes and gravity-removal semantics
-  must be identified per input before using thresholds. HaritoraX compensation
-  uses the same orientation estimate, so it is not fully independent evidence.
-- Near-zero linear acceleration does not exclude constant-speed translation or
-  slow rotation. Gyro readings also need a noise/bias model: a gyro bias that causes
-  yaw drift may itself be the small nonzero signal under test.
-
-Recommended algorithm:
-
-1. Require fresh, tracked persisted anchors with stable identities and a settled
-   reference, plus fresh sensor observations. Three anchors being present is
-   insufficient while they are moving, stale, or being relocalized.
-2. Establish a rest candidate using a rolling window of orientation change,
-   calibrated acceleration magnitude/variance, and fresh gyro or a reliable live
-   firmware rest flag if that input becomes available. Use dwell and hysteresis.
-3. On rest entry, save the **corrected orientation** in the room/feeder frame.
-   While rest confidence remains high, counter small yaw deviations against that
-   saved target. Preserve legitimate pitch/roll and use the existing stable-axis
-   error calculation for side/prone poses. Use a rate limit and a bounded
-   discrepancy; an unexplained large jump should suspend the lock, not trigger
-   an automatic standing reset.
-4. Release promptly on affirmative movement, stale data, reference uncertainty,
-   remounting or reassignment. Preserve the accumulated correction when releasing
-   so movement does not undo the drift correction. During an accepted frame rebase,
-   transform the target by the same yaw; during an uncertain transition discard
-   rest observations and reacquire them.
-5. Record diagnostics: rest confidence, observation ages, rejected yaw, and unlock
-   reason. Keep automatic corrections out of the reset-based drift learner.
-
-The current 2-degree orientation rest range can be exceeded by cumulative drift
-even when the physical sensor stays stationary. Better independent rest evidence
-could allow the lock to remain active across that drift. With only quaternion
-and acceleration, this remains a heuristic: very slow intended yaw can still be
-indistinguishable from drift. The extra anchors validate the coordinate frame;
-they do not resolve that missing body-motion observation.
-
-Do not discard every change in the tracker's **solved position**. Slime/HaritoraX
-body inputs here are orientations; skeleton joint positions are inferred from
-the HMD root, neighboring segment rotations and bone lengths. A stationary
-orientation can accompany legitimate translation. Hard position locking would
-require explicit contact constraints and a solver that can reconcile the HMD
-and body measurements. It would otherwise create stretched or frozen limbs.
-
-A sensible follow-up implementation is fresh acceleration plumbing plus an
-opt-in anchor-validated yaw rest lock. Add raw gyro/live rest capability only
-where the source actually supplies it; fall back explicitly to heuristic mode.
-Test slow intentional turns, slow translation, impacts, missing packets, changing
-gravity estimates, belly-down head turns and room-frame recovery before increasing
-correction authority. This branch documents that extension rather than enabling
-an unvalidated hard freeze or automatic per-tracker reset.
+A hardware change invalidates calibration/automatic yaw history for the physical
+sensor and its extension. Repeat standing and mounting calibration, then recapture
+relaxed poses if needed. Observed magnetometer heading/correction excludes those
+sensors from server yaw drift correction and Stay Aligned to avoid competing
+heading estimators. Other sensors continue following their configured policy.

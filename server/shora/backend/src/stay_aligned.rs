@@ -1,7 +1,7 @@
 //! Stay Aligned adaptation for the native server's tracked body segments.
 //! Rest locking, pose classification and centering/neighbor constraints follow
 //! SlimeVR (see THIRD_PARTY.md). All updates use actual time, independent of FPS.
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::time::Instant;
 use nalgebra::{UnitQuaternion, Vector3};
 use serde::{Deserialize, Serialize};
@@ -11,10 +11,17 @@ const REST_ANGLE: f32 = 2.0 * std::f32::consts::PI / 180.0;
 const REST_SECS: f32 = 1.0;
 const RECENT_SECS: f32 = 3.0;
 pub const FRESH_SECS: f32 = 0.25;
+const REST_ACCEL_ENTER: f32 = 0.15; // gravity-compensated m/s²
+const REST_ACCEL_EXIT: f32 = 0.30;
+const REST_ACCEL_VARIANCE: f32 = 0.01; // (m/s²)², sum across axes
+const REST_SPEED_ENTER: f32 = 0.3 * std::f32::consts::PI / 180.0;
+const REST_SPEED_EXIT: f32 = 0.8 * std::f32::consts::PI / 180.0;
+const REST_MAX_ERROR: f32 = 3.0 * std::f32::consts::PI / 180.0;
+const REST_MAX_CORRECTION: f32 = 5.0 * std::f32::consts::PI / 180.0;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum PoseKind { Standing, Sitting, Flat }
+pub enum PoseKind { Standing, Sitting, Flat, Kneeling, Heels, Prone, ProneBent }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -28,14 +35,21 @@ pub struct RelaxedPose {
 #[serde(default, deny_unknown_fields)]
 pub struct Settings {
     pub enabled: bool,
+    /// Opt-in: requires stable room anchors and verified fresh linear acceleration.
+    pub anchor_rest_lock: bool,
     pub rate_deg_per_sec: f32,
     pub standing: Option<RelaxedPose>,
     pub sitting: Option<RelaxedPose>,
     pub flat: Option<RelaxedPose>,
+    pub kneeling: Option<RelaxedPose>,
+    pub heels: Option<RelaxedPose>,
+    pub prone: Option<RelaxedPose>,
+    pub prone_bent: Option<RelaxedPose>,
 }
 impl Default for Settings {
     fn default() -> Self {
-        Self { enabled: false, rate_deg_per_sec: 0.2, standing: None, sitting: None, flat: None }
+        Self { enabled: false, anchor_rest_lock: false, rate_deg_per_sec: 0.2, standing: None, sitting: None, flat: None,
+            kneeling:None, heels:None, prone:None, prone_bent:None }
     }
 }
 impl Settings {
@@ -44,17 +58,19 @@ impl Settings {
             "Stay Aligned rate must be between 0.01 and 1 degree/second");
         anyhow::ensure!(!self.enabled || self.standing.is_some(),
             "Save a relaxed standing pose before enabling Stay Aligned");
-        for p in [self.standing, self.sitting, self.flat].into_iter().flatten() {
+        for p in [self.standing, self.sitting, self.flat, self.kneeling, self.heels, self.prone, self.prone_bent].into_iter().flatten() {
             anyhow::ensure!([p.upper_leg_deg, p.lower_leg_deg, p.foot_deg].iter()
                 .all(|x| x.is_finite() && x.abs() <= 90.0), "Relaxed pose angles must be finite and within +/-90 degrees");
         }
         Ok(())
     }
     pub fn save(&mut self, kind: PoseKind, pose: RelaxedPose) {
-        *match kind { PoseKind::Standing => &mut self.standing, PoseKind::Sitting => &mut self.sitting, PoseKind::Flat => &mut self.flat } = Some(pose);
+        *match kind { PoseKind::Standing => &mut self.standing, PoseKind::Sitting => &mut self.sitting, PoseKind::Flat => &mut self.flat,
+            PoseKind::Kneeling=>&mut self.kneeling, PoseKind::Heels=>&mut self.heels, PoseKind::Prone=>&mut self.prone, PoseKind::ProneBent=>&mut self.prone_bent } = Some(pose);
     }
     fn pose(&self, kind: PoseKind) -> Option<RelaxedPose> {
-        match kind { PoseKind::Standing => self.standing, PoseKind::Sitting => self.sitting, PoseKind::Flat => self.flat }
+        match kind { PoseKind::Standing => self.standing, PoseKind::Sitting => self.sitting, PoseKind::Flat => self.flat,
+            PoseKind::Kneeling=>self.kneeling, PoseKind::Heels=>self.heels, PoseKind::Prone=>self.prone, PoseKind::ProneBent=>self.prone_bent }
     }
 }
 
@@ -66,6 +82,8 @@ pub struct Sample {
     pub rotation: UnitQuaternion<f32>,
     pub at: Instant,
     pub revision: u64,
+    /// Verified linear acceleration only, in m/s². None means unknown, not rest.
+    pub acceleration: Option<(Vector3<f32>, Instant)>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -77,6 +95,11 @@ pub struct Diagnostics {
     pub correction_deg: f32,
     pub rest: Rest,
     pub mode: &'static str,
+    pub rest_evidence: &'static str,
+    pub unlock_reason: &'static str,
+    pub rotation_age_ms: Option<f32>,
+    pub acceleration_age_ms: Option<f32>,
+    pub pose: Option<PoseKind>,
 }
 
 struct State {
@@ -91,12 +114,20 @@ struct State {
     locked: Option<UnitQuaternion<f32>>,
     correction: f32,
     mode: &'static str,
+    motion: VecDeque<(Instant, Vector3<f32>)>,
+    lock_start_correction: f32,
+    blocked: Option<&'static str>,
+    unlock_reason: &'static str,
+    rotation_age_ms: Option<f32>,
+    acceleration_age_ms: Option<f32>,
 }
 impl State {
     fn new(s: &Sample) -> Self {
         Self { revision: s.revision, position: s.position, last_sample: s.at, previous: s.rotation,
             anchor: s.rotation, anchor_since: s.at, rest: Rest::Moving, recent_since: s.at,
-            locked: None, correction: 0.0, mode: "warming_up" }
+            locked: None, correction: 0.0, mode: "warming_up", motion:VecDeque::new(),
+            lock_start_correction:0.0, blocked:None, unlock_reason:"none",
+            rotation_age_ms:None, acceleration_age_ms:None }
     }
     fn observe(&mut self, s: &Sample) -> f32 {
         let dt = s.at.saturating_duration_since(self.last_sample).as_secs_f32();
@@ -127,6 +158,77 @@ impl State {
         // Rapid deliberate motion is never nudged towards a relaxed pose.
         if speed > 30f32.to_radians() { 0.0 } else { dt.min(0.1) }
     }
+
+    fn release(&mut self, s: &Sample, reason: &'static str) {
+        if self.rest == Rest::AtRest {
+            self.rest = Rest::RecentlyAtRest;
+            self.recent_since = s.at;
+        }
+        self.locked = None;
+        self.anchor = s.rotation;
+        self.anchor_since = s.at;
+        self.motion.clear();
+        self.unlock_reason = reason;
+    }
+
+    fn observe_guarded(&mut self, s: &Sample, now: Instant, anchors_ready: bool) -> f32 {
+        self.blocked = None;
+        self.rotation_age_ms = Some(now.saturating_duration_since(s.at).as_secs_f32() * 1000.0);
+        self.acceleration_age_ms = s.acceleration.map(|(_, at)| now.saturating_duration_since(at).as_secs_f32() * 1000.0);
+        let fresh_accel = s.acceleration.filter(|(a, at)| *at <= now &&
+            now.duration_since(*at).as_secs_f32() <= FRESH_SECS && a.iter().all(|v| v.is_finite()));
+        let reason = if !anchors_ready { Some("anchors_unverified") }
+            else if fresh_accel.is_none() { Some("acceleration_unavailable") } else { None };
+        if let Some(reason) = reason {
+            self.release(s, reason);
+            self.previous = s.rotation; self.last_sample = s.at;
+            self.blocked = Some(reason);
+            return 0.0;
+        }
+        let (accel, accel_at) = fresh_accel.unwrap();
+        let dt = s.at.saturating_duration_since(self.last_sample).as_secs_f32();
+        let speed = if dt > 0.0 { self.previous.angle_to(&s.rotation) / dt } else { 0.0 };
+        if dt > 0.0 { self.previous = s.rotation; self.last_sample = s.at; }
+        if self.rest == Rest::RecentlyAtRest && s.at.saturating_duration_since(self.recent_since).as_secs_f32() >= RECENT_SECS {
+            self.rest = Rest::Moving;
+        }
+        if let Some((at, _)) = self.motion.back() {
+            if accel_at < *at || accel_at.saturating_duration_since(*at).as_secs_f32() > FRESH_SECS {
+                self.release(s, "acceleration_gap");
+            }
+        }
+        if self.motion.back().is_none_or(|(at, _)| accel_at > *at) { self.motion.push_back((accel_at, accel)); }
+        while self.motion.len() > 2 && accel_at.saturating_duration_since(self.motion[1].0).as_secs_f32() >= REST_SECS {
+            self.motion.pop_front();
+        }
+        // Bound storage even for unusually high-rate sources; insufficient time
+        // coverage simply prevents a lock rather than treating duplicates as dwell.
+        while self.motion.len() > 128 { self.motion.pop_front(); }
+        let mean = self.motion.iter().fold(Vector3::zeros(), |sum, (_, a)| sum + a) / self.motion.len() as f32;
+        let variance = self.motion.iter().map(|(_, a)| (a - mean).norm_squared()).sum::<f32>() / self.motion.len() as f32;
+        let resting = self.rest == Rest::AtRest;
+        let tilt = (self.anchor.inverse() * Vector3::y()).angle(&(s.rotation.inverse() * Vector3::y()));
+        let error = self.locked.map(|target| locked_error(yaw(self.correction) * s.rotation, target).abs()).unwrap_or(0.0);
+        let reason = if accel.norm() > if resting { REST_ACCEL_EXIT } else { REST_ACCEL_ENTER } { Some("acceleration_motion") }
+            else if variance > REST_ACCEL_VARIANCE { Some("acceleration_variance") }
+            else if speed > if resting { REST_SPEED_EXIT } else { REST_SPEED_ENTER } { Some("rotation_motion") }
+            else if tilt > 1f32.to_radians() { Some("tilt_motion") }
+            else if error > REST_MAX_ERROR { Some("yaw_discontinuity") }
+            else if resting && wrap(self.correction - self.lock_start_correction).abs() >= REST_MAX_CORRECTION - 1e-6 { Some("correction_limit") }
+            else { None };
+        if let Some(reason) = reason {
+            self.release(s, reason);
+            return if speed > 30f32.to_radians() { 0.0 } else { dt.min(0.1) };
+        }
+        let covered = self.motion.len() >= 4 && accel_at.saturating_duration_since(self.motion[0].0).as_secs_f32() >= REST_SECS;
+        if self.rest == Rest::Moving && covered && s.at.saturating_duration_since(self.anchor_since).as_secs_f32() >= REST_SECS {
+            self.rest = Rest::AtRest;
+            self.locked = Some(yaw(self.correction) * s.rotation);
+            self.lock_start_correction = self.correction;
+            self.unlock_reason = "none";
+        }
+        dt.min(0.1)
+    }
 }
 
 #[derive(Default)]
@@ -134,13 +236,17 @@ pub struct StayAligned {
     settings: Settings,
     states: HashMap<TrackerId, State>,
     samples: Vec<Sample>,
+    anchors_ready: bool,
+    pose_candidate: Option<(PoseKind, Instant)>,
+    active_pose: Option<PoseKind>,
 }
 impl StayAligned {
+    pub fn set_anchor_reference(&mut self, ready: bool) { self.anchors_ready = ready; }
     pub fn configure(&mut self, settings: Settings) {
         if self.settings != settings { self.clear(); }
         self.settings = settings;
     }
-    pub fn clear(&mut self) { self.states.clear(); self.samples.clear(); }
+    pub fn clear(&mut self) { self.states.clear(); self.samples.clear(); self.pose_candidate=None; self.active_pose=None; }
     pub fn invalidate(&mut self, id: TrackerId) { self.states.remove(&id); self.samples.retain(|s| s.id != id); }
     pub fn correction(&self, id: TrackerId, revision: u64) -> f32 {
         if !self.settings.enabled { return 0.0; }
@@ -149,11 +255,15 @@ impl StayAligned {
     pub fn diagnostics(&self, id: TrackerId, revision: u64) -> Option<Diagnostics> {
         self.states.get(&id).filter(|s| s.revision == revision).map(|s| Diagnostics {
             correction_deg: s.correction.to_degrees(), rest: s.rest, mode: s.mode,
+            rest_evidence: if self.settings.anchor_rest_lock { "anchor_acceleration_heuristic" } else { "orientation_heuristic" },
+            unlock_reason:s.unlock_reason, rotation_age_ms:s.rotation_age_ms, acceleration_age_ms:s.acceleration_age_ms,
+            pose:self.active_pose,
         })
     }
     /// Pause discards observations/locks, retaining the already applied offset.
     pub fn suspend(&mut self, now: Instant) {
         self.samples.clear();
+        self.pose_candidate=None; self.active_pose=None;
         for state in self.states.values_mut() {
             state.anchor_since = now;
             state.last_sample = now;
@@ -161,6 +271,9 @@ impl StayAligned {
             state.rest = Rest::Moving;
             state.locked = None;
             state.mode = "paused";
+            state.motion.clear();
+            state.unlock_reason = "reference_or_tracking_paused";
+            state.rotation_age_ms = None; state.acceleration_age_ms = None;
         }
     }
     /// Change the reference frame without changing any learned relative yaw.
@@ -174,7 +287,7 @@ impl StayAligned {
         for sample in &mut self.samples { sample.rotation = rotation * sample.rotation; }
     }
     pub fn update(&mut self, mut samples: Vec<Sample>, hmd: Option<UnitQuaternion<f32>>, now: Instant) {
-        samples.retain(|s| now.saturating_duration_since(s.at).as_secs_f32() <= FRESH_SECS
+        samples.retain(|s| s.at <= now && now.saturating_duration_since(s.at).as_secs_f32() <= FRESH_SECS
             && s.rotation.coords.iter().all(|v| v.is_finite())
             && matches!(s.position, 4 | 6 | 7..=12 | 15..=18));
         // Ambiguous assignments cannot be used as anatomical references.
@@ -185,11 +298,14 @@ impl StayAligned {
         let mut steps = HashMap::new();
         for s in &samples {
             let state = self.states.entry(s.id).or_insert_with(|| State::new(s));
-            if state.revision != s.revision || state.position != s.position
-                || s.at.saturating_duration_since(state.last_sample).as_secs_f32() > FRESH_SECS {
+            if state.revision != s.revision || state.position != s.position {
                 *state = State::new(s);
+            } else if s.at.saturating_duration_since(state.last_sample).as_secs_f32() > FRESH_SECS {
+                let held = state.correction;
+                *state = State::new(s);
+                if self.settings.anchor_rest_lock { state.correction = held; state.unlock_reason = "rotation_gap"; }
             }
-            steps.insert(s.id, state.observe(s));
+            steps.insert(s.id, if self.settings.anchor_rest_lock { state.observe_guarded(s, now, self.anchors_ready) } else { state.observe(s) });
             state.mode = if self.settings.enabled { "no_pose" } else { "disabled" };
         }
         // Stale input cannot build a rest lock. Keep its existing offset until
@@ -200,22 +316,38 @@ impl StayAligned {
                 state.rest = Rest::Moving;
                 state.locked = None;
                 state.anchor_since = now;
+                state.motion.clear();
+                state.unlock_reason = "rotation_stale_or_ambiguous";
+                state.rotation_age_ms = Some(now.saturating_duration_since(state.last_sample).as_secs_f32() * 1000.0);
             }
         }
         // Freeze a common frame for all corrections, avoiding iteration-order bias.
         let frame: Vec<_> = samples.iter().map(|s| Sample {
             rotation: yaw(self.correction(s.id, s.revision)) * s.rotation, ..*s
         }).collect();
-        let pose = classify(&frame).and_then(|p| self.settings.pose(p));
-        let center = center_yaw(&frame, hmd);
+        let detected = classify(&frame);
+        if detected != self.pose_candidate.map(|(p,_)|p) {
+            self.pose_candidate=detected.map(|p|(p,now));
+        }
+        // Never pull a transitioning/ambiguous posture toward the previous pose.
+        self.active_pose=self.pose_candidate.filter(|(_,at)|now.saturating_duration_since(*at).as_secs_f32()>=0.5).map(|(p,_)|p);
+        let pose = self.active_pose.and_then(|p| self.settings.pose(p));
+        let prone = matches!(self.active_pose,Some(PoseKind::Prone | PoseKind::ProneBent));
+        let center = center_yaw(&frame, if prone {None} else {hmd});
         for (s, adjusted) in samples.iter().zip(&frame) {
             let state = self.states.get_mut(&s.id).unwrap();
             if !self.settings.enabled { continue; }
+            if self.settings.anchor_rest_lock {
+                if let Some(reason) = state.blocked { state.mode = reason; continue; }
+            }
             let step = self.settings.rate_deg_per_sec.to_radians() * steps[&s.id];
             let delta = match state.rest {
                 Rest::AtRest => {
-                    state.mode = "rest_lock";
-                    state.locked.map(|target| locked_error(adjusted.rotation, target)).unwrap_or(0.0).clamp(-step, step)
+                    state.mode = if self.settings.anchor_rest_lock { "anchor_rest_lock" } else { "rest_lock" };
+                    let bound = if self.settings.anchor_rest_lock {
+                        step.min((REST_MAX_CORRECTION - wrap(state.correction - state.lock_start_correction).abs()).max(0.0))
+                    } else { step };
+                    state.locked.map(|target| locked_error(adjusted.rotation, target)).unwrap_or(0.0).clamp(-bound, bound)
                 }
                 Rest::RecentlyAtRest => { state.mode = "recently_at_rest"; 0.0 }
                 Rest::Moving => match (pose, center, heading(&adjusted.rotation)) {
@@ -321,6 +453,14 @@ fn classify(frame: &[Sample]) -> Option<PoseKind> {
     else if torso[0] == Up && torso.iter().all(|p| matches!(p, Up | FrontUp)) && thighs == [FrontUp; 2] && shins == [Up; 2] { Some(PoseKind::Sitting) }
     else if (torso[0] == Up || torso.iter().all(|p| *p == FrontUp)) && torso.iter().all(|p| matches!(p, Up | FrontUp))
         && thighs.iter().all(|p| matches!(p, FrontUp | Down)) && shins.iter().all(|p| matches!(p, FrontUp | Up)) { Some(PoseKind::Flat) }
+    else if frame.iter().filter(|s|center_weight(s.position)>0.0).any(|s| {
+        let q=s.rotation;
+        [(q*Vector3::x()).y.abs(),(q*Vector3::y()).y.abs(),(q*Vector3::z()).y.abs()].into_iter().fold(0.0f32,f32::max)<0.75
+    }) { None }
+    else if torso.iter().all(|p|*p==Up) && thighs==[Up;2] && shins==[FrontDown;2] {Some(PoseKind::Kneeling)}
+    else if torso.iter().all(|p|*p==Up) && thighs==[FrontUp;2] && shins==[FrontDown;2] {Some(PoseKind::Heels)}
+    else if torso.iter().all(|p|*p==FrontDown) && thighs==[FrontDown;2] && shins==[FrontDown;2] {Some(PoseKind::Prone)}
+    else if torso.iter().all(|p|*p==FrontDown) && thighs==[FrontDown;2] && shins==[Down;2] {Some(PoseKind::ProneBent)}
     else { None }
 }
 fn neighbor_targets(position: u8, frame: &[Sample], pose: RelaxedPose) -> Vec<f32> {
@@ -352,12 +492,149 @@ mod tests {
     }
     fn at(start: Instant, t: f32) -> Instant { start + Duration::from_secs_f32(t) }
     fn sample(position: u8, q: UnitQuaternion<f32>, at: Instant) -> Sample {
-        Sample { id: TrackerId::new([position; 6], 0), position, rotation: q, at, revision: 1 }
+        Sample { id: TrackerId::new([position; 6], 0), position, rotation: q, at, revision: 1, acceleration:None }
     }
     fn body(now: Instant, q: UnitQuaternion<f32>) -> Vec<Sample> {
         [4, 6, 7, 8, 9, 10].map(|p| sample(p, q, now)).to_vec()
     }
     fn pitch(deg: f32) -> UnitQuaternion<f32> { UnitQuaternion::from_axis_angle(&Vector3::x_axis(), deg.to_radians()) }
+
+    fn guarded() -> StayAligned {
+        let mut sa = configured();
+        sa.configure(Settings {anchor_rest_lock:true, ..sa.settings});
+        sa.set_anchor_reference(true);
+        sa
+    }
+    fn quiet_body(now: Instant, q: UnitQuaternion<f32>) -> Vec<Sample> {
+        body(now, q).into_iter().map(|s| Sample {acceleration:Some((Vector3::zeros(), now)), ..s}).collect()
+    }
+
+    #[test]
+    fn pose_transitions_reject_asymmetry_and_prone_ignores_head_yaw() {
+        let start=Instant::now();
+        let mut sa=configured();
+        sa.configure(Settings {prone:Some(ZERO), ..sa.settings});
+        let mut other=configured(); other.configure(sa.settings);
+        for i in 0..25 {
+            let now=at(start,i as f32/30.0);
+            let frame=body(now,pitch(-90.0));
+            sa.update(frame.clone(),Some(yaw(1.0)),now);
+            other.update(frame,Some(yaw(-1.0)),now);
+            assert_eq!(sa.active_pose,if i>=15 {Some(PoseKind::Prone)} else {None});
+        }
+        for (id,state) in &sa.states {assert!((state.correction-other.states[id].correction).abs()<1e-6);}
+        let now=at(start,0.9);
+        let mut frame=body(now,pitch(-90.0));
+        frame.iter_mut().find(|s|s.position==9).unwrap().rotation=pitch(180.0);
+        assert_eq!(classify(&frame),None);
+        sa.update(frame,None,now); assert_eq!(sa.active_pose,None);
+        let mut frame=body(now,UnitQuaternion::identity());
+        for s in frame.iter_mut().filter(|s|matches!(s.position,9|10)) {s.rotation=pitch(-46.0);}
+        assert_eq!(classify(&frame),None);
+        frame.retain(|s|s.position!=7); assert_eq!(classify(&frame),None);
+        let old:Settings=serde_json::from_str(r#"{"enabled":false,"rate_deg_per_sec":0.2}"#).unwrap();
+        assert!(old.prone.is_none() && !old.anchor_rest_lock);
+    }
+
+    #[test]
+    fn guarded_rest_counters_signed_drift_beyond_legacy_range_in_prone_and_side_poses() {
+        for hz in [30, 90] {
+            for sign in [-1.0f32, 1.0] {
+                for pose in [pitch(-90.0), UnitQuaternion::from_axis_angle(&Vector3::z_axis(), 90f32.to_radians())] {
+                    let mut sa = guarded(); let start = Instant::now();
+                    for i in 0..=30*hz {
+                        let t = i as f32 / hz as f32; let now = at(start, t);
+                        sa.update(quiet_body(now, yaw((sign*t*0.1).to_radians()) * pose), None, now);
+                    }
+                    for state in sa.states.values() {
+                        assert_eq!(state.mode, "anchor_rest_lock");
+                        assert!((state.correction.to_degrees() + sign*2.9).abs() < 0.1);
+                        assert!(state.locked.is_some());
+                        let measured = yaw((sign*3.0).to_radians()) * pose;
+                        assert!(((yaw(state.correction)*measured).inverse()*Vector3::y() - measured.inverse()*Vector3::y()).norm() < 1e-5);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn guarded_lock_releases_on_motion_uncertainty_and_stale_data_without_undoing_correction() {
+        for case in 0..7 {
+            let mut sa = guarded(); let start = Instant::now();
+            for i in 0..300 {
+                let t=i as f32/30.0; let now=at(start,t);
+                sa.update(quiet_body(now,yaw((t*0.1).to_radians())*pitch(-90.0)),None,now);
+            }
+            let id=TrackerId::new([6;6],0); let held=sa.correction(id,1);
+            assert!(held.abs()>0.01);
+            let now=at(start,10.0);
+            let mut frame=quiet_body(now,yaw(1f32.to_radians())*pitch(-90.0));
+            match case {
+                0=>sa.set_anchor_reference(false),
+                1=>for s in &mut frame {s.acceleration=None;},
+                2=>for s in &mut frame {s.acceleration=Some((Vector3::zeros(),start));},
+                3=>for s in &mut frame {s.acceleration=Some((Vector3::new(1.0,0.0,0.0),now));},
+                4=>for s in &mut frame {s.rotation=yaw(0.5)*pitch(-90.0);},
+                5=>for s in &mut frame {s.acceleration=Some((Vector3::new(f32::NAN,0.0,0.0),now));},
+                _=>for s in &mut frame {s.at=start;},
+            }
+            sa.update(frame,None,now);
+            assert_ne!(sa.states[&id].rest,Rest::AtRest,"case {case}");
+            assert!(sa.states[&id].locked.is_none());
+            assert!((sa.correction(id,1)-held).abs()<1e-6,"case {case}");
+            // No stale offsets disappear when a fresh stream returns.
+            let now=at(start,10.5);
+            sa.update(quiet_body(now,yaw(1f32.to_radians())*pitch(-90.0)),None,now);
+            assert!((sa.correction(id,1)-held).abs()<1e-6);
+        }
+    }
+
+    #[test]
+    fn guarded_rest_needs_distinct_fresh_acceleration_samples_and_dwell() {
+        for case in 0..4 {
+            let mut sa=guarded(); let start=Instant::now();
+            for i in 0..120 {
+                let now=at(start,i as f32/30.0);
+                let mut frame=quiet_body(now,pitch(-90.0));
+                for s in &mut frame {s.acceleration=match case {
+                    0=>Some((Vector3::zeros(),start)),
+                    1=>Some((Vector3::zeros(),at(start,10.0))),
+                    2=>Some((Vector3::new(0.0,9.81,0.0),now)),
+                    _=>Some((Vector3::new(if i%2==0 {0.14} else {-0.14},0.0,0.0),now)),
+                };}
+                sa.update(frame,None,now);
+                assert!(sa.states.values().all(|s|s.rest!=Rest::AtRest));
+            }
+        }
+    }
+
+    #[test]
+    fn guarded_rest_bounds_correction_and_preserves_offsets_through_recovery() {
+        let mut sa=guarded(); let start=Instant::now(); let mut reached_limit=false;
+        for i in 0..2400 {
+            let t=i as f32/30.0; let now=at(start,t);
+            sa.update(quiet_body(now,yaw((t*0.1).to_radians())*pitch(-90.0)),None,now);
+            for s in sa.states.values() {
+                if s.rest==Rest::AtRest {assert!(wrap(s.correction-s.lock_start_correction).abs()<=REST_MAX_CORRECTION+1e-5);}
+                reached_limit |= s.unlock_reason=="correction_limit";
+            }
+        }
+        assert!(reached_limit);
+        let id=TrackerId::new([6;6],0); let held=sa.correction(id,1);
+        sa.suspend(at(start,80.0)); sa.rebase(yaw(0.4));
+        sa.set_anchor_reference(false);
+        sa.update(quiet_body(at(start,80.03),yaw(0.4+8f32.to_radians())*pitch(-90.0)),None,at(start,80.03));
+        assert_eq!(sa.correction(id,1),held);
+        assert!(sa.states[&id].locked.is_none());
+        sa.set_anchor_reference(true);
+        for i in 1..60 {
+            let now=at(start,80.03+i as f32/30.0);
+            sa.update(quiet_body(now,yaw(0.4+8f32.to_radians())*pitch(-90.0)),None,now);
+        }
+        assert_eq!(sa.states[&id].mode,"anchor_rest_lock");
+        assert!((sa.correction(id,1)-held).abs()<1e-5);
+    }
 
     #[test]
     fn reference_rebase_preserves_offsets_and_rotates_all_orientation_targets() {
@@ -500,7 +777,7 @@ mod tests {
     #[test]
     fn captures_standing_sitting_flat_and_rejects_partial_or_moving_setup() {
         let start = Instant::now();
-        for kind in [PoseKind::Standing, PoseKind::Sitting, PoseKind::Flat] {
+        for kind in [PoseKind::Standing, PoseKind::Sitting, PoseKind::Flat, PoseKind::Kneeling, PoseKind::Heels, PoseKind::Prone, PoseKind::ProneBent] {
             let mut sa = StayAligned::default();
             let mut frame = body(start, UnitQuaternion::identity());
             for s in &mut frame {
@@ -509,6 +786,10 @@ mod tests {
                     PoseKind::Sitting if matches!(s.position, 7 | 8) => 90.0,
                     PoseKind::Sitting => 0.0,
                     PoseKind::Flat => 90.0,
+                    PoseKind::Kneeling => if matches!(s.position, 9 | 10) {-90.0} else {0.0},
+                    PoseKind::Heels => match s.position {7 | 8=>90.0,9 | 10=>-90.0,_=>0.0},
+                    PoseKind::Prone => -90.0,
+                    PoseKind::ProneBent => if matches!(s.position,9 | 10) {180.0} else {-90.0},
                 };
                 let spread: f32 = match s.position { 7 | 9 => 12.0, 8 | 10 => -12.0, _ => 0.0 };
                 s.rotation = yaw(spread.to_radians()) * pitch(tilt);
