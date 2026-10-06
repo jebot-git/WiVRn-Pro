@@ -59,6 +59,9 @@ pub struct Tracker {
     pub status: SensorStatus,
     pub rotation: Option<UnitQuaternion<f32>>,
     pub accel: Option<Vector3<f32>>,
+    pub accel_updated_at: Option<Instant>,
+    /// Only verified gravity-compensated acceleration in m/s² can establish rest.
+    pub accel_is_linear: bool,
     pub last_seen: Instant,
     /// Rotation freshness is independent of heartbeat/acceleration traffic.
     pub rotation_updated_at: Option<Instant>,
@@ -78,6 +81,8 @@ impl Tracker {
             status: SensorStatus::Ok,
             rotation: None,
             accel: None,
+            accel_updated_at: None,
+            accel_is_linear: false,
             last_seen: Instant::now(),
             rotation_updated_at: None,
         }
@@ -157,6 +162,8 @@ impl TrackerRegistry {
             t.rotation = None;
             t.rotation_updated_at = None;
             t.accel = None;
+            t.accel_updated_at = None;
+            t.accel_is_linear = false;
         }
         t.last_seen = Instant::now();
         Some(id)
@@ -177,6 +184,9 @@ impl TrackerRegistry {
         if let Some(t) = self.get_mut(addr, sensor_id) {
             if t.status == SensorStatus::Ok {
                 t.accel = Some(a);
+                t.accel_updated_at = Some(Instant::now());
+                // UDP variants do not declare units/gravity removal in this packet.
+                t.accel_is_linear = false;
             }
             t.last_seen = Instant::now();
         }

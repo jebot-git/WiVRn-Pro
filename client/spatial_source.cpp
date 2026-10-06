@@ -26,7 +26,8 @@ bool spatial_source::scene_permission() {
 spatial_source::spatial_source(XrInstance instance, XrSession session, XrSpace stage,
         XrSpace view, std::filesystem::path directory, bool supported, bool scene_supported) :
     instance(instance), session(session), stage(stage), view(view), directory(std::move(directory)),
-    api(supported ? anchor::manager::dispatch::resolve(instance, xrGetInstanceProcAddr) : anchor::manager::dispatch{}) {
+    api(supported ? anchor::manager::dispatch::resolve(instance, xrGetInstanceProcAddr) : anchor::manager::dispatch{}),
+    portal(this->directory / "cutout-v1.txt") {
     calibration_spot = room_calibration::spot::load(this->directory / "calibration-spot-v1.txt");
     std::random_device random;
     current.stream = (uint64_t(random()) << 32) | random();

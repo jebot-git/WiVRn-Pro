@@ -15,6 +15,7 @@ pub enum Command {
     ClearDrift,
     SaveRelaxedPose { pose: crate::stay_aligned::PoseKind },
     ClearStayAligned,
+    SetHaritoraSettings { tracker_mac: [u8;6], hardware: crate::haritorax::settings::HardwareSettings },
 }
 pub struct Envelope {
     pub command: Command,
@@ -28,12 +29,15 @@ fn parse_request(bytes: &[u8]) -> anyhow::Result<Command> {
     // request envelope separately so misspelled or irrelevant payloads fail.
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
-    struct Request { command: String, settings: Option<crate::settings::TrackingSettings>, pose: Option<crate::stay_aligned::PoseKind> }
+    struct Request { command: String, settings: Option<crate::settings::TrackingSettings>, pose: Option<crate::stay_aligned::PoseKind>,
+        tracker_mac:Option<[u8;6]>, hardware:Option<crate::haritorax::settings::HardwareSettings> }
     let request: Request = serde_json::from_slice(bytes)?;
     anyhow::ensure!(request.command == "set_settings" || request.settings.is_none(),
         "settings are only accepted for set_settings");
     anyhow::ensure!(request.command == "save_relaxed_pose" || request.pose.is_none(),
         "pose is only accepted for save_relaxed_pose");
+    anyhow::ensure!(request.command == "set_haritora_settings" || (request.tracker_mac.is_none() && request.hardware.is_none()),
+        "hardware and tracker_mac are only accepted for set_haritora_settings");
     Ok(serde_json::from_slice(bytes)?)
 }
 

@@ -59,3 +59,13 @@ and non-Meta OpenXR face providers are not included.
 oscavmgr is Copyright (c) 2023 galister, MIT licensed. Its full license is retained
 in [licenses/oscavmgr-MIT.txt](licenses/oscavmgr-MIT.txt). Shora is distributed under
 MIT OR Apache-2.0; its MIT notice matches this project's [LICENSE-MIT](LICENSE-MIT).
+
+## HaritoraX sensor controls
+
+The GX settings layout in `src/haritorax/settings.rs` follows
+`getSettingsHexValue` / `setTrackerSettings` and the sensor mode definitions from
+haritorax-interpreter commit `abd9bc89fb4100351aed42d1e703ddc2bebc4029`
+(`src/HaritoraX.ts`, `src/types.ts`), cross-checked against SlimeTora commit
+`5fee86ead0cda39275ede72a2fa7108a00f7e354` (`src/static/js/settings.ts`). The MIT
+notices above apply. This adaptation uses read-modify-write plus fresh echo
+verification, preserves unrelated fields, and exposes sensor modes only.

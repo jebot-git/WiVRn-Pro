@@ -45,7 +45,10 @@ struct vert_pc
 	glm::ivec4 a_rect;
 	std::array<float, 4> scale;
 	std::array<float, 4> bias;
+	wivrn::cutout::projection mask;
 };
+
+static_assert(sizeof(vert_pc) <= 128);
 
 void stream_defoveator::ensure_vertices(size_t num_vertices)
 {
@@ -308,7 +311,8 @@ void stream_defoveator::defoveate(vk::raii::CommandBuffer & command_buffer,
                                   const std::array<input, 2> & inputs,
                                   std::array<float, 4> scale,
                                   std::array<float, 4> bias,
-                                  int destination)
+                                  int destination,
+                                  const std::array<wivrn::cutout::projection, 2> & masks)
 {
 	if (destination < 0 || destination >= (int)output_images.size())
 		throw std::runtime_error("Invalid destination image index");
@@ -430,6 +434,7 @@ void stream_defoveator::defoveate(vk::raii::CommandBuffer & command_buffer,
 		                             input.rect_a.extent.height),
 		        .scale = scale,
 		        .bias = bias,
+		        .mask = masks[view],
 		};
 
 		device.updateDescriptorSets(descriptor_writes, {});

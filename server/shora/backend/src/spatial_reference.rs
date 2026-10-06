@@ -1,4 +1,4 @@
-//! Read-only reference health from WiVRn's spatial bridge. Never transforms body poses.
+//! Reference health and conservative Quest-STAGE frame recovery from room anchors.
 use std::{collections::BTreeMap, io, os::fd::{AsRawFd, OwnedFd}, path::Path, sync::{Arc, RwLock}, time::Duration};
 use nalgebra::{Quaternion, UnitQuaternion, Vector3};
 use serde::{Deserialize, Serialize};
@@ -20,6 +20,7 @@ pub struct Health {
     pub revision: u64,
     pub state: &'static str,
     pub anchors: usize,
+    pub rest_lock_ready: bool,
 }
 #[derive(Deserialize)]
 struct Pose { position: [f32; 3], rotation: [f32; 4] }
@@ -42,6 +43,52 @@ struct Frame {
     sample_monotonic_ns: i64, live: bool, head: Location, markers: Vec<Marker>,
 }
 type Anchors = BTreeMap<String, (Vector3<f32>, UnitQuaternion<f32>)>;
+
+#[derive(Clone, Copy)]
+pub struct Recovery {
+    pub from_revision: u64,
+    pub yaw: f32,
+}
+struct Candidate {
+    from_revision: u64,
+    baseline: Anchors,
+    started: i64,
+    stable: Option<(f32, Vector3<f32>, i64)>,
+}
+
+// Fit a yaw + translation transform. All common anchors must agree; never
+// explain a moving/outlier anchor away by choosing a convenient subset.
+fn consensus(before: &Anchors, after: &Anchors) -> Option<(f32, Vector3<f32>)> {
+    let pairs: Vec<_> = before.iter().filter_map(|(id, a)| after.get(id).map(|b| (a, b))).collect();
+    if pairs.len() < 3 { return None; }
+    // Oriented anchors can formally recover a transform alone, but require a
+    // spatially distributed triangle as an independent positional check.
+    let distributed = pairs.iter().enumerate().any(|(i, (a, _))|
+        pairs.iter().skip(i + 1).enumerate().any(|(j, (b, _))|
+            pairs.iter().skip(i + j + 2).any(|(c, _)| {
+                let area = (b.0 - a.0).cross(&(c.0 - a.0)).norm();
+                area.is_finite() && area >= 0.05
+            })));
+    if !distributed { return None; }
+    let deltas: Vec<_> = pairs.iter().map(|((_, a), (_, b))| *b * a.inverse()).collect();
+    let (s, c) = deltas.iter().fold((0.0f32, 0.0f32), |(s, c), q| {
+        let right = q * Vector3::x();
+        let yaw = (-right.z).atan2(right.x);
+        (s + yaw.sin(), c + yaw.cos())
+    });
+    if s.hypot(c) < pairs.len() as f32 * 0.99 { return None; }
+    let angle = s.atan2(c);
+    let rotation = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), angle);
+    if deltas.iter().any(|q| q.angle_to(&rotation) > 1f32.to_radians()) { return None; }
+    let translation = pairs.iter().map(|((p, _), (q, _))| *q - rotation * *p)
+        .fold(Vector3::zeros(), |a, b| a + b) / pairs.len() as f32;
+    if !translation.norm().is_finite() || pairs.iter().any(|((p, _), (q, _))| {
+        let residual = (*q - (rotation * *p + translation)).norm();
+        !residual.is_finite() || residual > 0.02
+    }) { return None; }
+    Some((angle, translation))
+}
+
 pub struct Reference {
     revision: u64,
     epoch: Option<(String,u64)>,
@@ -51,27 +98,49 @@ pub struct Reference {
     baseline: Anchors,
     anchored: bool,
     reason: &'static str,
+    candidate: Option<Candidate>,
+    recovered: Option<Recovery>,
+    rest_baseline: Anchors,
+    rest_since: Option<i64>,
 }
 impl Default for Reference {
     fn default() -> Self { Self {revision:1, epoch:None, sequence:0, sampled:0, since:None,
-        baseline:Anchors::new(), anchored:false, reason:"waiting_for_spatial_reference"} }
+        baseline:Anchors::new(), anchored:false, reason:"waiting_for_spatial_reference",
+        candidate:None, recovered:None, rest_baseline:Anchors::new(), rest_since:None} }
 }
 impl Reference {
     pub fn invalidate(&mut self, reason: &'static str) {
-        if self.since.is_some() { self.revision += 1; }
+        if self.since.is_some() || self.candidate.is_some() || self.recovered.is_some() { self.revision += 1; }
         self.since = None; self.baseline.clear(); self.reason = reason;
+        self.candidate = None; self.recovered = None;
+        self.rest_baseline.clear(); self.rest_since = None;
+    }
+    pub fn recovery_from(&self) -> Option<u64> {
+        self.candidate.as_ref().map(|c| c.from_revision).or(self.recovered.map(|r| r.from_revision))
+    }
+    pub fn recovery(&self, now: i64) -> Option<Recovery> {
+        self.recovered.filter(|_| self.health(now).ready)
+    }
+    fn begin_recovery(&mut self, now: i64) {
+        let from_revision = self.revision;
+        let baseline = std::mem::take(&mut self.baseline);
+        self.invalidate("reference_recovery_settling");
+        self.candidate = Some(Candidate {from_revision, baseline, started:now, stable:None});
     }
     pub fn health(&self, now: i64) -> Health {
         let age = now.saturating_sub(self.sampled);
         let fresh = (-100_000_000..=TTL).contains(&age);
-        let ready = fresh && self.since.is_some_and(|at| now.saturating_sub(at) >= SETTLE);
-        Health {ready, revision:self.revision, anchors:self.baseline.len(), state:
-            if self.since.is_none() {self.reason} else if !fresh {"spatial_reference_stale"}
+        let ready = self.candidate.is_none() && fresh && self.since.is_some_and(|at| now.saturating_sub(at) >= SETTLE);
+        Health {ready, revision:self.revision, anchors:self.baseline.len(),
+            rest_lock_ready: ready && self.rest_since.is_some_and(|at| now.saturating_sub(at) >= SETTLE), state:
+            if !fresh && (self.since.is_some() || self.candidate.is_some()) {"spatial_reference_stale"}
+            else if self.candidate.is_some() {"reference_recovery_settling"}
+            else if self.since.is_none() {self.reason}
             else if !ready {"reference_settling"} else if self.anchored {"anchors_stable"} else {"tracking_only_no_anchor_validation"}}
     }
     pub fn ingest(&mut self, bytes: &[u8], now: i64) {
         // Expiry must break continuity even if the next packet arrives before the app polls.
-        if self.since.is_some() && !(-100_000_000..=TTL).contains(&now.saturating_sub(self.sampled)) {
+        if (self.since.is_some() || self.candidate.is_some()) && !(-100_000_000..=TTL).contains(&now.saturating_sub(self.sampled)) {
             self.invalidate("spatial_reference_stale");
         }
         let Ok(frame) = serde_json::from_slice::<Frame>(bytes) else { self.invalidate("invalid_spatial_record"); return; };
@@ -81,17 +150,36 @@ impl Reference {
         }
         let epoch = (frame.source_session, frame.generation);
         if self.epoch.as_ref() != Some(&epoch) {
-            self.invalidate("reference_changed"); self.revision += 1;
-            self.epoch = Some(epoch); self.sequence = 0; self.sampled = 0;
+            // Only an uninterrupted same-session transition can preserve calibration.
+            if self.health(now).ready && self.baseline.len() >= 3 &&
+                self.epoch.as_ref().is_some_and(|(session, generation)| *session == epoch.0 && *generation < epoch.1) {
+                self.begin_recovery(now);
+            } else {
+                self.invalidate("reference_changed"); self.revision += 1;
+            }
+            // Sequence and sample time remain monotonic across generations.
+            if self.epoch.as_ref().is_none_or(|(session, _)| *session != epoch.0) {
+                self.sequence = 0; self.sampled = 0;
+            }
+            self.epoch = Some(epoch);
         }
         if frame.sequence < self.sequence { self.invalidate("spatial_replay"); return; }
         if !frame.live || !frame.head.valid || frame.head.flags & 15 != 15
             || frame.head.quest_stage.as_ref().and_then(Pose::checked).is_none()
             || !(-100_000_000..=TTL).contains(&now.saturating_sub(frame.sample_monotonic_ns)) {
+            // The client intentionally invalidates poses before a reference-space
+            // change takes effect. Allow at most one TTL to obtain the first new
+            // tracked sample. Ordinary tracking loss still cancels recovery.
+            if self.candidate.as_ref().is_some_and(|c| c.stable.is_none() && now - c.started <= TTL)
+                && !frame.live && frame.sequence > self.sequence && frame.sample_monotonic_ns >= self.sampled
+                && (-100_000_000..=TTL).contains(&now.saturating_sub(frame.sample_monotonic_ns)) {
+                return;
+            }
             self.invalidate("tracking_unavailable"); return;
         }
         if frame.sample_monotonic_ns < self.sampled { self.invalidate("spatial_time_reversed"); return; }
         if frame.sequence == self.sequence { return; } // Heartbeats cannot extend validity or settling.
+        if frame.sample_monotonic_ns == self.sampled { self.invalidate("spatial_time_repeated"); return; }
         self.sequence = frame.sequence; self.sampled = frame.sample_monotonic_ns;
         let mut anchors = Anchors::new();
         for marker in frame.markers {
@@ -111,10 +199,39 @@ impl Reference {
                 let common: Vec<_> = anchors.iter().filter_map(|(id,pose)| self.baseline.get(id).map(|base| (pose,base))).collect();
                 if common.len() < 3 {self.invalidate("anchor_set_changed");}
                 else if common.iter().any(|((p,q),(b,r))| (*p-*b).norm() > 0.05 || q.angle_to(r) > 3f32.to_radians()) {
-                    self.invalidate("anchor_reference_moved");
+                    if self.health(now).ready { self.begin_recovery(now); }
+                    else { self.invalidate("anchor_reference_moved"); }
                 }
             }
-            if self.baseline.is_empty() {self.baseline = anchors;}
+            if let Some(candidate) = &mut self.candidate {
+                let fitted = consensus(&candidate.baseline, &anchors);
+                if let Some((yaw, translation)) = fitted {
+                    if let Some((angle, position, since)) = candidate.stable {
+                        let delta = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), yaw - angle).angle();
+                        if delta > 1f32.to_radians() || (translation - position).norm() > 0.02 {
+                            self.invalidate("reference_recovery_unstable");
+                        } else if now - since >= SETTLE {
+                            self.recovered = Some(Recovery {from_revision:candidate.from_revision, yaw});
+                            self.candidate = None;
+                            self.since = Some(since);
+                        }
+                    } else { candidate.stable = Some((yaw, translation, now)); }
+                } else { self.invalidate("reference_recovery_ambiguous"); }
+            }
+            if self.baseline.is_empty() {self.baseline = anchors.clone();}
+            // Rest authority requires a tighter continuously stable room reference
+            // than the broad relocalization guard. Sub-threshold movement restarts
+            // this window without forcing a full body reset.
+            let stable = consensus(&self.rest_baseline, &anchors)
+                .is_some_and(|(yaw, translation)| yaw.abs() <= 1f32.to_radians() && translation.norm() <= 0.02);
+            if !stable {
+                self.rest_since = None;
+                self.rest_baseline.clear();
+                if consensus(&anchors, &anchors).is_some() {
+                    self.rest_baseline = anchors;
+                    self.rest_since = Some(now);
+                }
+            }
         }
         self.since.get_or_insert(now);
     }
@@ -153,7 +270,7 @@ pub async fn run(path: std::path::PathBuf, shared: Shared) -> anyhow::Result<()>
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use serde_json::{json, Value};
     pub fn frame(seq: u64, now: i64, count: usize) -> Value {
@@ -163,6 +280,158 @@ mod tests {
                 json!({"uuid":format!("{:032x}",i+1),"persisted":true,"pose":location})).collect::<Vec<_>>()})
     }
     pub fn feed(r: &mut Reference, f: &Value, now: i64) {r.ingest(&serde_json::to_vec(f).unwrap(),now);}
+    pub fn room_frame(seq: u64, now: i64, generation: u64, rotation: UnitQuaternion<f32>, translation: Vector3<f32>) -> Value {
+        let mut f = frame(seq, now, 4);
+        f["generation"] = json!(generation);
+        for (i, marker) in f["markers"].as_array_mut().unwrap().iter_mut().enumerate() {
+            let p = rotation * Vector3::new((i % 2) as f32, 1.0, (i / 2) as f32) + translation;
+            marker["pose"]["quest_stage"] = json!({"position":[p.x,p.y,p.z],
+                "rotation":[rotation.i,rotation.j,rotation.k,rotation.w]});
+        }
+        f
+    }
+    pub fn room_settle(r: &mut Reference, start: i64) -> i64 {
+        for i in 0..=10 {
+            let now = start + i * 200_000_000;
+            feed(r, &room_frame(1+i as u64, now, 1, UnitQuaternion::identity(), Vector3::zeros()), now);
+        }
+        start + SETTLE
+    }
+    #[test]
+    fn recovers_rigid_yaw_translation_once_after_settling() {
+        for degrees in [-179.0f32, -12.0, 0.0, 32.0, 179.0] {
+            for generation in [1, 2] {
+                let mut r = Reference::default();
+                let now = room_settle(&mut r, 10_000_000_000);
+                let revision = r.revision;
+                let q = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), degrees.to_radians());
+                for i in 0..=15 {
+                    let at = now + (i+1) * 200_000_000;
+                    let mut f = room_frame(12+i as u64, at, generation, q, Vector3::new(0.3, 0.0, -0.4));
+                    // Head motion is not an observation of room-frame rotation.
+                    f["head"]["quest_stage"]["position"] = json!([i as f32,1.6,0]);
+                    feed(&mut r, &f, at);
+                    assert_eq!(r.health(at).ready, i >= 10);
+                    if i >= 10 {
+                        let recovery = r.recovery(at).unwrap();
+                        assert_eq!(recovery.from_revision, revision);
+                        assert!((recovery.yaw.to_degrees() - degrees).abs() < 0.001);
+                        assert_eq!(r.revision, revision + 1);
+                    }
+                }
+            }
+        }
+    }
+    #[test]
+    fn user_motion_and_downstream_pc_alignment_do_not_rebase_body() {
+        let mut r = Reference::default();
+        let now = room_settle(&mut r, 10_000_000_000);
+        let revision = r.revision;
+        for i in 0..15 {
+            let at = now + (i+1) * 200_000_000;
+            let mut f = room_frame(12+i as u64, at, 1, UnitQuaternion::identity(), Vector3::zeros());
+            let yaw = i as f32 * 0.2;
+            let pose = json!({"position":[yaw,1.6,yaw],"rotation":[0,(yaw/2.0).sin(),0,(yaw/2.0).cos()]});
+            f["head"]["quest_stage"] = pose.clone();
+            f["alignment"] = pose.clone();
+            for marker in f["markers"].as_array_mut().unwrap() { marker["pose"]["pc_stage"] = pose.clone(); }
+            feed(&mut r, &f, at);
+            assert!(r.health(at).ready);
+            assert_eq!(r.revision, revision);
+            assert!(r.recovery(at).is_none());
+        }
+    }
+    #[test]
+    fn rest_validation_requires_distributed_stable_anchors_and_restarts_on_small_motion() {
+        let mut r=Reference::default(); let now=room_settle(&mut r,10_000_000_000);
+        assert!(r.health(now).rest_lock_ready);
+        let revision=r.revision;
+        for i in 0..=12 {
+            let at=now+(i+1)*200_000_000;
+            feed(&mut r,&room_frame(12+i as u64,at,1,UnitQuaternion::identity(),Vector3::new(0.03,0.0,0.0)),at);
+            assert!(r.health(at).ready);
+            assert_eq!(r.revision,revision);
+            assert_eq!(r.health(at).rest_lock_ready,i>=10);
+        }
+        assert!(!r.health(now+4_000_000_000).rest_lock_ready);
+        let mut r=Reference::default(); let now=settle(&mut r,10_000_000_000,1,3);
+        assert!(r.health(now).ready);
+        assert!(!r.health(now).rest_lock_ready); // Coincident anchors are insufficient.
+    }
+    #[test]
+    fn finite_but_overflowing_anchor_coordinates_cannot_authorize_recovery() {
+        let before: Anchors = (0..3).map(|i| (i.to_string(),
+            (Vector3::new(if i == 0 {-f32::MAX} else {f32::MAX}, 1.0, i as f32), UnitQuaternion::identity()))).collect();
+        assert!(consensus(&before, &before).is_none());
+    }
+    #[test]
+    fn rejects_outliers_tilt_missing_ids_degenerate_layout_and_unstable_fit() {
+        for mutation in 0..6 {
+            let mut r = Reference::default();
+            let now = room_settle(&mut r, 10_000_000_000);
+            if mutation == 4 { for (p, _) in r.baseline.values_mut() { *p = Vector3::zeros(); } }
+            let q = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.2);
+            for i in 0..=12 {
+                let at = now + (i+1) * 200_000_000;
+                let rotation = if mutation == 1 { UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.1) * q } else { q };
+                let mut f = room_frame(12+i as u64, at, 2, rotation, Vector3::zeros());
+                match mutation {
+                    0 => f["markers"][0]["pose"]["quest_stage"]["position"][0] = json!(5),
+                    2 => {f["markers"].as_array_mut().unwrap().truncate(2);},
+                    3 => {f["markers"][0]["uuid"] = json!("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"); f["markers"][1]["uuid"] = json!("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");},
+                    5 if i > 0 => {for m in f["markers"].as_array_mut().unwrap() {m["pose"]["quest_stage"]["position"][1] = json!(1.04);}},
+                    _ => {},
+                }
+                feed(&mut r, &f, at);
+                assert!(r.recovery(at).is_none(), "mutation {mutation}");
+            }
+        }
+    }
+    #[test]
+    fn transition_blackout_is_bounded_and_outages_cancel_recovery() {
+        for mutation in 0..5 {
+            let mut r = Reference::default();
+            let now = room_settle(&mut r, 10_000_000_000);
+            let mut f = room_frame(12, now+200_000_000, 2, UnitQuaternion::identity(), Vector3::zeros());
+            f["live"] = json!(false);
+            feed(&mut r, &f, now+200_000_000);
+            assert!(r.candidate.is_some());
+            for i in 0..=12 {
+                let at = now + (i+2) * 200_000_000;
+                let mut f = room_frame(13+i as u64, at, 2, UnitQuaternion::identity(), Vector3::zeros());
+                match mutation {
+                    1 => f["source_session"] = json!("2"),
+                    2 if i == 2 => f["live"] = json!(false),
+                    3 if i == 2 => r.invalidate("spatial_bridge_disconnected"),
+                    4 if i < 4 => f["live"] = json!(false),
+                    _ => {},
+                }
+                feed(&mut r, &f, at);
+                assert_eq!(r.recovery(at).is_some(), mutation == 0 && i >= 10);
+            }
+        }
+    }
+    #[test]
+    fn stale_duplicate_or_replayed_samples_cannot_complete_recovery() {
+        for mutation in 0..4 {
+            let mut r = Reference::default();
+            let now = room_settle(&mut r, 10_000_000_000);
+            let f = room_frame(12, now+200_000_000, 2, UnitQuaternion::identity(), Vector3::zeros());
+            feed(&mut r, &f, now+200_000_000);
+            for i in 0..=12 {
+                let at = now + (i+2) * 200_000_000;
+                let mut f = room_frame(13+i as u64, at, 2, UnitQuaternion::identity(), Vector3::zeros());
+                match mutation {
+                    0 => f["sequence"] = json!(12),
+                    1 => f["sample_monotonic_ns"] = json!(now+200_000_000),
+                    2 => f["sequence"] = json!(11),
+                    _ => f["sample_monotonic_ns"] = json!(at+200_000_000),
+                }
+                feed(&mut r, &f, at);
+                assert!(r.recovery(at).is_none());
+            }
+        }
+    }
     fn settle(r: &mut Reference, start: i64, seq: u64, count: usize) -> i64 {
         for i in 0..=10 {let now=start+i*200_000_000; feed(r,&frame(seq+i as u64,now,count),now);}
         start+SETTLE

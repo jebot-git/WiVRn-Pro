@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QScrollArea, QFileDialog,
 )
 from skeleton_preview import SkeletonPreview
+from haritorax_panel import HaritoraXPanel
 
 DEFAULTS = {"height_m": 1.8, "smoothing": 0.3, "prediction": 0.0,
             "drift_correction": False, "drift_amount": 0.5}
@@ -18,6 +19,10 @@ CALIBRATIONS = [
     ("Stay Aligned: save standing pose", {"command": "save_relaxed_pose", "pose": "standing"}, "After full and mounting resets, stand naturally with relaxed legs and look forward. Hold still for at least one second. Save this pose before enabling Stay Aligned."),
     ("Stay Aligned: save seated pose", {"command": "save_relaxed_pose", "pose": "sitting"}, "Sit naturally in a chair with your thighs forward and shins upright. Face forward and hold still for at least one second."),
     ("Stay Aligned: save floor / lying pose", {"command": "save_relaxed_pose", "pose": "flat"}, "Sit on the floor with legs extended, or lie on your back. Relax your legs and hold still for at least one second."),
+    ("Stay Aligned: save high kneeling pose", {"command": "save_relaxed_pose", "pose": "kneeling"}, "After standing and mounting calibration: kneel on both knees, torso and thighs upright, shins flat behind you. Hold naturally still for at least one second."),
+    ("Stay Aligned: save sitting-on-heels pose", {"command": "save_relaxed_pose", "pose": "heels"}, "After standing and mounting calibration: sit back on both heels, torso upright, thighs forward and shins folded behind. Hold still for at least one second."),
+    ("Stay Aligned: save belly-down pose", {"command": "save_relaxed_pose", "pose": "prone"}, "After standing and mounting calibration: lie on your belly with both legs extended. Relax your legs and hold still for at least one second; your head may face sideways."),
+    ("Stay Aligned: save belly-down bent-knees pose", {"command": "save_relaxed_pose", "pose": "prone_bent"}, "Lie on your belly with both thighs flat and both knees bent so the shins point upward. Hold naturally still for at least one second."),
 ]
 
 
@@ -108,9 +113,12 @@ class TrackingPanel(QWidget):
         form.addRow(self.drift_enabled)
         form.addRow("Drift amount", self.drift_amount)
         self.stay_enabled = QCheckBox("Enable Stay Aligned")
+        self.anchor_rest = QCheckBox("Validate rest locks with room anchors")
+        self.anchor_rest.setToolTip("Requires three stable room anchors and fresh verified linear acceleration. Uses bounded yaw correction; slow deliberate turns can still resemble drift.")
         self.stay_rate = self.spin(0.01, 1.0, 0.2, 2, " °/s")
         self.stay_rate.setSingleStep(0.05)
         form.addRow(self.stay_enabled)
+        form.addRow(self.anchor_rest)
         form.addRow("Alignment speed", self.stay_rate)
         tuning.addLayout(form)
         help_text = QLabel("Smoothing: lower nonzero values smooth more; 1 follows the newest sample. Prediction offsets latency. Height rebuilds body proportions.")
@@ -148,6 +156,9 @@ class TrackingPanel(QWidget):
         self.notice.setObjectName("muted")
         tuning.addWidget(self.notice)
         right.addWidget(self.tuning_group)
+        self.hardware = HaritoraXPanel()
+        self.hardware.command_requested.connect(self.command_requested.emit)
+        right.addWidget(self.hardware)
         right.addStretch()
         scroll.setWidget(content)
         layout.addWidget(scroll, 2)
@@ -155,6 +166,7 @@ class TrackingPanel(QWidget):
             spin.valueChanged.connect(self.edited)
         self.drift_enabled.toggled.connect(lambda checked: self.select_correction(self.stay_enabled, checked))
         self.stay_enabled.toggled.connect(lambda checked: self.select_correction(self.drift_enabled, checked))
+        self.anchor_rest.toggled.connect(self.edited)
         self.set_snapshot(None)
 
     def select_correction(self, other, checked):
@@ -188,6 +200,7 @@ class TrackingPanel(QWidget):
         self.drift_amount.setEnabled(settings["drift_correction"])
         stay = settings.get("stay_aligned", {})
         self.stay_enabled.setChecked(stay.get("enabled", False))
+        self.anchor_rest.setChecked(stay.get("anchor_rest_lock", False))
         self.stay_rate.setValue(stay.get("rate_deg_per_sec", 0.2))
         self.stay_rate.setEnabled(stay.get("enabled", False))
         self.loading = False
@@ -203,11 +216,13 @@ class TrackingPanel(QWidget):
 
     def set_snapshot(self, snapshot):
         self.snapshot = snapshot
+        self.hardware.update_snapshot(snapshot)
         self.preview.set_snapshot(snapshot)
         supported = bool(snapshot and isinstance(snapshot.get("settings"), dict))
         self.tuning_group.setEnabled(supported and not self.applying)
         stay_supported = supported and "stay_aligned" in snapshot["settings"]
         self.stay_enabled.setEnabled(stay_supported)
+        self.anchor_rest.setEnabled(stay_supported and "anchor_rest_lock" in snapshot["settings"]["stay_aligned"])
         self.clear_stay.setEnabled(stay_supported)
         active = bool(snapshot and any(t.get("active") for t in snapshot.get("trackers", [])))
         health = snapshot.get("spatial_reference") if snapshot else None
@@ -227,11 +242,15 @@ class TrackingPanel(QWidget):
             self.load_fields(snapshot["settings"])
         self.apply_button.setEnabled(supported and self.dirty and not self.applying)
         stay = snapshot.get("settings", {}).get("stay_aligned", {})
-        saved = [label for name, label in (("standing", "standing"), ("sitting", "seated"), ("flat", "floor / lying")) if stay.get(name)]
-        locked = sum(t.get("stay_aligned", {}).get("mode") == "rest_lock" for t in snapshot.get("trackers", []) if t.get("stay_aligned"))
+        saved = [label for name, label in (("standing", "standing"), ("sitting", "seated"), ("flat", "floor / lying"), ("kneeling", "kneeling"), ("heels", "heels"), ("prone", "prone"), ("prone_bent", "prone bent")) if stay.get(name)]
+        locked = sum(t.get("stay_aligned", {}).get("mode") in ("rest_lock", "anchor_rest_lock") for t in snapshot.get("trackers", []) if t.get("stay_aligned"))
         if stay_supported:
             self.stay_status.setText(f"Relaxed poses saved: {', '.join(saved) or 'none'}. {locked} trackers resting. "
                                     "Use the Calibration menu to save poses. Choose either Stay Aligned or drift correction.")
+            if stay.get("anchor_rest_lock"):
+                waiting = sum(t.get("stay_aligned", {}).get("mode") == "acceleration_unavailable" for t in snapshot.get("trackers", []) if t.get("stay_aligned"))
+                self.stay_status.setText(self.stay_status.text() + (" Room anchors verified." if health and health.get("rest_lock_ready") else " Waiting for stable room anchors.") +
+                    (f" {waiting} trackers need fresh verified acceleration." if waiting else "") + " Rest evidence is heuristic; slow intentional turns may resemble drift.")
         else:
             self.stay_status.setText("This server does not support Stay Aligned. Update the server to use it.")
         reference = "HMD reference" if snapshot.get("hmd_pose_received") else "Tracker reference · HMD unavailable"
@@ -239,7 +258,10 @@ class TrackingPanel(QWidget):
             state = health.get("state", "unavailable").replace("_", " ")
             reference += f" · Room reference: {state} ({health.get('anchors', 0)} anchors)"
             if snapshot.get("reference_needs_reset"):
-                reference += "\nAutomatic correction paused. When tracking is stable, face the saved Quest guide and perform a yaw or full reset."
+                if health.get("state") == "reference_recovery_settling":
+                    reference += "\nAutomatic correction paused while room anchors verify a reference change."
+                else:
+                    reference += "\nAutomatic correction paused. When tracking is stable, face the saved Quest guide and perform a yaw or full reset."
         if self.deadline is None:
             feedback = self.calibration_feedback + "\n" if self.calibration_feedback else ""
             self.calibration_status.setText(f"{feedback}{reference}\n{snapshot.get('calibrated_trackers', 0)} trackers calibrated · {snapshot.get('drift_samples', 0)} with learned drift")
@@ -253,12 +275,15 @@ class TrackingPanel(QWidget):
         if "stay_aligned" in self.snapshot["settings"]:
             settings["stay_aligned"] = dict(self.snapshot["settings"]["stay_aligned"],
                                            enabled=self.stay_enabled.isChecked(), rate_deg_per_sec=self.stay_rate.value())
+            if "anchor_rest_lock" in settings["stay_aligned"]:
+                settings["stay_aligned"]["anchor_rest_lock"] = self.anchor_rest.isChecked()
         self.applying = True
         self.tuning_group.setEnabled(False)
         self.notice.setText("Applying settings…")
         self.command_requested.emit({"command": "set_settings", "settings": settings})
 
     def command_finished(self, command, ok, error):
+        self.hardware.command_finished(command, ok, error)
         if command == "set_settings":
             self.applying = False
             if ok:
@@ -337,7 +362,9 @@ class TrackingPanel(QWidget):
         stay = settings.get("stay_aligned")
         if stay is not None:
             text += f"\n[stay_aligned]\nenabled = {str(stay['enabled']).lower()}\nrate_deg_per_sec = {stay['rate_deg_per_sec']}\n"
-            for kind in ("standing", "sitting", "flat"):
+            if "anchor_rest_lock" in stay:
+                text += f"anchor_rest_lock = {str(stay['anchor_rest_lock']).lower()}\n"
+            for kind in ("standing", "sitting", "flat", "kneeling", "heels", "prone", "prone_bent"):
                 if stay.get(kind):
                     text += f"\n[stay_aligned.{kind}]\n"
                     for key, value in stay[kind].items():

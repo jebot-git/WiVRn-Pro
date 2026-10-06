@@ -1,5 +1,7 @@
 //! GX6/GX2 serial protocol decoder reused from Shora's haritorax-interpreter port.
 use std::collections::{HashMap, HashSet};
+use std::time::{Instant, Duration};
+use super::settings::{HardwareSettings, HardwareTracker};
 use base64::Engine as _;
 use super::{body_part_from_tracker_id, decode_imu, thigh_name_for_ankle, HaritoraXEvent};
 
@@ -16,14 +18,45 @@ pub struct Decoder {
     lengths: HashMap<char, usize>,
     unknown: HashSet<char>,
     missing_assignments: HashSet<char>,
+    settings_at: HashMap<char, Instant>,
 }
 
 impl Decoder {
     pub fn line(&mut self, line: &str, is_x2: bool) -> Vec<HaritoraXEvent> {
+        let previous=self.assignment.clone();
         let mut events = Vec::new();
         process_line(line.trim(), is_x2, &mut self.assignment, &mut self.button_state,
             &mut self.settings, &mut self.lengths, &mut self.unknown, &mut self.missing_assignments, &mut events);
+        for (id,name) in &self.assignment {
+            if previous.get(id)!=Some(name) {self.settings.remove(id); self.settings_at.remove(id);}
+        }
+        if let Some((head,payload))=line.trim().split_once(':') {
+            if head.len()==2 && head.starts_with(['o','O']) && payload.len()==14 && payload.bytes().all(|c|c.is_ascii_hexdigit()) {
+                self.settings_at.insert(head.as_bytes()[1] as char,Instant::now());
+            }
+        }
         events
+    }
+
+    pub fn hardware_trackers(&self) -> Vec<HardwareTracker> {
+        let mut trackers:Vec<_>=self.assignment.iter().map(|(id,name)|HardwareTracker {
+            name:name.clone(), mac:super::identity::mac_from_name(name), channel:*id as u8-b'0',
+            settings:self.settings.get(id).and_then(|s|HardwareSettings::decode(s)),
+            settings_age_ms:self.settings_at.get(id).map(|t|t.elapsed().as_millis() as u64),
+        }).collect();
+        trackers.sort_by_key(|t|t.channel); trackers
+    }
+    pub fn settings_command(&self, mac:[u8;6], settings:HardwareSettings) -> anyhow::Result<(char,String)> {
+        let id=*self.assignment.iter().find(|(_,name)|super::identity::mac_from_name(name)==mac)
+            .map(|(id,_)|id).ok_or_else(||anyhow::anyhow!("Physical tracker is no longer on this port"))?;
+        anyhow::ensure!(self.settings_at.get(&id).is_some_and(|t|t.elapsed()<Duration::from_secs(5)),"Tracker settings are stale; wait for a fresh report");
+        let hex=self.settings.get(&id).ok_or_else(||anyhow::anyhow!("Tracker settings not received"))?;
+        Ok((id,settings.patch(hex)?))
+    }
+    pub fn confirms(&self, mac:[u8;6], id:char, expected:&str, after:Instant) -> bool {
+        self.assignment.get(&id).is_some_and(|name|super::identity::mac_from_name(name)==mac) &&
+            self.settings_at.get(&id).is_some_and(|t|*t>=after) &&
+            self.settings.get(&id).is_some_and(|hex|hex.eq_ignore_ascii_case(expected))
     }
 
     /// Channels streaming samples before their identity report has arrived.
@@ -264,6 +297,29 @@ mod tests {
         assert_eq!(decoder.power_off_commands().unwrap(),
             vec![("o0:0123456789ab2d".into(), "o0:0123456789abcd".into())]);
         assert_eq!(decoder.power_off_commands().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn settings_require_fresh_identity_bound_echo_and_never_confirm_optimistically() {
+        let mut decoder = Decoder::default();
+        decoder.line("R0:0000300000", true);
+        let mac = super::super::identity::mac_from_name("leftAnkle");
+        let settings = HardwareSettings::decode("00000100103001").unwrap();
+        assert!(decoder.settings_command(mac, settings).is_err());
+        decoder.line("O0:00000000103001", true);
+        let (id, expected) = decoder.settings_command(mac, settings).unwrap();
+        assert_eq!(id, '0');
+        assert_eq!(expected, "00000100103001");
+        let sent = Instant::now();
+        assert!(!decoder.confirms(mac, id, &expected, sent));
+        decoder.line(&format!("O0:{expected}"), true);
+        assert!(decoder.confirms(mac, id, &expected, sent));
+        decoder.settings_at.insert(id, Instant::now() - Duration::from_secs(6));
+        assert!(decoder.settings_command(mac, settings).is_err());
+        decoder.line("R0:0000400000", true);
+        assert!(decoder.settings_command(mac, settings).is_err());
+        assert!(!decoder.confirms(mac, id, &expected, sent));
+        assert!(decoder.hardware_trackers()[0].settings.is_none());
     }
 
     fn frame(bytes: &[u8]) -> String {

@@ -142,6 +142,8 @@ mod tests {
             position,
             rotation: rot,
             accel: None,
+            accel_updated_at: None,
+            accel_is_linear: false,
             rotation_updated_at: Some(std::time::Instant::now()),
             last_seen: Instant::now(),
         }

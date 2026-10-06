@@ -164,3 +164,14 @@ either compiled artifact. See [validation record](VALIDATION.md).
 **Live HMD tests remain suspended until explicitly requested.** Offline checks do
 not establish capture UX, spatial accuracy, headset performance or scene API
 behavior on the device. See [source provenance](PROVENANCE.md).
+
+## Anchored passthrough investigation
+
+[Anchored passthrough windows](ANCHORED-PASSTHROUGH.md) examines Monado keying,
+WiVRn's existing alpha transport, compositor aperture masks and a client-side
+alternative for ordinary XR apps without MR support. The report also documents the implemented client prototype: **Settings → Room
+capture → Anchored passthrough cutout** provides two-hand rectangle design,
+trigger/pinch confirmation, enable/disable and deletion. Localize a saved marker
+first. The aperture stays attached to that marker and hides during tracking loss;
+it cuts through the PC stream while keeping local WiVRn UI visible. Hardware
+validation is still outstanding.

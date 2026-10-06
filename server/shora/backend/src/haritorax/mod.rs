@@ -15,6 +15,7 @@ pub mod config;
 pub mod identity;
 pub mod bridge;
 pub mod serial;
+pub mod settings;
 
 
 /// `0.01 / 180` — rotation quaternion int16 scalar (the missing π is intentional;

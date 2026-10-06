@@ -105,16 +105,18 @@ history and pause Stay Aligned, preserving the correction already applied.
 A fresh HMD feeder sample is also required; losing it pauses correction.
 
 After two seconds of continuous healthy spatial samples, **a deliberate full or
-yaw reset is required** to resume automatic correction. The first reset starts a
-new drift baseline; it does not learn the reference jump as IMU drift. Mounting
-resets do not unlock correction. The shared reset path enforces this for Qt,
+yaw reset is normally required** to resume automatic correction. A verified
+same-session rigid frame change can now recover automatically, as described below.
+The first deliberate reset after an outage starts a new drift baseline; it does
+not learn the reference jump as IMU drift. Mounting resets do not unlock correction.
+The shared reset path enforces this for Qt,
 tracker buttons and SolarXR requests, and ignores stale tracker rotations.
 Rejected SolarXR requests are logged and receive no FINISHED response.
 
 With three or more tracked persisted anchors, the guard compares their identities
 and poses in Quest STAGE against the baseline. Fewer than three common anchors,
-more than 5 cm translation or 3 degrees rotation triggers settling and another
-explicit reset. Once anchor validation starts, loss of anchors cannot silently
+more than 5 cm translation or 3 degrees rotation triggers settling and frame-change
+verification (or an explicit reset if verification fails). Once anchor validation starts, loss of anchors cannot silently
 fall back to tracking-only mode during that worker's lifetime. Before three
 anchors are available, status explicitly reports `tracking_only_no_anchor_validation`;
 session/generation and freshness protection still apply. These thresholds are
@@ -123,8 +125,7 @@ below them and common errors shared by the headset and anchors remain unobservab
 
 Qt shows reference health, anchor count and the reset requirement, blocks resets
 while tracking is unhealthy, and cancels an outstanding calibration countdown on
-reference loss. No room-to-tracker transform is applied: Shora continues using its
-existing HMD feeder frame. This implementation does not directly measure or
+reference loss. Shora continues using its existing HMD feeder frame. This implementation does not directly measure or
 correct individual limb yaw from room anchors. Use the Quest calibration guide
 in [SPATIAL.md](SPATIAL.md) to make deliberate resets more repeatable.
 
@@ -134,8 +135,80 @@ Stay Aligned and drift learning. The guard is volatile; standalone workers witho
 unavailable spatial bridge remains paused rather than learning against an unknown
 reference.
 
+### Automatic reference recovery
+
+The native client locates both the HMD feeder input and the spatial anchors in
+Quest STAGE. The bridge's PC-STAGE alignment is applied downstream by the runtime;
+it is deliberately not fed back into tracker calibration. A PC-only stage offset
+must not rotate the body twice. Head position already follows the feeder, so Shora
+does not add an extra positional correction.
+
+For a same-session generation change, or an anchor change crossing the guard's
+5 cm / 3 degree thresholds, the guard retains the old anchor baseline temporarily.
+It estimates `new_from_old` from matching anchor orientations and positions:
+
+- At least three common persisted, tracked anchors must form a spatial triangle
+  with cross-product magnitude at least 0.05 square metres (twice its area).
+- Every common anchor must agree with one yaw-only rotation within 1 degree and
+  with the corresponding translation within 2 cm. No outlier is silently removed.
+- The fitted transform must remain within 1 degree / 2 cm of its first estimate
+  for two seconds of fresh samples. Pitch/roll changes above the angular tolerance,
+  changing identities without enough overlap, and unstable estimates fail closed.
+- Session changes, socket disconnects, stale/replayed/malformed samples and ordinary
+  tracking loss cancel recovery. A generation transition may contain non-live
+  snapshots before its first tracked sample, but only within the existing 750 ms
+  freshness bound. Loss of the fresh HMD feeder cancels automatic unlock.
+
+Only calibration that was already unlocked before the transition can recover.
+On success, Shora left-multiplies the tracker's current and easing-target yaw fixes
+by the accepted yaw rotation, and rebases Stay Aligned's stored orientations.
+It preserves mounting, body pitch/roll, accumulated automatic yaw offsets and
+calibration revisions. It does not call a full/yaw/mounting reset. The change is
+consumed once by reference revision, and logged as `spatial reference automatically
+rebased; no drift observation`.
+
+Drift history/rate remains discarded and its already-applied correction remains
+held. Future deliberate resets establish a fresh drift baseline and then new
+observations. Stay Aligned resumes with its offsets preserved and fresh rest
+observations. Any failed verification keeps the existing manual-reset requirement;
+simply waiting for anchors to settle does not bypass it.
+
+These tolerances are conservative engineering defaults, not measured headset
+accuracy. Correlated SLAM errors shared by all anchors can still look like a rigid
+frame change. This is reference continuity recovery, not absolute body tracking,
+individual IMU drift measurement, or unattended calibration after a restart.
+
+Additional pose support is explored in
+[Stay Aligned pose expansion](../server/shora/backend/docs/pose-expansion.md).
+
 Offline integration test (fake spatial publisher, serial PTY and HMD feeder):
 
 ```sh
 python3 fork/tests/spatial_tracking_smoke.py --server build/server/server/wivrn-pro-server
 ```
+
+Automatic recovery validation (2026-10-06): the Rust workspace passed 130 tests
+(including doctests); the fork Python suite passed 19 tests; the Debug Linux
+server rebuilt successfully; and the simulated spatial worker test passed.
+Recovery tests cover signed yaw (including near 180 degrees), translation,
+repeated transitions, arbitrary bent-limb preservation, no drift learning,
+outliers, degenerate layouts, pitch/roll, stale/replayed samples, HMD loss,
+disconnects, initial calibration gating, and downstream PC alignment changes.
+Hardware accuracy and worn-tracker behavior remain unverified.
+
+### Anchor-validated rest, more poses, and HaritoraX controls
+
+The unified Tracking page now includes opt-in anchor-validated rest locks and
+calibration entries for high kneeling, sitting on heels, prone, and prone with
+bent knees. The dongle sensor panel exposes readback-verified sensor modes,
+individual correction flags and 50/100 FPS. See
+[calibration steps and limitations](../server/shora/backend/docs/pose-expansion.md).
+The hardware controls keep dongle communication and do not switch to Bluetooth.
+
+Software validation for this extension: 139 Rust workspace tests including doc
+tests, 20 Python unit tests, native server build, fork policy check, integrated
+tracking/Qt and spatial-reference smoke tests, and
+`fork/tests/haritorax_settings_smoke.py` with a simulated serial dongle. The latter
+checks preserved settings bits, physical-versus-extension targeting, invalid FPS,
+fresh echo confirmation, unconfirmed writes, no retries, and continued command
+processing while waiting. Hardware validation remains outstanding.

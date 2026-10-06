@@ -20,6 +20,7 @@
 #pragma once
 
 #include "vk/allocation.h"
+#include "passthrough_cutout.h"
 #include "wivrn_packets.h"
 #include <vulkan/vulkan_raii.hpp>
 #include <openxr/openxr.h>
@@ -89,7 +90,8 @@ public:
 	        const std::array<input, 2> & inputs,
 	        std::array<float, 4> scale,
 	        std::array<float, 4> bias,
-	        int destination);
+	        int destination,
+	        const std::array<wivrn::cutout::projection, 2> & masks = {});
 
 	static XrExtent2Di defoveated_size(const wivrn::to_headset::foveation_parameter &);
 };
