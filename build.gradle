@@ -36,6 +36,10 @@ abstract class GeneratePngsTask extends DefaultTask {
     @Optional
     abstract RegularFileProperty getCss()
 
+    @InputFile
+    @Optional
+    abstract RegularFileProperty getRaster()
+
     @OutputDirectory
     abstract DirectoryProperty getOutputDir()
 
@@ -61,6 +65,18 @@ abstract class GeneratePngsTask extends DefaultTask {
 
             def outputFile = new File(dpiDir, "ic_wivrn_launcher.png")
 
+            if (getRaster().isPresent()) {
+                def source = javax.imageio.ImageIO.read(getRaster().get().asFile)
+                if (source == null) throw new GradleException('Cannot read Meta app icon')
+                def scaled = new java.awt.image.BufferedImage(size, size, java.awt.image.BufferedImage.TYPE_INT_RGB)
+                def graphics = scaled.createGraphics()
+                graphics.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC)
+                graphics.drawImage(source, 0, 0, size, size, null)
+                graphics.dispose()
+                javax.imageio.ImageIO.write(scaled, 'png', outputFile)
+                return
+            }
+
             def argsList = [
                 getSvg().get().asFile.absolutePath,
                 "-w", size.toString(),
@@ -85,6 +101,9 @@ tasks.register("generatePngs", GeneratePngsTask) {
     // configure defaults
     svg.set(layout.projectDirectory.file("images/wivrn.svg"))
     outputDir.set(layout.buildDirectory.dir("generated_resources"))
+    if (project.hasProperty('wivrn_meta_icon')) {
+        raster.set(layout.projectDirectory.file('images/wivrn-pro-meta-icon.png'))
+    }
 
     if (project.hasProperty("wivrn_css")) {
         css.set(layout.projectDirectory.file(project.wivrn_css))

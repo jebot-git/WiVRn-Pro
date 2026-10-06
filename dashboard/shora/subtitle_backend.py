@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Optional session-owned speaker monitor. Never opens the headset microphone.
 
-Audio remains in bounded memory. Only explicitly enabled speech candidates go
-through OpenAI transcription, then GPT-6 Luna translation. No API SDK required.
+Audio remains in bounded memory unless optional local training capture is enabled.
+Recognition uses OpenAI or local OpenVINO, followed by optional text translation.
 """
 from array import array
 from collections import deque
@@ -64,6 +64,11 @@ def atomic_write(path, text):
 @dataclass(frozen=True)
 class Settings:
     enabled: bool = False
+    save_training_audio: bool = False
+    log_speech: bool = False
+    log_ocr: bool = False
+    recording_retention_days: int = 7
+    recording_max_mb: int = 512
     recognition_backend: str = 'openai'
     local_translation: str = 'chatgpt'
     local_device: str = 'A770'
@@ -93,7 +98,7 @@ class Settings:
         unknown = set(data) - set(cls.__dataclass_fields__)
         if unknown: raise ValueError('Unknown subtitle setting')
         result = cls(**data)
-        for name in ('enabled', 'spatial', 'distinguish_voices', 'ocr_enabled'):
+        for name in ('enabled', 'spatial', 'distinguish_voices', 'ocr_enabled', 'save_training_audio', 'log_speech', 'log_ocr'):
             if type(getattr(result, name)) is not bool: raise ValueError(f'{name} must be true or false')
         for name in ('language', 'ocr_language', 'model', 'transcription_model'):
             value = getattr(result, name)
@@ -104,6 +109,9 @@ class Settings:
             value = getattr(result, name)
             if type(value) not in (int, float) or not math.isfinite(value) or not lo <= value <= hi:
                 raise ValueError(f'{name} must be between {lo} and {hi}')
+        for name,lo,hi in [('recording_retention_days',1,365),('recording_max_mb',32,8192)]:
+            value=getattr(result,name)
+            if type(value) is not int or not lo<=value<=hi: raise ValueError(f'{name} must be an integer between {lo} and {hi}')
         if result.font not in ('jupiteroid', 'system'): raise ValueError('Unknown subtitle font')
         if result.recognition_backend not in ('openai','openvino'): raise ValueError('Unknown recognition backend')
         if result.local_translation not in ('openai','chatgpt'): raise ValueError('Unknown local translation backend')
@@ -209,7 +217,7 @@ class OpenAIBackend:
             bearing, spatial = direction(segment.pans[int(start/.02):int(end/.02)], settings.spatial)
             overlap = any(other is not part and float(other.get('start', 0)) < end and float(other.get('end', 0)) > start for other in parts)
             if overlap: spatial = False
-            lines.append(dict(id=len(lines), text=text, speaker=speaker, offset=start, bearing=bearing, spatial=spatial))
+            lines.append(dict(id=len(lines), text=text, source_text=text, speaker=speaker, offset=start, bearing=bearing, spatial=spatial))
             # Keep at most four anonymous, non-overlapping, >=2s reference clips in
             # RAM for this session. Short unidentified turns get provisional IDs.
             if speaker and end-start >= 2 and not overlap:
@@ -349,7 +357,10 @@ class Worker:
         self.dropped = 0
         self.stopping = False
         from ocr_backend import SceneOCR
-        self.ocr = SceneOCR(self.emit)
+        from subtitle_recording import Recorder
+        self.recorder = Recorder()
+        self.recorder.configure(self.settings)
+        self.ocr = SceneOCR(self.emit, self.recorder)
 
     def emit(self, **data):
         try: self.channel.send(json.dumps(data, ensure_ascii=False).encode())
@@ -376,6 +387,7 @@ class Worker:
             self.revision = revision
             self.ocr.reset(settings.ocr_enabled, self.settings.ocr_enabled)
             self.settings = settings
+            self.recorder.configure(settings)
             self.generation += 1
             self.cancelled.set(); self.cancelled = threading.Event()
             self.voices = Voices()
@@ -386,6 +398,7 @@ class Worker:
         except (OSError, ValueError, TypeError):
             self.ocr.reset(False,self.settings.ocr_enabled)
             self.settings = Settings()
+            self.recorder.configure(self.settings)
             self.generation += 1
             self.cancelled.set(); self.cancelled = threading.Event()
             self.voices = Voices()
@@ -421,9 +434,11 @@ class Worker:
             future, generation, segment, settings = self.future; self.future = None
             try:
                 lines = future.result()
+                if generation == self.generation and self.settings.enabled:
+                    self.recorder.record('speech',lines,segment.captured,segment.pcm)
                 if generation == self.generation and self.settings.enabled and now - segment.captured < MAX_AGE:
                     if lines:
-                        self.emit(lines=[dict(line, captured=segment.captured + line['offset']) for line in lines],
+                        self.emit(lines=[dict({k:v for k,v in line.items() if k!='source_text'}, captured=segment.captured + line['offset']) for line in lines],
                             duration=settings.duration, scale=settings.scale, use_jupiteroid=settings.font == 'jupiteroid')
                     self.state = 'Listening to WiVRn speaker mix'
                 elif generation == self.generation: self.dropped += 1
@@ -450,7 +465,7 @@ class Worker:
         if now >= self.next_status:
             try:
                 atomic_json(status_path(), {'state': self.state, 'pid': os.getpid(), 'updated': time.time(),
-                    'enabled': self.settings.enabled, 'dropped': self.dropped, 'ocr_state':self.ocr.state})
+                    'enabled': self.settings.enabled, 'dropped': self.dropped, 'ocr_state':self.ocr.state, 'recording_state':self.recorder.state})
             except OSError: pass
             self.next_status = now + 1
 
@@ -489,6 +504,7 @@ class Worker:
         finally:
             self.cancelled.set()
             self.ocr.close()
+            self.recorder.close()
             if 'local_backend' in sys.modules: sys.modules['local_backend'].close()
             self.stop_capture()
             self.executor.shutdown(wait=False, cancel_futures=True)

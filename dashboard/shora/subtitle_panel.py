@@ -7,7 +7,7 @@ from pathlib import Path
 import time
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFormLayout, QLabel, QCheckBox,
-    QLineEdit, QComboBox, QDoubleSpinBox, QPushButton, QHBoxLayout, QFileDialog)
+    QLineEdit, QComboBox, QDoubleSpinBox, QPushButton, QHBoxLayout, QFileDialog, QSpinBox)
 from subtitle_backend import Settings, atomic_json, atomic_write, config_dir, status_path
 
 
@@ -90,6 +90,27 @@ class SubtitlePanel(QWidget):
                 ('ocr_distance','Approximate overlay plane (metres)',.5,10,.5)]:
             box = QDoubleSpinBox(); box.setRange(lo,hi); box.setSingleStep(step); box.setDecimals(1)
             self.numbers[name] = box; ocr_form.addRow(label,box)
+        recording_title = QLabel('Local recordings and training'); recording_title.setObjectName('heading'); layout.addWidget(recording_title)
+        recording_note = QLabel('Optional: save recognized speaker-audio clips for later training and/or save transcript logs. '
+            'Files stay on this PC. Review and correct training labels before using them; saving clips does not retrain or replace the model. '
+            'Logs include original recognized text and translations. Scene images and headset microphone audio are never saved. '
+            'Older files are deleted when the age or storage limit is reached while recording is active.')
+        recording_note.setWordWrap(True); layout.addWidget(recording_note)
+        recording_form = QFormLayout(); layout.addLayout(recording_form)
+        self.save_training_audio = QCheckBox('Save recognized audio clips for training (review required)')
+        self.log_speech = QCheckBox('Save speech transcripts and translations')
+        self.log_ocr = QCheckBox('Save scene-text transcripts and translations')
+        for box in (self.save_training_audio,self.log_speech,self.log_ocr):recording_form.addRow(box)
+        self.recording_days=QSpinBox();self.recording_days.setRange(1,365)
+        self.recording_mb=QSpinBox();self.recording_mb.setRange(32,8192)
+        recording_form.addRow('Keep recordings for days',self.recording_days)
+        recording_form.addRow('Maximum recordings size (MiB)',self.recording_mb)
+        from subtitle_recording import recording_root
+        self.recording_folder=recording_root()
+        location=QLabel(str(self.recording_folder));location.setWordWrap(True)
+        recording_form.addRow('Local folder',location)
+        open_recordings=QPushButton('Open recordings folder');open_recordings.clicked.connect(self.open_recordings)
+        recording_form.addRow(open_recordings)
         limitations = QLabel('Scene text uses the same translation backend, model and font selected above. '
             'Up to four clear text regions are shown. Head movement hides old results; moving scene objects are not tracked. '
             'Direction is a left/right estimate from the speaker mix, not a game-object location. '
@@ -107,6 +128,13 @@ class SubtitlePanel(QWidget):
         layout.addStretch()
         self.timer = QTimer(self); self.timer.timeout.connect(self.refresh_status); self.timer.start(1000)
         self.load(); self.refresh_status()
+
+    def open_recordings(self):
+        if not self.recording_folder.is_dir():
+            self.notice.setText('No recordings yet. Enable an option and apply it during a session.');return
+        from PySide6.QtCore import QUrl
+        from PySide6.QtGui import QDesktopServices
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.recording_folder)))
 
     def read(self): return self.path.read_text() if self.path.exists() else None
 
@@ -133,6 +161,8 @@ class SubtitlePanel(QWidget):
             self.recognition.setCurrentIndex(self.recognition.findData(settings.recognition_backend))
             self.local_translation.setCurrentIndex(self.local_translation.findData(settings.local_translation))
             self.local_device.setCurrentText(settings.local_device); self.local_confidence.setValue(settings.local_ocr_confidence)
+            for name in ('save_training_audio','log_speech','log_ocr'):getattr(self,name).setChecked(getattr(settings,name))
+            self.recording_days.setValue(settings.recording_retention_days);self.recording_mb.setValue(settings.recording_max_mb)
             self.local_model.setText(settings.local_speech_model)
             self.local_ocr_model.setText(settings.local_ocr_model)
             self.ocr_enabled.setChecked(settings.ocr_enabled); self.ocr_language.setCurrentText(settings.ocr_language)
@@ -155,6 +185,8 @@ class SubtitlePanel(QWidget):
             settings = Settings.parse(dict(ocr_enabled=self.ocr_enabled.isChecked(),ocr_language=self.ocr_language.currentText().strip(),enabled=self.enabled.isChecked(), language=self.language.currentText().strip(),
                 recognition_backend=self.recognition.currentData(),local_translation=self.local_translation.currentData(),
                 local_device=self.local_device.currentText(),local_ocr_confidence=self.local_confidence.value(),
+                save_training_audio=self.save_training_audio.isChecked(),log_speech=self.log_speech.isChecked(),log_ocr=self.log_ocr.isChecked(),
+                recording_retention_days=self.recording_days.value(),recording_max_mb=self.recording_mb.value(),
                 local_speech_model=self.local_model.text().strip(),
                 local_ocr_model=self.local_ocr_model.text().strip(),
                 font=self.font.currentData(), distinguish_voices=self.voices.isChecked(), spatial=self.spatial.isChecked(), model=self.model.text().strip(),
@@ -180,5 +212,5 @@ class SubtitlePanel(QWidget):
         try:
             status = json.loads(self.status_file.read_text())
             if time.time() - status['updated'] > 4: raise ValueError()
-            self.status.setText(f"{status['state']} · skipped stale/busy chunks: {status.get('dropped', 0)}\n{status.get('ocr_state', 'Scene translation disabled')}")
+            self.status.setText(f"{status['state']} · skipped stale/busy chunks: {status.get('dropped', 0)}\n{status.get('ocr_state', 'Scene translation disabled')}\n{status.get('recording_state','Recording off')}")
         except (OSError, ValueError, KeyError, TypeError): self.status.setText('No active subtitle worker. Connect the matching headset client to WiVRn.')

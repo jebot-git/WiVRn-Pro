@@ -57,4 +57,4 @@ MIT/Apache-2.0 licenses. Original author and bundled dependency notices remain.
 
 ## Optional speech and scene translation
 
-The unified dashboard’s **Subtitles** tab configures spoken subtitles with voice colours and approximate stereo placement, plus independent OCR translation patches that match scene text and background colours. English and Serbian are preset targets, with a GPT-6 Luna API hook and Jupiteroid font. Both features are disabled until enabled with an OpenAI API key. See [setup and limitations](fork/SUBTITLES.md).
+The unified dashboard’s **Subtitles** tab configures spoken subtitles with voice colours and approximate stereo placement, plus independent OCR translation patches that match scene text and background colours. English and Serbian are preset targets, with a GPT-6 Luna API hook and Jupiteroid font. Both features start disabled. Choose cloud recognition or [local OpenVINO recognition](fork/local-ai/README.md); the latter also supports trained model exports. Optional training-audio collection and separate speech/OCR transcript logs are off by default. See [setup and limitations](fork/SUBTITLES.md).

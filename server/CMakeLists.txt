@@ -153,7 +153,7 @@ if (WIVRN_BUILD_SERVER)
 		)
     target_compile_definitions(wivrn-server PRIVATE WIVRN_SUBTITLE_SOURCE="${CMAKE_SOURCE_DIR}/dashboard/shora/subtitle_backend.py")
     install(FILES ../dashboard/shora/subtitle_backend.py ../dashboard/shora/ocr_backend.py
-        ../dashboard/shora/local_backend.py ../dashboard/shora/local_worker.py
+        ../dashboard/shora/local_backend.py ../dashboard/shora/local_worker.py ../dashboard/shora/subtitle_recording.py
         ../dashboard/shora/local_recognition.py ../dashboard/shora/local_translation.py
         DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/subtitles)
 	target_compile_features(wivrn-server PRIVATE cxx_std_20)

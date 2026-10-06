@@ -32,6 +32,7 @@ def distance(a,b):
 def main():
     p=argparse.ArgumentParser(); p.add_argument('--base',type=Path,required=True)
     p.add_argument('--data',type=Path,required=True); p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--captures',type=Path,help='Manifest exported by review_captures.py; reviewed train clips only')
     p.add_argument('--steps',type=int,default=60); p.add_argument('--learning-rate',type=float,default=5e-5)
     a=p.parse_args(); a.output.mkdir(parents=True,exist_ok=False)
     random.seed(173); np.random.seed(173); torch.manual_seed(173); torch.set_num_threads(4)
@@ -44,7 +45,16 @@ def main():
     model.generation_config.max_new_tokens=180
     model=get_peft_model(model,LoraConfig(r=8,lora_alpha=16,lora_dropout=.05,
         target_modules=r'model.decoder.*\.(q_proj|v_proj)',bias='none'))
-    manifest=json.loads(a.data.read_text()); rows=manifest['rows']
+    manifest=json.loads(a.data.read_text()); rows=list(manifest['rows'])
+    if a.captures:
+        import hashlib
+        extra=json.loads(a.captures.read_text())['rows']
+        for row in extra:
+            if row.get('reviewed') is not True or row.get('split')!='train':raise ValueError('Captured clips must be reviewed training examples')
+            if hashlib.sha256(Path(row['path']).read_bytes()).hexdigest()!=row['sha256']:raise ValueError('Captured audio changed after review')
+        existing={row['sha256'] for row in rows}
+        for row in extra:
+            if row['sha256'] not in existing:rows.append(row);existing.add(row['sha256'])
     # Official train and validation are separate; do not tune on test-room audio.
     if {r['sha256'] for r in rows if r['split']=='train'} & {r['sha256'] for r in rows if r['split']=='validation'}:
         raise RuntimeError('Train/evaluation audio overlap')
@@ -70,7 +80,7 @@ def main():
     print('GPU',torch.xpu.get_device_name(device),'trainable',sum(p.numel() for p in model.parameters() if p.requires_grad),flush=True)
     baseline=evaluate(); (a.output/'baseline.json').write_text(json.dumps(baseline,ensure_ascii=False,indent=2))
     print('Baseline CER',baseline['cer'],flush=True)
-    groups={language:[x for x in prepared if x[0]['split']=='train' and x[0]['language']==language] for language in ('ko','zh','ja')}
+    groups={language:[x for x in prepared if x[0]['split']=='train' and x[0]['language']==language] for language in sorted({r[0]['language'] for r in prepared if r[0]['split']=='train'})}
     for group in groups.values(): random.shuffle(group)
     if not all(groups.values()): raise RuntimeError('Missing language training samples')
     optim=torch.optim.AdamW([p for p in model.parameters() if p.requires_grad],lr=a.learning_rate)
@@ -78,10 +88,10 @@ def main():
     losses=[]
     for step in range(a.steps):
         optim.zero_grad(set_to_none=True); summed=0
-        # One example per language per update: balanced despite length differences.
+        # One example per language per update, including reviewed capture languages.
         for language,group in groups.items():
             row,features,labels=group[step%len(group)]
-            loss=model(input_features=features.to(device),labels=labels.to(device)).loss/3
+            loss=model(input_features=features.to(device),labels=labels.to(device)).loss/len(groups)
             if not torch.isfinite(loss): raise RuntimeError('Non-finite training loss')
             loss.backward(); summed+=loss.item()
         torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad],1)
@@ -92,7 +102,7 @@ def main():
     after=evaluate()
     report=dict(base=str(a.base),dataset=manifest['dataset'],revision=manifest['revision'],licence=manifest['licence'],
         device=torch.xpu.get_device_name(device),steps=a.steps,train_samples=sum(map(len,groups.values())),
-        validation_samples=len(after['rows']),losses=losses,baseline=baseline['cer'],candidate=after['cer'],
+        validation_samples=len(after['rows']),captured_train_samples=sum(1 for row,_,_ in prepared if row.get('reviewed') is True),losses=losses,baseline=baseline['cer'],candidate=after['cer'],
         passes_pilot_gate=all(after['cer'][k]<=baseline['cer'][k] for k in baseline['cer']),
         warning='Small adaptation pilot; validation is not an independent final test and does not establish general improvement.')
     (a.output/'evaluation.json').write_text(json.dumps(after,ensure_ascii=False,indent=2))

@@ -19,3 +19,11 @@ user token, APK path, channel and release notes. Use a private wrapper that read
 credentials from a mode-0600 file; never put their values in shell history. Check channel assignment and
 postprocessing after upload. Store installation requires the headset account to
 have ALPHA access. Do not replace a release-signing key to solve an update error.
+
+## Meta icon
+
+`images/wivrn-pro-meta-icon.png` is the opaque 1024×1024 store icon: a white VR
+headset with a cyan speech bubble on navy. It was generated for this project.
+Pass `-Pwivrn_meta_icon` to the client build to package it into all Android
+launcher icon densities. The default non-Meta build retains the existing icon.
+The same PNG is ready for the Meta dashboard's store-icon upload.

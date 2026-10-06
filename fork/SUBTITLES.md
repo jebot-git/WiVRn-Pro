@@ -87,7 +87,9 @@ objects and animated UI are not tracked and can become misaligned before expiry.
 Results more than twelve seconds after capture are discarded. Best suited to
 stationary signs and menus while looking steadily at them.
 
-Images, recognized text and translations stay in bounded memory locally, but
+Images stay in bounded memory locally. Text and recognized speech clips can be
+saved with the separate opt-in logging/training controls described in
+[local recognition and recordings](local-ai/README.md). In cloud mode,
 **scene images are uploaded to OpenAI while this option is enabled** and account
 billing/provider data handling apply. Image requests already sent cannot be
 retracted. Both speech and scene translation default to disabled.

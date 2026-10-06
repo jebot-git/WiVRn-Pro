@@ -27,15 +27,15 @@ def translate_scene(rgba, settings, cancelled, backend=None):
         from local_backend import backend as local_backend
         return local_backend().scene(rgba,settings,cancelled)
     schema = {'type':'object','properties':{'regions':{'type':'array','items':{'type':'object',
-        'properties':{'text':{'type':'string'},'box':{'type':'array','items':{'type':'number'},'minItems':4,'maxItems':4},
+        'properties':{'text':{'type':'string'},'source_text':{'type':'string'},'box':{'type':'array','items':{'type':'number'},'minItems':4,'maxItems':4},
             'confidence':{'type':'number'},
             'foreground':{'type':'array','items':{'type':'number'},'minItems':3,'maxItems':3},
             'background':{'type':'array','items':{'type':'number'},'minItems':3,'maxItems':3}},
-        'required':['text','box','confidence','foreground','background'],'additionalProperties':False}}},
+        'required':['text','source_text','box','confidence','foreground','background'],'additionalProperties':False}}},
         'required':['regions'],'additionalProperties':False}
     request = {'model':settings.model, 'store':False, 'max_output_tokens':1200,
         'instructions':'Read clearly visible text in this VR scene. Return at most four important text regions, '
-            'translated to the requested language, or transcribed if Original. Group adjacent lines of the same sign. '
+            'translated to the requested language, or transcribed if Original. Also return the original transcription in source_text. Group adjacent lines of the same sign. '
             'Use tight bounding boxes [x,y,width,height], normalized 0..1 with origin at the top left of the image. '
             'For each region estimate its original text foreground and apparent background colours as RGB triples in 0..1. '
             'Use the dominant colour behind the letters for the background. '
@@ -65,14 +65,15 @@ def translate_scene(rgba, settings, cancelled, backend=None):
             for rgb in colours.values():
                 if not isinstance(rgb,list) or len(rgb)!=3 or any(type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=1 for v in rgb): raise ValueError()
             text = clean_text(region['text'],240)
-            if text and confidence>=.7: result.append(dict(text=text,box=box,speaker=0,bearing=0,spatial=True,**colours))
+            if text and confidence>=.7: result.append(dict(text=text,source_text=clean_text(region.get('source_text'),1500),box=box,speaker=0,bearing=0,spatial=True,**colours))
         return result
     except (KeyError,TypeError,ValueError): raise APIError('Invalid scene translation response') from None
 
 
 class SceneOCR:
-    def __init__(self, emit):
+    def __init__(self, emit, recorder=None):
         self.emit = emit
+        self.recorder = recorder
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.future = None
         self.cancelled = threading.Event()
@@ -95,9 +96,10 @@ class SceneOCR:
             if generation == self.generation and settings.ocr_enabled:
                 try:
                     lines = future.result()
+                    if self.recorder:self.recorder.record('ocr',lines,metadata['captured'])
                     if now-metadata['captured'] < 12:
                         if lines:
-                            self.emit(visual=True, lines=[dict(line,captured=metadata['captured']) for line in lines],
+                            self.emit(visual=True, lines=[dict({k:v for k,v in line.items() if k!='source_text'},captured=metadata['captured']) for line in lines],
                                 duration=saved.ocr_duration,scale=1,use_jupiteroid=saved.font=='jupiteroid',
                                 capture_pose=metadata['capture_pose'],capture_fov=metadata['capture_fov'],distance=saved.ocr_distance)
                         else: self.emit(visual=True,text='')

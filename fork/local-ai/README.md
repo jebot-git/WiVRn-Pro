@@ -66,3 +66,47 @@ The **Trained OCR heads** field accepts a directory containing compatible
 Leave it empty to use the bundled heads. The detector and Cyrillic head remain
 bundled. Use only complete exports; applying either model selector restarts the
 shared local recognition worker and discards results from the old configuration.
+
+## Optional recordings and training from sessions
+
+The Subtitles tab has three independent, default-off controls:
+
+- Save recognized audio clips for training.
+- Save speech transcripts and translations.
+- Save scene-text transcripts and translations.
+
+They take effect when Apply is pressed. Audio collection saves recognized chunks
+of the existing **WiVRn speaker mix**, not the headset microphone. It requires
+speech subtitles to be enabled and recognition/translation to finish successfully.
+It is not a continuous audio recorder. OCR logs require scene translation to be
+enabled; no scene images are written. Each UTC-stamped JSONL log event includes
+original text, displayed translation, output language and available speaker/box
+metadata. Identical OCR text is logged at most once per 30 seconds. Recognized
+text can contain errors.
+
+Files are private to the current user (directories 0700, files 0600), under
+`~/.local/share/wivrn-pro/recordings` or the equivalent XDG data directory.
+The GUI can open this folder. `captures/` holds mono 16 kHz PCM16 WAVs and JSON
+sidecars. `transcripts/` holds daily JSONL logs. The default limit is 512 MiB and
+7 days; both are configurable. Old files are removed as new records are saved,
+including unexported reviewed clips. Disabled recording writes nothing new and
+discards queued saves. Storage errors do not stop subtitles. A bounded queue
+skips new records if the writer cannot keep up.
+
+Training hypotheses are explicitly **unreviewed**, not ground truth. Listen to a
+WAV, correct its original-language transcript, and approve its spoken language:
+
+```sh
+python3 fork/local-ai/training/review_captures.py list
+python3 fork/local-ai/training/review_captures.py approve CAPTURE_ID \
+  --language ja --text 'Corrected Japanese transcript here'
+python3 fork/local-ai/training/review_captures.py export /path/to/reviewed.json
+```
+
+Export copies approved WAVs into a separate private dataset directory, outside
+recording retention. Add `--captures /path/to/reviewed.json` to `train_speech.py`
+to include those examples in training. Hash checks detect modified audio; only
+reviewed training rows are accepted. Public validation clips remain held out.
+Languages in the reviewed dataset join the balanced training batches. The
+existing export and GUI model-selection steps remain required; recording never
+silently retrains or replaces the running model.

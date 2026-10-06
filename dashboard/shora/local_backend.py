@@ -75,7 +75,7 @@ class LocalBackend:
         result=self.infer('speech',segment.pcm,settings,cancelled)
         if not result or not clean_text(result.get('text')): return []
         bearing,spatial=direction(segment.pans,settings.spatial)
-        lines=[dict(id=0,text=clean_text(result['text'],1500),speaker=0,offset=0,bearing=bearing,spatial=spatial)]
+        lines=[dict(id=0,text=clean_text(result['text'],1500),source_text=clean_text(result['text'],1500),speaker=0,offset=0,bearing=bearing,spatial=spatial)]
         from local_translation import translate
         return translate(lines,settings.language,settings,cancelled)
 
@@ -89,7 +89,7 @@ class LocalBackend:
         # Foreign scripts first, then largest remaining regions. Never synthesize
         # text for unreadable signs; preserve detector geometry through translation.
         regions.sort(key=lambda r:(any(ord(c)>127 for c in r['text']),r['box'][2]*r['box'][3]),reverse=True)
-        lines=[dict(r,id=i,speaker=0,bearing=0,spatial=True) for i,r in enumerate(regions[:4])]
+        lines=[dict(r,source_text=r['text'],id=i,speaker=0,bearing=0,spatial=True) for i,r in enumerate(regions[:4])]
         from local_translation import translate
         return translate(lines,settings.ocr_language,settings,cancelled)
 
