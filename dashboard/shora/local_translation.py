@@ -26,6 +26,8 @@ def agent_translate(payload, model, cancelled):
         schema=Path(directory)/'schema.json'; schema.write_text(json.dumps(SCHEMA))
         env=dict(os.environ); env.pop('OPENAI_API_KEY',None)
         command=['codex','exec','--ignore-user-config','--ephemeral','--skip-git-repo-check',
+            '--disable','shell_tool','--disable','unified_exec','--disable','shell_snapshot',
+            '--disable','tool_suggest','-c','web_search="disabled"',
             '--sandbox','read-only','--json','--color','never','-C',directory,'-m',model,
             '-c','model_reasoning_effort="low"','--output-schema',str(schema),'-']
         # CLI startup is deliberately kept in this prototype; bounded deadlines

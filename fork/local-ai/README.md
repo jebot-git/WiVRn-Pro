@@ -25,7 +25,8 @@ media never goes to the text translator. **Original** output is fully local.
 English and Serbian translation use either the configured OpenAI text API or an
 experimental `codex exec` bridge to the local ChatGPT login (`codex login`). The
 bridge ignores user configuration, uses an empty directory and a read-only
-sandbox, asks for no tools, and has a nine-second deadline. It consumes ChatGPT
+sandbox, disables shell execution and web search, asks for no tools, and has a
+nine-second deadline. It consumes ChatGPT
 plan usage and is not a low-latency streaming API. Only recognized text leaves
 the PC. Provider errors and stale results are discarded, not queued indefinitely.
 
