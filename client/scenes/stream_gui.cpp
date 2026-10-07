@@ -479,7 +479,7 @@ void scenes::stream::gui_settings(float)
 			ImGui::BeginDisabled(!capture);
 			if (wivrn::ui::button("Restart microphone", wivrn::ui::button_style::secondary))
 				request_mic_restart = true;
-			ImGui::TextWrapped("Reopen microphone capture while keeping the VR session running.");
+			ImGui::TextWrapped("Release capture for one second, then reopen in compatibility mode. Voice processing may sound different. The VR session stays connected.");
 			ImGui::EndDisabled();
 			ImGui::EndDisabled();
 #endif

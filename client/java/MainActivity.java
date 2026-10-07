@@ -2,6 +2,30 @@ package org.meumeu.wivrn;
 
 public class MainActivity extends android.app.NativeActivity
 {
+	private volatile boolean microphoneActivityResumed = false;
+	private final java.util.concurrent.atomic.AtomicInteger microphoneCaptureEpoch = new java.util.concurrent.atomic.AtomicInteger();
+
+	@Override
+	protected void onResume()
+	{
+		super.onResume();
+		microphoneCaptureEpoch.incrementAndGet();
+		microphoneActivityResumed = true;
+	}
+
+	@Override
+	protected void onPause()
+	{
+		microphoneActivityResumed = false;
+		microphoneCaptureEpoch.incrementAndGet();
+		super.onPause();
+	}
+
+	public int getMicrophoneCaptureEpoch()
+	{
+		return microphoneCaptureEpoch.get();
+	}
+
 	static
 	{
 		System.loadLibrary("wivrn");
@@ -26,6 +50,8 @@ public class MainActivity extends android.app.NativeActivity
 			android.media.AudioManager audio = getSystemService(android.media.AudioManager.class);
 			if (audio == null || audio.isMicrophoneMute())
 				return 2;
+			if (!microphoneActivityResumed)
+				return 4;
 			return 0;
 		}
 		catch (RuntimeException error)

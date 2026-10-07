@@ -39,7 +39,10 @@ int main()
 	assert(!w.retry(t + 3500ms)); // backoff
 	assert(w.retry(t + 4s));
 	assert(w.retry(t + 6s));
-	assert(!w.retry(t + 60s)); // hard bound
+	assert(!w.retry(t + 35s)); // exhausted burst enters slow recovery
+	assert(w.retry(t + 36s)); // transient HAL failure must not permanently disable capture
+	assert(!w.retry(t + 60s));
+	assert(w.attempts == 3); // saturates, avoiding retry-counter overflow
 	w.start(t + 61s, 0);
 	for (int i = 1; i <= 12; ++i)
 		assert(!w.stalled(t + 61s + i * 1s, i * 48000, {}));
@@ -66,5 +69,44 @@ int main()
 	for (int i = 1; i <= 12; ++i)
 		assert(!w.stalled(t + 4s + i * 1s, 42000 + i * 48000, 42000 + i * 48000));
 	assert(w.attempts == 0);
-	std::cout << "Session capture and bounded recovery tests passed\n";
+	// Reproduce the captured resume failure: callbacks and timestamps advance
+	// at only ~14 kHz on a 48 kHz stream, including after three failed reopens.
+	w = {};
+	uint64_t frames = 0;
+	int reopens = 0;
+	w.start(t, frames, 48000);
+	for (int second = 1; second <= 120; ++second)
+	{
+		frames += 14000;
+		auto now = t + second * 1s;
+		if (w.stalled(now, frames, frames) && w.retry(now))
+		{
+			++reopens;
+			w.start(now, frames, 48000);
+		}
+	}
+	assert(reopens == 6); // three initial retries, then 39, 69, 99 seconds
+	for (int second = 121; second <= 135; ++second)
+	{
+		frames += 48000;
+		w.stalled(t + second * 1s, frames, frames);
+	}
+	assert(w.attempts == 0); // hardware recovers without restarting the app
+	w = {};
+	assert(w.retry(t));
+	assert(w.retry(t + 1s));
+	assert(w.retry(t + 3s)); // cooldown would normally end at 33 seconds
+	w.start(t + 4s, 0, 48000);
+	for (int second = 1; second <= 12; ++second)
+		assert(!w.stalled(t + 4s + second * 1s, second * 48000, second * 48000));
+	assert(w.attempts == 0 && w.can_retry(t + 16s)); // sustained recovery cancels cooldown
+	utils::microphone_reopen_delay delay;
+	delay.defer(t);
+	assert(!delay.ready(t + 999ms));
+	assert(delay.ready(t + 1s));
+	// Another lifecycle interruption restarts the settling interval.
+	delay.defer(t + 500ms);
+	assert(!delay.ready(t + 1s));
+	assert(delay.ready(t + 1500ms));
+	std::cout << "Session capture and resume recovery tests passed\n";
 }

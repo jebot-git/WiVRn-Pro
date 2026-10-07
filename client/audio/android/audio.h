@@ -48,7 +48,7 @@ class audio
 	static void speaker_error_cb(AAudioStreamStruct *, void *, int32_t);
 
 	void audio_worker();
-	void build_microphone(AAudioStreamBuilderStruct *, int32_t, int32_t);
+	void build_microphone(AAudioStreamBuilderStruct *, int32_t, int32_t, bool compatibility);
 	void build_speaker(AAudioStreamBuilderStruct *, int32_t, int32_t);
 	struct microphone_block
 	{

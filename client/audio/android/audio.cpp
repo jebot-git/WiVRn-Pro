@@ -123,18 +123,18 @@ int32_t wivrn::android::audio::microphone_data_cb(AAudioStream * stream, void * 
 	return AAUDIO_CALLBACK_RESULT_CONTINUE;
 }
 
-void wivrn::android::audio::build_microphone(AAudioStreamBuilder * builder, int32_t sample_rate, int32_t num_channels)
+void wivrn::android::audio::build_microphone(AAudioStreamBuilder * builder, int32_t sample_rate, int32_t num_channels, bool compatibility)
 {
 	AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_INPUT);
 	AAudioStreamBuilder_setSampleRate(builder, sample_rate);
 	AAudioStreamBuilder_setChannelCount(builder, num_channels);
-	AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
+	AAudioStreamBuilder_setPerformanceMode(builder, compatibility ? AAUDIO_PERFORMANCE_MODE_NONE : AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
 	AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_SHARED);
 	AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
 	if (application::get_config().mic_unprocessed_audio)
 		AAudioStreamBuilder_setInputPreset(builder, AAUDIO_INPUT_PRESET_UNPROCESSED);
 	else
-		AAudioStreamBuilder_setInputPreset(builder, AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION);
+		AAudioStreamBuilder_setInputPreset(builder, compatibility ? AAUDIO_INPUT_PRESET_VOICE_RECOGNITION : AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION);
 
 	AAudioStreamBuilder_setDataCallback(builder, &microphone_data_cb, this);
 	AAudioStreamBuilder_setErrorCallback(builder, &microphone_error_cb, this);
@@ -143,12 +143,12 @@ void wivrn::android::audio::build_microphone(AAudioStreamBuilder * builder, int3
 	if (result != AAUDIO_OK)
 		spdlog::error("Cannot create input stream: {}", AAudio_convertResultToText(result));
 	if (microphone)
-		spdlog::info("Microphone opened: rate={} channels={} sharing={} preset={} performance={}",
+		spdlog::info("Microphone opened: rate={} channels={} sharing={} preset={} performance={} compatibility={}",
 		             AAudioStream_getSampleRate(microphone),
 		             AAudioStream_getChannelCount(microphone),
 		             int(AAudioStream_getSharingMode(microphone)),
 		             int(AAudioStream_getInputPreset(microphone)),
-		             int(AAudioStream_getPerformanceMode(microphone)));
+		             int(AAudioStream_getPerformanceMode(microphone)), compatibility);
 }
 
 void wivrn::android::audio::build_speaker(AAudioStreamBuilder * builder, int32_t sample_rate, int32_t num_channels)
@@ -266,9 +266,12 @@ void wivrn::android::audio::audio_worker()
 	using clock = std::chrono::steady_clock;
 	using namespace std::chrono_literals;
 	utils::microphone_watchdog watchdog;
+	utils::microphone_reopen_delay reopen_delay;
+	bool compatibility = false;
 	bool mic_started = false, mic_fault = false, exhausted_logged = false, previous_requested = false, previous_monitoring = false;
 	bool previous_forwarding = false;
 	int previous_block_reason = -1;
+	int previous_activity_epoch = -1;
 	application::instance().setup_jni();
 	jni::object<""> activity(application::native_app()->activity->clazz);
 	auto privacy_check = clock::now();
@@ -292,7 +295,7 @@ void wivrn::android::audio::audio_worker()
 			return;
 		}
 		if (mic)
-			build_microphone(builder, description.microphone->sample_rate, description.microphone->num_channels);
+			build_microphone(builder, description.microphone->sample_rate, description.microphone->num_channels, compatibility);
 		else
 			build_speaker(builder, description.speaker->sample_rate, description.speaker->num_channels);
 		AAudioStreamBuilder_delete(builder);
@@ -300,6 +303,7 @@ void wivrn::android::audio::audio_worker()
 	while (!exiting)
 	{
 		auto now = clock::now();
+		bool activity_changed = false;
 		if (auto error = speaker_error.exchange(0))
 		{
 			spdlog::warn("Speaker interrupted: {}", AAudio_convertResultToText(error));
@@ -320,9 +324,13 @@ void wivrn::android::audio::audio_worker()
 			try
 			{
 				reason = activity.call<jni::Int>("getMicrophoneCaptureBlockReason").value;
+				auto epoch = activity.call<jni::Int>("getMicrophoneCaptureEpoch").value;
+				activity_changed = previous_activity_epoch != epoch;
+				previous_activity_epoch = epoch;
 			}
 			catch (std::exception & error)
 			{
+				reason = 8;
 				if (previous_block_reason != 8)
 					spdlog::warn("Microphone privacy query: {}", error.what());
 			}
@@ -338,17 +346,26 @@ void wivrn::android::audio::audio_worker()
 			spdlog::info("Microphone session: capture={} forward={} recovery={} present={}", requested, policy.forward(), monitoring, policy.user_present);
 		previous_forwarding = policy.forward();
 		bool manual = mic_restart.exchange(false);
-		if ((requested && !previous_requested) || (monitoring && !previous_monitoring) || manual)
+		bool reactivated = (requested && !previous_requested) || (monitoring && !previous_monitoring) || activity_changed;
+		if (reactivated || manual)
 		{
 			watchdog = {};
-			if (microphone)
-				watchdog.start(now, microphone_frames, AAudioStream_getSampleRate(microphone));
 			exhausted_logged = false;
+			// Reacquire even if the retained stream claims STARTED: Quest can
+			// return synthetic callbacks after off-head/suspend transitions.
+			++microphone_generation;
+			close_stream(microphone);
+			mic_error = 0;
+			mic_started = false;
+			mic_fault = false;
+			reopen_delay.defer(clock::now());
 			if (manual)
 			{
-				mic_fault = true;
-				spdlog::info("Manual microphone recovery requested");
+				compatibility = true;
+				spdlog::info("Manual microphone recovery: release input for 1s, then reopen with compatibility capture");
 			}
+			else
+				spdlog::info("Microphone lifecycle recovery: release input for 1s (activity epoch={})", previous_activity_epoch);
 		}
 		previous_requested = requested;
 		previous_monitoring = monitoring;
@@ -365,6 +382,7 @@ void wivrn::android::audio::audio_worker()
 			{
 				++microphone_generation;
 				close_stream(microphone);
+				reopen_delay.defer(clock::now());
 			}
 			mic_started = false;
 			mic_fault = false;
@@ -403,18 +421,26 @@ void wivrn::android::audio::audio_worker()
 			}
 			if (mic_fault && microphone && (invalid_microphone || (monitoring && watchdog.can_retry(now))))
 			{
+				if (monitoring)
+					compatibility = true;
 				++microphone_generation;
 				close_stream(microphone);
 				mic_started = false;
+				reopen_delay.defer(clock::now());
 			}
-			if (!microphone && (!mic_fault || (monitoring && watchdog.retry(now))))
+			if (!microphone && reopen_delay.ready(now) && (!mic_fault || (monitoring && watchdog.retry(now))))
 			{
 				if (mic_fault)
-					spdlog::warn("Reopening microphone, bounded attempt {}/3", watchdog.attempts);
+				{
+					compatibility = true;
+					spdlog::warn("Reopening microphone: retry stage={} compatibility={}", watchdog.attempts, compatibility);
+				}
 				++microphone_generation;
 				mic_error = 0; // close completed; ignore errors from the retired stream
 				open_stream(true);
 				mic_fault = !microphone;
+				if (mic_fault)
+					reopen_delay.defer(clock::now());
 				if (microphone)
 				{
 					auto result = AAudioStream_requestStart(microphone);
@@ -423,6 +449,7 @@ void wivrn::android::audio::audio_worker()
 					{
 						spdlog::warn("Microphone start: {}", AAudio_convertResultToText(result));
 						close_stream(microphone);
+						reopen_delay.defer(clock::now());
 						mic_fault = true;
 					}
 					else
@@ -434,7 +461,7 @@ void wivrn::android::audio::audio_worker()
 			}
 			if (monitoring && mic_fault && watchdog.attempts >= 3 && !exhausted_logged)
 			{
-				spdlog::error("Microphone automatic recovery limit reached; retaining usable stream, use Restart microphone in Audio settings");
+				spdlog::warn("Microphone still stalled; automatic recovery will retry at most once every 30s while present");
 				exhausted_logged = true;
 			}
 		}

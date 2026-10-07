@@ -12,24 +12,34 @@ unchanged. Existing Quest processed/unprocessed microphone selection is preserve
 there is no new amplitude gate, noise filter, or silence-triggered recovery.
 
 Audio settings provide Microphone capture and Restart microphone controls.
-Permission loss, reported Android system microphone mute, session invisibility,
+Permission loss, reported Android system microphone mute, Activity pause, session invisibility,
 and disconnect stop capture. Read-only permission/mute checks run every 250 ms. Android enforces its own
 privacy toggle; its state is not exposed by the public SensorPrivacyManager API.
 Presence loss suppresses delivery and recovery while retaining an otherwise
-allowed stream. Visibility is the fallback on runtimes without presence events.
+allowed stream. Returning presence forces a fresh stream. Activity pause/resume
+epochs also force reacquisition, including transitions shorter than the polling
+interval. Visibility is the fallback on runtimes without presence events.
 
 Android lifecycle operations run on one owner thread. Callbacks only enqueue
 bounded samples when forwarding is requested. Reader and stream generations
 reject retired buffers, and samples older than 100 ms are discarded. No network
 send occurs in the audio callback. AAudio uses shared capture and preserves the
 existing VOICE_COMMUNICATION default and optional UNPROCESSED input preset.
+After a fault, compatibility capture requests performance mode NONE and switches
+processed capture to VOICE_RECOGNITION. Explicit UNPROCESSED selection remains
+unprocessed. The compatibility choice lasts for the streaming session and may
+change voice processing. It does not alter global Android audio mode or mute.
 
 Recovery checks callback cadence and AAudio timestamps, never PCM amplitude.
 A three-second stall or delivery below half the negotiated sample rate permits
-up to three reopen attempts with backoff. Ten seconds of healthy progress,
-reactivation, or manual restart rearms recovery. Unsupported timestamps alone
-are not a fault. At the retry limit a usable stream is retained for external HAL
-recovery. Off-head and system-muted states do not spend recovery retries.
+three initial reopen attempts with backoff, then at most one attempt every 30
+seconds while present. Ten seconds of healthy progress, reactivation, or manual
+restart rearms fast recovery. Unsupported timestamps alone are not a fault.
+Off-head and system-muted states do not spend recovery retries. Every close is
+followed by at least one second before reacquisition; resume also waits one second
+for Android routing to settle. The owner thread remains responsive during this
+interval. Manual restart immediately releases the input and selects compatibility
+capture without restarting the VR session or bypassing capture permission/mute.
 
 Quest HAL contention can produce synthetic silence and advancing timestamps.
 This design avoids consumer-driven reopen cycles; it cannot guarantee hardware
@@ -37,3 +47,9 @@ priority over Meta services or detect every silent HAL failure. Hardware testing
 of this candidate is required, including long world loads, system mute, presence,
 suspend/resume, noise suppression and disconnect. Build validation is recorded
 alongside the candidate artifacts; this document does not claim deployment.
+
+2026-10-07 regression: after wake at 05:17:18, negotiated 48 kHz input delivered
+about 13-14 kHz with advancing timestamps. Three automatic and three manual
+reopens of the same VOICE_COMMUNICATION route failed. The retry/profile/lifecycle
+changes above target this observed failure; a headset sleep/wake test is still
+required to establish whether the vendor HAL recovers with the new profile.

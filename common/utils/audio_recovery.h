@@ -77,19 +77,36 @@ struct microphone_watchdog
 			healthy_since = now;
 		// Never rearm from synthetic callbacks alone: require sustained hardware progress.
 		if (!bad && position && now - healthy_since >= std::chrono::seconds(10))
+		{
 			attempts = 0;
+			next_retry = now;
+		}
 		return bad;
 	}
 	bool can_retry(clock::time_point now) const
 	{
-		return attempts < 3 && now >= next_retry;
+		return now >= next_retry;
 	}
 	bool retry(clock::time_point now)
 	{
 		if (!can_retry(now))
 			return false;
-		next_retry = now + std::chrono::seconds(1 << attempts++);
+		// A transient HAL failure must not disable recovery for the rest of a
+		// session. After the initial burst, allow just one retry per 30 seconds.
+		if (attempts < 3)
+			++attempts;
+		next_retry = now + (attempts < 3 ? std::chrono::seconds(1 << (attempts - 1)) : std::chrono::seconds(30));
 		return true;
 	}
+};
+
+// Keep the input closed long enough for Android to retire the previous route.
+// This runs on the owner thread without sleeping or blocking network delivery.
+struct microphone_reopen_delay
+{
+	using clock = std::chrono::steady_clock;
+	clock::time_point not_before{};
+	void defer(clock::time_point now) { not_before = now + std::chrono::seconds(1); }
+	bool ready(clock::time_point now) const { return now >= not_before; }
 };
 } // namespace utils
