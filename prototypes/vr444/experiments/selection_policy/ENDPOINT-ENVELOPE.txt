@@ -1,0 +1,76 @@
+Necessary endpoint cadence/age envelope, 2026-10-09
+
+This approach removes the sufficient full-window count assumption for a
+bounded set of five declared phases. It does not solve mixed-age path
+feasibility or change the native policy. The original run05 failed summary,
+all 300 manifest-bound files and pinned manifest identity remain unchanged.
+No headset operation or performance measurement is performed.
+
+For each of four admission models and each listed phase, the analyzer
+examines all 1,804,050 pairs of observed warm deadlines. Exactly 509,001
+intervals span at least 10 seconds, and all of those have enough observed
+deadlines for the 88 Hz count floor. Shorter-than-10-second intervals fail
+that declared duration requirement and are reported separately.
+
+For an endpoint span S, any path meeting 88 Hz requires at least
+Nmin = max(180, ceil(88*S/1e9)+1) choices. Nearest-rank p95 strictly below
+15 ms then needs at least ceil(0.95*Nmin) strictly good choices. Deleting
+bad-age choices from any legal path preserves deadline and identity order,
+so its good count cannot exceed the exact longest good-only advancing
+chain within this interval. The analyzer computes that chain length with
+patience/LIS tails: each deadline's alternative identities enter in descending
+order, preventing two choices at the same deadline; bisect_left enforces
+strict identity advance. Checked global monotone frame targets also preserve
+target nonregression. Source-distinct generations were checked contiguous
+and ordered over all known encoded frames before warm-prefix filtering.
+
+This is a necessary upper bound, not an executable selector. It ignores
+whether the remaining bad-age choices can be inserted to reach Nmin,
+whether the chosen endpoints themselves can be used, and real handle
+ownership. A negative maximum margin rules out every interval for that
+fixed phase/model. Zero or positive margins are inconclusive, not paths.
+
+Every participating eye is optimistically ready at its own original receipt.
+Encoded age uses the original minimum stereo receipt. Runtime targets and
+actual pre-warm identity exclusions stay fixed; known metadata may be used
+before it was first observed. Earlier network receipt, unseen supply,
+runtime feedback, optics and changed warm membership are not modeled.
+A rejection for encoded receipt age also rejects the pointwise older known
+source receipt age within the same model. Source identity is not an input epoch.
+
+Maximum necessary good-count margin, in choices:
+                                  0 ms   4.387188  5.488282  5.555555  11.111111
+  encoded / one horizon             -16        43        42        40       -705
+  encoded / no target cap             0        55        43        42         -3
+  distinct source / two horizons     -2        49        39        38        -20
+  distinct source / no target cap    -2        49        39        38         -4
+
+At the original phase, one-horizon encoded and both distinct-source models
+are ruled out for EVERY observed qualifying endpoint interval, even with
+zero publication delay. Their best intervals miss the necessary good count
+by 16, 2 and 2 choices respectively. Unbounded encoded supply leaves only
+15 intervals at equality and remains inconclusive. At 11.111111 ms, all
+four models are ruled out. All three intermediate phases retain unresolved
+intervals. These results cover ONLY the five listed phases; no interpolation
+or all-phase conclusion follows. The earlier exact-phase minimum still
+uses its explicitly sufficient full-window count and remains unchanged.
+
+Validation:
+350 current Python tests pass with no skips. Seven focused tests include
+512 deterministic populations compared with an independent exhaustive
+ordered-chain reference, 256 small exhaustive no-false-rejection cases,
+same-deadline alternative rejection, exact integer cadence boundary,
+20-choice nearest-rank boundary, strict15ms/readiness/target gates, clock
+translation and malformed/bool controls. A transport-team read-only review
+found no blocker in the LIS proof, endpoint counts or optimistic scope.
+Sources and all original evidence are rehashed after analysis/validation.
+The separate figure receipt binds the plot script, analysis and inspected
+PNG; plotting is not retroactively claimed by the earlier Python receipt.
+
+Reproduction (fresh output paths):
+  python3 prototypes/vr444/experiments/selection_policy/validate_endpoint_envelope.py --out /tmp/endpoint-validation.json
+  python3 prototypes/vr444/experiments/selection_policy/endpoint_envelope.py /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced --out /tmp/endpoint-envelope.json
+  python3 prototypes/vr444/experiments/selection_policy/plot_endpoint_envelope.py /tmp/endpoint-envelope.json --out /tmp/endpoint-envelope.png
+
+Committed artifacts: endpoint-envelope-20261009.json, separate validation
+and figure receipts, and endpoint-envelope-20261009.png. No promotion follows.

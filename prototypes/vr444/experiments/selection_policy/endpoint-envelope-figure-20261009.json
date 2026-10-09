@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "kind": "figure_render_review",
+  "sha256": {
+    "prototypes/vr444/experiments/selection_policy/plot_endpoint_envelope.py": "9e589a74fea24fbe5a353f179a875f66c8d7fd2fcfe587694306228c1462be43",
+    "prototypes/vr444/experiments/selection_policy/endpoint-envelope-20261009.json": "b9a8d5a931872fc500f4a342b32fe5bd05331385df20bdd2ec59f4be675c746b",
+    "prototypes/vr444/experiments/selection_policy/endpoint-envelope-20261009.png": "e2b9584a08466e26752a1e4e2d067ffc22e02d3201006555a5d494d124232f05"
+  },
+  "visually_reviewed": true,
+  "review": "All twenty cells, axis labels, negative versus inconclusive legend and scope footers fit without clipping. Counts and margins come from the pinned endpoint analysis; positive margins are not marked feasible.",
+  "headset_operations": false,
+  "promotion_eligible": false
+}
