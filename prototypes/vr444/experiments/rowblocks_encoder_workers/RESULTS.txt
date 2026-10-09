@@ -1,0 +1,55 @@
+Frozen host observation, 2026-10-09
+===================================
+
+26 profiles x10 arms x31 measured repetitions, plus3 warmups. All8,060 measured
+stereo invocations match canonical encoded bytes and both decoded eye oracles.
+12 actual captured pairs and14 explicitly duplicated-eye synthetic profiles.
+Final runner completed in29.387749 seconds after both other teams explicitly
+confirmed idle; source/corpus/native+Android binary hashes remained unchanged.
+No headset, network, GPU or production operation occurred.
+
+Values below are arithmetic means of four pair p50s per captured group, ms.
+RRB32 columns: original serial reference / new staged serial /2 workers /4 workers.
+
+                    reference    staged serial   workers2    workers4
+Q1 server wall       0.721801       1.006826       0.766089    0.600803
+Q1 server CPU        0.715415       0.993156       1.260814    1.449263
+Q1 server+client     1.055391       1.332088       1.094433    0.897484
+Q8-a server wall     1.291884       1.582959       1.029992    0.864505
+Q8-a server CPU      1.274928       1.546029       1.728214    1.978530
+Q8-a server+client   1.778883       2.057058       1.504596    1.340841
+Q8-b server wall     1.099816       1.365956       0.927875    0.719314
+Q8-b server CPU      1.085179       1.342138       1.528587    1.717808
+Q8-b server+client   1.533967       1.818687       1.355717    1.135191
+
+The matched VR444 server+client baseline is0.697716 /1.086647 /0.919388 ms for
+Q1/Q8-a/Q8-b. Thus the four-worker RRB variant lowers its own reference wall
+time, but remains slower than original VR444 for total host CPU-stage latency.
+The total is the p50 of matched complete samples, not the sum of marginal p50s.
+
+RRB128 four-worker server wall is0.601718 /0.878218 /0.790189 ms; total host
+server+client is0.925108 /1.348065 /1.216673 ms. It offers no reversal of that
+whole-host conclusion. Two workers fail even to beat the original RRB32 serial
+reference in Q1. Additional worker threads consume more aggregate process CPU.
+
+Encoded bytes are unchanged by threading. Total stereo wire bytes across the
+four pairs in each group (this is a corpus total, not one frame):
+group       VR444       RRF-up       RRB32       RRB128
+Q1          98,239       55,655      66,332       58,298
+Q8-a       182,910      233,898     245,567      236,627
+Q8-b       135,653      184,585     194,380      186,904
+
+The new serial staging costs more than the existing one-eye-at-a-time reference.
+An inference worth testing is that retaining both full decoded images and separate
+per-block workspaces introduces cache/staging overhead. The current data does not
+isolate that mechanism. The next distinct candidate can fuse original independent
+VR444 tile-band reconstruction and row-block encoding in each bounded worker job,
+preserving exact RRB output while avoiding the two global-stage organization.
+
+Do not add these values to results from other clock/device runs or call them
+headset durations. Existing codec reconstruction, validation, worker barriers,
+canonical assembly and CRC all count here; no source framebuffer readback, network,
+runtime waiting or display work does. Process CPU covers all active worker threads;
+three pools exist in the benchmark (server2/server4/client4), and only the selected
+pool runs during each synchronous stage. No affinity/frequency/thermal control or
+confidence about a live workload is claimed. No promotion or sub15 result follows.

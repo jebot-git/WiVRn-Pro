@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "created_utc": "2026-10-09T08:50:57.028346+00:00",
+  "base": "260a1a22",
+  "asan_ubsan": {
+    "exact_canonical_stereo_cases": 725,
+    "rejections": 3445,
+    "ubsan_halt_on_error": true
+  },
+  "thread_sanitizer": {
+    "exact_canonical_stereo_cases": 725,
+    "rejections": 3445
+  },
+  "reuse_batches": 300,
+  "max_block_jobs": 512,
+  "max_pixels_per_eye": 4194304,
+  "header_review": "Compositor team independently reviewed bounds/alias/barriers/lease and found no blocker.",
+  "host_build_commands": [
+    [
+      "env",
+      "RRB_ENCODER_TSAN=1",
+      "bash",
+      "prototypes/vr444/experiments/rowblocks_encoder_workers/build.sh"
+    ],
+    [
+      "bash",
+      "prototypes/vr444/experiments/rowblocks_encoder_workers/build.sh"
+    ]
+  ],
+  "android_build_command": [
+    "bash",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/build-android.sh"
+  ],
+  "source_sha256": {
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/encoder.hpp": "824c7aabe67be6cab2987ae5a50385492ad06f3e20e78504af3e474a18295b9f",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/bench.cpp": "f48c7c85772240ce83f805320377e0c117569bf2ef9eda912acd462fa1db4b32",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/test.cpp": "d0bf6a3507449a58a5eb00c3e1385d6ac55140cf5b7f88f605d10bbbb01fa07b",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/build.sh": "80a7f967ced875a5f00dfdcd11a91bc6be5b77e6bc2fe5aa3bb843158d308c3c",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/build-android.sh": "b7840b905d09ddc6fdb04c22a630cc61e1d83bc708b356d87298903de0db40e7",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/measure.py": "2d70a571adf9c7d779e072bd7fa601b726990a500fbe7ef90883f1c1af710850",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/summarize.py": "29a7b612f32a97fbd372262eb7ca25388314e7650964f0b42a2b58f31d7c4551",
+    "prototypes/vr444/experiments/rowblocks_workers/workers.hpp": "6ff6370e89929d03bcd7dc10b81c967363430c532422096cbac5216b34ef9903",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "ea35ce11cd12a690db5ec7187bc20689a56288a25c01fd1229056e67d38f9dbe",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/latency_decode/direct.cpp": "796017f83b4a2159b3adb65876f14ce9b2ffeaef348d7907be0cc784d9621905",
+    "prototypes/vr444/experiments/latency_decode/direct.hpp": "7577105236e1787ba627ef467411bb591748b79d96537b3fe0392689e32ad8bd",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706"
+  },
+  "binary_sha256": {
+    "bench": "92b76187b5ef9262ae578e965175004983e9bd87912175635ebc5690ed2284b2",
+    "test": "6c6f55e634ffc9f471b26826ed94b9225a56987f67beb16b56ba516145f940aa",
+    "test-tsan": "a341d282031685fae4e64e64343fc0b1608499779b1bfc0b0bc82741d04e9a72",
+    "bench-android": "9f88ff80389dfff575097a5b770d235981bf6b2ef971ee991c61fbc71005c029",
+    "test-android": "ebcb4ef55c2490f687c185add20e07a1432f0dc1749043f833fa068dc1c39584"
+  },
+  "documentation_sha256": {
+    "README.txt": "dbd25c8b9c8bc46bcb4f1e95de4ab6b54e3625aa39bc0aa55c86769097083caa",
+    "RESULTS.txt": "fc18835d6d28e1381dba6ae3f508c2ca9cd0892bb14bd977c0c6a0fc71a4ba26"
+  },
+  "result_sha256": {
+    "benchmark.json": "71e28585380f4d33936e646ebfd1f411453192c11e21ed95b437abd5bb289039",
+    "summary.json": "8f2ca769282e610f8c22dfe28618f13c6c5ae36abe79562c4728b578458ee805",
+    "measurement-provenance.json": "3d9c549b439aea19e66d9d9ac19ec0706f5cef96db3c86ca68720b32e1bc9a56",
+    "asan.json": "e02bc7d65209b463760e289bb80295edbf2a9f42ab323efee187cbc118960f07",
+    "tsan.json": "e02bc7d65209b463760e289bb80295edbf2a9f42ab323efee187cbc118960f07"
+  },
+  "measured_stereo_invocations": 8060,
+  "exact_wire_and_pixels_every_invocation": true,
+  "headset_accessed": false,
+  "android_runtime_tested": false,
+  "promotion_eligible": false
+}

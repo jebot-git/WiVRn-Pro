@@ -1,0 +1,434 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "cases": 26,
+  "actual_captured_pairs": 12,
+  "synthetic_duplicated_eye_profiles": 14,
+  "repetitions": 31,
+  "groups": [
+    {
+      "group": "lossless",
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 98239,
+          "mean_pair_p50_server_transcode_wall_ms": 0.14004250000000001,
+          "mean_pair_p50_server_process_cpu_ms": 0.139304,
+          "mean_pair_p50_client_decode_wall_ms": 0.55259625,
+          "mean_pair_p50_client_process_cpu_ms": 0.546279,
+          "mean_pair_p50_server_plus_client_wall_ms": 0.697716
+        },
+        {
+          "profile": "rrf_up_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 55655,
+          "mean_pair_p50_server_transcode_wall_ms": 0.9123337499999999,
+          "mean_pair_p50_server_process_cpu_ms": 0.90326775,
+          "mean_pair_p50_client_decode_wall_ms": 0.48904875,
+          "mean_pair_p50_client_process_cpu_ms": 0.481414,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.4053275
+        },
+        {
+          "profile": "rrb32_reference",
+          "cases": 4,
+          "total_stereo_wire_bytes": 66332,
+          "mean_pair_p50_server_transcode_wall_ms": 0.72180075,
+          "mean_pair_p50_server_process_cpu_ms": 0.71541475,
+          "mean_pair_p50_client_decode_wall_ms": 0.3241655,
+          "mean_pair_p50_client_process_cpu_ms": 0.89687525,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.055391
+        },
+        {
+          "profile": "rrb32_staged_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 66332,
+          "mean_pair_p50_server_transcode_wall_ms": 1.00682575,
+          "mean_pair_p50_server_process_cpu_ms": 0.99315625,
+          "mean_pair_p50_client_decode_wall_ms": 0.318345,
+          "mean_pair_p50_client_process_cpu_ms": 0.8860304999999999,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.3320875
+        },
+        {
+          "profile": "rrb32_workers2",
+          "cases": 4,
+          "total_stereo_wire_bytes": 66332,
+          "mean_pair_p50_server_transcode_wall_ms": 0.7660895,
+          "mean_pair_p50_server_process_cpu_ms": 1.26081425,
+          "mean_pair_p50_client_decode_wall_ms": 0.31302275,
+          "mean_pair_p50_client_process_cpu_ms": 0.850112,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.094433
+        },
+        {
+          "profile": "rrb32_workers4",
+          "cases": 4,
+          "total_stereo_wire_bytes": 66332,
+          "mean_pair_p50_server_transcode_wall_ms": 0.600803,
+          "mean_pair_p50_server_process_cpu_ms": 1.44926325,
+          "mean_pair_p50_client_decode_wall_ms": 0.3031375,
+          "mean_pair_p50_client_process_cpu_ms": 0.8587929999999999,
+          "mean_pair_p50_server_plus_client_wall_ms": 0.89748375
+        },
+        {
+          "profile": "rrb128_reference",
+          "cases": 4,
+          "total_stereo_wire_bytes": 58298,
+          "mean_pair_p50_server_transcode_wall_ms": 0.815743,
+          "mean_pair_p50_server_process_cpu_ms": 0.8047625,
+          "mean_pair_p50_client_decode_wall_ms": 0.31160374999999996,
+          "mean_pair_p50_client_process_cpu_ms": 0.8149649999999999,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.13788525
+        },
+        {
+          "profile": "rrb128_staged_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 58298,
+          "mean_pair_p50_server_transcode_wall_ms": 1.0030065,
+          "mean_pair_p50_server_process_cpu_ms": 0.9887165,
+          "mean_pair_p50_client_decode_wall_ms": 0.32438524999999996,
+          "mean_pair_p50_client_process_cpu_ms": 0.8219752499999999,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.3327475
+        },
+        {
+          "profile": "rrb128_workers2",
+          "cases": 4,
+          "total_stereo_wire_bytes": 58298,
+          "mean_pair_p50_server_transcode_wall_ms": 0.7600505,
+          "mean_pair_p50_server_process_cpu_ms": 1.23394775,
+          "mean_pair_p50_client_decode_wall_ms": 0.328241,
+          "mean_pair_p50_client_process_cpu_ms": 0.81956925,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.0906517500000001
+        },
+        {
+          "profile": "rrb128_workers4",
+          "cases": 4,
+          "total_stereo_wire_bytes": 58298,
+          "mean_pair_p50_server_transcode_wall_ms": 0.601718,
+          "mean_pair_p50_server_process_cpu_ms": 1.4356495,
+          "mean_pair_p50_client_decode_wall_ms": 0.30714575,
+          "mean_pair_p50_client_process_cpu_ms": 0.80481225,
+          "mean_pair_p50_server_plus_client_wall_ms": 0.92510775
+        }
+      ]
+    },
+    {
+      "group": "paired-a",
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 182910,
+          "mean_pair_p50_server_transcode_wall_ms": 0.19384075,
+          "mean_pair_p50_server_process_cpu_ms": 0.192525,
+          "mean_pair_p50_client_decode_wall_ms": 0.88627575,
+          "mean_pair_p50_client_process_cpu_ms": 0.8726685000000001,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.0866465
+        },
+        {
+          "profile": "rrf_up_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 233898,
+          "mean_pair_p50_server_transcode_wall_ms": 1.553449,
+          "mean_pair_p50_server_process_cpu_ms": 1.5359369999999999,
+          "mean_pair_p50_client_decode_wall_ms": 0.68382675,
+          "mean_pair_p50_client_process_cpu_ms": 0.670636,
+          "mean_pair_p50_server_plus_client_wall_ms": 2.25044225
+        },
+        {
+          "profile": "rrb32_reference",
+          "cases": 4,
+          "total_stereo_wire_bytes": 245567,
+          "mean_pair_p50_server_transcode_wall_ms": 1.291884,
+          "mean_pair_p50_server_process_cpu_ms": 1.27492775,
+          "mean_pair_p50_client_decode_wall_ms": 0.47314375000000003,
+          "mean_pair_p50_client_process_cpu_ms": 1.0194345,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.778883
+        },
+        {
+          "profile": "rrb32_staged_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 245567,
+          "mean_pair_p50_server_transcode_wall_ms": 1.582959,
+          "mean_pair_p50_server_process_cpu_ms": 1.54602875,
+          "mean_pair_p50_client_decode_wall_ms": 0.46593924999999997,
+          "mean_pair_p50_client_process_cpu_ms": 1.029414,
+          "mean_pair_p50_server_plus_client_wall_ms": 2.05705775
+        },
+        {
+          "profile": "rrb32_workers2",
+          "cases": 4,
+          "total_stereo_wire_bytes": 245567,
+          "mean_pair_p50_server_transcode_wall_ms": 1.02999175,
+          "mean_pair_p50_server_process_cpu_ms": 1.72821425,
+          "mean_pair_p50_client_decode_wall_ms": 0.46325550000000004,
+          "mean_pair_p50_client_process_cpu_ms": 1.0075290000000001,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.50459625
+        },
+        {
+          "profile": "rrb32_workers4",
+          "cases": 4,
+          "total_stereo_wire_bytes": 245567,
+          "mean_pair_p50_server_transcode_wall_ms": 0.86450525,
+          "mean_pair_p50_server_process_cpu_ms": 1.9785305,
+          "mean_pair_p50_client_decode_wall_ms": 0.47141,
+          "mean_pair_p50_client_process_cpu_ms": 1.02095925,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.340841
+        },
+        {
+          "profile": "rrb128_reference",
+          "cases": 4,
+          "total_stereo_wire_bytes": 236627,
+          "mean_pair_p50_server_transcode_wall_ms": 1.429344,
+          "mean_pair_p50_server_process_cpu_ms": 1.4095225,
+          "mean_pair_p50_client_decode_wall_ms": 0.46889675000000003,
+          "mean_pair_p50_client_process_cpu_ms": 0.96545825,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.908859
+        },
+        {
+          "profile": "rrb128_staged_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 236627,
+          "mean_pair_p50_server_transcode_wall_ms": 1.5974935000000001,
+          "mean_pair_p50_server_process_cpu_ms": 1.573499,
+          "mean_pair_p50_client_decode_wall_ms": 0.49100625,
+          "mean_pair_p50_client_process_cpu_ms": 0.994402,
+          "mean_pair_p50_server_plus_client_wall_ms": 2.090283
+        },
+        {
+          "profile": "rrb128_workers2",
+          "cases": 4,
+          "total_stereo_wire_bytes": 236627,
+          "mean_pair_p50_server_transcode_wall_ms": 1.07041,
+          "mean_pair_p50_server_process_cpu_ms": 1.770749,
+          "mean_pair_p50_client_decode_wall_ms": 0.46191950000000004,
+          "mean_pair_p50_client_process_cpu_ms": 0.96462875,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.53880725
+        },
+        {
+          "profile": "rrb128_workers4",
+          "cases": 4,
+          "total_stereo_wire_bytes": 236627,
+          "mean_pair_p50_server_transcode_wall_ms": 0.87821825,
+          "mean_pair_p50_server_process_cpu_ms": 1.973057,
+          "mean_pair_p50_client_decode_wall_ms": 0.46377250000000003,
+          "mean_pair_p50_client_process_cpu_ms": 0.988945,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.3480652499999999
+        }
+      ]
+    },
+    {
+      "group": "paired-b",
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 135653,
+          "mean_pair_p50_server_transcode_wall_ms": 0.16649825000000001,
+          "mean_pair_p50_server_process_cpu_ms": 0.1654845,
+          "mean_pair_p50_client_decode_wall_ms": 0.74403375,
+          "mean_pair_p50_client_process_cpu_ms": 0.73450875,
+          "mean_pair_p50_server_plus_client_wall_ms": 0.9193884999999999
+        },
+        {
+          "profile": "rrf_up_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 184585,
+          "mean_pair_p50_server_transcode_wall_ms": 1.33213575,
+          "mean_pair_p50_server_process_cpu_ms": 1.3085125,
+          "mean_pair_p50_client_decode_wall_ms": 0.5842805,
+          "mean_pair_p50_client_process_cpu_ms": 0.5788632499999999,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.934067
+        },
+        {
+          "profile": "rrb32_reference",
+          "cases": 4,
+          "total_stereo_wire_bytes": 194380,
+          "mean_pair_p50_server_transcode_wall_ms": 1.0998155,
+          "mean_pair_p50_server_process_cpu_ms": 1.0851790000000001,
+          "mean_pair_p50_client_decode_wall_ms": 0.4197955,
+          "mean_pair_p50_client_process_cpu_ms": 0.99144825,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.53396725
+        },
+        {
+          "profile": "rrb32_staged_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 194380,
+          "mean_pair_p50_server_transcode_wall_ms": 1.36595625,
+          "mean_pair_p50_server_process_cpu_ms": 1.34213825,
+          "mean_pair_p50_client_decode_wall_ms": 0.43365775,
+          "mean_pair_p50_client_process_cpu_ms": 0.9859307500000001,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.8186865
+        },
+        {
+          "profile": "rrb32_workers2",
+          "cases": 4,
+          "total_stereo_wire_bytes": 194380,
+          "mean_pair_p50_server_transcode_wall_ms": 0.927875,
+          "mean_pair_p50_server_process_cpu_ms": 1.52858725,
+          "mean_pair_p50_client_decode_wall_ms": 0.420172,
+          "mean_pair_p50_client_process_cpu_ms": 0.971231,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.35571675
+        },
+        {
+          "profile": "rrb32_workers4",
+          "cases": 4,
+          "total_stereo_wire_bytes": 194380,
+          "mean_pair_p50_server_transcode_wall_ms": 0.71931375,
+          "mean_pair_p50_server_process_cpu_ms": 1.71780775,
+          "mean_pair_p50_client_decode_wall_ms": 0.4120855,
+          "mean_pair_p50_client_process_cpu_ms": 0.965785,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.135191
+        },
+        {
+          "profile": "rrb128_reference",
+          "cases": 4,
+          "total_stereo_wire_bytes": 186904,
+          "mean_pair_p50_server_transcode_wall_ms": 1.2176155,
+          "mean_pair_p50_server_process_cpu_ms": 1.203479,
+          "mean_pair_p50_client_decode_wall_ms": 0.424909,
+          "mean_pair_p50_client_process_cpu_ms": 0.93398925,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.6622585
+        },
+        {
+          "profile": "rrb128_staged_serial",
+          "cases": 4,
+          "total_stereo_wire_bytes": 186904,
+          "mean_pair_p50_server_transcode_wall_ms": 1.3948155,
+          "mean_pair_p50_server_process_cpu_ms": 1.3712575,
+          "mean_pair_p50_client_decode_wall_ms": 0.432076,
+          "mean_pair_p50_client_process_cpu_ms": 0.93562,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.83388825
+        },
+        {
+          "profile": "rrb128_workers2",
+          "cases": 4,
+          "total_stereo_wire_bytes": 186904,
+          "mean_pair_p50_server_transcode_wall_ms": 0.9576635,
+          "mean_pair_p50_server_process_cpu_ms": 1.55230175,
+          "mean_pair_p50_client_decode_wall_ms": 0.42715125,
+          "mean_pair_p50_client_process_cpu_ms": 0.9297489999999999,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.3944115
+        },
+        {
+          "profile": "rrb128_workers4",
+          "cases": 4,
+          "total_stereo_wire_bytes": 186904,
+          "mean_pair_p50_server_transcode_wall_ms": 0.790189,
+          "mean_pair_p50_server_process_cpu_ms": 1.7667705,
+          "mean_pair_p50_client_decode_wall_ms": 0.4206875,
+          "mean_pair_p50_client_process_cpu_ms": 0.93486125,
+          "mean_pair_p50_server_plus_client_wall_ms": 1.2166727499999999
+        }
+      ]
+    },
+    {
+      "group": "synthetic",
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5931752,
+          "mean_pair_p50_server_transcode_wall_ms": 1.2551285714285714,
+          "mean_pair_p50_server_process_cpu_ms": 1.2406406428571428,
+          "mean_pair_p50_client_decode_wall_ms": 3.5137149285714284,
+          "mean_pair_p50_client_process_cpu_ms": 3.4784944285714285,
+          "mean_pair_p50_server_plus_client_wall_ms": 4.780348428571429
+        },
+        {
+          "profile": "rrf_up_serial",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5019762,
+          "mean_pair_p50_server_transcode_wall_ms": 4.307751214285714,
+          "mean_pair_p50_server_process_cpu_ms": 4.248028857142857,
+          "mean_pair_p50_client_decode_wall_ms": 1.1468693571428572,
+          "mean_pair_p50_client_process_cpu_ms": 1.128413642857143,
+          "mean_pair_p50_server_plus_client_wall_ms": 5.478662714285714
+        },
+        {
+          "profile": "rrb32_reference",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5134692,
+          "mean_pair_p50_server_transcode_wall_ms": 4.197735142857143,
+          "mean_pair_p50_server_process_cpu_ms": 4.11312,
+          "mean_pair_p50_client_decode_wall_ms": 0.9709092857142857,
+          "mean_pair_p50_client_process_cpu_ms": 1.399892,
+          "mean_pair_p50_server_plus_client_wall_ms": 5.183348214285714
+        },
+        {
+          "profile": "rrb32_staged_serial",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5134692,
+          "mean_pair_p50_server_transcode_wall_ms": 4.439904071428572,
+          "mean_pair_p50_server_process_cpu_ms": 4.369378857142857,
+          "mean_pair_p50_client_decode_wall_ms": 0.9712041428571428,
+          "mean_pair_p50_client_process_cpu_ms": 1.3969680714285715,
+          "mean_pair_p50_server_plus_client_wall_ms": 5.425402285714286
+        },
+        {
+          "profile": "rrb32_workers2",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5134692,
+          "mean_pair_p50_server_transcode_wall_ms": 2.492902142857143,
+          "mean_pair_p50_server_process_cpu_ms": 4.547991785714285,
+          "mean_pair_p50_client_decode_wall_ms": 0.9589492142857142,
+          "mean_pair_p50_client_process_cpu_ms": 1.3834037142857143,
+          "mean_pair_p50_server_plus_client_wall_ms": 3.4594208571428573
+        },
+        {
+          "profile": "rrb32_workers4",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5134692,
+          "mean_pair_p50_server_transcode_wall_ms": 2.1288029285714285,
+          "mean_pair_p50_server_process_cpu_ms": 4.683375357142857,
+          "mean_pair_p50_client_decode_wall_ms": 0.9510133571428572,
+          "mean_pair_p50_client_process_cpu_ms": 1.3910962857142857,
+          "mean_pair_p50_server_plus_client_wall_ms": 3.0956142142857144
+        },
+        {
+          "profile": "rrb128_reference",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5047114,
+          "mean_pair_p50_server_transcode_wall_ms": 4.247581571428571,
+          "mean_pair_p50_server_process_cpu_ms": 4.182879357142857,
+          "mean_pair_p50_client_decode_wall_ms": 0.9659289285714285,
+          "mean_pair_p50_client_process_cpu_ms": 1.3695804285714286,
+          "mean_pair_p50_server_plus_client_wall_ms": 5.226066071428571
+        },
+        {
+          "profile": "rrb128_staged_serial",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5047114,
+          "mean_pair_p50_server_transcode_wall_ms": 4.396829214285714,
+          "mean_pair_p50_server_process_cpu_ms": 4.331691571428571,
+          "mean_pair_p50_client_decode_wall_ms": 0.9596846428571428,
+          "mean_pair_p50_client_process_cpu_ms": 1.3575725714285714,
+          "mean_pair_p50_server_plus_client_wall_ms": 5.3671207857142855
+        },
+        {
+          "profile": "rrb128_workers2",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5047114,
+          "mean_pair_p50_server_transcode_wall_ms": 2.4983913571428573,
+          "mean_pair_p50_server_process_cpu_ms": 4.530546071428572,
+          "mean_pair_p50_client_decode_wall_ms": 0.9539245,
+          "mean_pair_p50_client_process_cpu_ms": 1.3568252857142857,
+          "mean_pair_p50_server_plus_client_wall_ms": 3.4580703571428573
+        },
+        {
+          "profile": "rrb128_workers4",
+          "cases": 14,
+          "total_stereo_wire_bytes": 5047114,
+          "mean_pair_p50_server_transcode_wall_ms": 2.1902242857142857,
+          "mean_pair_p50_server_process_cpu_ms": 4.708916214285714,
+          "mean_pair_p50_client_decode_wall_ms": 0.9429817142857143,
+          "mean_pair_p50_client_process_cpu_ms": 1.3517892142857142,
+          "mean_pair_p50_server_plus_client_wall_ms": 3.1394437857142856
+        }
+      ]
+    }
+  ],
+  "summary_scope": "Arithmetic means of fixed case p50s, not a pooled latency percentile or live distribution.",
+  "network_measured": false,
+  "headset_accessed": false,
+  "promotion_eligible": false
+}
