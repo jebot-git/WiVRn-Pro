@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "visual_review": true,
+  "review": "Quantile populations, exact individual-frame sums, legends and clock/prediction limitations are legible without overlap.",
+  "sources_sha256": {
+    "prototypes/vr444/experiments/host_timeline/plot.py": "e6eec9f0d8600a5fd5560dddd0f079839a31b98bbd939d6ae45de57ad798ca55",
+    "prototypes/vr444/experiments/host_timeline/host-timeline-20261009.json": "eeba1c87c2ceae718c11bf40fb401766611a63a18bc9b7512af8d93eef36cd18",
+    "prototypes/vr444/experiments/host_timeline/host-timeline-20261009.png": "2087d6549cb4d4057c3be4af1fb2c23416f52d3bcf4577567b1f1b982dbd3684"
+  },
+  "measured_speedup": false,
+  "headset_operations": false
+}
