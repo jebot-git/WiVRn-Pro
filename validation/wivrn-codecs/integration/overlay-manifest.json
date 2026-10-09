@@ -307,6 +307,10 @@
     "before_sha256": "380d2793d25625d3d3cf9d41bbb027104f90d6d6de89d983d2aa777d9959e1cf",
     "after_sha256": "7977e01277f71a3f35a4af3563d63a41656f7567ffdfbb94163e4718f310c21d"
   },
+  "server/compositor/codec_pacer_tail.h": {
+    "before_sha256": null,
+    "after_sha256": "7e8de43fdbb4d0ced732e6300aad5e707f9fde23e5d557a7cc7bab3c864487c4"
+  },
   "server/compositor/codec_pacer_trace.h": {
     "before_sha256": null,
     "after_sha256": "93f1e8b963ba4bdbf7bdcaa674a6fcbee3e1eb4dea3bb7001cba7f9ff802e638"
@@ -321,11 +325,11 @@
   },
   "server/compositor/pacer.cpp": {
     "before_sha256": "2fd824158a9e49022e93c2e92c2ad4b0e1fd8e71491cfa8868fd68312938d1b6",
-    "after_sha256": "a4f83833addbedd448738d4f60ff3f9e43b072924f1e42ac8de3a3b846e6b14a"
+    "after_sha256": "48e2a42c72f113dd25edbf84e81045556bd7fcb590535a5a351ae1e57a1d2434"
   },
   "server/compositor/pacer.h": {
     "before_sha256": "2ec4c1c64a27ab65fd18b53e493dec2997a82bde521152f1009706405c967f81",
-    "after_sha256": "1e603712260ed711f2999fa9791e778a75c4eee3a09d921b583fb1b8480a63fc"
+    "after_sha256": "a9076b5e0ab5247c52d43366e4920f1d868b1e150100d5360bb8b3b2eb502be1"
   },
   "server/compositor/shaders/foveation_rgb.comp": {
     "before_sha256": null,
