@@ -27,7 +27,7 @@ AUDITS = ('direct_image_gpu', 'vulkan_extensions', 'palette_gpu',
           'palette_gpu_encode', 'palette_output_memory', 'rowfilter_gpu',
           'rowfilter_image_timing', 'host_image_copy', 'host_image_timing',
           'rowblocks_gpu', 'rowblocks_image_timing', 'mapped_input_decode',
-          'gpu_qualification_suite')
+          'mapped_input_consumer', 'gpu_qualification_suite')
 
 
 def utc():
@@ -123,6 +123,10 @@ def required_stages(level, devices):
             raise ValueError('unique explicit nonnegative host device indices required')
         for device in devices:
             stages += [f'host-device-{device}', f'host-audit-{device}']
+        stages += ['consumer-build']
+        for device in devices:
+            stages += [f'consumer-device-{device}', f'consumer-audit-{device}']
+        stages += ['consumer-asan', 'consumer-asan-audit']
     return stages
 
 
@@ -211,6 +215,43 @@ def main():
                     if audited.get('pass') is not True or audited.get('case_count') != 170 or audited.get('qualification_only') is not True:
                         raise ValueError('unexpected host qualification scope')
                     completed.append(label)
+                consumer = EXPERIMENTS / 'mapped_input_consumer'
+                consumer_build = out / 'consumer-build'
+                result = execute(['bash', consumer / 'build.sh', consumer_build], out, 'consumer-build', 900)
+                report['fresh_checks'].append(dict(id='consumer-build', **result))
+                if result['status'] != 'pass':
+                    raise ValueError('first-consumer native/Android/SPIR-V build failed or unavailable')
+                completed.append('consumer-build')
+                runs = [(f'consumer-device-{device}', f'consumer-audit-{device}',
+                         'mapped-consumer-host', device, ['--qualify', rrf_gold], 170, True)
+                        for device in args.host_device]
+                runs += [('consumer-asan', 'consumer-asan-audit', 'mapped-consumer-asan',
+                          args.host_device[0], ['--reps', '1'], 26, False)]
+                for label, audit_label, binary, device, options, count, qualification in runs:
+                    result = execute(['env', f'VK_ICD_FILENAMES={args.icd}', consumer_build / binary,
+                                      consumer_build / 'base', args.rrf_corpus, args.rrb_corpus,
+                                      *options, '--device', device], out, label, 900)
+                    report['fresh_checks'].append(dict(id=label, **result))
+                    if result['status'] != 'pass':
+                        raise ValueError('first-consumer GPU correctness failed or unsupported')
+                    completed.append(label)
+                    audited = execute([sys.executable, consumer / 'audit.py', result['stdout'],
+                                       EXPERIMENTS / 'rgb_rowfilter/results/corpus-hashes.json',
+                                       EXPERIMENTS / 'rgb_rowblocks/results/corpus-hashes.json',
+                                       '--out', out / f'{audit_label}.json'], out, audit_label, 120)
+                    report['fresh_checks'].append(dict(id=audit_label, **audited))
+                    if audited['status'] != 'pass':
+                        raise ValueError('first-consumer output audit failed')
+                    value = json.loads((out / f'{audit_label}.json').read_text())
+                    if (value.get('pass') is not True or value.get('case_count') != count
+                            or value.get('qualification_only') is not qualification
+                            or value.get('first_consumer_audited') is not True
+                            or value.get('right_eye_omission_controls') != count * 9):
+                        raise ValueError('incomplete first-consumer scope or omission controls')
+                    completed.append(audit_label)
+                report['consumer_built_artifact_sha256'] = {
+                    str(path.relative_to(out)): digest(path)
+                    for path in sorted(consumer_build.rglob('*')) if path.is_file()}
             report['built_artifact_sha256'] = {str(p.relative_to(out)): digest(p)
                                                for p in sorted(build.rglob('*')) if p.is_file()}
         report['requested_suite_pass'] = completed == expected

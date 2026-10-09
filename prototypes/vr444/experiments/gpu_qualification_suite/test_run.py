@@ -49,7 +49,9 @@ class RunnerGateTests(unittest.TestCase):
         host = required_stages('host', [0, 1])
         self.assertEqual(cpu[:len(audits)], audits)
         self.assertEqual(host[:len(cpu)], cpu)
-        self.assertEqual(host[-4:], ['host-device-0', 'host-audit-0', 'host-device-1', 'host-audit-1'])
+        self.assertEqual(host[len(cpu):len(cpu)+4], ['host-device-0', 'host-audit-0', 'host-device-1', 'host-audit-1'])
+        self.assertEqual(host[-7:], ['consumer-build', 'consumer-device-0', 'consumer-audit-0',
+                                    'consumer-device-1', 'consumer-audit-1', 'consumer-asan', 'consumer-asan-audit'])
         with self.assertRaises(ValueError):
             required_stages('invented', [])
 

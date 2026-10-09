@@ -7,7 +7,19 @@ been achieved. The committed catalog pins every approach to an immutable commit
 and names its qualification and measurement receipts. Read those receipts and
 their adjacent notes for the actual hardware, input scope and rejected arms.
 
-2026-10-09 fresh result: all declared host-level stages passed from a new build
+Final 2026-10-09 expanded result: all 28 declared stages passed from fresh build
+directories, 10:50:59.313296--11:01:04.177576 UTC. All 80 Python tests passed.
+Readiness and first-consumer matrices EACH passed 170 profiles x 9 arms x 2 rounds
+on Arc A770 and UHD 770. The additional Arc first-consumer ASan/UBSan matrix
+passed 26 paired profiles x 9 arms x 4 rounds. This is 13,176 exact valid GPU
+invocations plus 3,294 deliberately omitted-right-eye controls. The CPU sanitizer
+matrix passed 838 cases, two reuse rounds and 8,382 rejection checks. Both fresh
+builds include Android compile-only and eight SPIR-V validators. Source and
+corpus snapshots remained unchanged; all GPU/sanitizer stderr streams were empty.
+qualification-final-20261009.json contains the full new receipt, keeping the earlier
+qualification-20261009.json as separate historical execution evidence.
+
+Earlier 2026-10-09 fresh result (before the first-consumer suite extension): all declared host-level stages passed from a new build
 directory, 10:16:10--10:19:48 UTC. Both Arc A770 and UHD 770 completed 170 profiles
 x 9 arms x 2 rounds = 3,060 exact valid invocations each. The CPU sanitizer matrix
 passed all 838 cases, two reuse rounds and 8,382 rejection checks. Android native
@@ -26,13 +38,18 @@ the archive check. Source coverage varies between early explicit file lists and
 later recursively resolved dependencies; a historical source binding is not a
 new execution or a claim that every build dependency was archived.
 
-run.py separately executes current-worktree checks. Its audits level runs all 13
+run.py separately executes current-worktree checks. Its audits level runs all 14
 declared Python audit groups, including negative evidence-admission tests. CPU
 level also builds the final mapped-input probe and CPU failure matrix from source,
 cross-compiles Android without executing it, validates eight Vulkan 1.1 SPIR-V
 modules, and runs the 838-case / 8,382-rejection CPU matrix under ASan and UBSan.
 Host level additionally runs the complete 170-profile, nine-arm final mapped-input
 matrix on each explicitly selected LOCAL Vulkan device and audits every result.
+It then independently rebuilds the first-consumer extension and runs the same
+170-profile matrix on each selected device, plus its 26-pair ASan/UBSan matrix
+on the first selected device. Every consumer arm includes a poisoned omitted-eye
+negative control, with both saved consumer outputs checked before the oracle.
+The first consumer remains a private compute probe, not native rendering.
 Earlier palette encoders, image-copy extensions and timeline probes remain
 historical evidence in this aggregate; their GPU executions are not rerun by the
 final mapped-input matrix. Their individual build scripts remain available.
@@ -83,3 +100,23 @@ failure, exact negotiated formats, and complete packet-to-consumer accounting.
 The compositor team's independent receipt/target/identity analyses constrain the
 latency objective; a faster private image stage alone does not establish that
 objective. Headset testing remains suspended under the research instruction.
+
+Measured client candidate at handoff
+------------------------------------
+The pinned mapped-input-consumer approach (068dd29d) includes the actual first
+stereo SRGB compute consumer in its outer clock. Against matching staged input,
+RRB32 direct output reduced the captured median paired p50 by 0.285--0.398 ms
+across the two host GPUs/allocation labels. Each comparison improved all 12
+captured medians and p95s in that batch. Arc's RRF alternatives retain five p95
+regressions across the two repeated comparison sets. These are the same captured
+pairs repeated across arms, not independent additional inputs. Arc default and
+cached labels select the same actual memory type.
+
+Synthetic inputs are also retained. Across 14 synthetic profiles, staged-to-direct
+p95 regressions number 2/3/3/2 for Arc RRF-default/RRF-cached/RRB32-default/RRB32-
+cached, and 0/2/1/0 on UHD. The largest was +0.851348 ms for Arc RRF-cached on a
+17x19 partial image; Arc RRB32-default's largest was +0.647026 ms on a 1x1 image.
+Thus the captured improvements are not a universal tail guarantee. The separate
+README, complete numeric receipt and plotted captured paired tails preserve the
+measurement boundaries and every input, with server/network/native rendering
+excluded. RRB32 wire growth versus global RRF remains +19.18% Q1 and +5.13% Q8.

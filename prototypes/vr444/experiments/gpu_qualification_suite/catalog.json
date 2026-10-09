@@ -182,6 +182,29 @@
           "minimum_source_bindings": 1
         }
       ]
+    },
+    {
+      "id": "mapped-input-consumer",
+      "branch": "research/sub15-20261009/mapped-input-consumer",
+      "commit": "068dd29df03e44ab0668d9607d2896650c4b91f9",
+      "notes": "prototypes/vr444/experiments/mapped_input_consumer/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/mapped_input_consumer/qualification-20261009.json",
+          "sha256": "373e67f69a5b1284a92c1593fd30255455f80f9a21237fd648af8ae0afe4c790",
+          "minimum_source_bindings": 1
+        },
+        {
+          "path": "prototypes/vr444/experiments/mapped_input_consumer/timing-20261009.json",
+          "sha256": "604b0ea6139a3fabc049d6af4c446fca9533ef4da6f5b4b1947484e0c946f4f7",
+          "minimum_source_bindings": 1
+        },
+        {
+          "path": "prototypes/vr444/experiments/mapped_input_consumer/joint-captured.json",
+          "sha256": "2b540c4fdaf2ba532046f2e03ff064e60d5a85df426eaa0222667dc221c06984",
+          "minimum_source_bindings": 1
+        }
+      ]
     }
   ]
 }
