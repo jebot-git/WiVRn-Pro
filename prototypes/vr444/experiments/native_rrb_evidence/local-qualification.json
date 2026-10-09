@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "recorder_tests": 5,
+  "comparison_tests": 10,
+  "actual_captured_payload_eyes": 90,
+  "actual_client_capture_eyes": 90,
+  "actual_replay_pairs": 1,
+  "new_device_execution": false,
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "prototypes/vr444/experiments/native_rrb_evidence",
+        "-p",
+        "test_record.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_submitted_comparison.py"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "artifact_sha256": {
+    "record.py": "a2959cb8c7f373ccb8e9d10e764914dcf99d474ce63987b5b434c1bb4a516722",
+    "test_record.py": "2b0b8d6974b3f1db36acf8ab41f01bd597b765f58f0632a300db66c9306b4665",
+    "q1-local-chroma-grid.json": "0c29688b6cb0f075f920645bf2172f91ad1b95acabae051ea3e3bbd552cb3f4e",
+    "submitted-local-replay-1.json": "26191a98f7bd8808f395cdf7f6b9c10c5fde1923ed7dca7933edf6eb40568f02",
+    "LOCAL-RESULTS.txt": "c455231669c4cb49b86247fe15aa33b3521aa1376b6a47139dd4d9a864ced82a",
+    "local-visual-observation.json": "a27f11cbe6fbdf5a37fed84ccfb81feaae47ff26093d5281bc88004fa93d91b1",
+    "local-tests-0.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-tests-0.stderr": "0f40ff8f52499628ea6f0f59e75b43e13de6b7ef770873fd29d1e625a27308a5",
+    "local-tests-1.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-tests-1.stderr": "7053c4a34ca3e8a546643695fef526149639a5c88c4eaf822ce9d2449a5551ca"
+  },
+  "full_goal_qualified": false
+}

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "kind": "human_observation",
+  "source": "User feedback relayed by coordinating agent during the actual LOCAL campaign",
+  "run": "native-quality-local/rrb4-q1-chroma-grid",
+  "run_manifest_sha256": "604f3b145dd6e7e6f8ee1f74d4142a24d82921a8ce63caba86c722ecffd99c0d",
+  "reference_space": "LOCAL",
+  "fixture": "chroma-grid",
+  "visible": true,
+  "reported_artifacts": false,
+  "reported_unstable_pixels": false,
+  "quotes": [
+    "Yes, the colored grid is visible",
+    "No visible artifacts or unstable pixels"
+  ],
+  "binding_scope": "Human run attribution by coordinator, not a machine timestamp or optical measurement",
+  "historical_view_black_observation_preserved": true,
+  "full_goal_qualified": false
+}

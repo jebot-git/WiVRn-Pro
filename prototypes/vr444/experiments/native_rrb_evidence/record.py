@@ -76,6 +76,19 @@ def mapping(meta):
         central10_all_cells_ratio1=not bool((mask&multi).any()),mask_sha256=sha(mask.tobytes()),
         scope='Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality.')
 
+def quality_space(plan,execution,provenance,application):
+    need(type(plan.get('schema')) is int and plan['schema'] in (1,2),'quality plan schema')
+    if plan['schema']==1:
+        need('source_reference_space' not in plan,'legacy VIEW plan relabeled')
+        space='VIEW'
+    else:
+        space=plan.get('source_reference_space')
+    need(space in ('VIEW','LOCAL') and execution.get('source_application_space')==space
+         and application.get('source_reference_space')==space,'quality application space join')
+    need(provenance.get('scene_reference_space')==space.title(),'native application space provenance')
+    need(execution.get('latency_eligible') is False,'quality profile scope')
+    return space
+
 def record(run,manifest_sha,oracle,oracle_sha,build_receipt,build_sha):
     inputs=Inputs(run,manifest_sha);inputs.verify();prov=inputs.json('provenance.json');summary=inputs.json('summary.json');cleanup=inputs.json('cleanup.json')
     need(prov.get('mode')=='custom-rrb32' and prov.get('rrb_source') in ('q1','vr444'),'RRB source provenance')
@@ -129,7 +142,7 @@ def record(run,manifest_sha,oracle,oracle_sha,build_receipt,build_sha):
         need(sha(inputs.read('quality-application-plan.json'))==prov['quality_application_plan_sha256']==execution['original_plan_sha256'],'plan/provenance join')
         need(execution['snapshot_unchanged'] is True and execution['snapshot_sha256_after']==execution['executable_sha256']==prov['host_application_sha256']==plan['executable_sha256'],'app binary snapshot join')
         need(config['application']==execution['actual_application']==execution['application'],'actual app command join')
-        need(execution['latency_eligible'] is False and execution['source_application_space']=='VIEW','quality profile scope')
+        quality_space(plan,execution,prov,app)
         for name in sorted(inputs.hashes):
             if re.fullmatch(r'client/codec-test/quality/capture-[1-8]-eye-[01]\.json',name):geometry.append(mapping(inputs.json(name)))
     inputs.verify()
