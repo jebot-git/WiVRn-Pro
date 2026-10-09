@@ -242,13 +242,12 @@ def rrb_metrics(encoded, decoded, rejected, mode, provenance):
             errors.append('two eyes disagree on shared decode work')
         else:
             decode_times[identity] = duration
-    if any(eyes != {0, 1} for eyes in decoded_eyes.values()):
-        errors.append('incomplete decoded RRB stereo pair')
     if not encoded or not decoded:
         errors.append('missing actual RRB sender/receiver observations')
     return dict(status='mismatch' if errors else 'verified', errors=sorted(set(errors)),
                 source_contract=contract, workers=workers, requested_output=output,
                 complete_encoded_pairs=sum(set(v) == {0, 1} for v in pairs.values()),
+                partial_private_upload_pairs=sum(eyes != {0, 1} for eyes in decoded_eyes.values()),
                 rejected_stereo_pairs=len(rejected_frames), stereo_envelope_cap=262144,
                 shared_pair_decode_ms=distribution(list(decode_times.values())),
                 scope='Effective RRB codec and joint wire admission; shared pair decode appears in both eyes and is counted once; no displayed quality or latency qualification')

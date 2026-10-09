@@ -86,6 +86,17 @@ class Admission(unittest.TestCase):
         self.encoded.pop((10, 1))
         self.assertEqual(self.evaluate()['status'], 'mismatch')
 
+    def test_unpublished_private_upload_can_be_contained_as_a_drop(self):
+        self.decoded.pop((10, 1))
+        result = self.evaluate()
+        self.assertEqual(result['status'], 'verified')
+        self.assertEqual(result['partial_private_upload_pairs'], 1)
+        # A submitted pair still requires both decoder rows in runtime validation.
+        p, d = fixture()
+        result = runtime.evaluate(p, d[:1], 'cpu-neon', 'after-fence',
+            cpu_output='not_used', rrb_output='cpu', rrb_workers=4)
+        self.assertEqual(result['status'], 'fail')
+
     def test_source_quantization_and_pair_timing_differ(self):
         self.encoded[10, 0]['quantizer'] = 8
         self.assertEqual(self.evaluate()['status'], 'mismatch')
