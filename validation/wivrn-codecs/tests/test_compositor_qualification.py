@@ -29,8 +29,8 @@ def fixture(receipt=None):
 class CompositorQualificationTests(unittest.TestCase):
     def test_complete_catalog_checks_pinned_sources_without_execution_claim(self):
         catalog,_,read=fixture();result=h.verify(catalog,read)
-        self.assertEqual(result['approach_count'],26)
-        self.assertEqual(result['repository_source_bindings_verified'],26)
+        self.assertEqual(result['approach_count'],27)
+        self.assertEqual(result['repository_source_bindings_verified'],27)
         for key in ('fresh_test_execution','external_artifacts_verified','headset_operations','native_build_qualified','latency_gate_pass','promotion_eligible'):
             self.assertIs(result[key],False)
 
@@ -98,3 +98,25 @@ class CompositorQualificationTests(unittest.TestCase):
         for text in ('\nRan 0 tests in 0.0s\n\nOK\n','\nRan 12 tests in 1.0s\n\nOK (skipped=12)\n','OK\n','\nRan 12 tests in 1.0s\n\nFAILED\n'):
             with self.assertRaises(ValueError):r.python_tests(run(text))
         with self.assertRaises(ValueError):r.python_tests(run('\nRan 12 tests in 1.0s\n\nOK\n',1))
+
+
+class FreshHostGateTests(unittest.TestCase):
+    def test_host_success_requires_zero_exit_no_diagnostics_and_full_marker(self):
+        def result(stdout='complete\n',stderr='',code=0):return subprocess.CompletedProcess(['owned-test'],code,stdout,stderr)
+        r.host.require_result(result(),r'complete\n')
+        for value in (result(stdout=''),result(stdout='complete\nextra'),result(stderr='runtime error'),result(code=1)):
+            with self.assertRaises(ValueError):r.host.require_result(value,r'complete\n')
+
+    def test_every_fixed_host_and_thread_stage_is_required(self):
+        rows=[dict(id=value) for value in r.host.expected_ids()]
+        self.assertEqual(len(rows),10);r.host.check_population(rows)
+        for changed in (rows[:-1],rows+[rows[-1]],list(reversed(rows))):
+            with self.assertRaises(ValueError):r.host.check_population(changed)
+
+
+    def test_pacer_header_test_explicitly_enables_its_compile_guard(self):
+        for name,source,_ in r.host.PROGRAMS:
+            command=r.host.compiler_argv('/usr/bin/clang++',source,'/tmp/owned-test','address,undefined')
+            self.assertEqual('-DWIVRN_CODEC_TESTS=1' in command,name=='pacer')
+            self.assertIn('-fsanitize=address,undefined',command)
+            self.assertNotIn('-DNDEBUG',command)

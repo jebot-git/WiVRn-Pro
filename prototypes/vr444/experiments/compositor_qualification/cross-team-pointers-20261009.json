@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "kind": "cross_team_pinned_artifact_pointers_only",
+  "checked_at_utc": "2026-10-09T11:09:37.832608+00:00",
+  "entries": [
+    {
+      "id": "gpu-handoff",
+      "branch": "research/sub15-20261009/gpu-qualification-suite",
+      "commit": "0cc40d82fc1cc28cf8a0a0495e4277da261de815",
+      "remote_head_verified": true,
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/gpu_qualification_suite/HANDOFF.txt",
+          "sha256": "7fc55b7c3781f620dfdd6b483faaa96e3546f90a6cf99bf788bdedb1ebf352a9"
+        },
+        {
+          "path": "prototypes/vr444/experiments/gpu_qualification_suite/catalog.json",
+          "sha256": "11dcb85a1aae8b5960cf1ffa816cedbc773db6e7e619fb22b79677faf62d99eb"
+        },
+        {
+          "path": "prototypes/vr444/experiments/gpu_qualification_suite/qualification-final-20261009.json",
+          "sha256": "a7724b6ba838cf3a6766d6ab31a502b122f7b94328f52a64c4ef501aa8d12e93"
+        }
+      ]
+    },
+    {
+      "id": "gpu-direct-output-consumer",
+      "branch": "research/sub15-20261009/mapped-input-consumer",
+      "commit": "068dd29df03e44ab0668d9607d2896650c4b91f9",
+      "remote_head_verified": true,
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/mapped_input_consumer/README.txt",
+          "sha256": "62c6ff66ec83a976490718897e0afd6f41f00b3eb6a1047f56db34217c4fcf9c"
+        },
+        {
+          "path": "prototypes/vr444/experiments/mapped_input_consumer/timing-20261009.json",
+          "sha256": "604b0ea6139a3fabc049d6af4c446fca9533ef4da6f5b4b1947484e0c946f4f7"
+        },
+        {
+          "path": "prototypes/vr444/experiments/mapped_input_consumer/qualification-20261009.json",
+          "sha256": "373e67f69a5b1284a92c1593fd30255455f80f9a21237fd648af8ae0afe4c790"
+        }
+      ]
+    },
+    {
+      "id": "transport-handoff",
+      "branch": "research/sub15-20261009/transport-qualification-final",
+      "commit": "50086f07ef9db98299620db7dd696d97f951a1ba",
+      "remote_head_verified": true,
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/transport_qualification/README.txt",
+          "sha256": "efbc133c6f6ff31fd392f0186ccc14f8f78230474bbad324d7258d80205bdbee"
+        },
+        {
+          "path": "prototypes/vr444/experiments/transport_qualification/catalog.json",
+          "sha256": "81ccb3cb7356bde144a36e35bad6b047477a50e0f7fa2a6e232c7a9495c16f52"
+        },
+        {
+          "path": "prototypes/vr444/experiments/transport_qualification/fresh-suite.json",
+          "sha256": "fb0216faa6d9522a9895c4ddf58a6841e38faf035a7ee990cc71b17203cdcf4c"
+        },
+        {
+          "path": "prototypes/vr444/experiments/transport_qualification/unit-qualification.json",
+          "sha256": "68934c2e75678976fbaf2117aa44dac0bd5369e147a7a9ad0b026c64ffb4c513"
+        }
+      ]
+    },
+    {
+      "id": "transport-packet-window",
+      "branch": "research/sub15-20261009/packet-window-fec",
+      "commit": "788ba8b4c1bfb931c17d7a2ae9ad237c5ed48afc",
+      "remote_head_verified": true,
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/packet_window_fec/README.txt",
+          "sha256": "fd900c4b4c065e58edbb796344429fb56d89378bc6dae949681c2bdfb760167b"
+        },
+        {
+          "path": "prototypes/vr444/experiments/packet_window_fec/RESULTS.txt",
+          "sha256": "31f263d5ea62f34ecc33865d8d475f0f68e73f92c28bfea1d0da24fff70fdf3f"
+        },
+        {
+          "path": "prototypes/vr444/experiments/packet_window_fec/qualification.json",
+          "sha256": "4d2310b9fffb09364c3f605b03b3085716151f36f806a9d595ff624a5e9260fc"
+        },
+        {
+          "path": "prototypes/vr444/experiments/packet_window_fec/unit-qualification.json",
+          "sha256": "bbcd1389309480f9d4dcdb452d578a89d48adcb25c899bd8ca4dde623b906ee8"
+        }
+      ]
+    }
+  ],
+  "artifact_bytes_verified": true,
+  "recursive_receipt_dependencies_reverified": false,
+  "fresh_other_team_tests_executed": false,
+  "cross_team_source_integration": false,
+  "combined_performance_claim": false,
+  "headset_operations": false,
+  "promotion_eligible": false
+}

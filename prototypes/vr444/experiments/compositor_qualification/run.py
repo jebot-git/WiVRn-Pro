@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Separate historical integrity from an explicitly requested fresh Python suite."""
+"""Separate historical integrity, fresh Python and standalone host correctness."""
 import argparse
 import importlib.util
 import json
@@ -12,6 +12,8 @@ HERE=Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('compositor_history_runner',HERE/'history.py')
 history=importlib.util.module_from_spec(spec);spec.loader.exec_module(history)
 ROOT=history.ROOT
+spec=importlib.util.spec_from_file_location('compositor_fresh_host',HERE/'host_checks.py')
+host=importlib.util.module_from_spec(spec);spec.loader.exec_module(host)
 PREFIXES=('validation/wivrn-codecs','prototypes/vr444/experiments/selection_policy',
     'prototypes/vr444/experiments/pacer_timing','prototypes/vr444/experiments/client_timeline',
     'prototypes/vr444/experiments/host_timeline','prototypes/vr444/experiments/compositor_qualification')
@@ -39,33 +41,36 @@ def python_tests(run):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mode',choices=('history','python'),default='history')
-    parser.add_argument('--out',type=Path,required=True);args=parser.parse_args()
+    parser.add_argument('--mode',choices=('history','python','host'),default='history')
+    parser.add_argument('--out',type=Path,required=True);parser.add_argument('--build-dir',type=Path);args=parser.parse_args()
+    if (args.mode=='host')!=(args.build_dir is not None):parser.error('host mode requires --build-dir; other modes do not build')
     out=args.out.resolve()
     if any(out.is_relative_to(ROOT/prefix) for prefix in PREFIXES):parser.error('write output outside the snapshotted source directories')
+    if args.build_dir and args.build_dir.resolve().is_relative_to(ROOT):parser.error('host build directory must remain outside this source worktree')
     before=snapshot(ROOT);catalog_path=HERE/'catalog.json';catalog_raw=catalog_path.read_bytes()
     archived=history.verify(json.loads(catalog_raw),history.GitBlobs(ROOT))
     stages=[dict(stage='historical_git_blob_integrity',result=archived)]
-    if args.mode=='python':
+    if args.mode in ('python','host'):
         command=[sys.executable,'-m','unittest','discover','-s','validation/wivrn-codecs/tests','-v']
         run=subprocess.run(command,cwd=ROOT,capture_output=True,text=True,timeout=120)
         count=python_tests(run)
         stages.append(dict(stage='fresh_python_regressions',status='pass',command=command,
             tests_executed=count,returncode=run.returncode,stdout=run.stdout,stderr=run.stderr))
-    expected=['historical_git_blob_integrity']+(['fresh_python_regressions'] if args.mode=='python' else [])
+    if args.mode=='host':stages.append(dict(stage='fresh_standalone_host_correctness',result=host.execute(args.build_dir)))
+    expected=['historical_git_blob_integrity']+(['fresh_python_regressions'] if args.mode in ('python','host') else [])+(['fresh_standalone_host_correctness'] if args.mode=='host' else [])
     if [s['stage'] for s in stages]!=expected:raise ValueError('requested suite stage omitted or duplicated')
     if snapshot(ROOT)!=before or catalog_path.read_bytes()!=catalog_raw:raise ValueError('current sources changed during suite')
     result=dict(schema=1,status='completed_with_historical_source_gap' if archived['known_source_gaps'] else 'pass',
         mode=args.mode,stages=stages,catalog_sha256=history.digest(catalog_raw),current_files_sha256=before,
-        current_source_snapshot_unchanged=True,fresh_python_executed=args.mode=='python',
-        fresh_cpp_tests=False,fresh_sanitizers=False,fresh_android_compile=False,fresh_native_build=False,
+        current_source_snapshot_unchanged=True,fresh_python_executed=args.mode in ('python','host'),
+        fresh_cpp_tests=args.mode=='host',fresh_sanitizers=args.mode=='host',fresh_android_compile=False,fresh_native_build=False,
         acquisition_files_reverified=False,remote_refs_verified=False,headset_operations=False,
         performance_measurement=False,latency_gate_pass=False,promotion_eligible=False,
-        scope='Archived artifacts and source bindings are separate from fresh Python execution. The explicit historical plot-source gap remains visible.')
+        scope='Archived artifacts and source bindings are separate from requested fresh Python and standalone host sanitizer execution. The explicit historical plot-source gap remains visible.')
     with out.open('x') as stream:json.dump(result,stream,indent=2);stream.write('\n')
     print(json.dumps(dict(status=result['status'],mode=args.mode,approaches=archived['approach_count'],
         artifacts=archived['artifacts_verified'],historical_gaps=len(archived['known_source_gaps']),
-        fresh_tests=stages[-1].get('tests_executed',0))))
+        fresh_tests=sum(stage.get('tests_executed',0) for stage in stages),host_sanitizer_runs=10 if args.mode=='host' else 0)))
 
 
 if __name__=='__main__':main()

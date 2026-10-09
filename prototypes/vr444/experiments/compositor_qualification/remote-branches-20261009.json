@@ -2,7 +2,7 @@
   "schema": 1,
   "status": "pass",
   "kind": "remote_published_branch_identity",
-  "checked_at_utc": "2026-10-09T10:54:09.765734+00:00",
+  "checked_at_utc": "2026-10-09T11:10:17.708172+00:00",
   "remote": "https://github.com/jebot-git/WiVRn-Pro.git",
   "command": [
     "git",
@@ -10,7 +10,7 @@
     "--heads",
     "origin"
   ],
-  "catalog_sha256": "790cec08f65b9dfa28e90822eb6c5727ac29a0abe9701f966db279a201ccfc0a",
+  "catalog_sha256": "3dc4cdad4c651015490b3d93cd9d650057f0c189f9f85a818e00c06c3e8f1771",
   "branches": [
     {
       "branch": "research/sub15-20261009/compositor",
@@ -115,9 +115,13 @@
     {
       "branch": "research/sub15-20261009/compositor-cadence-coverage",
       "commit": "f511545415eba9aa3ddbdfc16d982d7f35def711"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-endpoint-envelope",
+      "commit": "b6eec5537f11ed48fa1ff2ea32fc279bda6a294e"
     }
   ],
-  "branch_count": 26,
+  "branch_count": 27,
   "headset_operations": false,
   "source_or_acquisition_modified": false,
   "promotion_eligible": false

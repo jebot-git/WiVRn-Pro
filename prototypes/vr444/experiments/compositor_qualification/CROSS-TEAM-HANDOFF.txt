@@ -1,0 +1,78 @@
+Cross-team review pointers, 2026-10-09
+
+The compositor, GPU and transport approaches remain separate research branches.
+There is no combined native build, integrated performance result or new headset
+qualification. Original run05 remains failed; headset operations stayed suspended.
+Do not add independent stage medians/p95 values or subtract across clock domains.
+
+The separate cross-team-pointers-20261009.json verifies the listed immutable Git
+artifact bytes and matching remote branch heads. It does not recursively rerun
+the other teams' receipts or their test binaries. Their handoffs declare exactly
+which checks were fresh, historical, source-bound or externally unverified.
+
+GPU handoff:
+  branch research/sub15-20261009/gpu-qualification-suite
+  commit 0cc40d82fc1cc28cf8a0a0495e4277da261de815
+  prototypes/vr444/experiments/gpu_qualification_suite/HANDOFF.txt
+This notes-only head follows the sealed c4dc0912 fresh suite: 14 approaches,
+80 Python tests, 838 CPU cases / 8,382 rejections, 13,176 exact GPU invocations
+and 3,294 omission controls. Read its receipt for the exact source/build/device
+population and historical-versus-fresh separation.
+
+Strong private client candidate:
+  branch research/sub15-20261009/mapped-input-consumer
+  commit 068dd29df03e44ab0668d9607d2896650c4b91f9
+  prototypes/vr444/experiments/mapped_input_consumer/README.txt
+The matched two-device batch contains 14,508 exact measured invocations and
+separate readiness/joint-clock paired comparisons. RRB32 direct cached output
+versus the same-batch CPU reference improves all 12 captured p50/p95 pairs on
+both devices; median paired p50 differences are -0.700110 ms Arc and -0.471770 ms
+UHD. This includes private poison/readiness/compute-consumer work and excludes
+server preprocessing, wire, native rendering and headset presentation. Arc RRF
+staged-to-direct comparisons retain five p95 regressions across two repeated
+sets, worst +0.340200 ms. Arc cache labels use the same actual memory type.
+The independent compositor review recomputed all paired joint deltas/counts
+from retained cases, and found the readiness/joint separation consistent.
+
+Transport handoff:
+  branch research/sub15-20261009/transport-qualification-final
+  commit 50086f07ef9db98299620db7dd696d97f951a1ba
+  prototypes/vr444/experiments/transport_qualification/README.txt
+This pins 23 approaches and 146 artifacts, with 543 matching repository bindings
+and 16 explicitly retained historical snapshot differences. Fresh execution
+covers 134 protocol/model and 12 catalog tests, plus two byte-bound historical
+native ASan/UBSan and TSan executables. Those binaries are not freshly rebuilt
+by that handoff. Server timings begin from preencoded VR444 input, so they do
+not establish a new direct source encoder's cost or an end-to-end benefit.
+
+Packet-window recovery candidate:
+  branch research/sub15-20261009/packet-window-fec
+  commit 788ba8b4c1bfb931c17d7a2ae9ad237c5ed48afc
+  prototypes/vr444/experiments/packet_window_fec/RESULTS.txt
+The final corrected revision checks known recoverable parity before either
+original or reconstructed source forwarding can publish stereo. Twenty-three
+unit tests and corpus qualification cover 282 native stereo oracles and 9,462
+logical replays. VWG uses fewer bytes than VXP in 143/144 captured variants,
+but its declared length-two erased-fragment comparison recovers only 38/432
+versus VXP's 301/432. These are matched logical erasures with parity retained,
+not physical wire bursts, network timing or authentication.
+
+Integration sequence for a future explicitly resumed device phase:
+1. Integration owner selects exact branches and regenerates integration.patch
+   and overlay-manifest. The original pacer-trace milestone requires the later
+   compositor-pacer-init fix; do not import the earlier constructor ordering.
+2. Preserve default-off diagnostics, complete immutable stereo admission,
+   native handle/fence lifetime and actual memory/format capability checks.
+   The publication ledger covers only through its last exported checkpoint.
+3. A linked native build must bind the selected server, wire, client decoder,
+   image/color output and selector into one reviewable source/build receipt.
+   Host-GPU feature availability is not headset feature evidence.
+4. When headset testing is authorized again, first establish valid candidate,
+   source, publication and presentation evidence before interpreting latency.
+   Keep original policy/quality limits and report encoded and source novelty
+   separately; no research diagnostic automatically permits promotion.
+
+The compositor exact-phase and endpoint results explain why a faster client
+stage alone cannot be assumed to meet sub-15: eligibility changes discretely
+with sampling phase and fixed target admission. Neither the stage improvements
+nor optimistic mathematical bounds predict native runtime feedback or photons.

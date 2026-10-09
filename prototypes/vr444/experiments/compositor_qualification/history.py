@@ -18,7 +18,7 @@ APPROACHES=('compositor','compositor-attempts','compositor-pacing','compositor-r
     'compositor-pacer-init','compositor-pacer-capture','compositor-target-envelope','compositor-supply-phase',
     'compositor-full-count','compositor-cardinality','compositor-publication-ledger','compositor-publication-capture',
     'compositor-phase-frontier','compositor-target-admission','compositor-source-novelty','compositor-quantile-bound',
-    'compositor-host-timeline','compositor-receipt-floor','compositor-exact-phase','compositor-source-receipt-age','compositor-source-age-bound','compositor-cadence-coverage')
+    'compositor-host-timeline','compositor-receipt-floor','compositor-exact-phase','compositor-source-receipt-age','compositor-source-age-bound','compositor-cadence-coverage','compositor-endpoint-envelope')
 
 
 def digest(data):return hashlib.sha256(data).hexdigest()

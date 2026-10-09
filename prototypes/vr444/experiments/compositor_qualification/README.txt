@@ -6,7 +6,7 @@ The research branches repair diagnostic contracts, add opt-in capture, and
 bound selection alternatives using immutable recorded evidence. Runtime
 policy and production qualification limits are unchanged.
 
-catalog.json pins 26 separately pushed approach branches and 73 notes,
+catalog.json pins 27 separately pushed approach branches and 77 notes,
 validation or analysis artifacts at full immutable Git commit IDs. It is
 the machine-readable branch/artifact index. Each artifact is read from its
 own commit, never silently compared against later changed source files.
@@ -15,6 +15,7 @@ Historical integrity and fresh execution are separate:
 
   python3 prototypes/vr444/experiments/compositor_qualification/run.py --mode history --out /tmp/compositor-history.json
   python3 prototypes/vr444/experiments/compositor_qualification/run.py --mode python --out /tmp/compositor-fresh-python.json
+  python3 prototypes/vr444/experiments/compositor_qualification/run.py --mode host --build-dir /tmp/compositor-fresh-host-build --out /tmp/compositor-fresh-host.json
 
 The history mode verifies pinned artifact bytes and declared in-repository
 and virtual-overlay source bindings. Absolute temporary executables and
@@ -33,13 +34,30 @@ the old receipt or relabel full historical source integrity as passing.
 Fresh Python mode additionally runs the entire current validation suite,
 requires nonzero execution and plain OK without skips, and rehashes all
 files in the declared source directories before/after. The completed run
-has 343 passing tests, including eight catalog/runner tests covering omitted
+has 353 passing tests, including eleven catalog/runner tests covering omitted
 or duplicate approaches, altered artifacts/sources, malformed digest maps,
 external source references, exact known-gap declarations and all-skipped
-test output. A transport-team independent read-only review found no blocker.
+test output, host success diagnostics and complete sanitizer-stage population.
+A transport-team independent read-only catalog review found no blocker.
+
+Host mode additionally rebuilds eight current standalone C++ test programs
+under ASan/UBSan: legacy selection, render attempts, fractional horizon,
+ready successor, cardinality, source novelty, publication ledger and host
+pacer recorder. Publication and pacer concurrency tests also rebuild/run
+under TSan, for ten fresh sanitizer executions. Compiler argv/version/hash
+and binary hashes are recorded; any diagnostic, missing complete success
+marker or missing/duplicate stage rejects the run. Leak detection is disabled
+under ptrace. This is not a linked WiVRn build, actual native-constructor
+execution, Android compile, GPU test, performance run or device operation.
+Those historical checks retain their prior scope and are not silently
+claimed as freshly rerun. Build/output paths must be outside this worktree.
+An initial runner smoke rejected pacer compilation because its explicit
+WIVRN_CODEC_TESTS guard was missing; the fixed argv and guard regression
+precede the complete final run. No partial run was recorded as passing.
+An independent GPU-team read-only review found no host-mode gate blocker.
 
 Separate final receipts rechecked all 1,492 original acquisition files in
-five manifests and matched all 26 branch heads on origin to their catalog
+five manifests and matched all 27 branch heads on origin to their catalog
 commits. These are read-only integrity checks, not fresh device evidence.
 The primary fresh-suite receipt still honestly marks those separate stages
 as outside its own scope. Output receipts are copied into this directory
@@ -98,6 +116,15 @@ Most useful results and boundaries:
    have zero held endpoints and identical rates. Seven synthetic regressions
    show why this cannot be presumed for paths that omit deadlines. Missing
    submissions and observed held frames stay distinct. The policy is unchanged.
+
+9. ENDPOINT-ENVELOPE removes the sufficient full-span count assumption for
+   five explicit phases by checking all 509,001 observed endpoint intervals
+   of at least ten seconds. Exact good-only advancing chains bound necessary
+   p95 counts. At phase zero, one-horizon encoded and both source-distinct
+   models fail every interval, even at receipt-floor readiness. The three
+   intermediate phases remain inconclusive; no legal mixed-age path or
+   all-phase endpoint conclusion is claimed. Tests and a separate figure
+   show these limits without changing the earlier exact-phase result.
 
 Native integration remains outstanding and owned by the integration team:
 regenerate integration.patch and overlay-manifest, include the pacer init

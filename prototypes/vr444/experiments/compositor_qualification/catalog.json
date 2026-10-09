@@ -629,6 +629,37 @@
           "source_bindings": 2
         }
       ]
+    },
+    {
+      "id": "compositor-endpoint-envelope",
+      "branch": "research/sub15-20261009/compositor-endpoint-envelope",
+      "commit": "b6eec5537f11ed48fa1ff2ea32fc279bda6a294e",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/ENDPOINT-ENVELOPE.txt",
+          "kind": "notes",
+          "sha256": "6ee10dcc9d3af64a020c9a4afda84edb9cf71477bf4639baf2601ecdc5e85a0b",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/endpoint-envelope-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "13b1dd7f97fb7a953722e0d49160575bbb336f1a56253444c63d7696daa14f38",
+          "source_bindings": 113
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/endpoint-envelope-20261009.json",
+          "kind": "analysis",
+          "sha256": "b9a8d5a931872fc500f4a342b32fe5bd05331385df20bdd2ec59f4be675c746b",
+          "source_bindings": 59
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/endpoint-envelope-figure-20261009.json",
+          "kind": "figure_receipt",
+          "sha256": "b6b4f126330962c20aa6789a60ce8e8c4eb8fb93de6830accc3037e86670e3eb",
+          "source_bindings": 3
+        }
+      ]
     }
   ],
   "native_integration_required": [
