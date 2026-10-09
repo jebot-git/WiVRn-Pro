@@ -1,13 +1,16 @@
 VWG1 exact-byte and matched-erasure qualification, 2026-10-09
 ============================================================
 
-22 protocol tests pass, including every source-record loss in the bounded test
+23 protocol tests pass, including every source-record loss in the bounded test
 fixture, one loss per window, two source losses, source plus parity loss, 500
 record mutations, full eye withholding, arbitrary block order, maximum block
 count, handle/deadline/configuration binding, fixed payload caps, and permanent
 sender abort. The peer-reviewed canonical parity-length ordering is covered by
 a final-missing-record negative test: overlong zero-padded parity is rejected
-before it can publish stereo. Fresh expiry during recovered decoding also passes.
+before it can publish stereo. A separate original-final-source regression drops
+the redundant second manifest: known overlong or invalid-recovery parity must
+reject before the intact right-eye source can publish. Its valid-parity control
+passes. Fresh expiry during recovered decoding also passes.
 
 Actual immutable-corpus qualification passed:
   312 profile/row/K cases (26 profiles x 4 row sizes x K=4/8/16)

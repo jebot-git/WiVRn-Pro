@@ -156,17 +156,20 @@ class Receiver:
         self._validate_inner(record,ticket,now);pair=self.inner.receive(record,now)
         need(ticket.frame not in self.inner.retired,'inner candidate rejected')
         return pair
-    def _repair(self,state,group_id,ticket,now):
-        group=state.groups[group_id]
-        if group.parity is None:
-            if len(group.sources)==state.k:state.done.add(group_id);del state.groups[group_id]
-            return None
+    def _checked_repair(self,group,ticket,now):
+        """Check known recoverable parity before either source path can publish.
+
+        A missing record can be a redundant manifest; complete inner stereo
+        does not excuse malformed parity that is already decidable here.
+        This preflight never forwards or mutates source/candidate storage.
+        """
         missing=[i for i in range(group.count) if i not in group.sources]
-        if len(missing)>1:return None
+        if len(missing)>1:return None,None
         recovered=bytearray(group.parity)
         for record in group.sources.values():
             need(len(record)<=len(recovered),'parity shorter than source')
             for i,value in enumerate(record):recovered[i]^=value
+        record=None
         if not missing:
             need(not any(recovered),'parity mismatch')
         else:
@@ -174,12 +177,22 @@ class Receiver:
             f=vxb.HEADER.unpack_from(recovered);length=vxb.HEADER.size+f[15]
             need(vxb.HEADER.size<length<=len(recovered) and not any(recovered[length:]),'recovered size/padding')
             record=bytes(recovered[:length]);self._validate_inner(record,ticket,now)
+        lengths=[len(value) for value in group.sources.values()]
+        if record is not None:lengths.append(len(record))
+        need(len(group.parity)==max(lengths),'noncanonical parity length')
+        return missing,record
+    def _repair(self,state,group_id,ticket,now):
+        group=state.groups[group_id]
+        if group.parity is None:
+            if len(group.sources)==state.k:state.done.add(group_id);del state.groups[group_id]
+            return None
+        missing,record=self._checked_repair(group,ticket,now)
+        if missing is None:return None
+        if record is not None:
             group.sources[missing[0]]=record;need(state.bytes<=MAX_WINDOW_BYTES,'repaired window cap')
-            need(len(group.parity)==max(map(len,group.sources.values())),'noncanonical parity length')
             self.stats['recovered_record']+=1
             pair=self._forward(record,ticket,now)
             if pair:return pair
-        need(len(group.parity)==max(map(len,group.sources.values())),'noncanonical parity length')
         state.done.add(group_id);del state.groups[group_id];return None
     def receive(self,record,now):
         self.expire(now);self.stats['received_records']+=1
@@ -209,6 +222,7 @@ class Receiver:
                 if slot in group.sources:
                     need(group.sources[slot]==body,'source conflict');self.stats['duplicate source']+=1;return None
                 need(state.bytes+len(body)<=MAX_WINDOW_BYTES,'window payload cap');group.sources[slot]=body
+                if group.parity is not None:self._checked_repair(group,ticket,now)
                 pair=self._forward(body,ticket,now)
                 if pair:return self._published(pair)
             else:

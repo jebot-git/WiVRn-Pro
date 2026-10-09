@@ -146,6 +146,22 @@ class PacketWindowTests(unittest.TestCase):
             changed.append(p)
         self.assertFalse(run(receiver,clock,changed));self.assertIsNone(receiver.published)
 
+    def test_original_final_source_checks_redundant_manifest_repair(self):
+        for mode in ('valid','overlong_zero','invalid_recovered_header'):
+            receiver,clock,handle,deadline=context();left,right=pair(1,1)
+            records=t.packetize(handle,SID,1,1,1,10,deadline,left,right,k=8)
+            originals=[p for p in records if source(p)]
+            self.assertEqual([inner(p)[2] for p in originals],[t.vxb.MANIFEST,t.vxb.DATA,t.vxb.MANIFEST,t.vxb.DATA])
+            parity=next(p for p in records if not source(p));f=fields(parity);body=parity[t.HEADER.size:]
+            if mode=='overlong_zero':body+=b'\0'
+            elif mode=='invalid_recovered_header':body=bytes([body[0]^1])+body[1:]
+            parity=t.packet(t.PARITY,f[3],f[4],f[5],f[6],f[7],body)
+            # The final original eye completes stereo, while missing slot 2
+            # only duplicates a manifest. Known parity still needs checking.
+            values=run(receiver,clock,[parity,originals[0],originals[1],originals[3]])
+            if mode=='valid':self.assertEqual((values[0].left,values[0].right),(left,right))
+            else:self.assertFalse(values);self.assertIsNone(receiver.published)
+
     def test_inner_identity_must_match_issued_handle(self):
         left,right=pair()
         for args in ((2,1,1,10),(1,2,1,10),(1,1,2,10),(1,1,1,11)):

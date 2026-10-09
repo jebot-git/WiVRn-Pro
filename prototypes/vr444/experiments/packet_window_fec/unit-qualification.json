@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "created_utc": "2026-10-09T11:01:58.547037+00:00",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "-v",
+    "test_transport.py"
+  ],
+  "tests": 23,
+  "source_sha256": {
+    "prototypes/vr444/experiments/packet_window_fec/transport.py": "7762f3de6d6dffc03d3c137fa66dbfb9f28e384b567bba19d4dc893d798036f9",
+    "prototypes/vr444/experiments/packet_window_fec/test_transport.py": "80faeea647ba258152a61033e84a7a39f4c15faa71485d88815dbb198363067e",
+    "prototypes/vr444/experiments/packet_window_fec/loss_matrix.py": "54d7b8ed8be9947b0b748b9369c9e0b8b82cb51b4b59a64b2125eece525a9dc5"
+  },
+  "stdout": "",
+  "stderr": "test_arbitrary_complete_block_order_stays_canonical (test_transport.PacketWindowTests.test_arbitrary_complete_block_order_stays_canonical) ... ok\ntest_clean_odd_max_blocks_and_group_sizes (test_transport.PacketWindowTests.test_clean_odd_max_blocks_and_group_sizes) ... ok\ntest_crc_valid_bad_repair_never_publishes (test_transport.PacketWindowTests.test_crc_valid_bad_repair_never_publishes) ... ok\ntest_every_single_source_record_loss_is_exact (test_transport.PacketWindowTests.test_every_single_source_record_loss_is_exact) ... ok\ntest_final_repair_overlong_zero_padding_rejects_before_publication (test_transport.PacketWindowTests.test_final_repair_overlong_zero_padding_rejects_before_publication) ... ok\ntest_fresh_deadline_during_recovered_decode (test_transport.PacketWindowTests.test_fresh_deadline_during_recovered_decode) ... ok\ntest_group_size_slot_and_sealed_count_conflicts (test_transport.PacketWindowTests.test_group_size_slot_and_sealed_count_conflicts) ... ok\ntest_inner_identity_must_match_issued_handle (test_transport.PacketWindowTests.test_inner_identity_must_match_issued_handle) ... ok\ntest_late_canonical_budget_failure_permanently_aborts (test_transport.PacketWindowTests.test_late_canonical_budget_failure_permanently_aborts) ... ok\ntest_matched_erasure_matrix_preserves_identity_and_tradeoff (test_transport.PacketWindowTests.test_matched_erasure_matrix_preserves_identity_and_tradeoff) ... ok\ntest_mutations_never_change_successful_stereo (test_transport.PacketWindowTests.test_mutations_never_change_successful_stereo) ... ok\ntest_no_parity_reorder_and_duplicates (test_transport.PacketWindowTests.test_no_parity_reorder_and_duplicates) ... ok\ntest_one_complete_eye_never_publishes (test_transport.PacketWindowTests.test_one_complete_eye_never_publishes) ... ok\ntest_one_source_record_per_group_recovers (test_transport.PacketWindowTests.test_one_source_record_per_group_recovers) ... ok\ntest_original_final_source_checks_redundant_manifest_repair (test_transport.PacketWindowTests.test_original_final_source_checks_redundant_manifest_repair) ... ok\ntest_premature_finish_permanently_aborts (test_transport.PacketWindowTests.test_premature_finish_permanently_aborts) ... ok\ntest_sender_emits_before_finish_and_seals_partial_tail (test_transport.PacketWindowTests.test_sender_emits_before_finish_and_seals_partial_tail) ... ok\ntest_source_and_matching_parity_loss_withhold (test_transport.PacketWindowTests.test_source_and_matching_parity_loss_withhold) ... ok\ntest_ticket_cap_immutable_deadline_and_types (test_transport.PacketWindowTests.test_ticket_cap_immutable_deadline_and_types) ... ok\ntest_two_codec_sources_in_one_group_withhold (test_transport.PacketWindowTests.test_two_codec_sources_in_one_group_withhold) ... ok\ntest_two_pending_frame_bound (test_transport.PacketWindowTests.test_two_pending_frame_bound) ... ok\ntest_unissued_expired_and_old_configuration_handles_reject (test_transport.PacketWindowTests.test_unissued_expired_and_old_configuration_handles_reject) ... ok\ntest_window_payload_cap_before_storage (test_transport.PacketWindowTests.test_window_payload_cap_before_storage) ... ok\n\n----------------------------------------------------------------------\nRan 23 tests in 0.650s\n\nOK\n",
+  "validation_order_fix": true,
+  "corpus_case_results_equal_previous_revision": true,
+  "headset_operations": false,
+  "promotion_eligible": false
+}

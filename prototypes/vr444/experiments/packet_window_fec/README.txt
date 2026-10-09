@@ -43,9 +43,12 @@ record alone never publishes a partial eye or image.
 XOR applies to the complete inner records, including headers. Short records are
 zero-padded to the longest group member. The recovered inner header gives its
 exact original length; every remaining padding byte must be zero. Parity length
-must equal the maximum complete source-record length, checked BEFORE forwarding
-a recovered record that might complete stereo. The final-record overlong-zero-
-padding negative test specifically protects this ordering.
+must equal the maximum complete source-record length. Once a known parity window
+has at most one missing record, its parity, recovered inner grammar and canonical
+length are checked BEFORE either an original or recovered record can complete
+stereo. The missing record may only duplicate a manifest, so complete inner eye
+bytes alone do not excuse malformed, already-checkable parity. Both final-source
+and final-recovery negative tests protect this publication ordering.
 
 One missing record per group is recoverable; two missing codec DATA records in
 one group are not. Complete K-source groups can discard their stored source
