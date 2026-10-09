@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_utc": "2026-10-09T14:47:02.784939+00:00",
+  "updated_utc": "2026-10-09T15:13:16.932086+00:00",
   "base_commit": "8e4d7a862591b3a5d2d9fc888da967fde0cb9165",
   "qualification_operator": "OR",
   "central_foveal_radius_degrees": 10,
@@ -10,25 +10,25 @@
       "agent": "root",
       "role": "integration and qualification",
       "branch": "research/sub15-20261009/dual-goal-integration",
-      "stage": "93-file native union linked; sealing first live campaign"
+      "stage": "Native CPU/GPU evidence collected; Q1 submitted-reference replay in progress"
     },
     {
       "agent": "identify_sub15",
       "role": "compositor and publication",
-      "branch": "research/sub15-20261009/native-publication-integration",
-      "stage": "publication, owner quiesce and submitted capture pushed; independent capture auditor in progress"
+      "branch": "research/sub15-20261009/pacer-tail-window",
+      "stage": "Opt-in bounded-age pacer estimator and exact source/pacer joins"
     },
     {
       "agent": "transport_compression",
       "role": "codec and admission",
-      "branch": "research/sub15-20261009/native-rrb32-integration",
-      "stage": "native RRB CPU/GPU and scalar payload auditor pushed; source fixture app in progress"
+      "branch": "research/sub15-20261009/quality-stimuli",
+      "stage": "Q1 source/codec audit, source-to-foveation scope and independent peer review"
     },
     {
       "agent": "gpu_pipeline",
       "role": "GPU images and independent review",
-      "branch": "research/sub15-20261009/native-staged-image-integration",
-      "stage": "Adreno image correctness and owner hooks pushed; independent submitted-image replay in progress"
+      "branch": "research/sub15-20261009/submitted-replay-capture",
+      "stage": "Native GPU audit and physical-headset-bound independent reference replay"
     }
   ],
   "device_owner": "root",
@@ -36,10 +36,9 @@
   "host_gpu_reservation": "released by gpu_pipeline after correctness checks",
   "production_promotion": false,
   "next_handoffs": [
-    "compositor atomic publication to codec pair coordinator",
-    "GPU helper peer review then decoder output adapter",
-    "root reconcile overlay and fresh dedicated native build",
-    "root interleaved latency plus fixed-center quality acquisitions"
+    "Strict physical identity binding to current immutable quality capture",
+    "Independent same-headset native shader replay and central10 exact comparison",
+    "Pacer-tail candidate review, isolated build and bounded A/B tests"
   ],
-  "known_quality_gap": "Actual submitted capture and independent render replay now implemented/in progress; no matched native source-to-submission quality result yet."
+  "known_quality_gap": "Native Q1 source/decoder and three submitted pairs verified; independent rendered-reference comparison and complete repeated fixture suite remain pending."
 }

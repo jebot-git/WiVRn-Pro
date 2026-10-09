@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "updated_utc": "2026-10-09T15:13:16.932086+00:00",
+  "native_build_receipt_sha256": "d6be1ee952a93a967cc6d3492edd89abe7e8fa49e25ad77df0f37dcbee82ec8f",
+  "runs": [
+    {
+      "campaign": "native-diagnostic",
+      "run": "baseline-publication",
+      "raw_path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-diagnostic/baseline-publication",
+      "campaign_sha256": "f7bc69ccb240f87b0a7376a430b435c766dbe64ae309020b5831318dc8e3b32c",
+      "run_hashes_sha256": "1e18e9df2a4c5fec20f3775998e74485493328500077d501f6cdbd24b349ceb9",
+      "summary_sha256": "a10e6dc35ca4344a5f58cc5562a06e3ce44a7d48d894536b72dadf0b4685603a",
+      "evidence_status": "fail",
+      "software_latency": {
+        "unique_stereo_submission_hz": 89.63239351234915,
+        "stereo_receive_to_submit_ms_p50": 16.064689,
+        "stereo_receive_to_submit_ms_p95": 18.859533,
+        "stereo_receive_to_submit_ms_p99": 21.182554
+      },
+      "latency_goal_verified": false,
+      "quality_goal_verified": false,
+      "custom_status": "fail",
+      "runtime_status": "pass",
+      "scalar_payload_status": null,
+      "source_status": "fail",
+      "candidate_status": "pass",
+      "candidate_errors": [],
+      "pacer_status": "fail",
+      "publication_status": "fail",
+      "app_source_status": null,
+      "restoration": {
+        "analysis_sources_unchanged": true,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "dedicated_app_stopped": true,
+        "production_package_unchanged": true,
+        "final_check_errors": []
+      }
+    },
+    {
+      "campaign": "native-ready",
+      "run": "baseline-ready",
+      "raw_path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-ready/baseline-ready",
+      "campaign_sha256": "3a16fa21307a3027aecc1f7a107d870cea41464ec858a4b5f9f44fa8e51eff31",
+      "run_hashes_sha256": "be0d3cd9f1bc5233f87eb5b0425eb5339af470356a0fda0301de747da7bb1c1d",
+      "summary_sha256": "3ae38967b174e90e581a839f5cfffc07ed890229ad7d72e671898fd6fc922823",
+      "evidence_status": "pass",
+      "software_latency": {
+        "unique_stereo_submission_hz": 89.43113227805007,
+        "stereo_receive_to_submit_ms_p50": 18.629065,
+        "stereo_receive_to_submit_ms_p95": 21.458127,
+        "stereo_receive_to_submit_ms_p99": 22.340263
+      },
+      "latency_goal_verified": false,
+      "quality_goal_verified": false,
+      "custom_status": "pass",
+      "runtime_status": "pass",
+      "scalar_payload_status": null,
+      "source_status": "pass",
+      "candidate_status": "pass",
+      "candidate_errors": [],
+      "pacer_status": "pass",
+      "publication_status": "pass",
+      "app_source_status": null,
+      "restoration": {
+        "analysis_sources_unchanged": true,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "dedicated_app_stopped": true,
+        "production_package_unchanged": true,
+        "final_check_errors": []
+      }
+    },
+    {
+      "campaign": "native-rrb",
+      "run": "rrb4-publication",
+      "raw_path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-rrb/rrb4-publication",
+      "campaign_sha256": "d39cecf8c5946bd0b0e83dcddcc1a2c61e33bc59c3984c7b69a98e3b0a139878",
+      "run_hashes_sha256": "5aeeffd38c1d53be2e1c5e5c7373908e354a7b023e2e9121621c21288a2cf871",
+      "summary_sha256": "0db31142ec6a9c180d22996d9773ec34a7a9eb8ecf174c8e70666b10a3959ae4",
+      "evidence_status": "fail",
+      "software_latency": {
+        "unique_stereo_submission_hz": 87.47404864487055,
+        "stereo_receive_to_submit_ms_p50": 18.631252,
+        "stereo_receive_to_submit_ms_p95": 21.552242,
+        "stereo_receive_to_submit_ms_p99": 29.180628
+      },
+      "latency_goal_verified": false,
+      "quality_goal_verified": false,
+      "custom_status": "pass",
+      "runtime_status": "pass",
+      "scalar_payload_status": "pass",
+      "source_status": "pass",
+      "candidate_status": "fail",
+      "candidate_errors": [
+        "render-attempt accounting contains an aborted or unaccounted attempt",
+        "trace joins do not preserve the full presentation prefix"
+      ],
+      "pacer_status": "pass",
+      "publication_status": "fail",
+      "app_source_status": null,
+      "restoration": {
+        "analysis_sources_unchanged": true,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "dedicated_app_stopped": true,
+        "production_package_unchanged": true,
+        "final_check_errors": []
+      }
+    },
+    {
+      "campaign": "native-gpu",
+      "run": "rrb-gpu-publication",
+      "raw_path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-gpu/rrb-gpu-publication",
+      "campaign_sha256": "3da473742a896920dada39fb42d38c0da2ad8eb72161de2677bb09b2e3fad545",
+      "run_hashes_sha256": "bf983c561b6302e1cc43b82d08f56cbeefb5433fe5fa0573aa5f050117b95b22",
+      "summary_sha256": "2a087f5b07f4c3f4158663883118521a18161412bbf82cbdd699e1f71cfde73f",
+      "evidence_status": "pass",
+      "software_latency": {
+        "unique_stereo_submission_hz": 89.41658154762413,
+        "stereo_receive_to_submit_ms_p50": 18.633648,
+        "stereo_receive_to_submit_ms_p95": 28.65443,
+        "stereo_receive_to_submit_ms_p99": 30.808128
+      },
+      "latency_goal_verified": false,
+      "quality_goal_verified": false,
+      "custom_status": "pass",
+      "runtime_status": "pass",
+      "scalar_payload_status": "pass",
+      "source_status": "pass",
+      "candidate_status": "pass",
+      "candidate_errors": [],
+      "pacer_status": "pass",
+      "publication_status": "pass",
+      "app_source_status": null,
+      "restoration": {
+        "analysis_sources_unchanged": true,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "dedicated_app_stopped": true,
+        "production_package_unchanged": true,
+        "final_check_errors": []
+      }
+    },
+    {
+      "campaign": "native-quality",
+      "run": "rrb4-q1-chroma-grid",
+      "raw_path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality/rrb4-q1-chroma-grid",
+      "campaign_sha256": "23080ed7fd52b19b2a43650acb7d8992081604cf08559e58af9819d0437cc199",
+      "run_hashes_sha256": "d781bc11e345ed2253e69fd24015824554e64dae47fcc3a18ddce6201eed4c0e",
+      "summary_sha256": "03d83d01888e8870ef65e1e9f654d6018c319288b4fb1ea5f3aeed6e2aabd8b9",
+      "evidence_status": "pass",
+      "software_latency": {
+        "unique_stereo_submission_hz": 86.79301795218574,
+        "stereo_receive_to_submit_ms_p50": 15.008179,
+        "stereo_receive_to_submit_ms_p95": 17.145783,
+        "stereo_receive_to_submit_ms_p99": 17.827189
+      },
+      "latency_goal_verified": false,
+      "quality_goal_verified": false,
+      "custom_status": "pass",
+      "runtime_status": "pass",
+      "scalar_payload_status": "pass",
+      "source_status": "pass",
+      "candidate_status": "off",
+      "candidate_errors": [],
+      "pacer_status": "off",
+      "publication_status": "off",
+      "app_source_status": "pass",
+      "restoration": {
+        "analysis_sources_unchanged": true,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "dedicated_app_stopped": true,
+        "production_package_unchanged": true,
+        "final_check_errors": []
+      }
+    }
+  ],
+  "selection": {
+    "latency_lead": "RRB CPU plus opt-in stale-tail pacer research",
+    "gpu": "Native staged image correctness passed; slower diagnostic latency; retain quality/GPU research only",
+    "quality": "RRB Q1 CPU source and submitted capture passed; independent same-device reference comparison pending"
+  },
+  "latency_qualified": false,
+  "quality_qualified": false,
+  "optical_latency_measured": false,
+  "physical_display_pixels_verified": false,
+  "production_promoted": false,
+  "notes": [
+    "Initial black-image baseline remains a failed run.",
+    "RRB CPU strict trace fails on a runtime target regression of1.259823ms at skipped attempt680, not missing attempt accounting.",
+    "Quality fixture/readback profile is excluded from latency qualification.",
+    "No traced single run is a repeated uninstrumented latency qualification.",
+    "Transport is TCP over wireless ADB reverse; native alternate-network candidates remain separate."
+  ]
+}
