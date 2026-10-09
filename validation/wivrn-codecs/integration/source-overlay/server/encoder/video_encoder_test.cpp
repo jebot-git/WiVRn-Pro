@@ -56,7 +56,7 @@ public:
         if(payload_mode=="rrb32-q1"||payload_mode=="rrb32-vr444"){
             kind=codec_test::Kind::rrb32;rrb_source_exact=payload_mode=="rrb32-q1";
             if(rrb_source_exact)quantizer=1;
-            else band_pool=std::make_unique<rowworkers::Pool>(4);
+            else if(eye<2)band_pool=std::make_unique<rowworkers::Pool>(4);
         }
         if(const char* p=std::getenv("WIVRN_CODEC_TEST_SHADERS")) shaders=p;
         if(const char* p=std::getenv("WIVRN_CODEC_TEST_EVIDENCE")){evidence=p;std::filesystem::create_directories(evidence);}
@@ -103,9 +103,9 @@ public:
         }
     }
     ~test_encoder() override { drain_sender(); for(auto& s:slots) (void)vk.device.waitForFences(*s.fence,true,1'000'000'000); av_frame_free(&frame);avcodec_free_context(&codec);av_buffer_unref(&qsv);av_buffer_unref(&va); }
-    bool test_pair_capped() const override{return kind==codec_test::Kind::rrb32;}
-    void test_pair_rejected(size_t n) override{
-        events<<"{\"type\":\"rrb_pair_rejected\",\"eye\":"<<unsigned(stream_idx)<<",\"frame\":"<<encoded_test_frame<<",\"staged_pair_bytes\":"<<n<<",\"pair_cap\":262144}\n";events.flush();
+    bool test_pair_capped() const override{return kind==codec_test::Kind::rrb32&&stream_idx<2;}
+    void test_pair_rejected(size_t n,const char*reason) override{
+        events<<"{\"type\":\"rrb_pair_rejected\",\"eye\":"<<unsigned(stream_idx)<<",\"frame\":"<<encoded_test_frame<<",\"staged_pair_bytes\":"<<n<<",\"reason\":\""<<reason<<"\",\"pair_cap\":262144}\n";events.flush();
     }
 private:
     void present_image(vk::Image image,vk::SemaphoreSubmitInfo wait,uint8_t slot,uint64_t) override {

@@ -1,18 +1,11 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "wivrn_packets.h"
+#include "test_mode.h"
 #include <bit>
 #include <cstdlib>
 #include <string_view>
 namespace wivrn::codec_test {
-inline bool enabled() {
-#ifdef WIVRN_CODEC_TESTS
-    const char* mode=std::getenv("WIVRN_CODEC_TEST");
-    return mode && (std::string_view(mode)=="vulkan-vr444"||std::string_view(mode)=="hevc-carrier"||std::string_view(mode)=="raw-rgba");
-#else
-    return false;
-#endif
-}
 // Canonical field-by-field hash: never hash padding or vector pointers.
 inline uint64_t warp_hash(const to_headset::video_stream_data_shard::view_info_t& v) {
     uint64_t h=14695981039346656037ULL;

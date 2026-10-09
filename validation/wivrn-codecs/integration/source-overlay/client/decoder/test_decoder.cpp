@@ -2,6 +2,7 @@
 #ifdef WIVRN_CODEC_TESTS
 #include "test_decoder.h"
 #include "test_gpu_decoder.h"
+#include "staged_rowblocks_image.h"
 #include "application.h"
 #include "scenes/stream.h"
 #include "codec_test/wire.h"
@@ -36,11 +37,17 @@ public:
     std::unique_ptr<codec_test::rrb::PairDecoder> rrb_decoder;
     codec_test::rrb::Publication<test_publish_eye> rrb_publication;
     bool rrb_gpu_output=false;
+    uint64_t generation=0;
     static std::string choice(const char* name,std::string fallback){
         std::ifstream file(application::get_config_path()/name);if(!file)return fallback;
         std::string value,extra;if(!(file>>value)||(file>>extra))throw std::runtime_error("invalid RRB config");return value;
     }
     test_stereo_state() {
+        static std::atomic<uint64_t> next_generation{0};
+        auto previous=next_generation.load();
+        do{if(previous==UINT64_MAX)throw std::runtime_error("test generation exhausted");}
+        while(!next_generation.compare_exchange_weak(previous,previous+1));
+        generation=previous+1;
         std::string policy="paired";
         {std::ifstream choice(application::get_config_path()/"codec-test-pairing.txt");if(choice)choice>>policy;}
         if(policy!="paired"&&policy!="independent")throw std::runtime_error("invalid test stereo pairing policy");
@@ -52,8 +59,9 @@ public:
             auto count=choice("codec-test-rrb-workers.txt","4");
             if(count!="2"&&count!="4")throw std::runtime_error("RRB32 workers must be2 or4");
             auto output=choice("codec-test-rrb-output.txt","cpu");
-            if(output!="cpu")throw std::runtime_error("RRB32 output helper not enabled in this milestone");
-            rrb_decoder=std::make_unique<codec_test::rrb::PairDecoder>(count=="4"?4:2,false);
+            if(output!="cpu"&&output!="staged-gpu")throw std::runtime_error("invalid RRB32 output mode");
+            rrb_gpu_output=output=="staged-gpu";
+            rrb_decoder=std::make_unique<codec_test::rrb::PairDecoder>(count=="4"?4:2,rrb_gpu_output);
         }
     }
 };
@@ -91,6 +99,13 @@ class test_decoder final:public decoder {
             sampled_rgb_is_linear=sampled_linear;
         }
     };
+    struct GpuHandle:blit_handle {
+        vk::ImageLayout layout=vk::ImageLayout::eShaderReadOnlyOptimal;
+        staged_rowblocks::Lease storage;
+        GpuHandle(const from_headset::feedback&fb,const to_headset::video_stream_data_shard::view_info_t&vi,vk::Extent2D size,staged_rowblocks::Lease s):
+            blit_handle{fb,vi,vk::ImageView(s.view()),vk::Image(s.image()),size,layout},storage(std::move(s)){sampled_rgb_is_linear=true;}
+    };
+    std::unique_ptr<staged_rowblocks::Pool> rrb_images;
     using Job=test_decode_job;
     std::shared_ptr<test_stereo_state> stereo;
     bool paired() const { return eye<2 && stereo && stereo->enabled; }
@@ -123,6 +138,7 @@ class test_decoder final:public decoder {
     // A failed/timed-out submission may still own cmd, its fence, and staging.
     // Only the worker changes this; teardown reads it after joining the worker.
     bool upload_inflight=false;
+    staged_rowblocks::Lease inflight_rrb_readback;
 public:
     test_decoder(vk::raii::Device& d,vk::raii::PhysicalDevice& pd,uint32_t family,const to_headset::video_stream_description& desc,uint8_t e,
                  std::weak_ptr<scenes::stream> s,shard_accumulator* a,std::shared_ptr<test_stereo_state> state):device(d),physical(pd),queue_family(family),
@@ -281,6 +297,86 @@ private:
         env.GetByteArrayRegion(output,0,length,reinterpret_cast<jbyte*>(pixels.data()));env.DeleteLocalRef(output);
         jni::details::handle_java_exception();return pixels;
     }
+    void work_rrb_gpu(const Job&job,const codec_test::rrb::Pair&pair,PairCompletion&completion,
+                      std::chrono::steady_clock::time_point began,double queue_ms){
+        auto h=job.header;
+        if(!rrb_images){
+            std::unique_ptr<AAsset,decltype(&AAsset_close)> asset(AAssetManager_open(application::asset_manager(),"codec-test/staged-rowblocks-image.spv",AASSET_MODE_BUFFER),AAsset_close);
+            if(!asset)throw std::runtime_error("missing staged RRB shader");
+            auto length=AAsset_getLength(asset.get());
+            if(length<20||length>1024*1024||length%4)throw std::runtime_error("invalid staged RRB shader bytes");
+            const void* asset_bytes=AAsset_getBuffer(asset.get());
+            if(!asset_bytes)throw std::runtime_error("unavailable staged RRB shader buffer");
+            std::vector<uint32_t> code(size_t(length)/4);std::memcpy(code.data(),asset_bytes,length);
+            rrb_images=std::make_unique<staged_rowblocks::Pool>(VkPhysicalDevice(*physical),VkDevice(*device),queue_family,
+                extent.width,extent.height,stereo->generation,eye,code);
+        }
+        std::vector<staged_rowblocks::Block> blocks;blocks.reserve(pair.index[eye].blocks.size());
+        for(const auto&b:pair.index[eye].blocks){
+            if(b.raw_offset>UINT32_MAX)throw std::runtime_error("RRB GPU offset bound");
+            blocks.push_back({b.row,b.height,b.mode,uint32_t(b.raw_offset)});
+        }
+        staged_rowblocks::Input input{pair.width,pair.height,pair.residual[eye].rgb,blocks};
+        auto prepare_start=std::chrono::steady_clock::now();
+        auto pending_image=rrb_images->prepare(h.frame,input);
+        if(!pending_image){++dropped;return;}
+        const double staging_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-prepare_start).count();
+        auto submit_start=std::chrono::steady_clock::now();
+        {auto queue=application::get_queue().lock();pending_image->submit(VkQueue(**queue));}
+        auto lease=pending_image->publish(1'000'000'000);
+        const double submit_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-submit_start).count();
+        auto id=lease.identity();
+        if(id.generation!=stereo->generation||id.frame!=h.frame||id.eye!=eye)throw std::runtime_error("RRB image lease identity");
+        // Diagnostic captures read the actual produced image in this private lease.
+        // The same application queue and owned fence order/retire the copy, and its
+        // shader-read layout is restored before any renderer can acquire a handle.
+        const bool capture=h.frame%90==0;double snapshot_ms=0;
+        if(capture){
+            auto start=std::chrono::steady_clock::now();std::shared_ptr<ImageSlot> scratch;
+            for(auto&item:images)if(item.use_count()==1){scratch=item;break;}
+            if(!scratch){++dropped;return;}
+            cmd.reset();cmd.begin({.flags=vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+            vk::ImageMemoryBarrier b{.srcAccessMask=vk::AccessFlagBits::eShaderWrite|vk::AccessFlagBits::eShaderRead,.dstAccessMask=vk::AccessFlagBits::eTransferRead,
+                .oldLayout=vk::ImageLayout::eShaderReadOnlyOptimal,.newLayout=vk::ImageLayout::eTransferSrcOptimal,
+                .srcQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,.dstQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,.image=vk::Image(lease.image()),
+                .subresourceRange={.aspectMask=vk::ImageAspectFlagBits::eColor,.levelCount=1,.layerCount=1}};
+            cmd.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,vk::PipelineStageFlagBits::eTransfer,{},{},{},b);
+            cmd.copyImageToBuffer(vk::Image(lease.image()),vk::ImageLayout::eTransferSrcOptimal,scratch->staging,vk::BufferImageCopy{
+                .imageSubresource={.aspectMask=vk::ImageAspectFlagBits::eColor,.layerCount=1},.imageExtent={extent.width,extent.height,1}});
+            b.srcAccessMask=vk::AccessFlagBits::eTransferRead;b.dstAccessMask=vk::AccessFlagBits::eShaderRead;
+            b.oldLayout=vk::ImageLayout::eTransferSrcOptimal;b.newLayout=vk::ImageLayout::eShaderReadOnlyOptimal;
+            vk::MemoryBarrier host{.srcAccessMask=vk::AccessFlagBits::eTransferWrite,.dstAccessMask=vk::AccessFlagBits::eHostRead};
+            cmd.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,vk::PipelineStageFlagBits::eAllCommands|vk::PipelineStageFlagBits::eHost,{},host,{},b);cmd.end();
+            inflight_rrb_readback=lease;
+            device.resetFences(*fence);vk::CommandBuffer command=*cmd;upload_inflight=true;
+            application::get_queue().lock()->submit(vk::SubmitInfo{.commandBufferCount=1,.pCommandBuffers=&command},*fence);
+            if(device.waitForFences(*fence,true,1'000'000'000)!=vk::Result::eSuccess){
+                // The member lease survives stack unwinding. Native teardown drains
+                // the queue before destroying it, exactly like private upload storage.
+                throw std::runtime_error("RRB diagnostic readback timeout");
+            }
+            upload_inflight=false;inflight_rrb_readback={};
+            std::ofstream(folder/(std::to_string(h.frame)+"-"+std::to_string(eye)+".rgba"),std::ios::binary).write(
+                reinterpret_cast<const char*>(scratch->staging.data<uint8_t>()),size_t(extent.width)*extent.height*4);
+            snapshot_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count();
+        }
+        events<<"{\"frame\":"<<h.frame<<",\"eye\":"<<unsigned(eye)<<",\"warp\":"<<h.warp
+              <<",\"effective_codec\":\"rrb32\",\"rrb_output\":\"staged-gpu\",\"rrb_workers\":0,\"configured_rrb_workers\":"<<stereo->rrb_decoder->workers()
+              <<",\"rrb_generation\":"<<stereo->generation<<",\"rrb_block_rows\":32,\"stereo_envelope_cap\":262144,\"decoder_backend\":\"cpu-neon\",\"decoder_kernel\":\"direct-neon\""
+              <<",\"compression_policy\":\"none\",\"compression_applied\":false,\"bytes\":"<<job.bytes.size()
+              <<",\"decoded_payload_bytes\":"<<job.bytes.size()-codec_test::header_size<<",\"decompression_ms\":0"
+              <<",\"pair_decode_ms\":"<<pair.decode_ms<<",\"pair_decode_scope\":\"stereo_once_reported_per_eye\",\"rrb_vector_backend\":\"not_used_residual_unpack\",\"cpu_decode_ms\":0"
+              <<",\"gpu_timing_valid\":false,\"decode_gpu_ms\":0,\"cpu_vector_backend\":\"not_used_residual_unpack\",\"cpu_output_mode\":\"not_used\""
+              <<",\"staging_copy_ms\":0,\"staging_copy_timing_valid\":false,\"staging_prepare_ms\":"<<staging_ms<<",\"submit_fence_wait_ms\":"<<submit_ms<<",\"queue_wait_ms\":"<<queue_ms
+              <<",\"capture_source\":\""<<(capture?"rrb_gpu_image_readback":"not_captured")<<"\",\"capture_snapshot_ms\":"<<snapshot_ms
+              <<",\"queue_dropped_so_far\":"<<dropped.load()<<",\"decode_upload_ms\":"<<std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-began).count();write_pair_stats();events<<"}\n";events.flush();
+        if(auto target=scene.lock()){
+            auto handle=std::make_shared<GpuHandle>(job.feedback,job.view,extent,std::move(lease));
+            auto ready=stereo->rrb_publication.arrive(eye,h.frame,std::make_shared<test_publish_eye>(test_publish_eye{handle,accumulator}));
+            completion.arrived=true;completion.success=true;
+            if(ready)completion.success=target->push_test_blit_pair({(*ready)[0]->accumulator,(*ready)[1]->accumulator},{(*ready)[0]->handle,(*ready)[1]->handle});
+        }
+    }
     void work(){
         jni::jni_thread::setup_thread(application::native_app()->activity->vm);
         while(true){
@@ -297,6 +393,7 @@ private:
                 auto queue_ms=std::chrono::duration<double,std::milli>(began-job.enqueued).count();
                 std::shared_ptr<const codec_test::rrb::Pair> rrb_pair;
                 if(h.kind==codec_test::Kind::rrb32)rrb_pair=stereo->rrb_decoder->acquire(h,body);
+                if(rrb_pair&&stereo->rrb_gpu_output){work_rrb_gpu(job,*rrb_pair,completion,began,queue_ms);continue;}
                 std::shared_ptr<ImageSlot> image;
                 for(auto& item:images)if(item.use_count()==1){image=item;break;}
                 if(!image){++dropped;continue;}
@@ -305,9 +402,9 @@ private:
                 double decompress_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-decompress_start).count();
                 std::vector<uint32_t> pixels;double gpu_ms=0, cpu_ms=0, staging_copy_ms=0, capture_snapshot_ms=0;
                 const bool resident=h.kind==codec_test::Kind::vr444 && backend=="resident";
-                const bool cpu_direct=backend=="cpu-neon";
+                const bool cpu_direct=h.kind==codec_test::Kind::vr444&&backend=="cpu-neon";
                 const bool cpu_mapped=cpu_direct&&cpu_output_mode=="mapped-direct";
-                if(cpu_direct && h.kind!=codec_test::Kind::vr444 && h.kind!=codec_test::Kind::rrb32)throw std::runtime_error("CPU direct backend requires VR444");
+                if(backend=="cpu-neon" && h.kind!=codec_test::Kind::vr444 && h.kind!=codec_test::Kind::rrb32)throw std::runtime_error("CPU direct backend requires VR444");
                 const bool capture=h.frame%90==0;
                 vr444::Frame decoded_frame{};
                 if(rrb_pair){
@@ -408,11 +505,17 @@ private:
                       <<",\"decoded_payload_bytes\":"<<body.size()<<",\"decompression_ms\":"<<decompress_ms<<",\"decode_gpu_ms\":"<<gpu_ms
                       <<",\"gpu_timing_valid\":"<<((h.kind==codec_test::Kind::vr444&&!cpu_direct)?"true":"false")
                       <<",\"effective_codec\":\""<<(rrb_pair?"rrb32":h.kind==codec_test::Kind::vr444?"vr444":"legacy")
+                      <<"\",\"rrb_output\":\""<<(rrb_pair?"cpu":"not_used")
                       <<"\",\"rrb_workers\":"<<(rrb_pair?stereo->rrb_decoder->workers():0)
+                      <<",\"configured_rrb_workers\":"<<(rrb_pair?stereo->rrb_decoder->workers():0)
+                      <<",\"rrb_generation\":"<<(rrb_pair?stereo->generation:0)
                       <<",\"rrb_block_rows\":"<<(rrb_pair?32:0)
                       <<",\"stereo_envelope_cap\":"<<(rrb_pair?262144:0)
                       <<",\"pair_decode_ms\":"<<(rrb_pair?rrb_pair->decode_ms:0)
-                      <<",\"cpu_decode_ms\":"<<cpu_ms<<",\"cpu_vector_backend\":\""<<(cpu_direct?direct::vector_backend():"not_used")
+                      <<",\"pair_decode_scope\":\""<<(rrb_pair?"stereo_once_reported_per_eye":"not_used")
+                      <<"\",\"rrb_vector_backend\":\""<<(rrb_pair?codec_test::rrb::worker_vector_backend():"not_used")
+                      <<"\",\"cpu_decode_ms\":"<<(rrb_pair?0:cpu_ms)<<",\"cpu_vector_backend\":\""<<(cpu_direct?direct::vector_backend():"not_used")
+                      <<"\",\"cpu_decode_implementation\":\""<<(rrb_pair?"rrb32-rowblocks-workers":cpu_direct?"vr444-direct":"legacy")
                       <<"\",\"cpu_output_mode\":\""<<(cpu_direct?cpu_output_mode:"not_used")<<"\",\"staging_memory_type\":"<<image->staging_memory_type
                       <<",\"staging_memory_flags\":"<<image->staging_memory_flags<<",\"staging_copy_ms\":"<<staging_copy_ms
                       <<",\"capture_source\":\""<<capture_source<<"\",\"capture_snapshot_ms\":"<<capture_snapshot_ms

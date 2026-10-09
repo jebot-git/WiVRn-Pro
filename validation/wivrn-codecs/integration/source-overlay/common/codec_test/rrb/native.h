@@ -8,6 +8,15 @@
 namespace wivrn::codec_test::rrb {
 constexpr size_t stereo_wire_cap=262144; // Includes both 48-byte WCT1 envelopes.
 constexpr uint32_t block_rows=32;
+inline const char* worker_vector_backend(){
+#if defined(__aarch64__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    return "aarch64-neon";
+#elif defined(__SSE2__)
+    return rowfilter::detail::ssse3()?"x86-ssse3":"x86-sse2-scalar-expand";
+#else
+    return "scalar";
+#endif
+}
 inline void require(bool ok){if(!ok)throw std::runtime_error("invalid native RRB32 pair");}
 inline void validate_pair(const std::array<Header,2>&h,const std::array<std::span<const uint8_t>,2>&body){
     for(unsigned e=0;e<2;++e){validate(h[e]);require(h[e].eye==e&&h[e].kind==Kind::rrb32&&h[e].flags==0);}
