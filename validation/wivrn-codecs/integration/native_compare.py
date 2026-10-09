@@ -352,6 +352,13 @@ def run(args):
     publication_helpers = publication_trace_helpers(args, source)
     rrb_helpers = rrb_source_helpers(args, source)
     quality_helpers = quality_source_helpers(args, source)
+    quality_application_module = quality_cached = None
+    if getattr(args, 'quality_application_plan', None) is not None or getattr(args, 'quality_application_plan_sha256', None) is not None:
+        quality_application_path = Path(__file__).with_name('quality_application.py')
+        spec = importlib.util.spec_from_file_location('codec_quality_application', quality_application_path)
+        quality_application_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(quality_application_module)
+        quality_cached = quality_application_module.preflight(args)
     server = source/'build/codec-server/server/wivrn-pro-server'
     manifest = source/'build/codec-server/openxr_wivrn-dev.json'
     apk = source/'build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk'
@@ -404,6 +411,10 @@ def run(args):
         runtime = Path(temporary)
         os.chmod(runtime, 0o700)
         config, client_config, env = build_configuration(args, runtime, source, output)
+        quality_application_record = None
+        if quality_cached is not None:
+            quality_application_record, config['application'] = quality_application_module.configure(quality_cached, runtime, output)
+            save(output/'quality-application-execution.json', quality_application_record)
         save(output/'server-config.json', config)
         save(output/'client-config.json', client_config)
         helpers = ('server/encoder/encoder_settings.cpp', 'server/encoder/ffmpeg/video_encoder_va.cpp',
@@ -441,9 +452,12 @@ def run(args):
             'quality_capture': getattr(args, 'quality_capture', False),
             'quality_max_pairs': getattr(args, 'quality_max_pairs', 6),
             'quality_frame_stride': getattr(args, 'quality_frame_stride', 90),
-            'scene_reference_space': 'Local',
+            'scene_reference_space': 'View' if quality_application_record is not None else 'Local',
+            'quality_application': quality_application_record is not None,
+            'quality_application_plan_sha256': getattr(args, 'quality_application_plan_sha256', None),
+            'quality_application_adapter_sha256': sha(quality_application_path) if quality_application_record is not None else None,
             'application_source_sha256': sha(source/'client/application.cpp'),
-            'host_application_sha256': sha(Path('/usr/bin/hello_xr')),
+            'host_application_sha256': quality_application_record['executable_sha256'] if quality_application_record is not None else sha(Path('/usr/bin/hello_xr')),
             'application_header_sha256': sha(source/'client/application.h'),
             'direct_decoder_source_sha256': sha(source/'common/codec_test/vr444/direct.cpp'),
             'client_decoder_source_sha256': sha(source/'client/decoder/test_decoder.cpp'),
@@ -560,6 +574,15 @@ def run(args):
                 with (output/'production-package-after.txt').open('w') as f:
                     ac('shell', 'dumpsys', 'package', 'org.meumeu.wivrn', stdout=f)
             cleanup('capture final logs', logs)
+            if quality_application_record is not None:
+                def verify_quality_application():
+                    actual = sha(Path(quality_application_record['snapshot_path']))
+                    quality_application_record['snapshot_sha256_after'] = actual
+                    quality_application_record['snapshot_unchanged'] = actual == quality_application_record['executable_sha256']
+                    save(output/'quality-application-execution.json', quality_application_record)
+                    if not quality_application_record['snapshot_unchanged']:
+                        raise ValueError('private quality application changed during execution')
+                cleanup('verify private quality application', verify_quality_application)
             for f in handles:
                 f.close()
             state['restored'] = not state['cleanup_errors']
@@ -649,6 +672,19 @@ def run(args):
     if not state.get('app_pid_observed'):
         result['status'] = 'fail'
         result['app_pid_error'] = 'dedicated application PID was not observed'
+    if quality_cached is not None:
+        try:
+            audit_path = Path(__file__).resolve().parents[3]/'prototypes/vr444/experiments/quality_stimuli/audit.py'
+            spec = importlib.util.spec_from_file_location('codec_quality_source_audit', audit_path)
+            audit_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(audit_module)
+            result['quality_application_audit'] = audit_module.application(output/'app-source')
+            result['quality_application_auditor_sha256'] = sha(audit_path)
+            if result['quality_application_audit'].get('status') != 'pass':
+                result['status'] = 'fail'
+        except Exception as exc:
+            result['quality_application_audit'] = {'status': 'fail', 'errors': [str(exc)]}
+            result['status'] = 'fail'
     result['hardware_selection'] = 'requires run-local encoder/decoder log review; excerpts are not proof alone'
     result.update({'mode': args.mode, 'cleanup_restored': state['restored'], 'run_error': failure,
                    'quality': {'status': 'not_measured'}, 'full_qualification': False})
@@ -796,6 +832,9 @@ def main():
     parser.add_argument('--quality-capture', action='store_true', help='Bounded submitted swapchain readback; diagnostic, not latency eligible')
     parser.add_argument('--quality-max-pairs', type=int, default=6)
     parser.add_argument('--quality-frame-stride', type=int, default=90)
+    parser.add_argument('--quality-application-plan', type=Path,
+                        help='Explicit independently generated application-source fixture plan; quality profile only')
+    parser.add_argument('--quality-application-plan-sha256')
     args = parser.parse_args()
     result = run(args)
     print(json.dumps(result, indent=2))

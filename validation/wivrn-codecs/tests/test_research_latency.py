@@ -24,3 +24,4 @@ class ResearchLatency(unittest.TestCase):
         self.assertEqual(module.evaluate(rows(12)[:200], provenance)['status'], 'fail')
         self.assertEqual(module.evaluate(rows(12), provenance | dict(transport='UDP'))['status'], 'fail')
         self.assertEqual(module.evaluate(rows(12), provenance | dict(mode='native-hevc'))['status'], 'fail')
+        self.assertEqual(module.evaluate(rows(12), provenance | dict(quality_application=True))['status'], 'fail')

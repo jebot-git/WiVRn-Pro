@@ -17,6 +17,8 @@ def evaluate(rows, provenance):
         provenance = {}
     if provenance.get('mode') not in ('custom-vr444', 'custom-rrb32'):
         errors.append('selected custom candidate provenance required')
+    if provenance.get('quality_application', False) is not False:
+        errors.append('application quality fixtures use a separate profile and cannot qualify the latency target')
     p95 = result['observed']['stereo_receive_to_submit_ms_p95']
     if p95 is None or p95 >= target['strict_p95_upper_bound_ms']:
         errors.append('complete stereo receive-to-submit p95 must be strictly below 15 ms')

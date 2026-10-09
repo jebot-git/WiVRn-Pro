@@ -55,6 +55,19 @@ def main():
                  'build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk', 'build/codec-server/rrb-reference')
     for name in artifacts:
         hashes[name] = sha(source/name)
+    apk_metadata = source/'build/android/outputs/apk/debug/output-metadata.json'
+    apk_output = json.loads(apk_metadata.read_text())
+    if (apk_output.get('applicationId') != 'org.meumeu.wivrn.codectest'
+            or apk_output.get('artifactType', {}).get('type') != 'APK'
+            or len(apk_output.get('elements', [])) != 1):
+        raise ValueError('dedicated single APK output metadata required')
+    apk_name = apk_output['elements'][0]['outputFile']
+    if type(apk_name) is not str or not re.fullmatch(r'[A-Za-z0-9_.-]+\.apk', apk_name):
+        raise ValueError('APK metadata output filename')
+    gradle_apk = apk_metadata.parent/apk_name
+    if sha(gradle_apk) != hashes[artifacts[2]]:
+        raise ValueError('canonical acquisition APK differs from Gradle output')
+    for path in (apk_metadata, gradle_apk): hashes[str(path.relative_to(source))] = sha(path)
     runtime = json.loads((source/'build/codec-server/openxr_wivrn-dev.json').read_text())['runtime']
     for key in ('library_path', 'MND_libmonado_path'):
         path = Path(runtime[key])
@@ -102,6 +115,8 @@ def main():
         renderer_shaders=shaders, build_results=results, production_package='org.meumeu.wivrn',
         external_artifacts_sha256={'/usr/bin/hello_xr': sha(Path('/usr/bin/hello_xr'))},
         dedicated_package='org.meumeu.wivrn.codectest', installed=False,
+        apk_output=dict(gradle_path=str(gradle_apk.relative_to(source)), canonical_path=artifacts[2],
+                        sha256=sha(gradle_apk), metadata_path=str(apk_metadata.relative_to(source))),
         scope='Built artifact and source identity; requires separate installed APK verification and live evidence.')
     with args.out.open('x') as stream:
         json.dump(receipt, stream, indent=2); stream.write('\n')
