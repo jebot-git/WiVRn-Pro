@@ -41,6 +41,18 @@ Candidate ordering from the available evidence
    negative results remain available. Encoding from an already-GPU-resident
    source would be a different input contract and is not measured here.
 
+One useful next control is fixed, reusable private cached RGB staging decoded
+through the same Pair preflight, followed by the same mapped copy. The current
+direct-output comparison removes workspace clear/resize zero-fill as well as the
+copy; that additional arm would separate those effects. It is not implemented or
+measured in this six-hour batch. The transport worker's separate reuse results
+cannot substitute for a matched GPU comparison.
+
+Use the exact codec/header hashes in the GPU receipt when reproducing these
+results. Later server helpers preserve wire/API compatibility, but replacing
+shared headers during integration changes the qualified source graph; rerun the
+declared checks after resolving those branch differences.
+
 Native adapter work that remains concrete
 ----------------------------------------
 The private Engine is an executable reference, not a drop-in live decoder.
