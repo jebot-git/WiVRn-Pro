@@ -1,0 +1,37 @@
+$ python3 prototypes/vr444/experiments/datagram_xor/test_transport.py
+test_accounting (__main__.Tests.test_accounting) ... ok
+test_all_small_permutations (__main__.Tests.test_all_small_permutations) ... ok
+test_both_manifests_lost (__main__.Tests.test_both_manifests_lost) ... ok
+test_candidate_and_orphan_caps (__main__.Tests.test_candidate_and_orphan_caps) ... ok
+test_clock_rechecked_after_recovery_and_crc (__main__.Tests.test_clock_rechecked_after_recovery_and_crc) ... ok
+test_crc_bad_packet_can_be_recovered (__main__.Tests.test_crc_bad_packet_can_be_recovered) ... ok
+test_deadline_stereo_atomic_and_previous_retained (__main__.Tests.test_deadline_stereo_atomic_and_previous_retained) ... ok
+test_each_single_packet_loss (__main__.Tests.test_each_single_packet_loss) ... ok
+test_every_truncation_and_seeded_malformed_bounds (__main__.Tests.test_every_truncation_and_seeded_malformed_bounds) ... ok
+test_exact_pair_and_packet_budget (__main__.Tests.test_exact_pair_and_packet_budget) ... ok
+test_forged_parity_cannot_bypass_final_eye_crc (__main__.Tests.test_forged_parity_cannot_bypass_final_eye_crc) ... ok
+test_maximum_pair_and_recovery (__main__.Tests.test_maximum_pair_and_recovery) ... ok
+test_maximum_pair_first_manifest_loss (__main__.Tests.test_maximum_pair_first_manifest_loss) ... ok
+test_missing_source_and_its_parity_never_publish (__main__.Tests.test_missing_source_and_its_parity_never_publish) ... ok
+test_no_fec_missing_source (__main__.Tests.test_no_fec_missing_source) ... ok
+test_nonzero_recovered_tail_rejected (__main__.Tests.test_nonzero_recovered_tail_rejected) ... ok
+test_one_loss_per_stripe_recovers (__main__.Tests.test_one_loss_per_stripe_recovers) ... ok
+test_orphan_geometry_rejected_after_manifest (__main__.Tests.test_orphan_geometry_rejected_after_manifest) ... ok
+test_semantic_header_and_manifest_rejection (__main__.Tests.test_semantic_header_and_manifest_rejection) ... ok
+test_shuffle_duplicate_and_conflict_preserves_data (__main__.Tests.test_shuffle_duplicate_and_conflict_preserves_data) ... ok
+test_stale_epochs_uuid_and_config_reset (__main__.Tests.test_stale_epochs_uuid_and_config_reset) ... ok
+test_superseded_newer_complete_and_late_old (__main__.Tests.test_superseded_newer_complete_and_late_old) ... ok
+test_two_losses_same_stripe_never_publish (__main__.Tests.test_two_losses_same_stripe_never_publish) ... ok
+test_unissued_and_modified_ticket (__main__.Tests.test_unissued_and_modified_ticket) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.641s
+
+OK
+
+$ python3 prototypes/vr444/experiments/xor_interleave/test_transport.py
+...........
+----------------------------------------------------------------------
+Ran 11 tests in 0.158s
+
+OK

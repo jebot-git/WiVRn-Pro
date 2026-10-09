@@ -99,8 +99,14 @@ class Candidate:
 
 
 class Receiver(base.Receiver):
+    wire_magic = b"VXF1"
+
     def __init__(self, session, session_epoch=1, config_epoch=1, clock=time.monotonic_ns):
         super().__init__(session, session_epoch, config_epoch, clock)
+
+    @staticmethod
+    def group_indices(group, width, source_count):
+        return range(group * width, min((group + 1) * width, source_count))
 
     def _manifest(self, body, now, frame, warp):
         if len(body) != MANIFEST_BODY.size:
@@ -132,7 +138,7 @@ class Receiver(base.Receiver):
         if not width:
             return
         for group, (_, parity) in c.parity.items():
-            indices = range(group * width, min((group + 1) * width, n))
+            indices = self.group_indices(group, width, n)
             missing = [i for i in indices if i not in c.data]
             if len(missing) != 1:
                 continue
@@ -159,7 +165,7 @@ class Receiver(base.Receiver):
             return None
         magic, version, kind, flags, se, ce, frame, warp, reserved, index, count, size, checksum = HEADER.unpack_from(incoming)
         body = incoming[HEADER.size:]
-        if magic != b"VXF1" or version != 1 or kind not in (MANIFEST, DATA, PARITY) or flags or reserved or size != len(body) or not frame or not warp:
+        if magic != self.wire_magic or version != 1 or kind not in (MANIFEST, DATA, PARITY) or flags or reserved or size != len(body) or not frame or not warp:
             self.event("header", now, frame)
             return None
         if crc(incoming[:40] + body) != checksum:
