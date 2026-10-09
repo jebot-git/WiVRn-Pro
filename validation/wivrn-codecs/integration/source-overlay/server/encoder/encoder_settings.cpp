@@ -19,6 +19,9 @@
  */
 #include "encoder_settings.h"
 #include "codec_test/metadata.h"
+#ifdef WIVRN_CODEC_TESTS
+#include "codec_test/quality_geometry.h"
+#endif
 #include "rate_control.h"
 
 #include "driver/configuration.h"
@@ -228,12 +231,22 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 	const auto settings = *session.get_settings();
 
 #ifdef WIVRN_CODEC_TESTS
+    auto test_env=[](const char* name) -> std::string_view {
+        const auto value=std::getenv(name);return value ? std::string_view(value) : std::string_view{};
+    };
+    const auto quality_value=std::getenv("WIVRN_CODEC_TEST_QUALITY_GEOMETRY");
+    const auto quality_token=quality_value ? std::optional<std::string_view>(quality_value) : std::nullopt;
+    if (codec_test::quality_geometry::parse(quality_token).quality && !codec_test::enabled())
+        throw std::runtime_error("quality geometry requires codec-test activation");
     if(codec_test::enabled()) {
         if(!std::ranges::contains(info.supported_codecs, raw)) throw std::runtime_error("headset is not a codec-test build");
-        if(info.stream_eye_width != 576 || info.stream_eye_height != 640) throw std::runtime_error("codec test requires 576x640 eye geometry");
+        const auto geometry=codec_test::quality_geometry::server(quality_token,
+            test_env("WIVRN_CODEC_TEST"),test_env("WIVRN_CODEC_TEST_Q"),test_env("WIVRN_CODEC_TEST_COMPRESSION"),
+            test_env("WIVRN_CODEC_TEST_QUALITY_CAPTURE"),test_env("WIVRN_CODEC_SOURCE_TRACE"),
+            info.stream_eye_width,info.stream_eye_height);
         uint64_t bitrate=100000000;
         if(const char* p=std::getenv("WIVRN_CODEC_TEST_BITRATE")) bitrate=std::stoull(p);
-        for(unsigned i=0;i<3;++i) res[i] = encoder_settings{.width=576,.height=uint16_t(i==2?320:640),.codec=raw,
+        for(unsigned i=0;i<3;++i) res[i] = encoder_settings{.width=geometry.width,.height=uint16_t(i==2?geometry.height/2:geometry.height),.codec=raw,
             .fps=session.default_fps(),.encoder_name="codec-test",.bitrate=bitrate/2,.bitrate_multiplier=.5,
             .options={},.bit_depth=8,.device=config.encoders[i].device};
         return res;
