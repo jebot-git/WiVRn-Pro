@@ -1,6 +1,15 @@
 Explicit-peer TCP / UDP complete-pair diagnostic
 ==============================================
 
+Actual Quest campaign completed2026-10-09: all960 main pairs plus10 smoke pairs
+passed exact full-stereo byte/ACK checks over hostEthernet to Questwlan0. TCP
+remains the baseline; UDP had no compelling repeated RTT-tail advantage. See
+RESULTS.txt and results/quest-wireless-audit.json. The measured native source is
+9ec0b0d1d7eaf3cdb54709acfa1d2bcec9d163fb; the implementation-only qualification
+and pre-run instructions below describe that historical stage. No measured native
+source or executable was changed after the campaign. This README follow-up is
+explicitly distinguished from its original qualification hash.
+
 This NEW isolated harness is a physical-path experiment only when its separately
 launched endpoints actually use that path. Source compilation, grammar tests,
 ADB reachability and loopback runs do not establish wireless behavior. Root task
@@ -87,8 +96,8 @@ Build and pure offline checks
 Builds host and Android API29 ARM64. Only the separate ASan+UBSan grammar/assembly
 executable is RUN: it opens no sockets. The probe itself is not invoked here.
 The compiled Android test is likewise pure grammar/assembly and may be run before
-any endpoint test by the root coordinator. Full syscall interoperability remains
-untested until the authorized endpoint run.
+any endpoint test by the root coordinator. At that initial qualification, syscall interoperability was untested. The later
+actual campaign now supplies the finite TCP/UDP evidence summarized above.
 
 Root-owned bounded live recipe (substitute observed local/peer addresses)
 ------------------------------------------------------------------------
@@ -125,3 +134,14 @@ source cases, canonical bytes and every31-sample quantile before summarizing.
 The three predetermined capture pairs are a directional target observation.
 At90Hz, process-CPU-ms *9 is nominal percent of one core; it is not measured
 utilization, thermal headroom, affinity or sustainableVR frame rate.
+
+Read-only campaign replay
+-------------------------
+  python3 prototypes/vr444/experiments/wireless_pair_probe/audit_campaign.py \
+    SAVED_PLAN.json SAVED_WIRELESS_DIRECTORY SAVED_COLLECTOR.py REPOSITORY \
+    /tmp/wireless-replay.json
+The saved directory may be relocated: logs are joined by captured names/hashes
+while the executed argument lists retain their original captured paths. Git
+commit9ec and the byte-bound host/Android binaries at recorded local paths are
+explicit replay prerequisites; the auditor does not rebuild or open sockets.
+It checks all67 command entries,145 captured files and970 exact pairs.
