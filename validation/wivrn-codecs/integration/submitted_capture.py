@@ -207,7 +207,8 @@ def validate_meta(meta,capture_id,eye):
     return mask
 
 
-def audit(run_root,build_receipt,build_receipt_sha256,build_root=None,run_hashes_sha256=None):
+def audit(run_root,build_receipt,build_receipt_sha256,build_root=None,run_hashes_sha256=None,*,_context=None):
+    require(_context is None or (type(_context) is dict and not _context),"fresh internal bound-input context required")
     manifest_path=Path(run_root)/'hashes.json'
     if run_hashes_sha256 is None:
         require(manifest_path.stat().st_size<=16*1024*1024,'oversized run hash manifest')
@@ -283,6 +284,8 @@ def audit(run_root,build_receipt,build_receipt_sha256,build_root=None,run_hashes
             'submitted_pixel_equality_verified':False,'displayed_pixels_verified':False,'quality_pass':False,
             'latency_eligible':False,'full_goal_qualified':False,'promotion_eligible':False}
     products['bound-build-receipt.json']=receipt_data
+    if _context is not None:
+        _context.update(run=run,build=build,receipt=receipt,provenance=provenance)
     return report,products
 
 
