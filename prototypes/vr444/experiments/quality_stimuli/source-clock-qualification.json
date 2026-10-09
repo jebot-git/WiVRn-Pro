@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Source-clock fixture build and CPU-only admission/audit checks; no OpenXR or GPU execution",
+  "app_log_schema": 3,
+  "extension_required": "XR_KHR_convert_timespec_time",
+  "clock": "CLOCK_MONOTONIC",
+  "unavailable_extension_policy": "xrCreateInstance failure; no inferred-clock fallback",
+  "fixture_plan_schema": 2,
+  "historical_app_schema_1_2_unchanged": true,
+  "build_receipt": {
+    "schema": 1,
+    "source_directory": "/home/blux/spatial-bridge/.worktrees/sub15-native-source-mapping/prototypes/vr444/experiments/quality_stimuli",
+    "source_sha256": {
+      "app.cpp": "513f1c9cd80ca92b6d7f7d640cb2583a1704019ae520d129f5bd7e67545ef666",
+      "pattern.hpp": "19b5bf7a118e5231ff28bb28b2c3796524858d70bcf6a644cbaf27fbfb3c6d58",
+      "test_transfer.cpp": "c0e13448c1945870a7e8ec29ffbe539961f4020d5f33d6ab91ab76290a10db45",
+      "test_space.cpp": "44f618d8c756b70cb9cb9c8cd94c016773a070e4580f4e2aab0e12c54026e201",
+      "build.py": "608c6aad82ce4ec10365ec3cbef3e593c5b20f6858076fbf07e5982e7b198dd5",
+      "build.sh": "11c2486183b4aabcad0d2cefd7a5bf91f009001f529f039e27eed2289eed35ab"
+    },
+    "compiler": "/usr/bin/c++",
+    "compiler_sha256": "579d25c2d1e45abeed0c63a517b5c52f6d09ea811a787bf7a7c677a7fd0726f6",
+    "compiler_version": "c++ (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "pkg_config_versions": [
+      "1.1",
+      "1.4.341",
+      "3.5.9"
+    ],
+    "commands": [
+      {
+        "argv": [
+          "/usr/bin/c++",
+          "-std=c++20",
+          "-O2",
+          "-g",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-Wno-missing-field-initializers",
+          "/home/blux/spatial-bridge/.worktrees/sub15-native-source-mapping/prototypes/vr444/experiments/quality_stimuli/app.cpp",
+          "-o",
+          "/tmp/sub15-quality-source-map-clock/quality-stimuli",
+          "-lopenxr_loader",
+          "-lvulkan",
+          "-lssl",
+          "-lcrypto"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 5.377085882995743
+      },
+      {
+        "argv": [
+          "/usr/bin/c++",
+          "-std=c++20",
+          "-O2",
+          "-g",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-Wno-missing-field-initializers",
+          "/home/blux/spatial-bridge/.worktrees/sub15-native-source-mapping/prototypes/vr444/experiments/quality_stimuli/test_transfer.cpp",
+          "-o",
+          "/tmp/sub15-quality-source-map-clock/test-transfer",
+          "-lopenxr_loader",
+          "-lvulkan",
+          "-lssl",
+          "-lcrypto"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 5.5769854839891195
+      },
+      {
+        "argv": [
+          "/usr/bin/c++",
+          "-std=c++20",
+          "-O2",
+          "-g",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-Wno-missing-field-initializers",
+          "/home/blux/spatial-bridge/.worktrees/sub15-native-source-mapping/prototypes/vr444/experiments/quality_stimuli/test_space.cpp",
+          "-o",
+          "/tmp/sub15-quality-source-map-clock/test-space",
+          "-lopenxr_loader",
+          "-lvulkan",
+          "-lssl",
+          "-lcrypto"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 5.627473936998285
+      }
+    ],
+    "sanitizers": false,
+    "binary_sha256": {
+      "quality-stimuli": "7a13be72e9f466462c7982d9cead3cb09312001bc89a0e4ee16f306fdca0a5aa",
+      "test-transfer": "2e063c33b7e58d89a63fcd33451ac5a517e04dbbbd181ba89fde38382ff10b1b",
+      "test-space": "dc81ceed1682fd733c16217f82714f40cc93f9d9fdae730223415a9492754556"
+    },
+    "log_sha256": {
+      "quality-stimuli.build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "quality-stimuli.build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test-space.build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test-space.build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test-transfer.build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test-transfer.build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "openxr_exercised": false,
+    "gpu_exercised": false,
+    "headset_exercised": false,
+    "scope": "Local exact source/command/binary binding; no compiler/runtime reproducibility claim"
+  },
+  "build_receipt_sha256": "003ac6a6101a5db1b8694ffcb869b7b112461fe8faf28bf0ba0f1603f3ee4c96",
+  "tests": {
+    "python_unittest_groups": 11,
+    "cpp_valid": 5,
+    "cpp_invalid_rejected": 12
+  },
+  "commands": [
+    {
+      "argv": [
+        "env",
+        "QUALITY_STIMULI_BINARY=/tmp/sub15-quality-source-map-clock/quality-stimuli",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/home/blux/spatial-bridge/.worktrees/sub15-native-source-mapping/prototypes/vr444/experiments/quality_stimuli",
+        "-p",
+        "test_audit.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "/tmp/sub15-quality-source-map-clock/test-space"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "artifacts": {
+    "tests.stdout": {
+      "path": "/tmp/sub15-quality-source-map-clock/tests.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tests.stderr": {
+      "path": "/tmp/sub15-quality-source-map-clock/tests.stderr",
+      "sha256": "455ef5bb649ce902685214972588769fa451921623f7a28911a5d86bb694a246"
+    },
+    "test-space.stdout": {
+      "path": "/tmp/sub15-quality-source-map-clock/test-space.stdout",
+      "sha256": "a4b6e0ff929a561e80b9205cac35a071bed63188b624a9bfbfe2bdf01b81ce3b"
+    },
+    "test-space.stderr": {
+      "path": "/tmp/sub15-quality-source-map-clock/test-space.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "source_sha256": {
+    "app.cpp": "513f1c9cd80ca92b6d7f7d640cb2583a1704019ae520d129f5bd7e67545ef666",
+    "pattern.hpp": "19b5bf7a118e5231ff28bb28b2c3796524858d70bcf6a644cbaf27fbfb3c6d58",
+    "audit.py": "d8fcd4920529c78c5d37fe0ddf2db34e3a1a38225fda4575db0ef1c853d8b78e",
+    "test_audit.py": "c5f9c2eecd9f3cd1696488c1fcbdd179aac51a87421048cb966d34d16eab4dc0",
+    "test_space.cpp": "44f618d8c756b70cb9cb9c8cd94c016773a070e4580f4e2aab0e12c54026e201"
+  },
+  "unchanged_gpu_transfer_function_sha256": "a817078d00c7ab0402046af2dad9603e04204d980d81421336d94f5f8d90dc4e",
+  "quality_qualified": false,
+  "latency_qualified": false
+}

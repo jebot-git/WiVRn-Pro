@@ -135,13 +135,19 @@ def application(directory):
     require(4 <= len(rows) <= 22000, 'app record count')
     require(all(type(row) is dict for row in rows), 'record object required')
     head, tail = rows[0], rows[-1]
-    require(head.get('type') == 'header' and type(head.get('schema')) is int and head['schema'] in (1,2) and tail.get('type') == 'footer', 'header/footer order')
+    require(head.get('type') == 'header' and type(head.get('schema')) is int and head['schema'] in (1,2,3) and tail.get('type') == 'footer', 'header/footer order')
     require(head.get('source_generation') == 'direct_encoded_srgb_byte_upload' and head.get('source_stage') == 'application_swapchain_before_compositor', 'source stage')
     require(head.get('pattern') in PATTERNS and head.get('space') in ('VIEW','LOCAL'), 'pattern/reference space')
     if head['schema']==1:
         require(head['space']=='VIEW' and 'source_reference_space' not in head, 'legacy VIEW source cannot be relabeled')
     else:
         require(head.get('source_reference_space')==head['space'] and head.get('locate_and_layer_use_same_space') is True,'source space contract')
+    if head['schema']==3:
+        require(head.get('time_conversion_extension')=='XR_KHR_convert_timespec_time' and
+                head.get('time_conversion_function')=='xrConvertTimeToTimespecTimeKHR' and
+                head.get('converted_clock')=='CLOCK_MONOTONIC','explicit runtime clock conversion contract')
+    else:
+        require(not any(k in head for k in ('time_conversion_extension','time_conversion_function','converted_clock')),'legacy header cannot assert converted clock')
     require(head.get('quality_only') is True and head.get('latency_comparable') is False and head.get('opaque') is True and head.get('top_left_origin') is True, 'profile scope')
     require(head.get('format') == 43 and head.get('format_name') == 'R8G8B8A8_SRGB', 'actual swapchain format')
     limit = integer(head.get('frame_limit'), 1, 10800); integer(head.get('seconds_limit'), 1, 120)
@@ -170,11 +176,20 @@ def application(directory):
             require(data == snapshots[f'eye{eye}.source.rgba'], 'actual app readback differs from source')
             capture_records[key] = row; captures_seen.add(key)
         elif kind == 'frame':
-            if head['schema']==2:require(row.get('source_reference_space')==head['source_reference_space'],'per-frame reference space mismatch')
+            if head['schema']>=2:require(row.get('source_reference_space')==head['source_reference_space'],'per-frame reference space mismatch')
             require(set(eye_records) == {0, 1}, 'frame before stereo setup')
             require(type(row.get('sequence')) is int and row['sequence'] == len(frames)+1, 'frame sequence')
             integer(row.get('predicted_display_time'), 1, 2**63-1); integer(row.get('predicted_display_period'), 1, 10**10)
             require(not frames or row['predicted_display_time'] > frames[-1]['predicted_display_time'], 'nonincreasing app target')
+            if head['schema']==3:
+                ts=row.get('predicted_display_time_timespec')
+                require(type(ts) is dict and set(ts)=={'tv_sec','tv_nsec'},'converted timespec fields')
+                sec=integer(ts['tv_sec'],0,(2**63-1)//10**9);nsec=integer(ts['tv_nsec'],0,10**9-1)
+                target=integer(row.get('predicted_display_time_monotonic_ns'),1,2**63-1)
+                require(target==sec*10**9+nsec,'converted timespec/ns mismatch')
+                require(not frames or target>frames[-1]['predicted_display_time_monotonic_ns'],'nonincreasing converted app target')
+            else:
+                require(not any(k in row for k in ('predicted_display_time_timespec','predicted_display_time_monotonic_ns')),'legacy frame cannot assert converted clock')
             decision = gate_decision(row)
             if row['sequence'] <= 32:
                 require(row['sequence'] in gates and all(row[k] == gates[row['sequence']][k]
@@ -212,6 +227,7 @@ def application(directory):
     require(set(gates) == set(range(1, min(len(frames), 32)+1)), 'early frame gate population')
     return {'schema': 1, 'status': 'pass', 'profile': 'application_quality_source',
             'source_reference_space': head['space'], 'source_application_space': head['space'],
+            'time_conversion': 'XR_KHR_convert_timespec_time/CLOCK_MONOTONIC' if head['schema']==3 else 'not_captured',
             'pattern': head['pattern'], 'frames': len(frames), 'submitted_stereo_frames': submitted,
             'captured_swapchain_images': len(capture_records), 'session_ended': tail['session_ended'],
             'source_stage': head['source_stage'], 'source_generation': head['source_generation'],

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Bounded diagnostic OpenXR application. No codec/client-derived reference.
 #define XR_USE_GRAPHICS_API_VULKAN
+#define XR_USE_TIMESPEC
+#include <time.h>
 #include <vulkan/vulkan.h>
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
@@ -94,6 +96,14 @@ static json fov(const XrFovf& f) {
     return {{"radians",{f.angleLeft,f.angleRight,f.angleUp,f.angleDown}},
             {"bits",{std::bit_cast<uint32_t>(f.angleLeft),std::bit_cast<uint32_t>(f.angleRight),std::bit_cast<uint32_t>(f.angleUp),std::bit_cast<uint32_t>(f.angleDown)}}};
 }
+// XR_KHR_convert_timespec_time returns CLOCK_MONOTONIC. Keep both native
+// components and checked nanoseconds; never infer a clock offset from samples.
+static int64_t monotonic_ns(const timespec& value) {
+    require(value.tv_sec>=0 && value.tv_nsec>=0 && value.tv_nsec<1000000000L,"invalid converted timespec");
+    require(uint64_t(value.tv_sec)<=uint64_t(INT64_MAX-value.tv_nsec)/1000000000ULL,"converted timespec overflows int64");
+    const auto ns=int64_t(value.tv_sec)*1000000000LL+value.tv_nsec;
+    require(ns>0,"converted target must be positive");return ns;
+}
 struct Eye {
     XrSwapchain swap=XR_NULL_HANDLE; uint32_t width=0,height=0;
     std::vector<XrSwapchainImageVulkanKHR> images;
@@ -112,6 +122,7 @@ struct App {
     std::array<Eye,2> eyes{}; bool running=false,terminal=false;
     uint32_t frames=0,submitted=0; XrSessionState state=XR_SESSION_STATE_UNKNOWN;
     Clock::time_point deadline;
+    PFN_xrConvertTimeToTimespecTimeKHR convert_time=nullptr;
     explicit App(Options options):opt(std::move(options)) {
         require(fs::create_directory(opt.output),"cannot create output directory");
         log.open(opt.output/"app.jsonl"); log.exceptions(std::ios::badbit|std::ios::failbit);
@@ -140,8 +151,10 @@ struct App {
         XrInstanceCreateInfo ic{XR_TYPE_INSTANCE_CREATE_INFO};
         std::strcpy(ic.applicationInfo.applicationName,"sub15-quality-stimuli");
         ic.applicationInfo.applicationVersion=1; ic.applicationInfo.apiVersion=XR_MAKE_VERSION(1,0,0);
-        const char* extension=XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME;
-        ic.enabledExtensionCount=1;ic.enabledExtensionNames=&extension; XC(xrCreateInstance(&ic,&xr));
+        const std::array<const char*,2> extensions={XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME,XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME};
+        // xrCreateInstance must fail if either required extension is unavailable.
+        ic.enabledExtensionCount=extensions.size();ic.enabledExtensionNames=extensions.data(); XC(xrCreateInstance(&ic,&xr));
+        convert_time=fn<PFN_xrConvertTimeToTimespecTimeKHR>("xrConvertTimeToTimespecTimeKHR");
         XrSystemGetInfo si{XR_TYPE_SYSTEM_GET_INFO};si.formFactor=XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;XC(xrGetSystem(xr,&si,&system));
         XrGraphicsRequirementsVulkan2KHR req{XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR};
         XC(fn<PFN_xrGetVulkanGraphicsRequirements2KHR>("xrGetVulkanGraphicsRequirements2KHR")(xr,system,&req));
@@ -179,7 +192,7 @@ struct App {
         VkCommandBufferAllocateInfo ca{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};ca.commandPool=pool;ca.level=VK_COMMAND_BUFFER_LEVEL_PRIMARY;ca.commandBufferCount=1;VC(vkAllocateCommandBuffers(device,&ca,&command));
         VkFenceCreateInfo fc{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};VC(vkCreateFence(device,&fc,nullptr,&fence));
         VkPhysicalDeviceProperties props{};vkGetPhysicalDeviceProperties(physical,&props);
-        record({{"type","header"},{"schema",2},{"pattern",opt.pattern},{"source_generation","direct_encoded_srgb_byte_upload"},{"source_stage","application_swapchain_before_compositor"},{"quality_only",true},{"latency_comparable",false},{"width_requested",opt.width},{"height_requested",opt.height},{"frame_limit",opt.frames},{"seconds_limit",opt.seconds},{"space",opt.source_reference_space},{"source_reference_space",opt.source_reference_space},{"locate_and_layer_use_same_space",true},{"format",VK_FORMAT_R8G8B8A8_SRGB},{"format_name","R8G8B8A8_SRGB"},{"opaque",true},{"top_left_origin",true},{"device",props.deviceName},{"vendor_id",props.vendorID},{"device_id",props.deviceID},{"queue_family",family},{"graphics_api_version",ai.apiVersion}});
+        record({{"type","header"},{"schema",3},{"time_conversion_extension",XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME},{"time_conversion_function","xrConvertTimeToTimespecTimeKHR"},{"converted_clock","CLOCK_MONOTONIC"},{"pattern",opt.pattern},{"source_generation","direct_encoded_srgb_byte_upload"},{"source_stage","application_swapchain_before_compositor"},{"quality_only",true},{"latency_comparable",false},{"width_requested",opt.width},{"height_requested",opt.height},{"frame_limit",opt.frames},{"seconds_limit",opt.seconds},{"space",opt.source_reference_space},{"source_reference_space",opt.source_reference_space},{"locate_and_layer_use_same_space",true},{"format",VK_FORMAT_R8G8B8A8_SRGB},{"format_name","R8G8B8A8_SRGB"},{"opaque",true},{"top_left_origin",true},{"device",props.deviceName},{"vendor_id",props.vendorID},{"device_id",props.deviceID},{"queue_family",family},{"graphics_api_version",ai.apiVersion}});
         for(unsigned i=0;i<2;++i) init_eye(i,views[i]);
     }
     void init_eye(unsigned index,const XrViewConfigurationView& view) {
@@ -287,7 +300,9 @@ struct App {
         const XrCompositionLayerBaseHeader* layers[]={reinterpret_cast<XrCompositionLayerBaseHeader*>(&layer)};
         XrFrameEndInfo end{XR_TYPE_FRAME_END_INFO};end.displayTime=fs.predictedDisplayTime;end.environmentBlendMode=XR_ENVIRONMENT_BLEND_MODE_OPAQUE;end.layerCount=rendered?1:0;end.layers=rendered?layers:nullptr;XC(xrEndFrame(session,&end));
         if(rendered)++submitted;
-        record({{"type","frame"},{"sequence",frames},{"predicted_display_time",fs.predictedDisplayTime},{"predicted_display_period",fs.predictedDisplayPeriod},{"should_render",bool(fs.shouldRender)},{"locate_called",located},{"view_state_flags",view_flags},{"decision",skip_reason},{"projection_submitted",rendered},{"source_reference_space",opt.source_reference_space},{"views",details}});
+        timespec converted{};XC(convert_time(xr,fs.predictedDisplayTime,&converted));
+        const auto target_monotonic=monotonic_ns(converted);
+        record({{"type","frame"},{"sequence",frames},{"predicted_display_time",fs.predictedDisplayTime},{"predicted_display_time_timespec",{{"tv_sec",converted.tv_sec},{"tv_nsec",converted.tv_nsec}}},{"predicted_display_time_monotonic_ns",target_monotonic},{"predicted_display_period",fs.predictedDisplayPeriod},{"should_render",bool(fs.shouldRender)},{"locate_called",located},{"view_state_flags",view_flags},{"decision",skip_reason},{"projection_submitted",rendered},{"source_reference_space",opt.source_reference_space},{"views",details}});
     }
     void run() {
         deadline=Clock::now()+std::chrono::seconds(opt.seconds);init();
