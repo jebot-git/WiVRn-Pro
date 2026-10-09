@@ -83,7 +83,8 @@ inline size_t subtract(std::span<const uint8_t>current,std::span<const uint8_t>p
             _mm_storeu_si128(reinterpret_cast<__m128i*>(out.data()+at),_mm_sub_epi8(a,b));}
 #endif
     }
-    for(;at<current.size();++at)out[at]=uint8_t(current[at]-prior[at]);return at;
+    for(;at<current.size();++at)out[at]=uint8_t(current[at]-prior[at]);
+    return at;
 }
 inline void add_row(std::span<uint8_t>current,std::span<const uint8_t>prior,bool vector){
     size_t at=0;
