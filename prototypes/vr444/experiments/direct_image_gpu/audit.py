@@ -10,13 +10,13 @@ MODES = ("buffer_copy", "image_unorm", "image_uint")
 TIMES = ("validation_ms", "input_copy_ms", "stereo_gpu_ms", "pipeline_wall_ms", "oracle_ms")
 
 
-def audit(data):
+def audit(data, *, expected_experiment="direct-image-gpu"):
     def need(ok, message):
         if not ok:
             raise ValueError(message)
 
     need(data.get("schema") == 1, "schema")
-    need(data.get("experiment") == "direct-image-gpu", "experiment")
+    need(data.get("experiment") == expected_experiment, "experiment")
     need(data.get("headset_used") is False, "headset scope")
     need(data.get("pass") is True and data.get("promotion_blocked") is True, "completion/promotion gate")
     need(type(data.get("format_list")) is bool, "extension mode")

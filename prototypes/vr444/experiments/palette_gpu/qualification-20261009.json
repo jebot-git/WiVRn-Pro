@@ -1,0 +1,335 @@
+{
+  "schema": 1,
+  "created_utc": "2026-10-09T06:03:58.762340+00:00",
+  "scope": "offline correctness only; RPT1 validated compact input expansion to images",
+  "headset_used": false,
+  "performance_claim": false,
+  "promotion_blocked": true,
+  "local_raw_directory": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-palette-gpu",
+  "runs": [
+    {
+      "path": "validation/results/sub15-palette-gpu/arc-small.json",
+      "sha256": "5bd109b9ad5ef4dad168682257afee431e9e473a8a28d7ce17acba476f4f08b9",
+      "bytes": 117719,
+      "correctness_pass": true,
+      "case_count": 94,
+      "measured_iterations": 282,
+      "devices": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)"
+      ],
+      "software": false,
+      "format_list": false,
+      "max_ideal_linear_error": 0.00114763,
+      "max_srgb_code_error": 0.193304,
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false,
+      "cpu_reconstruction_in_timed_path": false,
+      "rpt_modes": 6
+    },
+    {
+      "path": "validation/results/sub15-palette-gpu/arc-full-format-list.json",
+      "sha256": "a92223f8ab18022f1d4ae875ea3f56d6cb65675d27544c840b20b31ead26bf45",
+      "bytes": 180942,
+      "correctness_pass": true,
+      "case_count": 144,
+      "measured_iterations": 432,
+      "devices": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)"
+      ],
+      "software": false,
+      "format_list": true,
+      "max_ideal_linear_error": 0.00114763,
+      "max_srgb_code_error": 0.193304,
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false,
+      "cpu_reconstruction_in_timed_path": false,
+      "rpt_modes": 6
+    }
+  ],
+  "legacy_regression": {
+    "path": "validation/results/sub15-palette-gpu/legacy-regression-full.json",
+    "sha256": "a2ecaee48f066c20b22f31f6e809b4a056accd6e979c353ec6913882eded2dd0",
+    "bytes": 113000,
+    "correctness_pass": true,
+    "case_count": 96,
+    "measured_iterations": 288,
+    "devices": [
+      "Intel(R) Arc(tm) A770 Graphics (DG2)"
+    ],
+    "software": false,
+    "format_list": false,
+    "max_ideal_linear_error": 0.00114763,
+    "max_srgb_code_error": 0.193304,
+    "performance_claim": false,
+    "promotion_blocked": true,
+    "headset_used": false
+  },
+  "cpu_asan_ubsan": {
+    "cpu_fixture_pass": true,
+    "fixture_count": 144,
+    "rpt_modes": 6,
+    "vulkan_initialized": false,
+    "headset_used": false
+  },
+  "leak_detection": "disabled: environment executes under ptrace",
+  "builds": {
+    "host": true,
+    "android_api29_arm64": true,
+    "warnings_as_errors": true,
+    "spirv_val_vulkan_1_1_modules": 4,
+    "pass": true
+  },
+  "python_unittests": {
+    "palette": 3,
+    "shared_direct_image": 3,
+    "pass": true
+  },
+  "sources": [
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/README.txt",
+      "sha256": "724b4a8b91ea11634f764ad33cdfc21eb21721693d30619e5f6ce64a9e4de229",
+      "bytes": 7447
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/audit_palette.py",
+      "sha256": "229d3b88eb15ea0adab48d847809bad65f19a48105a395c30c45c2bc4105eaf5",
+      "bytes": 1713
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/build.sh",
+      "sha256": "78ce9a92aa28973c37aaa27d17b508ac081ebcdc4ce5847ab296cd10022bb879",
+      "bytes": 1277
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/decode.comp",
+      "sha256": "4311c5210a4cd2749431808d7684e32aca89e10969a12111597aba42587e42cf",
+      "bytes": 3561
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/make_run_fixtures.py",
+      "sha256": "8305c358888b9dae601e1d0056f344a07d5d8c984829f96b6667562176a7c2fb",
+      "bytes": 1964
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/probe.cpp",
+      "sha256": "4c73924e2b68a0561ea698cd7416bc2f0dc297a1684ae9c256fd4051a9cd28ed",
+      "bytes": 10762
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/test_palette_audit.py",
+      "sha256": "5eb5501938aa102d2b941e2ad2347400bcfe2ba84c27dfa706841457ba8b0ff2",
+      "bytes": 2672
+    }
+  ],
+  "shared_sources": [
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/probe.cpp",
+      "sha256": "a57de3376a495df3d2e5b0a28be6f6019a1b4b5b1cbba885b158fb5ff8ee7930",
+      "bytes": 7933
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp",
+      "sha256": "47fb6b5c601e78c4c1b0ac85b7f0056072deb4a7fb9d9bb96e8cdf67547496a0",
+      "bytes": 29394
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/audit.py",
+      "sha256": "241f489f79eb6a03e87eb954b88d49aeb8525f1c2c4c7a6a7fef4647f1c38014",
+      "bytes": 3870
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/sample.comp",
+      "sha256": "b146b902a79640cdd887061a9475217aa156a763ee04bbfa521e20be2f32938c",
+      "bytes": 436
+    }
+  ],
+  "reference_sources": [
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.cpp",
+      "sha256": "9235f3dd3aa3eec1f8ff343e3e7507519a1c831c1af0c05ab03888f36f6eb80a",
+      "bytes": 9452
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.hpp",
+      "sha256": "d74b1b524ec5664b489a8d5c827ce753c526984ca422bfef4497e889fda1ff10",
+      "bytes": 1718
+    },
+    {
+      "path": "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp",
+      "sha256": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+      "bytes": 10900
+    },
+    {
+      "path": "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp",
+      "sha256": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+      "bytes": 935
+    }
+  ],
+  "goldens": [
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/manifest.json",
+      "sha256": "dcf949bde96e19e289fdeda730098910d82c7d9572b7f5c1d39d5810e2ebb5a5",
+      "bytes": 1194
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/partial-17x17.rgba",
+      "sha256": "6c51d62ebf24ac013af973493f5c4896ec6a1e25a3e242b12944731debf7517a",
+      "bytes": 1156
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/partial-17x17.rpt",
+      "sha256": "f976ea874da2938575a691ac469935fc1101d74cdd1f2ba410d7767035056fad",
+      "bytes": 948
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/prefix-129.rgba",
+      "sha256": "91da307cfa3d0a39d6c76b79804aa143196e8bd33d50d99cf3df2f18fe89ec0d",
+      "bytes": 1024
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/prefix-129.rpt",
+      "sha256": "a43c91e10ea66188a66de4c46f10d98e3e019c4e6ff9f45da27036742f22a6b7",
+      "bytes": 552
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/prefix-192.rgba",
+      "sha256": "8e0c141fd09e5a4e9ab2eff1c32e2b161f72abd36f33c267cbd0ab245dec6468",
+      "bytes": 1024
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/prefix-192.rpt",
+      "sha256": "44ddb4be14d4e0de1f8e7dc5fe2098009ada6533c0258388b9c7571ace43c1cd",
+      "bytes": 804
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/single-run-256.rgba",
+      "sha256": "9503245a0161a939de15c2414db2d336e761822fa6cff8136e4148f58f1f782e",
+      "bytes": 1024
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/single-run-256.rpt",
+      "sha256": "718406418962c55e6cc6ce4b6577130b51bdaa78bdd683df345dee7e0901f7db",
+      "bytes": 40
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/constant.rgba",
+      "sha256": "ff6530419f4962c649dc3a4c6ec239b36865fb610bc98621c028c2899713b79c",
+      "bytes": 24
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/constant.rpt",
+      "sha256": "b47f3a8e8c1df2714bb00a877c49a9db8c1937b4680435d8ff13ed8bd799e67f",
+      "bytes": 39
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/manifest.json",
+      "sha256": "0072489466e2edd827201506e6bad40aa44ca718dc958ff5c33bc8922323c0c4",
+      "bytes": 2047
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/palette16.rgba",
+      "sha256": "81ee5ee04d75adaae785eb3dd11734b7e80b8953fae1aa3fb03438b53d05946e",
+      "bytes": 60
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/palette16.rpt",
+      "sha256": "fa55e533c9a16f33dec1408da6a5df9be145a25f394da33d4d50825b08640bef",
+      "bytes": 60
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/palette2.rgba",
+      "sha256": "d0dea3e50cd76474df1a6c93340f5022248c5bafb4d5c085a9fc4cbc5e36e2e0",
+      "bytes": 24
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/palette2.rpt",
+      "sha256": "e5e7a4333e84571d1106cbcaec81561b6fe2d4c429a808f6cc31ad7a6f70f46f",
+      "bytes": 44
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/palette4.rgba",
+      "sha256": "fbc8b9bbef3ae42a47f72d5d819556c9d8374a0ace3592d26b8168c4a31f5a7a",
+      "bytes": 60
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/palette4.rpt",
+      "sha256": "bca0992c4810b50ca0ff6edf66bece5c983be4f8b54e852f37f304afa13f6852",
+      "bytes": 50
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/raw.rgba",
+      "sha256": "868a4061d0f5e9e70214d4020cf8daacce1dc97aa2b433d9a924d6d1c5fd2bbe",
+      "bytes": 24
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/raw.rpt",
+      "sha256": "cd6a0f5c411e974f4c23a5c80c2c3673f8ecc94452aa729a0791818c5401605e",
+      "bytes": 54
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/runs.rgba",
+      "sha256": "ee7e1fb9c2ff1affe92701b9beaf586b9eda70a03e963fc4b89563758d2e0ffe",
+      "bytes": 60
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/runs.rpt",
+      "sha256": "6a1512801e6718d212f6816871cb07664d029e231e7fb519790cba1d1922222c",
+      "bytes": 48
+    }
+  ],
+  "captured_reference_manifest": {
+    "path": "/tmp/sub15-rgb-palette-gpu-corpus-manifest.json",
+    "sha256": "f3e7ffc5ef06407fcc83ba93d7b1298aa6837e227a5ab18182fd64888a9c0787",
+    "bytes": 6456
+  },
+  "binaries": [
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/build/palette-gpu-android",
+      "sha256": "f8d2b95eae2d8895fcbfb1dd5aad8afb01f92ff15093a3a031e641d8c1f3867a",
+      "bytes": 6887400
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/build/palette-gpu-asan",
+      "sha256": "edceb17bac6057dda8a11b6a8efd93cc54ff8177eb71203983867e9c0f011ecd",
+      "bytes": 3486664
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/build/palette-gpu-host",
+      "sha256": "15674588973acaea4fc677c572e63242792f36449fc3ca502b30c70fe487d62b",
+      "bytes": 159232
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/build/shaders/buffer.spv",
+      "sha256": "336f0256b5bbebfc7fd346406fc59ab72baaed77ccc8a4db731ac371d2018dec",
+      "bytes": 11744
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/build/shaders/sample.spv",
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "bytes": 1344
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/build/shaders/uint.spv",
+      "sha256": "fb4e66bd182d7d47fbf45356eca085be1d0fd3edc4b99a986db08044da7e0911",
+      "bytes": 11824
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/build/shaders/unorm.spv",
+      "sha256": "b128063d63348301d986678683f2319b31ce5d77385774da18b72171b7514e76",
+      "bytes": 11964
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/direct-image-host",
+      "sha256": "292fc41327df9effd9251999fc8f80c4e170a8ec12b1d8e06822354b362e4472",
+      "bytes": 133096
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/direct-image-android",
+      "sha256": "17e9d6c0264b3a38fd517fadf5139543930a8611d4e9847366d2eaa9310b8d7a",
+      "bytes": 6864752
+    }
+  ],
+  "final_binary_scope": "144 palette cases with image format list plus96 legacy cases default; prior94 palette default used identical shader hashes, only constructing failure messages changed before final binary"
+}

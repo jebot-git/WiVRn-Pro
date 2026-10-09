@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: MIT
+#version 450
+// RPT1 expansion from CPU-validated immutable packet and tile index.
+// One128-lane group per tile; integer operations, no subgroup extensions.
+layout(local_size_x=128) in;
+layout(set=0,binding=1,std430) readonly buffer Packet { uint packed[]; };
+layout(set=0,binding=2,std430) readonly buffer Index { uint words[]; };
+layout(set=0,binding=4,std430) readonly buffer Limit { uint packet_bytes[]; };
+#if defined(OUTPUT_UNORM)
+layout(set=0,binding=3,rgba8) writeonly uniform image2D output_image;
+#elif defined(OUTPUT_UINT)
+layout(set=0,binding=3,rgba8ui) writeonly uniform uimage2D output_image;
+#else
+layout(set=0,binding=3,std430) writeonly buffer Output { uint result[]; };
+#endif
+layout(push_constant) uniform Params { uint width,height,q,count; } pc;
+shared uint run_ends[256];
+shared uint scan_scratch[256];
+shared uint run_colors[256];
+uint byte_at(uint position) {
+    if(position>=packet_bytes[0]) return 0u;
+    return (packed[position/4]>>((position%4)*8))&255u;
+}
+uint rgb_at(uint position) { return byte_at(position)|(byte_at(position+1)<<8)|(byte_at(position+2)<<16)|0xff000000u; }
+void store_pixel(uint x,uint y,uint p) {
+#if defined(OUTPUT_UNORM)
+    imageStore(output_image,ivec2(x,y),vec4(p&255u,(p>>8)&255u,(p>>16)&255u,255u)/255.0);
+#elif defined(OUTPUT_UINT)
+    imageStore(output_image,ivec2(x,y),uvec4(p&255u,(p>>8)&255u,(p>>16)&255u,255u));
+#else
+    result[y*pc.width+x]=p;
+#endif
+}
+void main() {
+    uint tile=gl_WorkGroupID.x,lane=gl_LocalInvocationID.x;
+    if(tile>=pc.count)return;
+    uint base=tile*10;
+    uint offset=words[base],length=words[base+1],mode=words[base+2];
+    uint x=words[base+3],y=words[base+4],width=words[base+5],height=words[base+6];
+    uint colors=words[base+7],indices=words[base+8],bits=words[base+9];
+    // These workgroup-uniform guards are additional containment. They do not
+    // replace complete CRC, grammar, overlap and index checks on the CPU.
+    if(width==0||height==0||width>16||height>16||x>=pc.width||y>=pc.height||width>pc.width-x||height>pc.height-y)return;
+    if(mode>5||length==0||length>768||offset>packet_bytes[0]||length>packet_bytes[0]-offset)return;
+    uint pixels=width*height,runs=0;
+    if(mode==5) {
+        if(length%4!=0)return;
+        runs=length/4;
+        for(uint i=lane;i<runs;i+=128) {
+            run_ends[i]=byte_at(offset+i*4)+1;
+            run_colors[i]=rgb_at(offset+i*4+1);
+        }
+        barrier();
+        // Inclusive prefix sum. Every lane follows the same barrier sequence.
+        for(uint stride=1;stride<runs;stride*=2) {
+            for(uint i=lane;i<runs;i+=128) scan_scratch[i]=run_ends[i]+(i>=stride?run_ends[i-stride]:0u);
+            barrier();
+            for(uint i=lane;i<runs;i+=128) run_ends[i]=scan_scratch[i];
+            barrier();
+        }
+        if(run_ends[runs-1]!=pixels)return;
+    }
+    for(uint i=lane;i<pixels;i+=128) {
+        uint color=0;
+        if(mode==0) color=rgb_at(offset+i*3);
+        else if(mode==1) color=rgb_at(offset);
+        else if(mode<=4) {
+            if(bits!=1&&bits!=2&&bits!=4)continue;
+            uint at=i*bits,index=(byte_at(indices+at/8)>>(at%8))&((1u<<bits)-1);
+            if(index>=colors)continue;
+            color=rgb_at(offset+1+index*3);
+        } else {
+            uint low=0,high=runs;
+            while(low<high) { uint middle=(low+high)/2; if(run_ends[middle]<=i)low=middle+1; else high=middle; }
+            if(low>=runs)continue;
+            color=run_colors[low];
+        }
+        store_pixel(x+i%width,y+i/width,color);
+    }
+}

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "independent_of_cpp_encoder": true,
+  "cases": [
+    {
+      "name": "single-run-256",
+      "width": 16,
+      "height": 16,
+      "max_runs": 1,
+      "rpt_sha256": "718406418962c55e6cc6ce4b6577130b51bdaa78bdd683df345dee7e0901f7db",
+      "rgba_sha256": "9503245a0161a939de15c2414db2d336e761822fa6cff8136e4148f58f1f782e"
+    },
+    {
+      "name": "prefix-129",
+      "width": 16,
+      "height": 16,
+      "max_runs": 129,
+      "rpt_sha256": "a43c91e10ea66188a66de4c46f10d98e3e019c4e6ff9f45da27036742f22a6b7",
+      "rgba_sha256": "91da307cfa3d0a39d6c76b79804aa143196e8bd33d50d99cf3df2f18fe89ec0d"
+    },
+    {
+      "name": "prefix-192",
+      "width": 16,
+      "height": 16,
+      "max_runs": 192,
+      "rpt_sha256": "44ddb4be14d4e0de1f8e7dc5fe2098009ada6533c0258388b9c7571ace43c1cd",
+      "rgba_sha256": "8e0c141fd09e5a4e9ab2eff1c32e2b161f72abd36f33c267cbd0ab245dec6468"
+    },
+    {
+      "name": "partial-17x17",
+      "width": 17,
+      "height": 17,
+      "max_runs": 192,
+      "rpt_sha256": "f976ea874da2938575a691ac469935fc1101d74cdd1f2ba410d7767035056fad",
+      "rgba_sha256": "6c51d62ebf24ac013af973493f5c4896ec6a1e25a3e242b12944731debf7517a"
+    }
+  ]
+}
