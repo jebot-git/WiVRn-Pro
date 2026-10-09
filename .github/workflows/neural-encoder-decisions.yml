@@ -1,0 +1,31 @@
+name: Neural encoder decisions
+on:
+  push:
+    branches: ['research/sub15-20261009/neural-encoder-decisions']
+    paths: ['validation/wivrn-codecs/neural_encoder_decisions/**', 'validation/wivrn-codecs/research_workflow/**', '.github/workflows/neural-encoder-decisions.yml']
+  pull_request:
+    paths: ['validation/wivrn-codecs/neural_encoder_decisions/**', 'validation/wivrn-codecs/research_workflow/**', '.github/workflows/neural-encoder-decisions.yml']
+permissions:
+  contents: read
+concurrency:
+  group: neural-encoder-decisions-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test predictor and external adapter boundary
+        run: python3 -m unittest discover -s validation/wivrn-codecs/neural_encoder_decisions -p 'test_*.py' -v
+      - name: Tiny synthetic training only
+        run: python3 validation/wivrn-codecs/neural_encoder_decisions/smoke.py --output "$RUNNER_TEMP/encoder-decisions-smoke"
+      - name: Test common workflow tooling
+        run: python3 -m unittest discover -s validation/wivrn-codecs/research_workflow -p 'test_*.py' -v
+      - name: Validate planned manifest
+        run: python3 validation/wivrn-codecs/research_workflow/manifest.py validation/wivrn-codecs/research_workflow/example-run.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-encoder-decisions-smoke
+          path: ${{ runner.temp }}/encoder-decisions-smoke
+          retention-days: 7
