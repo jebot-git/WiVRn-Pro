@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "independent_manual_lz4": true,
+  "cases": [
+    {
+      "name": "raw-one",
+      "wire_bytes": 35,
+      "rgba_bytes": 4,
+      "wire_sha256": "750d65ea66f7b8c85bdcc777a05cbe619b5350b55dd9a0d65405c8e38eab757b",
+      "rgba_sha256": "551ac423001ac450a78ab68f6ede693a7a92ffb1636f6de2e66c80e478120bb2"
+    },
+    {
+      "name": "plain-four",
+      "wire_bytes": 45,
+      "rgba_bytes": 64,
+      "wire_sha256": "11252768a87a53925042686eda3406e2ce9868ede6b1e1c1de0637266fe5d244",
+      "rgba_sha256": "957b89f29094b9204de1cb6ffe2a34907be0727480911fda03681330b3502557"
+    },
+    {
+      "name": "up-four",
+      "wire_bytes": 55,
+      "rgba_bytes": 64,
+      "wire_sha256": "4e10c9889acbd620f97566dc8372d82e409d84c2024a4d750422c0353c500462",
+      "rgba_sha256": "957b89f29094b9204de1cb6ffe2a34907be0727480911fda03681330b3502557"
+    },
+    {
+      "name": "raw-odd",
+      "wire_bytes": 41,
+      "rgba_bytes": 12,
+      "wire_sha256": "909ac3ff271b8760b208ca7fef0e6813a0a7879ff85bfb51673737be2caec482",
+      "rgba_sha256": "c747a0f35600075b93f62e97291488bc9825ae4b79b911d89634b221b66c80be"
+    }
+  ]
+}

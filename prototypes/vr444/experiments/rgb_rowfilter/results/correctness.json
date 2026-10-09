@@ -1,0 +1,16 @@
+{
+  "pass_result": true,
+  "sanitizers": [
+    "address",
+    "undefined"
+  ],
+  "roundtrips": 136,
+  "rejections": 8352,
+  "mutations": 10000,
+  "maximum_pixels": 4194304,
+  "output_unchanged_on_malformed_rejection": true,
+  "independent_modulo_predictor_oracle": true,
+  "independent_manual_lz4_goldens": 4,
+  "strict_lz4_grammar": true,
+  "all_exported_rgba_hashes_match_prior_rpt": true
+}
