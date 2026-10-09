@@ -1,0 +1,77 @@
+Six-hour latency research — 2026-10-09
+
+Window: 05:23:34–11:23:34 UTC (07:23:34–13:23:34 Europe/Prague).
+Headset testing is suspended. No ADB, installs, headset capability probes or live
+captures are part of this work. Future device plans are preparation only.
+Each independently useful approach is committed and pushed to a research branch.
+
+Starting evidence
+The dedicated 0.15-source APK and server were built and verified before this
+research window. Four untraced captures passed evidence/correctness checks:
+  cached-copy:   stereo receive-to-submit p95 21.968 and 26.086 ms
+  mapped-direct: stereo receive-to-submit p95 20.516 and 22.353 ms
+All missed strict p95 <15 ms. Cadence was 88.400–89.123 unique stereo pairs/s.
+The fifth, diagnostic capture failed the existing candidate-trace validator.
+Source/compositor joins and individual selector replay passed; skipped render
+targets exposed an inter-record validator assumption. The immutable original
+result remains failed. Any corrected replay receives a separate receipt.
+
+Raw local evidence: validation/results/cpu-sub15-live-20261009T051345Z.
+This is software latency from first headset packet receipt through xrEndFrame
+return, not optical latency; it excludes host work and earlier network transfer.
+No new live evidence will be collected during this research window.
+
+Team stages
+1. Diagnose recorded bottlenecks, inspect current code, and check primary sources.
+2. Implement independent opt-in alternatives, keeping contracts and rollback clear.
+3. Validate bounds, malformed input, exact pixels, stereo identity and lifetimes.
+4. Review another team's changes and re-run a combined, reproducible offline suite.
+5. Prepare source/binary receipts and a future acquisition matrix; do not launch it.
+Repeat these stages as results justify new branches. Failed hypotheses are useful
+when their evidence and rejection criteria are preserved.
+
+Parallel lanes
+  compositor: trace-contract repair; selection/pacing/freshness alternatives;
+              maintain correct pose/layer/frame ownership and retained resources.
+  GPU:        direct-image shaders, transfer/synchronization alternatives, Vulkan
+              extension capability gates; exact channel and SRGB behavior.
+  transport:  bounded independent-frame networking, stereo deadlines, custom
+              compression; unchanged decoded bytes and honest wire accounting.
+  integration: shared suite, provenance, adversarial review, isolated builds and
+               comparison of supported claims; coordinate benchmark resource use.
+
+Branch family: research/sub15-20261009/{base,integration,compositor,gpu,transport}.
+Distinct mature alternatives may add named branches in the same family. The base
+snapshots existing development without modifying the original working tree.
+Remote: origin (jebot-git/WiVRn-Pro). Do not force-push existing history.
+
+Evidence rules
+Measured events, counterfactual replay, local CPU/GPU experiments and future
+headset hypotheses are reported separately. Never add independently computed
+percentiles to infer a percentile of total latency. Lower byte counts alone do
+not establish lower frame age. Higher frame IDs do not establish new input state.
+Host extension availability is not Quest support. A desktop benchmark is not a
+headset result. Diagnostics remain ineligible for promotion.
+
+Offline suite readiness
+The shared suite must cover current Python validators and control logic, C++
+stereo admission/selection/trace contracts, mapped-output bounds, and every new
+candidate's independent correctness oracle and malformed/lifetime cases. Compile
+against the exact source-overlay snapshot rather than a hidden mutable worktree.
+Missing prerequisites, no collected tests, timeout and process failure cannot
+become passes. Receipts bind source and outputs. Run meaningful regression checks
+after changes; repeat performance work only for new hypotheses or controlled
+comparisons, not to select a favorable result.
+
+Before any later headset suite is proposed as ready, require explicit trace
+contract resolution, reviewed candidate code, complete source/build provenance,
+at least two independently useful candidate implementations or evidence-backed
+rejections, documented capability/format negotiation, clean offline checks, and
+a bounded case order with baseline/repeats, cleanup and stop conditions. The
+user's suspension remains in force even if those prerequisites are reached.
+
+Open gates after this work
+Actual Quest capability and performance, displayed RGB/color correctness,
+representative moving VR content, thermal/stress behavior and optical timing.
+The strict CPU target, original cadence/tail constraints and existing full
+qualification gates remain unchanged.

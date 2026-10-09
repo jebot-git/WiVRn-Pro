@@ -10,7 +10,22 @@ int main(){
   auto h=unpack(p);assert(h.kind==kind&&h.frame==0xfedcba9876543210ull&&h.warp==0xf123456789abcdefull);
   for(size_t i=0;i<p.size();++i)rejected([&]{unpack(std::span<const uint8_t>(p).first(i));});
   auto corrupt=p;corrupt.back()^=1;rejected([&]{unpack(corrupt);});
-  corrupt=p;corrupt[44]=1;rejected([&]{unpack(corrupt);});
+  // Bit 0 is the explicitly supported VR444 LZ4 envelope extension. Every
+  // other flag remains unknown, including when combined with the known bit.
+  for(unsigned bit=1;bit<32;++bit) {
+   for(uint32_t flags:{uint32_t(1)<<bit,(uint32_t(1)<<bit)|flag_lz4}) {
+    corrupt=p;put(corrupt,44,flags,4);rejected([&]{unpack(corrupt);});
+    rejected([&]{pack({kind,576,640,1,1,2,flags},body);});
+   }
+  }
+  corrupt=p;put(corrupt,44,flag_lz4,4);
+  if(kind==Kind::vr444) {
+   assert(unpack(corrupt).flags==flag_lz4);
+   assert(unpack(pack({kind,576,640,1,1,2,flag_lz4},body)).flags==flag_lz4);
+  } else {
+   rejected([&]{unpack(corrupt);});
+   rejected([&]{pack({kind,576,640,1,1,2,flag_lz4},body);});
+  }
   corrupt=p;corrupt.push_back(0);rejected([&]{unpack(corrupt);});
  }
  rejected([&]{pack({Kind::raw_rgba,576,640,2,0,0},body);});
