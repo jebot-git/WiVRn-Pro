@@ -1,0 +1,72 @@
+Quest Adreno 650 exploratory GPU comparison, 2026-10-09
+======================================================
+
+Both complete independent processes passed the source/corpus/provenance audit
+and all original consumer/readiness/oracle gates: 360 valid arm invocations,
+252 recorded samples and 36 right-eye omission controls. Process durations were
+129.72 and 128.87 seconds. Seven samples per arm per pair per process do not
+qualify p95, tails, a live renderer or the sub-15ms target.
+
+Joint outer-wall medians in milliseconds, rounded to three decimals:
+
+arm                       Q1 repeat1  Q1 repeat2  Q8 repeat1  Q8 repeat2
+CPU SIMD RGBA copy             6.416       9.403       8.759      11.444
+RRF staged default           13.184      10.270      10.624       7.586
+RRF direct default           53.624      57.429      63.144      43.021
+RRF staged cached            17.808      10.071       7.586      12.560
+RRF direct cached            49.753      50.963      62.159      53.339
+RRB32 staged default          6.711       5.659       9.547      11.061
+RRB32 direct default         59.738      60.651      52.603      51.367
+RRB32 staged cached          10.610       7.456       9.279       9.379
+RRB32 direct cached          54.255      52.185      51.637      60.669
+
+Q1 is lossless/360; Q8 is paired-a/1350. Both are existing 576x640 stereo pairs,
+not live acquisitions or a representative population of future scenes. Each
+entry is the measured complete private image-readiness + first-consumer clock;
+stage quantiles have not been added or substituted. Full min/max and per-stage
+medians, same-repetition ratios and provenance are in triage-20261009.json.
+
+Development selection
+---------------------
+1. Keep CPU SIMD RGBA upload as the practical baseline. Staged RRB32 versus CPU
+   has mixed median results across these pairs/repeats and overlapping ranges.
+   The current experiment does not establish an overall headset advantage.
+2. Retain research/sub15-20261009/rowblocks-image-timing @ef628f4344a073707db014eb5446f0324bf9908d
+   as an opt-in GPU integration candidate, specifically its staged RRB32 path.
+   The shared source used here is pinned through the newer consumer build
+   receipt @c4dc09128e45fc5bda71fa0588e40d2077678b9b. Staged RRB32 device-span
+   medians are 0.262--0.289 ms versus staged whole-RRF 0.911--1.017 ms. Its Q1
+   joint medians consistently improve over staged RRF, but Q8 joint results are
+   mixed. Integration must measure complete-pair publication and native lifetime
+   reuse before this shader improvement can support a latency conclusion.
+3. Suspend selection of direct mapped decompression on this Adreno implementation
+   as-is. Across all sixteen matched pair/repeat/cache/family comparisons its
+   joint median is 2.79--10.72 times the staged median. The excess resides mainly
+   in CPU decompression to mapped output, not shader time. Exactness passes are
+   valuable, but desktop mapped-output wins do not transfer to this device.
+   The preserved implementation is mapped-input-consumer @068dd29df03e44ab0668d9607d2896650c4b91f9.
+   A future causal experiment should compare the same decoder into a fixed heap
+   buffer plus copy against mapped output, with allocation/zero-fill controlled.
+4. Timeline semaphores and synchronization2 are queried supported, never enabled
+   by these probes. Retain them for an explicit native lifetime/queue prototype;
+   capability alone earns no performance priority. Host-image-copy is not
+   advertised/queried and remains unavailable for this device experiment.
+
+All default/cached arms selected memory type4, flags15. The labels therefore
+provide duplicate requested-policy controls, not a comparison of cache policies.
+The large wall variability in staged/CPU paths cannot be assigned to a particular
+CPU core, power state or driver cause from these receipts. Full process wall also
+contains shader/device setup and expensive independent pixel oracles outside the
+reported image-stage clock. Native OpenXR, networking, source freshness, server
+compression costs, RRB wire-size inflation and optical latency remain excluded.
+
+Raw execution artifacts are archived separately by root under the live-selection
+research branch. This report binds their exact plan, receipt and every stdout/
+stderr hash, plus historical Android binary/source receipts and full manifest
+hashes. Do not relabel the raw probes' hardcoded host fields: the source-bound
+wrapper supplies Android execution provenance. All code and receipts here are
+read-only analysis; root alone performed device execution.
+
+Validation: eleven adversarial host Python tests pass. Compositor team performed
+a read-only review of plan/receipt/source/manifest/consumer gates and found no
+blocker. Tests use synthetic copies of old raw data and create no device evidence.
