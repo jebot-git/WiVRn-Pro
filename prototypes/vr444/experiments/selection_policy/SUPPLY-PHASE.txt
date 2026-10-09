@@ -1,0 +1,120 @@
+KNOWN SUPPLY / SAMPLING PHASE SENSITIVITY -- 2026-10-09
+
+Result and scope
+Unlimited retention of every ever-observed complete pair changes run05's
+original-time maximum advancing under-15ms count only from 1,637 to 1,638.
+Hypothetically advancing publication by up to 8ms, clipped at each eye's
+receipt, raises that count to at most 1,724. Both remain below the 1,805 good
+choices necessary for strict p95<15ms across all 1,900 warm deadlines.
+
+Changing sampling phase produces larger differences, but moving it earlier
+by half or one period precedes actual xrWaitFrame return and render entry at
+ALL 1,900 warm deadlines. Such samples are not an executable selector under
+the recorded admission schedule. A separate bound explicitly removes them.
+
+This branch is an offline timestamp sensitivity, not an optimization or a
+runtime simulation. Native behavior and all qualification gates are unchanged.
+No headset operations, native build or performance measurements occurred.
+Original run05 still failed and every original artifact remains untouched.
+
+Population and transformations
+The existing candidate and source validators admit exact full-run observations.
+All 2,094 ever-observed complete wire pairs have stable per-eye metadata and
+unambiguous source application joins. The known universe excludes unseen or
+never-complete frames; it is not proof of complete decoder/publication coverage.
+
+The observed baseline uses only each actual snapshot or retained pair. The
+known-supply alternatives relax retention and may use a pair before its first
+recorded observation, provided its recorded publication time allows it. Counts
+of those choices and choices absent from the original snapshot are explicit.
+This relaxation does not prove actual handle ownership or retention capacity.
+
+Two independent declared transformations are considered:
+  sampling shift: add the same delta to recorded selection end and submit,
+                  preserving each original selection-to-submit interval;
+  publication advance: independently subtract a budget from each participating
+                       eye's ready timestamp, clipped at that eye's receipt.
+All participating eyes include alpha when present. The publication transform
+cannot move an eye before its packet receipt. It includes all publication
+delay in the hypothetical budget; it is not an estimate of removable decode
+service, queueing, evidence I/O or locking cost.
+
+Warm-deadline membership and original runtime target timestamps stay fixed.
+Future-target limits are removed. Source projection quality, OpenXR rescheduling,
+GPU duration, feedback, wake phase and clock uncertainty are not simulated.
+
+For every sample the result counts whether selection precedes recorded wait
+return, render entry, or required after-fence completion, and whether submit is
+at/after the original runtime prediction. The nested with_recorded_admission_floor
+result discards candidates violating those recorded admission times. Meeting
+that floor is necessary for the fixed schedule, not sufficient proof that a
+new runtime/GPU submission schedule is executable.
+
+Counting proof
+Only nodes whose age is strictly below 15ms enter the graph. At most one choice
+per deadline is allowed; wire IDs strictly increase and source targets do not
+regress. Deleting over-threshold choices from any legal path preserves these
+constraints. Therefore the maximum good-only path is also an upper bound on
+good count in any path in this model. Each path has a sequence/frame certificate.
+
+For nearest-rank p95 to be strictly below the threshold at count N, at least
+ceil(95*N/100) good choices are necessary. The reported floor(100*good/95)
+ceiling, capped by warm-deadline count, is necessary only. It does not prove
+that bad choices can be inserted to obtain that total count, preserve actual
+ownership, or attain a live cadence. No percentile of the good-only filtered
+population is presented as a measured performance result.
+
+Sealed run05 sensitivity
+Entries are maximum advancing under-15ms choices from 1,900 warm deadlines.
+Negative shifts below are unconstrained clock samples only: their counts
+become zero when the recorded admission floor is required.
+
+ publication     sampling shift (ms)
+ advance (ms)    -11.111111  -5.555555    0    +5.555555  +11.111111
+       0            1635        1782    1638      1774        1628
+       1            1703        1798    1705      1787        1693
+       2            1724        1810    1720      1800        1711
+       4            1734        1814    1724      1805        1720
+       8            1734        1814    1724      1805        1721
+
+At +5.555555ms with no publication advance, the path uses 383 choices absent
+from the original snapshots. With a hypothetical 4ms publication advance it
+uses 517 such choices. These populations are deliberately not represented as
+actual recorded selector outcomes.
+
+The +5.555555ms / 4ms case reaches exactly 1,805 good choices, the necessary
+95% count for 1,900 selections. That is a lead for further modeling, not a
+passing result: the graph does not establish 1,900 jointly attainable choices,
+future projection quality, runtime timing feasibility or a realizable 4ms
+publication improvement. Earlier negative-phase results additionally require
+changing runtime admission rather than just moving selection within the frame.
+
+What this resolves
+The exact snapshot retention limit alone explains only one additional good
+choice at original times within the known universe. Sampling phase and supply
+publication interact discretely, so independently measured stage savings must
+not be added to a latency percentile. Further evidence should expose complete
+per-eye publication/eviction events and stable wait/selection ordering before
+an event-driven wait or phase policy is interpreted as an executable path.
+
+Validation and independent review
+supply-validation-20261009.json binds 253 passing Python tests. New tests cover
+strict age and inclusive readiness boundaries, per-eye receipt clipping, alpha
+readiness, known-but-not-originally-visible pairs, recorded admission floors,
+host-clock translation, missing source joins and invalid local timestamps.
+The exact original snapshot good-count reproduces the prior no-target-ceiling
+oracle count of 1,637. All 300 original manifest entries are verified, with
+the three used inputs and manifest rechecked after analysis.
+
+The transport team independently reviewed supply_phase.py, target_envelope.py
+population validation and the solver constraints read-only. It found no blocker
+in strict age admission, participating-eye clipping, recorded admission checks,
+good-only path deletion proof or the necessary nearest-rank count ceiling.
+The review does not turn hypothetical timestamps into runtime measurements.
+
+Reproduce offline with new output files:
+  python3 prototypes/vr444/experiments/selection_policy/validate_supply.py \
+    --out /tmp/supply-validation-new.json
+  python3 prototypes/vr444/experiments/selection_policy/supply_phase.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --out /tmp/supply-phase-new.json
