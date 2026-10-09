@@ -1,0 +1,76 @@
+Compression / transport selection after target CPU observation
+==============================================================
+Selection means further development, not deployment or a sub15 gate.
+
+Develop
+- rowblocks-band-views a55dff163e3defa5d5be2e600b8d9a7829a8f7a1:
+  RRB32 host server candidate, immutable16-row-aligned VR444 record views,
+  direct packedRGB reconstruction, persistent four-worker transcode.
+  The matched desktop complete transcode+decode p95 improved12/12 captured
+  pairs versus VR444, by0.016..0.673ms. This starts from already encoded VR444,
+  not original renderer pixels. Reusing it requires a negotiated payload kind.
+- rowblocks-workers260a1a2244b2381270398b65a1d3d2d282867508:
+  RRB32 four-worker client, with two-worker control/fallback. Root's actual Quest
+  run passed217 stereo correctness cases,4273 rejects and4000 corruptions.
+  The31-sample three-pair client comparison passed744 exact measured invocations.
+  Q1 p50/p95: .780/1.063ms vs VR4441.327/2.096ms.
+  Q8-a:1.018/1.496ms vs1.830/2.361ms. Q8-b:.987/1.529ms vs1.745/2.517ms.
+  Four workers increase aggregate process CPU to1.921/2.213/2.243ms p50; serial
+  VR444 uses1.171/1.644/1.565ms. No production compositor contention, sustained
+  thermals, affinity or90Hz throughput was measured. Two workers use less CPU
+  but were slower in all three selected pairs. Three predetermined captures
+  are a directional target observation, not a representative population.
+- rgb-rowfilter-simd895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8:
+  retain exact NEON/scalar checked primitives and scalar control. Root's earlier
+  Quest test passed271 roundtrips,8422 rejects and10000 mutations. This supports
+  the reusable CPU implementation, not a blanket global RRF codec preference.
+
+Keep VR444 as a required wire/control option. In the three actual target cases,
+RRB32 pair bytes vs VR444 are15,347/22,859 Q1,47,543/33,390 Q8-a and45,079/31,055
+Q8-b. Q8 growth42.4--45.2% may exceed its CPU benefit after real transfer and
+server costs. Preserve existing decoded Q8 bytes; do not call this lossless
+relative to the original source. No means or p95s from different domains are added.
+
+Hold pending relevant evidence
+- RRF-up2773a29a179cbab87bbeb31c4a7303eb565a77fa and RRB128 alternatives:
+  bandwidth/CPU alternatives, not current target CPU winner. GlobalRRF Q1
+  compression is better; its target Q1 client is slower than VR444 here.
+- udp-batch3075ff7c72e53ab83a77bd56e6fef2a50708b654 and
+  udp-offload74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f:
+  preserve optional syscall/offload optimizations. Existing timings are owned
+  loopback only. This new ordinary TCP/UDP probe does not test batching or GSO/GRO.
+- datagram-xor726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df,
+  xor-interleave db48e2acf6ea936854b5e72e3db90a49ff87c0e4,
+  rowblock-stream7f097f3da85bfbb008d3632ffe8592e6934ffd11,
+  rowblock-stream-fec8e5d1d50b77b9857817890f1c7466e90f0db38e1,
+  corrected packet-window-fec788ba8b4c1bfb931c17d7a2ae9ad237c5ed48afc:
+  exact bounded protocol alternatives, no real-path/native-publisher adapter.
+  Per-block parity adds~60% offered UDP bytes for capturedRRB32. Cross-block
+  windows reduce overhead but recover far fewer declared multi-fragment erasures.
+  Modeled erasures are not measured physical loss probabilities.
+- transport-queue512f3b893da4901a84fa06c2a6fd323f35f12389:
+  latest-pending is worth investigating; eager preemption can starve complete
+  pairs. Frozen models do not establish a live native queue policy.
+
+Do not pursue as current latency candidates
+- static-dictionary5eb6ac1470dc1c1a7caeecd0e7877d44eb8a6440:
+  zero byte savings across22 held-out captured eyes; extra compression work.
+- rgb-channelplanes afb5b5923aaa17ffbd1e92d40c1e60a17c1dde34:
+  larger/slower planes; negligible green-delta saving for additional CPU work.
+- rgb-palette a686dfe3b5cd9e2b6f81f90cf2d5a87e8bda6106:
+  client advantage did not pay its substantially larger host server preprocessing.
+  Retain its exact format/oracles and separately measured GPU negatives.
+
+Common contracts
+Codec axes<=4096 and<=4,194,304pixels PER EYE are not the transport capacity.
+VXF/VXI/VXB/VXP/VWG preserve<=262144 canonical encoded bytes for the COMPLETE
+stereo pair; high-entropy fallback can exceed this and must reject or use an
+explicitly qualified alternative, never silently lower quality/enlarge bounds.
+Checked immutable inputs and private both-eye staging remain owned until all CPU
+workers/GPU consumers complete. Session/config/frame/warp/deadline identity and
+fresh complete-stereo publication are native outer obligations.
+
+Existing headset gate is earliest frame receipt to post-xrEndFrame, not optical
+latency. This branch's CPU result starts with complete encoded stereo buffers;
+its network probe reports sender RTT and receiver-local assembly. Neither can be
+added to host encode/GPU/compositor quantiles or promoted as sub15.
