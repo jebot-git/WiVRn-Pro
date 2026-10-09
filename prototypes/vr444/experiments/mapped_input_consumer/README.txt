@@ -74,3 +74,57 @@ and qualification clocks are not comparative performance evidence. One premature
 audit attempted to parse a still-growing native output and rejected truncated
 JSON; completed zero-exit outputs subsequently passed the unchanged auditor.
 Leak detection is disabled under ptrace; address/undefined checks remain enabled.
+
+2026-10-09 coordinated matched timing
+-------------------------------------
+The completed Arc interval was 10:33:09.252370-10:40:41.151165 UTC (451.898 s);
+UHD was 10:41:00.895161-10:48:38.372301 UTC (457.477 s). Both other research
+teams held host execution throughout each batch; the desktop remained uncontrolled.
+All 26 profiles x 9 arms x 31 repetitions = 7,254 measured invocations per device
+were exact, as were the three warmups per arm/profile. Both completed audits bind
+unchanged code, audit controls, binary, eight shaders, manifests and full corpora.
+Each device also passed 234 deliberately omitted-right-eye controls.
+
+The joint outer clock contains packet admission, decode, poison, image readiness,
+and the first real stereo image consumer. Captured paired differences below are
+median(candidate minus matching staged baseline), in milliseconds. Negative means
+faster. All eight comparisons improved every captured pair's median; the p95
+columns retain tail regressions. The same 12 pairs recur in every comparison.
+
+Device  Matching staged -> direct   paired p50   paired p95   improved p95 / 12
+Arc     RRF default                 -0.311205    -0.275055          10
+Arc     RRF cached                  -0.302495    -0.270450           9
+Arc     RRB32 default               -0.300315    -0.415325          12
+Arc     RRB32 cached                -0.284695    -0.354345          12
+UHD     RRF default                 -0.327525    -0.371740          12
+UHD     RRF cached                  -0.326960    -0.362955          12
+UHD     RRB32 default               -0.379735    -0.343755          12
+UHD     RRB32 cached                -0.397690    -0.387110          12
+
+Arc's five RRF p95 regressions across the two repeated comparison sets are retained;
+the worst was +0.340200 ms. Arc default/cached labels actually select the same
+memory type, so their differences do not demonstrate a cache-policy effect. UHD
+uses distinct queried types, but its direct cached-versus-default p95 improved
+only 2/12 RRF and 5/12 RRB pairs; no universal cached-allocation benefit is claimed.
+
+Against the same-batch RRF CPU image-copy control, RRB32 direct-cached improved all
+12 captured medians and p95s on each device. Its median paired joint difference was
+-0.700110 ms on Arc and -0.471770 ms on UHD. RRF direct-cached improved all 12 on
+Arc, but only 6/12 medians and 9/12 p95s on UHD (median paired p50 -0.004555 ms).
+This makes RRB32 direct output the stronger private client candidate here. Its
+unchanged captured wire growth versus global RRF is still +19.18% at Q1 and +5.13%
+at Q8, and server/transport costs remain outside this comparison.
+
+The reduction covers removed intermediate copies AND workspace clear/resize
+zero-fill; all stereo RGB output bytes must still be populated. Repeated static
+inputs and reuse, the three-submit poison path, host-visible consumer outputs,
+and oracle/snapshot gaps limit translation to native workloads. Thirty-one
+samples cannot establish a tail guarantee. No native or headset sub-15 claim is
+made, and headset testing remains suspended.
+
+timing-20261009.json retains both complete device reports, separate readiness and
+joint per-pair comparisons, all 14 synthetic profiles, and postprocessing hashes.
+The paired figure joint-captured.svg/png shows all 192 captured comparison points;
+joint-captured.json binds its code, input receipt/manifest and image hashes. The
+PNG was visually inspected. Seven Python tests pass, including rejection of
+missing first-consumer evidence and malformed/incomplete joint statistics.

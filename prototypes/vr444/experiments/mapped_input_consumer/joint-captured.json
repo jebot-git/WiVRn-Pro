@@ -1,0 +1,2526 @@
+{
+  "schema": 1,
+  "headset_used": false,
+  "promotion_eligible": false,
+  "receipt": {
+    "path": "prototypes/vr444/experiments/mapped_input_consumer/timing-20261009.json",
+    "sha256": "604b0ea6139a3fabc049d6af4c446fca9533ef4da6f5b4b1947484e0c946f4f7"
+  },
+  "manifest": {
+    "path": "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json",
+    "sha256": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f"
+  },
+  "source_sha256": {
+    "prototypes/vr444/experiments/mapped_input_consumer/plot.py": "638125b4bd6bb8095393d3d4ca48e9edc530a4c323b874c1b882de821ececeee"
+  },
+  "images": [
+    {
+      "path": "prototypes/vr444/experiments/mapped_input_consumer/joint-captured.svg",
+      "sha256": "a626ca422f730f490155c97693adf91f6cf95bb20f1a4841944622da8eb38909"
+    },
+    {
+      "path": "prototypes/vr444/experiments/mapped_input_consumer/joint-captured.png",
+      "sha256": "a2ef42f1bf29263cdd0bae0657f2a8ff9c77502249f0a20b2ebe2eedc0ff8d8d"
+    }
+  ],
+  "points": [
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.2916399999999997
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.3329399999999998
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.17654999999999976
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.2007699999999999
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.2628600000000003
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.3307699999999998
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3848199999999995
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.22554000000000007
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.4335499999999999
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.22887000000000013
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.35853
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.35428999999999977
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.2938900000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.4116200000000001
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.38144
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.27215999999999996
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.3313699999999997
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.2977299999999996
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.27493999999999996
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.2626599999999999
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.30725999999999987
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.3443100000000001
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.3896700000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.22422999999999993
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.30362
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.21086000000000027
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.3574299999999999
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.17927999999999988
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.24432999999999971
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.24041000000000023
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.25100999999999996
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.2970099999999998
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.4317000000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.39276
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.4408599999999998
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.4165200000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.26032999999999973
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.35530000000000017
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.22519
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.2554400000000001
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.22795999999999994
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.24736000000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3090600000000001
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.3246199999999999
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.2391099999999997
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.48592000000000013
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.31759000000000004
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.36161999999999983
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.26539999999999964
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.24340000000000028
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": 0.3401999999999994
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": 0.016930000000000334
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.5286099999999996
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.56494
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.5034299999999998
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.2800799999999999
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.9652800000000004
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.027820000000000178
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.4597800000000003
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.2700300000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.09494999999999987
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.2960799999999999
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.3180700000000005
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.5338199999999995
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.34640999999999966
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.20819999999999972
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": 0.041710000000000136
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": 0.1802399999999995
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": 0.06550000000000011
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.2448200000000007
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.7539800000000003
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.3555400000000004
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.35939999999999994
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.3502200000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.3416899999999998
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.4721799999999998
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.49429999999999996
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.4410399999999992
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3266399999999994
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.4486599999999994
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.6216900000000001
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.38960999999999935
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.4858500000000001
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.33938999999999986
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.24376000000000086
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.41311000000000053
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.19787
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.46724999999999994
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.4830300000000003
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.7285699999999995
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3274600000000003
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.2643300000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.3756200000000005
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.3330700000000002
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.1027800000000001
+    },
+    {
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.6230700000000002
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.3317300000000003
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.3504100000000001
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.36122999999999994
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.30855999999999995
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.37317
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.3468000000000009
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.43240000000000034
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.22643000000000058
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.32331999999999983
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.31173999999999946
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.2839999999999998
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.25448999999999966
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.2904600000000004
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.32247999999999966
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.3123100000000001
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.32479999999999976
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.3948999999999998
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.40847999999999995
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3671199999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.27036000000000016
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.3971999999999998
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.28854000000000024
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.32911999999999964
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.40874000000000077
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.3537599999999994
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.3400699999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.42881000000000036
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.2530999999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.39552999999999994
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.4122399999999997
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3952499999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.37371
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.3466299999999993
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.3630500000000003
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.3857600000000003
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.44045999999999985
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.44151000000000007
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.40010999999999974
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.4233899999999995
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.3380699999999992
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.4370699999999994
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.4591700000000003
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3747600000000002
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.32627000000000006
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.39527
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.3237300000000003
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.4415299999999993
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p50_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.3384499999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.2756300000000005
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.24596000000000018
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.3563799999999997
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.4011900000000006
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.4602599999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.3710199999999997
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.37246000000000024
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.2501300000000004
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.3834799999999996
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.3777999999999997
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.2199800000000005
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_default",
+      "candidate": "rrf_direct_default",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.4198599999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.46853999999999996
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.32836
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.5282900000000001
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.15657999999999994
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.4666199999999998
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.35649
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3746200000000002
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.2357699999999996
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.4559800000000003
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.28488999999999987
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.2131299999999996
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrf_staged_cached",
+      "candidate": "rrf_direct_cached",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.36941999999999986
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.3590599999999995
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.3018200000000002
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.3473500000000005
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.45006000000000057
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.28202000000000016
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.4210099999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.3845700000000001
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.32272999999999996
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.26924999999999955
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.35927999999999916
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.3343400000000001
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_default",
+      "candidate": "rrb32_direct_default",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.34016
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/1080",
+      "q": 1,
+      "delta_ms": -0.3903100000000004
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/1260",
+      "q": 1,
+      "delta_ms": -0.3942899999999998
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/180",
+      "q": 1,
+      "delta_ms": -0.4878499999999999
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/lossless/360",
+      "q": 1,
+      "delta_ms": -0.24151000000000078
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1080",
+      "q": 8,
+      "delta_ms": -0.5925400000000005
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1170",
+      "q": 8,
+      "delta_ms": -0.39775000000000027
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1260",
+      "q": 8,
+      "delta_ms": -0.22629000000000055
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-a/1350",
+      "q": 8,
+      "delta_ms": -0.39168000000000003
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1080",
+      "q": 8,
+      "delta_ms": -0.3839099999999993
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1170",
+      "q": 8,
+      "delta_ms": -0.23643000000000036
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1260",
+      "q": 8,
+      "delta_ms": -0.33120999999999956
+    },
+    {
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "metric": "p95_ms",
+      "baseline": "rrb32_staged_cached",
+      "candidate": "rrb32_direct_cached",
+      "captured_pair": "corpus/paired-b/1350",
+      "q": 8,
+      "delta_ms": -0.21654000000000018
+    }
+  ],
+  "point_count": 192,
+  "scope": "Captured-pair figure only; all 26 profiles remain in the linked numeric receipt."
+}
