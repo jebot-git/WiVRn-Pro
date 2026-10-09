@@ -41,7 +41,7 @@ def _distribution(values):
                    for q in (50, 95, 99)})
 
 
-def evaluate(presented, decoded, backend, selection_phase):
+def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, selection_policy=None):
     """Return status pass/fail, errors, counts and millisecond distributions.
 
     XR times are client-local positive signed-64-bit values in this runtime log.
@@ -59,6 +59,14 @@ def evaluate(presented, decoded, backend, selection_phase):
         errors.add('unsupported requested backend')
     if selection_phase not in ('early', 'after-fence'):
         errors.add('unsupported requested selection phase')
+    if cpu_output not in (None, 'cached-copy', 'mapped-direct', 'not_used'):
+        errors.add('unsupported requested CPU output mode')
+    if selection_policy not in (None, 'closest-target', 'bounded-newest'):
+        errors.add('unsupported requested selection policy')
+    if cpu_output in ('cached-copy', 'mapped-direct') and backend != 'cpu-neon':
+        errors.add('CPU output requires CPU NEON backend')
+    if cpu_output == 'not_used' and backend == 'cpu-neon':
+        errors.add('CPU NEON requires an output destination')
     if type(presented) is not list or not presented:
         errors.add('presented must be a nonempty list')
         presented = []
@@ -88,6 +96,8 @@ def evaluate(presented, decoded, backend, selection_phase):
             continue
         if row.get('selection_phase') != selection_phase:
             errors.add('observed selection phase differs from requested phase')
+        if selection_policy is not None and row.get('selection_policy') != selection_policy:
+            errors.add('observed selection policy differs from requested policy')
         if row['left'] != row['right'] or row['left_warp'] != row['right_warp']:
             errors.add('presented stereo frame/warp mismatch')
         sb, se = row['selection_begin_xr_ns'], row['selection_end_xr_ns']
@@ -117,7 +127,7 @@ def evaluate(presented, decoded, backend, selection_phase):
                 errors.add('repeated frame changed warp or receive/publication timestamps')
             seen_frames[identity_key] = stable
 
-    decoded_identities, actual_kernels = set(), set()
+    decoded_identities, actual_kernels, output_modes = set(), set(), set()
     duration_values = {k: [] for k in _DURATIONS}
     for row in decoded:
         if (type(row) is not dict or row.get('failed')
@@ -156,14 +166,48 @@ def evaluate(presented, decoded, backend, selection_phase):
                     or row.get('cpu_decode_ms') != 0
                     or (backend == 'resident' and row.get('staging_copy_ms') != 0)):
                 errors.add('GPU decoder provenance/timing flags contradict requested path')
+        # Historical callers may omit this option. Current comparisons require
+        # actual memory/output evidence for every frame, including capture cost.
+        if cpu_output is not None or 'cpu_output_mode' in row:
+            mode = row.get('cpu_output_mode')
+            if type(mode) is str:
+                output_modes.add(mode)
+            if mode not in (('cached-copy', 'mapped-direct') if backend == 'cpu-neon' else ('not_used',)):
+                errors.add('invalid observed CPU output mode')
+            if cpu_output is not None and mode != cpu_output:
+                errors.add('observed CPU output differs from requested mode')
+            flags = row.get('staging_memory_flags')
+            if (not _integer(row.get('staging_memory_type'), 0, 31)
+                    or not _integer(flags, 0, (1 << 32)-1) or flags & 6 != 6):
+                errors.add('staging memory lacks verified host-visible coherent allocation')
+            if mode == 'mapped-direct' and row.get('staging_copy_ms') != 0:
+                errors.add('mapped-direct must not report a staging memcpy')
+            snapshot_ms = row.get('capture_snapshot_ms')
+            if not _duration(snapshot_ms):
+                errors.add('invalid capture snapshot duration')
+            captured = row['frame'] % 90 == 0
+            expected_capture = ('cpu_mapped_staging_snapshot' if mode == 'mapped-direct' else
+                                'cpu_cached_output' if mode == 'cached-copy' else
+                                'gpu_output_readback' if backend == 'resident' else 'decoded_cpu_output')
+            if row.get('capture_source') != (expected_capture if captured else 'not_captured'):
+                errors.add('capture source contradicts actual output path or sample cadence')
+            if not captured and snapshot_ms != 0:
+                errors.add('uncaptured frame has snapshot overhead')
+            if not (captured and (mode == 'mapped-direct' or backend == 'resident')) and snapshot_ms != 0:
+                errors.add('output path without snapshot reports snapshot overhead')
+            if _duration(snapshot_ms) and _duration(row.get('decode_upload_ms')) and snapshot_ms > row['decode_upload_ms']:
+                errors.add('capture snapshot exceeds enclosing decode/upload interval')
     if len(actual_kernels) > 1:
         errors.add('mixed custom decoder kernels within run')
+    if len(output_modes) > 1:
+        errors.add('mixed CPU output modes within run')
     if backend != 'native' and identities - decoded_identities:
         errors.add('presented eye lacks exact frame/warp/eye decoder evidence')
     result.update(render_fence_wait_ms=_distribution(fence_wait),
                   selection_end_to_end_frame_return_ms=_distribution(selection_to_return),
                   decoder_duration_ms={k: _distribution(v) for k, v in duration_values.items()},
                   observed_decoder_kernels=sorted(actual_kernels),
+                  observed_cpu_output_modes=sorted(output_modes),
                   matched_presented_eye_identities=len(identities & decoded_identities),
                   errors=sorted(errors), status='fail' if errors else 'pass')
     return result

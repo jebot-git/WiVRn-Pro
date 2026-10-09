@@ -58,6 +58,8 @@ class test_decoder final:public decoder {
     struct ImageSlot {
         image_allocation image;
         buffer_allocation staging;
+        uint32_t staging_memory_type=UINT32_MAX;
+        VkMemoryPropertyFlags staging_memory_flags=0;
         vk::raii::ImageView view=nullptr;
         vk::ImageLayout layout=vk::ImageLayout::eUndefined;
     };
@@ -93,6 +95,7 @@ class test_decoder final:public decoder {
     std::unique_ptr<test_gpu_decoder> gpu;
     std::vector<uint32_t> cpu_pixels;
     std::string backend="resident";
+    std::string cpu_output_mode="cached-copy";
     std::string kernel="baseline";
     bool compression_enabled=false;
     codec_test::compression::Workspace decompression_workspace;
@@ -131,6 +134,13 @@ public:
                 .subresourceRange={.aspectMask=vk::ImageAspectFlagBits::eColor,.levelCount=1,.layerCount=1}});
             item->staging=buffer_allocation(device,{.size=uint64_t(extent.width)*extent.height*4,.usage=vk::BufferUsageFlagBits::eTransferSrc|vk::BufferUsageFlagBits::eTransferDst},
                 {.requiredFlags=VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT});item->staging.map();
+            VmaAllocationInfo allocation_info{};
+            vmaGetAllocationInfo(vk_allocator::instance(),static_cast<VmaAllocation>(item->staging),&allocation_info);
+            item->staging_memory_type=allocation_info.memoryType;
+            item->staging_memory_flags=item->staging.properties();
+            constexpr VkMemoryPropertyFlags required=VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+            if((item->staging_memory_flags&required)!=required)
+                throw std::runtime_error("codec test staging must be host-visible and coherent");
         }
         {std::ifstream choice(application::get_config_path()/"codec-test-kernel.txt");if(choice)choice>>kernel;}
         {
@@ -141,6 +151,15 @@ public:
         }
         {std::ifstream choice(application::get_config_path()/"codec-test-backend.txt");if(choice)choice>>backend;}
         if(backend!="resident"&&backend!="readback"&&backend!="cpu-neon")throw std::runtime_error("invalid decoder backend");
+        {
+            std::ifstream choice(application::get_config_path()/"codec-test-cpu-output.txt");
+            if(choice){
+                std::string extra;
+                if(!(choice>>cpu_output_mode)||(choice>>extra))throw std::runtime_error("invalid CPU output configuration");
+            }
+        }
+        if(cpu_output_mode!="cached-copy"&&cpu_output_mode!="mapped-direct")throw std::runtime_error("invalid CPU output mode");
+        if(cpu_output_mode=="mapped-direct"&&backend!="cpu-neon")throw std::runtime_error("mapped-direct requires cpu-neon");
         if(backend=="cpu-neon") {
             if(kernel!="direct-neon" || std::string_view(direct::vector_backend())!="aarch64-neon")
                 throw std::runtime_error("cpu-neon requires the direct-neon ARM backend");
@@ -256,9 +275,10 @@ private:
                 auto decompress_start=std::chrono::steady_clock::now();
                 if(h.flags & codec_test::flag_lz4)body=codec_test::compression::decode(body,decompression_workspace);
                 double decompress_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-decompress_start).count();
-                std::vector<uint32_t> pixels;double gpu_ms=0, cpu_ms=0, staging_copy_ms=0;
+                std::vector<uint32_t> pixels;double gpu_ms=0, cpu_ms=0, staging_copy_ms=0, capture_snapshot_ms=0;
                 const bool resident=h.kind==codec_test::Kind::vr444 && backend=="resident";
                 const bool cpu_direct=backend=="cpu-neon";
+                const bool cpu_mapped=cpu_direct&&cpu_output_mode=="mapped-direct";
                 if(cpu_direct && h.kind!=codec_test::Kind::vr444)throw std::runtime_error("CPU direct backend requires VR444");
                 const bool capture=h.frame%90==0;
                 vr444::Frame decoded_frame{};
@@ -266,9 +286,18 @@ private:
                     auto cpu_start=std::chrono::steady_clock::now();
                     auto shape=direct::preflight(body);
                     if(shape.width!=extent.width||shape.height!=extent.height)throw std::runtime_error("direct VR444 dimensions mismatch");
-                    cpu_pixels.resize(size_t(extent.width)*extent.height);
-                    // Private cached output is never uploaded or published after a parse error.
-                    direct::decode(body,shape,cpu_pixels,true);
+                    const size_t pixel_count=size_t(extent.width)*extent.height;
+                    if(cpu_mapped){
+                        // This slot has no published handle, and the previous upload
+                        // completed before this worker can start another job. A parse
+                        // error may change private staging bytes but cannot submit or
+                        // publish them. Coherent host writes precede queue submission.
+                        direct::decode(body,shape,std::span(image->staging.data<uint32_t>(),pixel_count),true);
+                    }else{
+                        cpu_pixels.resize(pixel_count);
+                        // Private cached output is never uploaded or published after a parse error.
+                        direct::decode(body,shape,cpu_pixels,true);
+                    }
                     cpu_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-cpu_start).count();
                 }else if(h.kind==codec_test::Kind::vr444){
                     auto frame=vr444::unpack(std::vector<uint8_t>(body.begin(),body.end()));
@@ -285,7 +314,7 @@ private:
                     if(body.size()!=size_t(extent.width)*extent.height*4)throw std::runtime_error("raw RGBA length");
                     pixels.resize(size_t(extent.width)*extent.height);std::memcpy(pixels.data(),body.data(),body.size());
                 }else pixels=hevc(body,h.frame);
-                if(!resident){
+                if(!resident&&!cpu_mapped){
                     auto copy_start=std::chrono::steady_clock::now();
                     const auto& upload_pixels=cpu_direct?cpu_pixels:pixels;
                     std::memcpy(image->staging.data<uint8_t>(),upload_pixels.data(),upload_pixels.size()*4);
@@ -326,10 +355,35 @@ private:
                     uint64_t times[2];
                     if(vkGetQueryPoolResults(VkDevice(*device),VkQueryPool(*queries),0,2,sizeof(times),times,sizeof(uint64_t),VK_QUERY_RESULT_64_BIT)!=VK_SUCCESS)throw std::runtime_error("decode timestamp read failed");
                     gpu_ms=double((times[1]-times[0])&timestamp_mask)*timestamp_factor;
-                    if(capture){pixels.resize(size_t(extent.width)*extent.height);std::memcpy(pixels.data(),image->staging.data<uint8_t>(),pixels.size()*4);}
+                    if(capture){
+                        auto snapshot_start=std::chrono::steady_clock::now();
+                        pixels.resize(size_t(extent.width)*extent.height);
+                        std::memcpy(pixels.data(),image->staging.data<uint8_t>(),pixels.size()*4);
+                        capture_snapshot_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-snapshot_start).count();
+                    }
                 }
-                events<<"{\"frame\":"<<h.frame<<",\"eye\":"<<unsigned(eye)<<",\"warp\":"<<h.warp<<",\"decoder_kernel\":\""<<kernel<<"\",\"decoder_backend\":\""<<backend<<"\",\"compression_policy\":\""<<(compression_enabled?"lz4":"none")<<"\",\"bytes\":"<<job.bytes.size()<<",\"compression_applied\":"<<((h.flags & codec_test::flag_lz4)?"true":"false")<<",\"decoded_payload_bytes\":"<<body.size()<<",\"decompression_ms\":"<<decompress_ms<<",\"decode_gpu_ms\":"<<gpu_ms<<",\"gpu_timing_valid\":"<<((h.kind==codec_test::Kind::vr444&&!cpu_direct)?"true":"false")<<",\"cpu_decode_ms\":"<<cpu_ms<<",\"cpu_vector_backend\":\""<<(cpu_direct?direct::vector_backend():"not_used")<<"\",\"staging_copy_ms\":"<<staging_copy_ms<<",\"submit_fence_wait_ms\":"<<submit_wait_ms<<",\"queue_wait_ms\":"<<queue_ms<<",\"queue_dropped_so_far\":"<<dropped.load()<<",\"decode_upload_ms\":"<<std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-began).count();write_pair_stats();events<<"}\n";events.flush();
-                if(capture){const auto& captured_pixels=cpu_direct?cpu_pixels:pixels;std::ofstream(folder/(std::to_string(h.frame)+"-"+std::to_string(eye)+".rgba"),std::ios::binary).write(reinterpret_cast<const char*>(captured_pixels.data()),captured_pixels.size()*4);}
+                if(cpu_mapped&&capture){
+                    auto snapshot_start=std::chrono::steady_clock::now();
+                    // Preserve the exact CPU-produced bytes in owned storage before
+                    // publication or slot reuse. This is a CPU snapshot, not an image
+                    // readback or evidence of the pixels displayed by the compositor.
+                    pixels.resize(size_t(extent.width)*extent.height);
+                    std::memcpy(pixels.data(),image->staging.data<uint8_t>(),pixels.size()*4);
+                    capture_snapshot_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-snapshot_start).count();
+                }
+                const char* capture_source=!capture?"not_captured":cpu_mapped?"cpu_mapped_staging_snapshot":cpu_direct?"cpu_cached_output":resident?"gpu_output_readback":"decoded_cpu_output";
+                events<<"{\"frame\":"<<h.frame<<",\"eye\":"<<unsigned(eye)<<",\"warp\":"<<h.warp
+                      <<",\"decoder_kernel\":\""<<kernel<<"\",\"decoder_backend\":\""<<backend<<"\",\"compression_policy\":\""<<(compression_enabled?"lz4":"none")
+                      <<"\",\"bytes\":"<<job.bytes.size()<<",\"compression_applied\":"<<((h.flags & codec_test::flag_lz4)?"true":"false")
+                      <<",\"decoded_payload_bytes\":"<<body.size()<<",\"decompression_ms\":"<<decompress_ms<<",\"decode_gpu_ms\":"<<gpu_ms
+                      <<",\"gpu_timing_valid\":"<<((h.kind==codec_test::Kind::vr444&&!cpu_direct)?"true":"false")
+                      <<",\"cpu_decode_ms\":"<<cpu_ms<<",\"cpu_vector_backend\":\""<<(cpu_direct?direct::vector_backend():"not_used")
+                      <<"\",\"cpu_output_mode\":\""<<(cpu_direct?cpu_output_mode:"not_used")<<"\",\"staging_memory_type\":"<<image->staging_memory_type
+                      <<",\"staging_memory_flags\":"<<image->staging_memory_flags<<",\"staging_copy_ms\":"<<staging_copy_ms
+                      <<",\"capture_source\":\""<<capture_source<<"\",\"capture_snapshot_ms\":"<<capture_snapshot_ms
+                      <<",\"submit_fence_wait_ms\":"<<submit_wait_ms<<",\"queue_wait_ms\":"<<queue_ms<<",\"queue_dropped_so_far\":"<<dropped.load()
+                      <<",\"decode_upload_ms\":"<<std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-began).count();write_pair_stats();events<<"}\n";events.flush();
+                if(capture){const auto& captured_pixels=cpu_direct&&!cpu_mapped?cpu_pixels:pixels;std::ofstream(folder/(std::to_string(h.frame)+"-"+std::to_string(eye)+".rgba"),std::ios::binary).write(reinterpret_cast<const char*>(captured_pixels.data()),captured_pixels.size()*4);}
                 if(auto target=scene.lock()){
                     target->push_blit_handle(accumulator,std::make_shared<Handle>(job.feedback,job.view,extent,image,sampled_rgb_is_linear()));
                     completion.success=true;

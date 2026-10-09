@@ -119,6 +119,24 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
                     or (directory/'client/codec-test/selection-trace.jsonl').exists()):
                 errors.append('diagnostic trace evidence cannot masquerade as an untraced candidate')
             backend, phase = provenance.get('decoder_backend'), provenance.get('selection_phase')
+            if backend == 'cpu-neon':
+                target_path = HERE/'cpu_target.py'
+                spec = importlib.util.spec_from_file_location('cpu_target_gate', target_path)
+                target_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(target_module)
+                target_result = target_module.evaluate(rows, provenance)
+                if target_result['status'] != 'pass':
+                    errors.extend('CPU target: '+error for error in target_result['errors'])
+                if (summary.get('preliminary_cpu_target_source_sha256') != _sha(target_path)
+                        or summary.get('preliminary_cpu_target_policy_sha256') != _sha(HERE/'CPU-LATENCY-TARGET.json')):
+                    errors.append('CPU target policy/evaluator provenance differs')
+            if (provenance.get('cpu_output') != 'cached-copy'
+                    or provenance.get('selection_policy') != 'closest-target'
+                    or provenance.get('source_trace') is not False):
+                errors.append('experimental CPU output, selector or source trace is not eligible for promotion')
+            if (summary.get('source_trace', {}).get('status') != 'off'
+                    or (directory/'host/source-trace.jsonl').exists()):
+                errors.append('source tracing cannot masquerade as an untraced candidate')
             kernel = 'direct-neon' if backend == 'cpu-neon' else 'coop128dc'
             fixed = {'custom_decoder': kernel, 'scene_reference_space': 'Local',
                      'gaze_enabled': False, 'meta_sr_mode': 'off', 'user_presence_overridden': False,
@@ -149,10 +167,12 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
                 if not _valid_sha(expected.get(filename)) or provenance.get(key) != expected[filename]:
                     errors.append('candidate decoder source differs from build receipt: '+filename)
             helpers = provenance.get('source_helper_sha256')
+            required_helpers = {'client/scenes/stream.cpp', 'common/codec_test/selection_policy.h',
+                                'common/codec_test/selection_trace.h', 'server/driver/app_pacer.cpp',
+                                'server/driver/codec_source_trace.h', 'server/compositor/compositor.cpp'}
             if (type(helpers) is not dict or not helpers
-                    or any(not _valid_sha(value) for value in helpers.values())
-                    or helpers.get('client/scenes/stream.cpp') != expected.get('client/scenes/stream.cpp')
-                    or not _valid_sha(expected.get('client/scenes/stream.cpp'))):
+                    or not required_helpers.issubset(helpers)
+                    or any(not _valid_sha(value) or value != expected.get(name) for name, value in helpers.items())):
                 errors.append('missing or mismatched helper source provenance')
             shaders = provenance.get('shader_sha256')
             if type(shaders) is not dict or not shaders or any(not _valid_sha(value) for value in shaders.values()):
@@ -178,7 +198,9 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
             spec = importlib.util.spec_from_file_location('latency_runtime_gate', runtime_path)
             runtime = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(runtime)
-            validation = runtime.evaluate(rows, decoded, backend, phase)
+            validation = runtime.evaluate(rows, decoded, backend, phase,
+                                          cpu_output='cached-copy' if backend == 'cpu-neon' else 'not_used',
+                                          selection_policy='closest-target')
             if validation['status'] != 'pass':
                 errors.extend('runtime: '+error for error in validation['errors'])
             if validation.get('observed_decoder_kernels') != [kernel]:
@@ -189,7 +211,9 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
             expected_readback = {'codec-test-kernel.txt': kernel, 'codec-test-backend.txt': backend,
                                 'codec-test-pairing.txt': 'paired', 'codec-test-compression.txt': provenance.get('custom_compression'),
                                 'codec-test-gaze-timing.txt': '0', 'codec-test-selection.txt': phase,
-                                'codec-test-candidate-trace.txt': '0'}
+                                'codec-test-candidate-trace.txt': '0',
+                                'codec-test-cpu-output.txt': 'cached-copy',
+                                'codec-test-selection-policy.txt': 'closest-target'}
             for key, value in expected_readback.items():
                 if type(readback.get(key)) is not str or readback[key].strip() != value:
                     errors.append('client readback mismatch: '+key)
@@ -212,7 +236,8 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
                                   'selection_phase', 'bitrate_bps', 'harness_sha256', 'source_helper_sha256',
                                   'main_source_sha256', 'shader_sha256', 'direct_decoder_source_sha256',
                                   'client_decoder_source_sha256', 'runtime_manifest_sha256', 'candidate_trace',
-                                  'application_source_sha256', 'application_header_sha256')
+                                  'application_source_sha256', 'application_header_sha256',
+                                  'cpu_output', 'selection_policy', 'source_trace')
             configuration = {key: provenance.get(key) for key in keys}
             configuration.update(client_config=client, client_readback=readback,
                                  server_config={k: v for k, v in server.items() if k != 'port'})

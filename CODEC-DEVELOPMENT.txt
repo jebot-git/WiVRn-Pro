@@ -26,6 +26,12 @@ isolated native/Android dependency caches; this is not a clean-room build recipe
 The seven small SPIR-V assets are included because the overlay hashes bind them.
 
 Current status
+  Source iteration 0.15.0 adds opt-in mapped CPU output, bounded newest-complete
+  selection and application/compositor mapping telemetry. The preliminary goal
+  is RGB444 with stereo receive-to-submit p95 strictly below 15 ms. Offline
+  validation passes; these changes have not been linked or tested on the headset.
+  See docs/codec/cpu-development-0.15.0.txt and integration/CPU-LATENCY-TARGET.json.
+
   Latency is mission critical. The CPU-NEON path improves on the earlier custom
   GPU path, but has not passed the repeated latency promotion gate. Selection
   traces identify newer complete pairs retained while the selector chooses the

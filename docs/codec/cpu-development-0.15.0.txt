@@ -1,0 +1,87 @@
+CPU RGB444 development 0.15.0 — implemented, offline validated
+
+Objective
+Preserve all three 8-bit color channels at full spatial resolution (no chroma
+subsampling), and reach complete-stereo receive-to-submit p95 strictly below
+15 ms at the current 576x640/eye, 90 Hz profile. This preliminary target excludes
+host processing and transfer before first headset receipt. It is not an optical
+motion-to-photon claim. CPU-LATENCY-TARGET.json makes the target explicit; the
+existing cadence, correctness and p99 requirements still apply. Current CPU
+candidate qualification also rechecks the stricter target.
+
+Implemented by three parallel workstreams
+
+1. CPU output destination
+   --cpu-output mapped-direct decodes directly into the existing coherent staging
+   allocation, removing the frame memcpy. cached-copy remains the default.
+   The parser, exact output bounds, ImageSlot ownership, upload barriers, fence,
+   SRGB image and codec grammar remain intact. Per-frame telemetry records the
+   actual VMA memory type/flags and output path. Sampled mapped output is copied
+   into owned capture storage after upload completion; its cost stays measured.
+   This is a CPU byte snapshot, not a texture readback or displayed-pixel check.
+
+2. Bounded selection
+   --selection-policy bounded-newest selects the highest eligible complete frame
+   ID, with matching frame/warp/target/alpha metadata and no regression relative
+   to the closest-target candidate or previous coherent selection. Its future
+   bound is the smaller of the reported runtime period and the positive target
+   advance. First/invalid periods disable advancement. Exact slot ownership and
+   existing render fences remain in place. closest-target preserves the old
+   choice and fallback behavior. Schema-2 traces expose candidates, prior and
+   closest snapshots, eligibility, chosen slots and bound inputs for independent
+   replay. This option currently requires --candidate-trace and is diagnostic.
+
+3. Source/compositor mapping
+   --source-trace enables a test-only host recorder for application prediction,
+   delivery, GPU completion, latch/retire callbacks and compositor projection
+   targets. It keeps bounded fixed records in memory and exports on teardown.
+   Overflow, absent completion, inconsistent identities or missing selected-frame
+   joins invalidate the diagnostic. The runner allows five seconds for graceful
+   export after stopping the test APK. Application IDs reveal reuse, but cannot
+   establish simulation/input freshness without application instrumentation.
+
+Runner and validation
+Both new client files are backed up, read back and restored. Inherited source
+trace environment settings are removed. Experimental paths and diagnostic data
+cannot pass the promotion gate, even when timing scores look good. Actual
+decoder telemetry, explicit build-receipt source hashes, all selected stereo
+identities and independent selector replay are checked. Analyzer failures retain
+failure summaries rather than being treated as performance results.
+
+Validation completed
+  179 Python suite tests, 8 prototype tests and 11 source-trace analyzer tests.
+  98 mapped-destination guard/oracle/snapshot/reuse checks under ASan/UBSan;
+  the same standalone test cross-compiles for Android ARM64.
+  38 selector semantic cases, 20,000 independent legacy-equivalence cases,
+  4,288 actual bounded-choice invariant cases and 38 C++/Python fixture replays.
+  Recorder concurrency, overflow and close-under-writer tests under ASan/UBSan.
+  Full translation-unit syntax compilation with actual cached build flags for
+  Android test_decoder.cpp and stream.cpp, and host app_pacer.cpp/compositor.cpp.
+  All 64 overlay files match the isolated source. Independently applying the
+  generated patch to its recorded baseline reproduces every after-file hash.
+LeakSanitizer cannot run under this sandbox's ptrace environment; ASan and UBSan
+ran with leak detection disabled. Syntax checks are not linked builds.
+
+Hardware status and next acquisition
+This session's sandbox blocks ADB's socket listener/network access. No new APK or
+linked server was built, installed or run. The last device-verified APK remains
+the 0.14.0 build; the current source must not be labeled as measured hardware.
+No new latency improvement, 4:4:4 visual qualification or sub-15 ms pass is claimed.
+Production sources and frozen evidence are unchanged.
+
+validation/results/cpu-development-0.15.0/live-plan.json prepares nine fresh runs:
+cached/mapped/mapped/cached CPU comparisons without diagnostic tracing, then
+closest/bounded/bounded/closest with candidate and source mapping traces, plus
+one native HEVC reference. Build/link and hash verification, ADB availability,
+and a worn-headset prompt precede execution. Stop on evidence or cleanup errors.
+The traced selector runs assess identity and source reuse, not promotion. Later
+untraced selector testing requires a separate decision after freshness and visual
+review. Representative moving content, final image quality, thermal behavior and
+optical timing remain open; the full 930-run suite is not qualified.
+
+Custom compositor/shader decision
+No replacement is justified by current evidence: the existing single-projection
+path already avoids layer squashing. CPU upload and retained-frame selection are
+the concrete opportunities now. Existing 0.14.1 observations are a basis for the
+experiment, not measured savings from these changes. See experiment READMEs under
+prototypes/vr444/experiments/{cpu_upload_live,selection_policy,compositor_freshness}.

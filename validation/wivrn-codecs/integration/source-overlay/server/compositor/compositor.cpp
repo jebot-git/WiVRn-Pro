@@ -20,6 +20,7 @@
 // Copyright 2025-2026, NVIDIA CORPORATION.
 
 #include "compositor.h"
+#include "driver/codec_source_trace.h"
 #include "codec_test/metadata.h"
 #include "encoder/encode_batch.h"
 #include "utils/performance.h"
@@ -333,6 +334,46 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	};
 
 	trace::instant_feedback("begin", frame.rendering.id, os_monotonic_get_ns());
+#ifdef WIVRN_CODEC_TESTS
+	// This is an accepted compositor input, not proof of encoded delivery.
+	// The app pacer records which application frame(s) were latched for it.
+	if (auto & source = codec_test::source_trace(); source.enabled())
+	{
+		uint32_t projection_count = 0;
+		int64_t first_projection_target = 0;
+		for (const auto & layer : std::span(layer_accum.layers, layer_accum.layer_count))
+			if (layer.data.type == XRT_LAYER_PROJECTION || layer.data.type == XRT_LAYER_PROJECTION_DEPTH)
+			{
+				if (!projection_count)
+					first_projection_target = layer.data.timestamp;
+				++projection_count;
+			}
+		const bool direct = layer_accum.layer_count == 1 && projection_count == 1;
+		const bool reused = projection_count &&
+		                    (direct || llabs(int64_t(frame.rendering.predicted_display_time_ns) - first_projection_target) <= 3 * pacer.get_frame_duration());
+		const auto now = int64_t(os_monotonic_get_ns());
+		source.append({.event = codec_test::source_event::compositor_frame,
+		               .system_frame_id = frame.rendering.id,
+		               .when_ns = now, .observed_ns = now,
+		               .display_time_ns = int64_t(frame.rendering.predicted_display_time_ns),
+		               .display_period_ns = int64_t(pacer.get_frame_duration()),
+		               .layer_target_ns = first_projection_target,
+		               .layer_count = layer_accum.layer_count,
+		               .projection_count = projection_count,
+		               .direct_projection = direct, .projection_pose_reused = reused});
+		for (uint32_t index = 0; index < layer_accum.layer_count; ++index)
+		{
+			const auto & layer = layer_accum.layers[index];
+			if (layer.data.type == XRT_LAYER_PROJECTION || layer.data.type == XRT_LAYER_PROJECTION_DEPTH)
+				source.append({.event = codec_test::source_event::projection_layer,
+				               .system_frame_id = frame.rendering.id,
+				               .when_ns = now, .observed_ns = now,
+				               .layer_target_ns = layer.data.timestamp,
+				               .layer_index = index});
+		}
+	}
+#endif
+
 
 	cmd_pool.reset();
 	cmd.begin({.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
@@ -787,6 +828,9 @@ compositor::compositor(wivrn_session & session) :
         squasher(vk, render_extent(session.get_info())),
         foveation(vk, images[0].image.info().extent)
 {
+#ifdef WIVRN_CODEC_TESTS
+	(void)codec_test::source_trace();
+#endif
 	comp_base * c_base = this;
 	// Ensure we can safely cast pointers
 	assert(intptr_t(&base) == intptr_t(this));
@@ -861,6 +905,9 @@ compositor::~compositor()
 	}
 	encoder_wakeup.notify_all();
 	encoder_thread.join();
+#ifdef WIVRN_CODEC_TESTS
+	codec_test::source_trace().flush();
+#endif
 	comp_base * c_base = this;
 	comp_swapchain_shared_garbage_collect(&cscs);
 	comp_swapchain_shared_destroy(&cscs, &c_base->vk);

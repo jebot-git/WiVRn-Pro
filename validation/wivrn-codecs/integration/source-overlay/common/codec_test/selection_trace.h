@@ -18,7 +18,8 @@ struct Frame {
     int64_t view_display_time = 0, receive = 0, ready = 0;
     bool alpha = false;
 };
-enum class Reason { unavailable, closest_target, no_complete_fallback };
+enum class Policy { closest_target, bounded_newest };
+enum class Reason { unavailable, closest_target, bounded_newest, no_complete_fallback, no_eligible_fallback };
 struct Record {
     uint64_t sequence = 0;
     bool after_fence = false, alpha_required = false, repeat_previous = false;
@@ -26,9 +27,14 @@ struct Record {
     int64_t wait_begin = 0, wait_end = 0, render_entry = 0;
     int64_t selection_begin = 0, selection_end = 0, predicted_display = 0;
     int64_t end_frame_return = 0;
+    Policy policy = Policy::closest_target;
+    int64_t predicted_period = 0, previous_predicted_display = 0, max_ahead = 0;
+    bool selected_alpha_required = false;
     Reason reason = Reason::unavailable;
     std::array<Frame, decoder_count * history_slots> history{};
-    std::array<Frame, decoder_count> selected{};
+    std::array<Frame, decoder_count> selected{}, closest{}, previous{};
+    std::array<int, decoder_count> chosen_slots{-1, -1, -1};
+    std::array<bool, history_slots> eligible_left_slots{};
 };
 static_assert(std::is_trivially_copyable_v<Frame> && std::is_trivially_copyable_v<Record>);
 
@@ -60,9 +66,15 @@ struct Budget {
 inline const char* reason_name(Reason value) {
     switch (value) {
     case Reason::closest_target: return "closest_target";
+    case Reason::bounded_newest: return "bounded_newest";
     case Reason::no_complete_fallback: return "no_complete_fallback";
+    case Reason::no_eligible_fallback: return "no_eligible_fallback";
     default: return "unavailable";
     }
+}
+
+inline const char* policy_name(Policy value) {
+    return value == Policy::bounded_newest ? "bounded-newest" : "closest-target";
 }
 
 inline void write_frame(std::ostream& out, const Frame& frame) {
@@ -76,8 +88,12 @@ inline void write_frame(std::ostream& out, const Frame& frame) {
 
 // Invoke outside frames_mutex, only after successful xrEndFrame.
 inline void write_json(std::ostream& out, const Record& r) {
-    out << "{\"schema\":1,\"sequence\":" << r.sequence
+    out << "{\"schema\":2,\"sequence\":" << r.sequence
         << ",\"selection_phase\":\"" << (r.after_fence ? "after-fence" : "early") << "\""
+        << ",\"selection_policy\":\"" << policy_name(r.policy) << "\""
+        << ",\"predicted_display_period_xr_ns\":" << r.predicted_period
+        << ",\"previous_predicted_display_xr_ns\":" << r.previous_predicted_display
+        << ",\"max_ahead_xr_ns\":" << r.max_ahead
         << ",\"wait_frame_begin_xr_ns\":" << r.wait_begin
         << ",\"wait_frame_end_xr_ns\":" << r.wait_end
         << ",\"render_entry_xr_ns\":" << r.render_entry
@@ -86,6 +102,7 @@ inline void write_json(std::ostream& out, const Record& r) {
         << ",\"predicted_display_xr_ns\":" << r.predicted_display
         << ",\"end_frame_return_xr_ns\":" << r.end_frame_return
         << ",\"alpha_required\":" << (r.alpha_required ? "true" : "false")
+        << ",\"selected_alpha_required\":" << (r.selected_alpha_required ? "true" : "false")
         << ",\"projection_submitted\":" << (r.projection_submitted ? "true" : "false")
         << ",\"reason\":\"" << reason_name(r.reason) << "\""
         << ",\"repeat_previous\":" << (r.repeat_previous ? "true" : "false")
@@ -95,11 +112,26 @@ inline void write_json(std::ostream& out, const Record& r) {
         out << "{\"decoder\":" << i / history_slots << ",\"slot\":" << i % history_slots << ',';
         write_frame(out, r.history[i]); out << '}';
     }
-    out << "],\"selected\":[";
-    for (std::size_t i = 0; i < r.selected.size(); ++i) {
+    auto frames = [&](const char* key, const auto& values) {
+        out << "],\"" << key << "\":[";
+        for (std::size_t i = 0; i < values.size(); ++i) {
+            if (i) out << ',';
+            out << "{\"decoder\":" << i << ',';
+            write_frame(out, values[i]); out << '}';
+        }
+    };
+    frames("selected", r.selected);
+    frames("closest", r.closest);
+    frames("previous", r.previous);
+    out << "],\"chosen_slots\":[";
+    for (std::size_t i = 0; i < r.chosen_slots.size(); ++i) {
         if (i) out << ',';
-        out << "{\"decoder\":" << i << ',';
-        write_frame(out, r.selected[i]); out << '}';
+        out << r.chosen_slots[i];
+    }
+    out << "],\"eligible_left_slots\":[";
+    for (std::size_t i = 0; i < r.eligible_left_slots.size(); ++i) {
+        if (i) out << ',';
+        out << (r.eligible_left_slots[i] ? "true" : "false");
     }
     out << "]}\n";
 }

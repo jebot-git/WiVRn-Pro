@@ -1,0 +1,42 @@
+{
+  "status": "pass",
+  "checks": [
+    {
+      "name": "python-analyzer",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/home/blux/spatial-bridge/prototypes/vr444/experiments/compositor_freshness",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.0418674880056642,
+      "stdout": "",
+      "stderr": "test_ambiguous_target_join_is_visible (test_analyze.AnalyzerTests.test_ambiguous_target_join_is_visible) ... ok\ntest_bad_keys_types_clock_and_sequences (test_analyze.AnalyzerTests.test_bad_keys_types_clock_and_sequences) ... ok\ntest_callback_order_and_identity_fail (test_analyze.AnalyzerTests.test_callback_order_and_identity_fail) ... ok\ntest_duplicate_latch_or_frame_fails (test_analyze.AnalyzerTests.test_duplicate_latch_or_frame_fails) ... ok\ntest_footer_and_overflow_fail_closed (test_analyze.AnalyzerTests.test_footer_and_overflow_fail_closed) ... ok\ntest_malformed_event_name_fails_without_exception (test_analyze.AnalyzerTests.test_malformed_event_name_fails_without_exception) ... ok\ntest_missing_prediction_or_completion (test_analyze.AnalyzerTests.test_missing_prediction_or_completion) ... ok\ntest_multiple_layers_cutoff_controls_pose_reuse (test_analyze.AnalyzerTests.test_multiple_layers_cutoff_controls_pose_reuse) ... ok\ntest_selected_frame_join_required (test_analyze.AnalyzerTests.test_selected_frame_join_required) ... ok\ntest_valid_reused_app_frames (test_analyze.AnalyzerTests.test_valid_reused_app_frames) ... ok\ntest_wrong_projection_target_or_path_fails (test_analyze.AnalyzerTests.test_wrong_projection_target_or_path_fails) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.003s\n\nOK\n"
+    },
+    {
+      "name": "asan-ubsan-recorder",
+      "argv": [
+        "/tmp/source-trace-test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 15.662960788002238,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "source_hashes": {
+    ".worktrees/wivrn-codec-tests/server/driver/app_pacer.cpp": "77f415cb8ec0c85caaef1439699fa8f184c4d53c9418a080e0d431ebc2411a91",
+    ".worktrees/wivrn-codec-tests/server/driver/codec_source_trace.h": "76fc5a03bf95c202e8d8562773547a7f7e12c96b4e40120af1d10545472654d7",
+    ".worktrees/wivrn-codec-tests/server/compositor/compositor.cpp": "3097bca5fe842c0b581c6769e41537fb09fb9494255f1f46aad7429edce5a565",
+    "prototypes/vr444/experiments/compositor_freshness/analyze.py": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10",
+    "prototypes/vr444/experiments/compositor_freshness/test_analyze.py": "ac1d2b91b72770a256955d34dcdb516f33ede45b2f2426ceb17cc12c0b17f5b7",
+    "prototypes/vr444/experiments/compositor_freshness/source_trace_test.cpp": "6f14f9e070967ed0f25797726b3154f063dde909edd163416d25df1741dacd41",
+    "prototypes/vr444/experiments/compositor_freshness/README.txt": "29a5974ff810a0f6383f087b862d2072d92dbc04e5b3984079374b0221f8975d"
+  },
+  "sanitizer_limitation": "Leak detection disabled: LSAN is unsupported under ptrace; ASan and UBSan enabled. No TSAN/linked server/device test.",
+  "test_binary_sha256": "f00e006dcbf6a87f71eb1f56293a8463b59d049e9428b402396b57dbf908fa15"
+}

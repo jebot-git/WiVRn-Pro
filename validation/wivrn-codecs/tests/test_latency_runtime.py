@@ -34,10 +34,28 @@ def decoded(backend='cpu-neon'):
                  decompression_ms=.02) for eye in (0, 1)]
 
 
+def output_evidence(mode='mapped-direct', frame=10, backend='cpu-neon'):
+    rows = decoded(backend)
+    sampled = frame % 90 == 0
+    source = ('cpu_mapped_staging_snapshot' if mode == 'mapped-direct' else
+              'cpu_cached_output' if mode == 'cached-copy' else
+              'gpu_output_readback' if backend == 'resident' else 'decoded_cpu_output')
+    for row in rows:
+        row.update(frame=frame, cpu_output_mode=mode,
+                   staging_memory_type=4, staging_memory_flags=15,
+                   capture_source=source if sampled else 'not_captured',
+                   capture_snapshot_ms=.25 if sampled and (mode == 'mapped-direct' or backend == 'resident') else 0)
+        if mode == 'mapped-direct':
+            row['staging_copy_ms'] = 0
+    presented = presentation() | {'left': frame, 'right': frame}
+    return [presented], rows
+
+
 class LatencyRuntimeTests(unittest.TestCase):
-    def check(self, p=None, d=None, backend='cpu-neon', phase='after-fence', status='pass'):
+    def check(self, p=None, d=None, backend='cpu-neon', phase='after-fence', status='pass', cpu_output=None):
         result = module.evaluate([presentation(phase)] if p is None else p,
-                                 decoded(backend) if d is None else d, backend, phase)
+                                 decoded(backend) if d is None else d, backend, phase,
+                                 cpu_output=cpu_output)
         self.assertEqual(result['status'], status, result['errors'])
         return result
 
@@ -149,6 +167,95 @@ class LatencyRuntimeTests(unittest.TestCase):
         self.assertEqual(result['render_fence_wait_ms']['p50'], 1)
         self.assertEqual(result['selection_end_to_end_frame_return_ms']['p50'], 2)
         self.assertEqual((p, d), before)
+
+    def test_cpu_output_valid_modes_and_actual_memory_evidence(self):
+        for mode in ('cached-copy', 'mapped-direct'):
+            for frame in (10, 90):
+                for memory_type, flags in ((0, 6), (4, 15), (31, 14)):
+                    with self.subTest(mode=mode, frame=frame, memory_type=memory_type, flags=flags):
+                        p, rows = output_evidence(mode, frame)
+                        for row in rows:
+                            row.update(staging_memory_type=memory_type, staging_memory_flags=flags)
+                        result = self.check(p=p, d=rows, cpu_output=mode)
+                        self.assertEqual(result['observed_cpu_output_modes'], [mode])
+        # Resident/readback still report their allocated staging memory even
+        # though the CPU decoder output destination is not used.
+        for backend in ('resident', 'readback'):
+            for frame in (10, 90):
+                p, rows = output_evidence('not_used', frame, backend)
+                self.check(p=p, d=rows, backend=backend, cpu_output='not_used')
+
+    def test_mapped_output_cannot_claim_a_staging_memcpy(self):
+        p, rows = output_evidence()
+        rows[0]['staging_copy_ms'] = .001
+        result = self.check(p=p, d=rows, cpu_output='mapped-direct', status='fail')
+        self.assertIn('mapped-direct must not report a staging memcpy', result['errors'])
+
+    def test_output_mode_mismatch_and_mixed_modes_rejected(self):
+        for requested, actual in (('mapped-direct', 'cached-copy'), ('cached-copy', 'mapped-direct')):
+            p, rows = output_evidence(actual)
+            result = self.check(p=p, d=rows, cpu_output=requested, status='fail')
+            self.assertIn('observed CPU output differs from requested mode', result['errors'])
+        p, rows = output_evidence()
+        rows[1] = output_evidence('cached-copy')[1][1]
+        result = self.check(p=p, d=rows, status='fail')
+        self.assertIn('mixed CPU output modes within run', result['errors'])
+        for backend, mode in (('resident', 'mapped-direct'), ('readback', 'cached-copy'), ('cpu-neon', 'not_used')):
+            p, rows = output_evidence(mode, backend=backend)
+            self.check(p=p, d=rows, backend=backend, cpu_output=mode, status='fail')
+
+    def test_actual_staging_memory_requires_strict_type_and_coherent_visible_flags(self):
+        for key, invalid in (
+            ('staging_memory_type', (None, True, '4', 4.0, -1, 32, 1 << 64)),
+            ('staging_memory_flags', (None, True, '15', 15.0, -1, 0, 2, 4, 8, 10, 12, 1 << 32))):
+            for value in invalid:
+                with self.subTest(key=key, value=value):
+                    p, rows = output_evidence()
+                    rows[0][key] = value
+                    result = self.check(p=p, d=rows, cpu_output='mapped-direct', status='fail')
+                    self.assertIn('staging memory lacks verified host-visible coherent allocation', result['errors'])
+
+    def test_explicit_output_requires_complete_telemetry_for_each_eye(self):
+        result = self.check(cpu_output='mapped-direct', status='fail')
+        self.assertIn('observed CPU output differs from requested mode', result['errors'])
+        keys = ('cpu_output_mode', 'staging_memory_type', 'staging_memory_flags',
+                'capture_source', 'capture_snapshot_ms')
+        for key in keys:
+            for eye in (0, 1):
+                with self.subTest(key=key, eye=eye):
+                    p, rows = output_evidence(frame=90)
+                    del rows[eye][key]
+                    self.check(p=p, d=rows, cpu_output='mapped-direct', status='fail')
+        # Historical evidence remains supported only without an explicit mode.
+        self.check()
+
+    def test_sampled_mapped_capture_source_and_cadence_are_enforced(self):
+        for frame, source in ((90, 'cpu_cached_output'), (90, 'gpu_output_readback'),
+                              (90, 'not_captured'), (10, 'cpu_mapped_staging_snapshot')):
+            p, rows = output_evidence(frame=frame)
+            rows[0]['capture_source'] = source
+            result = self.check(p=p, d=rows, cpu_output='mapped-direct', status='fail')
+            self.assertIn('capture source contradicts actual output path or sample cadence', result['errors'])
+
+    def test_snapshot_clock_is_finite_nonnegative_and_inside_decode_upload(self):
+        for value in (None, True, '0.25', -.001, float('nan'), float('inf'), 10**1000, 5.001):
+            with self.subTest(value_type=type(value).__name__):
+                p, rows = output_evidence(frame=90)
+                rows[0]['capture_snapshot_ms'] = value
+                self.check(p=p, d=rows, cpu_output='mapped-direct', status='fail')
+        p, rows = output_evidence(frame=90)
+        rows[0]['capture_snapshot_ms'] = rows[0]['decode_upload_ms']
+        self.check(p=p, d=rows, cpu_output='mapped-direct')
+
+    def test_only_actual_snapshot_paths_may_report_snapshot_overhead(self):
+        for mode, frame, backend in (('mapped-direct', 10, 'cpu-neon'),
+                                     ('cached-copy', 90, 'cpu-neon'),
+                                     ('not_used', 90, 'readback'),
+                                     ('not_used', 10, 'resident')):
+            with self.subTest(mode=mode, frame=frame, backend=backend):
+                p, rows = output_evidence(mode, frame, backend)
+                rows[0]['capture_snapshot_ms'] = .25
+                self.check(p=p, d=rows, backend=backend, cpu_output=mode, status='fail')
 
 
 if __name__ == '__main__':

@@ -196,6 +196,15 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
             throw std::runtime_error("invalid codec test selection phase");
         test_select_after_fence = selection == "after-fence";
     }
+    std::ifstream policy_file(application::get_config_path() / "codec-test-selection-policy.txt");
+    std::string policy;
+    if (policy_file.is_open()) {
+        std::string trailing;
+        if (!(policy_file >> policy) || (policy != "closest-target" && policy != "bounded-newest") || (policy_file >> trailing))
+            throw std::runtime_error("invalid codec test selection policy");
+        if (policy == "bounded-newest")
+            test_selection_policy = codec_test::selection_trace::Policy::bounded_newest;
+    }
     std::ifstream trace_file(application::get_config_path() / "codec-test-candidate-trace.txt");
     std::string trace_mode;
     if (trace_file >> trace_mode) {
@@ -714,17 +723,16 @@ bool scenes::stream::accumulator_images::empty() const
 
 std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::common_frame(XrTime display_time
 #ifdef WIVRN_CODEC_TESTS
-    , codec_test::selection_trace::Record * trace
+    , XrDuration period, XrTime previous_display_time, codec_test::selection_trace::Record * trace
 #endif
 )
 {
 	if (decoders.empty())
 		return {};
 	std::unique_lock lock(frames_mutex);
-	inplace_vector<shard_accumulator::blit_handle *, decoder_count> common_frames;
-	const bool alpha = decoders[0].latest_frames[0] and decoders[0].latest_frames[0]->view_info.alpha;
 #ifdef WIVRN_CODEC_TESTS
     namespace selection_trace = codec_test::selection_trace;
+    namespace selection_policy = codec_test::selection_policy;
     static_assert(decoder_count == selection_trace::decoder_count && image_buffer_size == selection_trace::history_slots);
     auto trace_frame = [](const auto& handle) -> selection_trace::Frame {
         if (!handle) return {};
@@ -732,22 +740,44 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
                 handle->view_info.display_time, handle->feedback.received_first_packet,
                 handle->feedback.received_from_decoder, handle->view_info.alpha};
     };
-    std::array<selection_trace::Frame, decoder_count> previous_selection{};
-    if (trace) {
-        trace->alpha_required = alpha;
-        for (size_t i = 0; i < decoder_count; ++i) {
-            previous_selection[i] = trace_frame(current_blit_handles[i]);
-            for (size_t slot = 0; slot < image_buffer_size; ++slot)
-                trace->history[i * image_buffer_size + slot] = trace_frame(decoders[i].latest_frames[slot]);
-        }
+    selection_policy::History history{};
+    selection_policy::Pair previous{};
+    for (size_t i = 0; i < decoder_count; ++i) {
+        previous[i] = trace_frame(current_blit_handles[i]);
+        for (size_t slot = 0; slot < image_buffer_size; ++slot)
+            history[i * image_buffer_size + slot] = trace_frame(decoders[i].latest_frames[slot]);
     }
-    auto trace_selected = [&](const auto& selected, selection_trace::Reason reason) {
-        if (!trace) return;
-        trace->reason = reason;
-        for (size_t i = 0; i < decoder_count; ++i) trace->selected[i] = trace_frame(selected[i]);
-        trace->repeat_previous = selection_trace::same_selection(trace->selected, previous_selection);
-    };
-#endif
+    const auto decision = selection_policy::choose(history, previous, test_selection_policy,
+                                                   display_time, period, previous_display_time);
+    if (trace) {
+        trace->policy = test_selection_policy;
+        trace->predicted_period = period;
+        trace->previous_predicted_display = previous_display_time;
+        trace->max_ahead = decision.max_ahead;
+        trace->alpha_required = decision.alpha_required;
+        trace->selected_alpha_required = decision.selected[0].present && decision.selected[0].alpha;
+        trace->history = history;
+        trace->previous = previous;
+        trace->closest = decision.closest;
+        trace->chosen_slots = decision.chosen_slots;
+        trace->eligible_left_slots = decision.eligible_left_slots;
+        trace->selected = decision.selected;
+        trace->reason = decision.reason;
+        trace->repeat_previous = selection_trace::same_selection(trace->selected, previous);
+    }
+    if (decision.fallback) {
+        if (test_selection_policy == selection_trace::Policy::closest_target)
+            return current_blit_handles;
+        return decision.selected[0].present ? current_blit_handles : decltype(current_blit_handles){};
+    }
+    std::array<std::shared_ptr<shard_accumulator::blit_handle>, decoder_count> result;
+    for (size_t i = 0; i < decoder_count; ++i)
+        if (decision.chosen_slots[i] >= 0)
+            result[i] = decoders[i].latest_frames[decision.chosen_slots[i]];
+    return result;
+#else
+	inplace_vector<shard_accumulator::blit_handle *, decoder_count> common_frames;
+	const bool alpha = decoders[0].latest_frames[0] and decoders[0].latest_frames[0]->view_info.alpha;
 	for (size_t i = 0; i < view_count + alpha; ++i)
 	{
 		if (i == 0)
@@ -766,11 +796,7 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
 						decoders[i].latest_frames,
 						[&left](auto & right)
 						{
-							return right and left->feedback.frame_index == right->feedback.frame_index
-#ifdef WIVRN_CODEC_TESTS
-                                    && wivrn::codec_test::warp_hash(left->view_info) == wivrn::codec_test::warp_hash(right->view_info)
-#endif
-                                    ;
+							return right and left->feedback.frame_index == right->feedback.frame_index;
 						});
 				});
 			// clang-format on
@@ -797,12 +823,6 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
 	}
 	else
 	{
-#ifdef WIVRN_CODEC_TESTS
-        // Never substitute different frame IDs between eyes in the test path.
-        // Retain the last matched pair until both decoders have a new pair.
-        trace_selected(current_blit_handles, selection_trace::Reason::no_complete_fallback);
-        return current_blit_handles;
-#endif
 		spdlog::warn("Failed to find a common frame for all decoders, dumping available frames per decoder");
 		for (const auto & decoder: decoders)
 		{
@@ -832,10 +852,8 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
 			}
 		}
 	}
-#ifdef WIVRN_CODEC_TESTS
-    trace_selected(result, selection_trace::Reason::closest_target);
-#endif
 	return result;
+#endif
 }
 
 std::shared_ptr<shard_accumulator::blit_handle> scenes::stream::accumulator_images::frame(uint64_t id) const
@@ -941,6 +959,9 @@ void scenes::stream::render(const XrFrameState & frame_state)
 {
 #ifdef WIVRN_CODEC_TESTS
     const XrTime test_render_entry = instance.now();
+    const XrTime test_previous_predicted_display = last_display_time;
+    const XrDuration test_max_ahead = codec_test::selection_policy::period_bound(
+        frame_state.predictedDisplayTime, frame_state.predictedDisplayPeriod, test_previous_predicted_display);
     codec_test::selection_trace::Record test_trace_record;
     const bool test_capture_candidates = test_candidate_trace.capture();
     if (test_capture_candidates) {
@@ -1016,7 +1037,8 @@ void scenes::stream::render(const XrFrameState & frame_state)
     XrTime test_select_begin = 0, test_select_end = 0;
     auto select_test_pair = [&] {
         test_select_begin = instance.now();
-        test_pair = common_frame(frame_state.predictedDisplayTime, test_capture_candidates ? &test_trace_record : nullptr);
+        test_pair = common_frame(frame_state.predictedDisplayTime, frame_state.predictedDisplayPeriod,
+                                test_previous_predicted_display, test_capture_candidates ? &test_trace_record : nullptr);
         test_select_end = instance.now();
         return test_pair[0] && test_pair[1];
     };
@@ -1374,6 +1396,10 @@ void scenes::stream::render(const XrFrameState & frame_state)
                     << ",\"left_decode_ready_xr_ns\":" << left->feedback.received_from_decoder
                     << ",\"right_decode_ready_xr_ns\":" << right->feedback.received_from_decoder
                     << ",\"selection_phase\":\"" << (test_select_after_fence ? "after-fence" : "early") << "\""
+                    << ",\"selection_policy\":\"" << codec_test::selection_trace::policy_name(test_selection_policy) << "\""
+                    << ",\"predicted_display_period_xr_ns\":" << frame_state.predictedDisplayPeriod
+                    << ",\"previous_predicted_display_xr_ns\":" << test_previous_predicted_display
+                    << ",\"max_ahead_xr_ns\":" << test_max_ahead
                     << ",\"render_entry_xr_ns\":" << test_render_entry
                     << ",\"selection_begin_xr_ns\":" << test_select_begin
                     << ",\"selection_end_xr_ns\":" << test_select_end

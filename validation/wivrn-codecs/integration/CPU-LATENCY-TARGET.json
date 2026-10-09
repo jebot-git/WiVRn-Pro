@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "target_id": "cpu-rgb444-sub15-v1",
+  "priority": "mission_critical",
+  "status": "preliminary_engineering_target",
+  "color_contract": "8-bit RGB, all three color channels at full spatial resolution; no chroma subsampling",
+  "metric": "Complete stereo earliest packet receipt to observation after successful xrEndFrame, headset-local clock",
+  "percentile": 95,
+  "strict_upper_bound_ms": 15,
+  "inherits_policy": "LATENCY-POLICY.json",
+  "minimum_repeated_candidate_runs": 2,
+  "optical_motion_to_photon": false,
+  "release_ready": false,
+  "limitations": [
+    "Software latency excludes host processing and transfer before first headset packet receipt",
+    "Passing latency alone does not establish 4:4:4 correctness or displayed visual quality",
+    "Diagnostic instrumentation and experimental selection cannot qualify for promotion",
+    "Current profile is 576x640 per eye at 90 Hz offered; other profiles need their own evidence"
+  ]
+}

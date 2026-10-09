@@ -42,6 +42,7 @@
 #ifdef WIVRN_CODEC_TESTS
 #include "codec_test/layer_filter.h"
 #include "codec_test/selection_trace.h"
+#include "codec_test/selection_policy.h"
 #include <fstream>
 namespace wivrn { class test_stereo_state; }
 #endif
@@ -82,7 +83,8 @@ private:
 	std::mutex frames_mutex;
 	std::array<std::shared_ptr<wivrn::shard_accumulator::blit_handle>, decoder_count> common_frame(XrTime display_time
 #ifdef WIVRN_CODEC_TESTS
-        , wivrn::codec_test::selection_trace::Record * trace = nullptr
+        , XrDuration period = 0, XrTime previous_display_time = 0,
+        wivrn::codec_test::selection_trace::Record * trace = nullptr
 #endif
     );
 
@@ -109,6 +111,7 @@ private:
 	std::shared_ptr<wivrn::test_stereo_state> test_stereo_generation;
 	wivrn::codec_test::layer_filter_telemetry test_layer_filter;
 	bool test_select_after_fence = false;
+	wivrn::codec_test::selection_trace::Policy test_selection_policy = wivrn::codec_test::selection_trace::Policy::closest_target;
 	wivrn::codec_test::selection_trace::Budget test_candidate_trace;
 	std::ofstream test_candidate_trace_file;
 #endif

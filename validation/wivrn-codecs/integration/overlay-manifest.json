@@ -57,7 +57,7 @@
   },
   "client/decoder/test_decoder.cpp": {
     "before_sha256": null,
-    "after_sha256": "d128c6be00fddf171dbc9a6781dad7c9557f7f88bc4cf70f7d10863d153dcad7"
+    "after_sha256": "26b11e9ddc3a52e763260428aa0db1fa081a640d7f1731bb4965a8b77392c9ee"
   },
   "client/decoder/test_decoder.h": {
     "before_sha256": null,
@@ -85,11 +85,11 @@
   },
   "client/scenes/stream.cpp": {
     "before_sha256": "27250cf4d1dd6549f62f6a25b3aa33833cb6238cdc1ff1339a69bb07ef740584",
-    "after_sha256": "52139a44d61445895c022c6a383ba6c27a451e7517e90b8e9f70e855e8ecc2cc"
+    "after_sha256": "c08ed9f015a0fe3cfbba7ae042c333519bd52686f763b6404c329461ac03b7dc"
   },
   "client/scenes/stream.h": {
     "before_sha256": "d04badaf6c9f403076a6f5051c7e0fad0748cc64a13c30796ad2db025cb14d25",
-    "after_sha256": "f15581f05e449c489ca0578b216960529b74aaefbc63166677e2da6aa61a6ad3"
+    "after_sha256": "ed32eb725b8af6264b4df74cf26b6bc305834901c11d9d2e7fbed43f73f8d478"
   },
   "client/scenes/stream_defoveator.cpp": {
     "before_sha256": "11be925cd47b7cadbf07b8f21253f3b95135a9df9623c93abef51ba7aa0b8b82",
@@ -151,9 +151,13 @@
     "before_sha256": null,
     "after_sha256": "91aa619f7e6c7a7511533c55c609d2366164baa193e8242e8ad54c0a63ca0196"
   },
+  "common/codec_test/selection_policy.h": {
+    "before_sha256": null,
+    "after_sha256": "ae68144a97d08e143d68156d585266f47fdb1abf83bfee295382287a017e459e"
+  },
   "common/codec_test/selection_trace.h": {
     "before_sha256": null,
-    "after_sha256": "af90f164eb8b705e00ede85d36f1fb4ea296afd3d9b7fc4ec173705a1d05551f"
+    "after_sha256": "3a2579209dd2d11be063aa74607ca706413735d499ad0f95650af6d40c4ef5a3"
   },
   "common/codec_test/stereo_admission.h": {
     "before_sha256": null,
@@ -205,7 +209,7 @@
   },
   "server/compositor/compositor.cpp": {
     "before_sha256": "8412ee2d713922aed6d318eeb38a361a900e47c26f505b4a93c9d272fd7575ac",
-    "after_sha256": "01296d959553613362248988089177c6aed0b973bf8690c16b16ae1c40e71c93"
+    "after_sha256": "3097bca5fe842c0b581c6769e41537fb09fb9494255f1f46aad7429edce5a565"
   },
   "server/compositor/foveation.cpp": {
     "before_sha256": "939a8d73d0e22d131c576e07ab229a276962c5dcd31893713a20ed0f50c5f8ca",
@@ -214,6 +218,14 @@
   "server/compositor/shaders/foveation_rgb.comp": {
     "before_sha256": null,
     "after_sha256": "3770a28be8d2ffd31cb7883725624f94cbacefcc4d9d1241de6564de0a2ad3be"
+  },
+  "server/driver/app_pacer.cpp": {
+    "before_sha256": "d005f9b49c6d6e4b6147a9ea4cdcf030999484614c250331ee9d14721ad91fd6",
+    "after_sha256": "77f415cb8ec0c85caaef1439699fa8f184c4d53c9418a080e0d431ebc2411a91"
+  },
+  "server/driver/codec_source_trace.h": {
+    "before_sha256": null,
+    "after_sha256": "76fc5a03bf95c202e8d8562773547a7f7e12c96b4e40120af1d10545472654d7"
   },
   "server/driver/wivrn_hmd.cpp": {
     "before_sha256": "be7414ced4d460bc62eb851182442a93c5e114ba4b58d818adf751b2f470e395",

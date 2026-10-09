@@ -1,0 +1,34 @@
+2026-10-09 local validation; no device or APK execution
+
+38 named semantic cases pass. 20,000 generated histories reproduce the prior
+closest-target selector's eligibility, stable ties, first-ID resource lookup and
+unconditional fallback using an independent transcription. Mixed malformed and
+coherent generated histories exercise 4,288 actual bounded choices; all preserve
+coherent selected metadata, exact chosen slots, monotonic frame/target conditions
+and the inclusive future horizon. Named cases cover partial eyes, mismatched
+warp/ID/target/alpha, required alpha absence, previous fallback alpha changes,
+same-ID changed warp/target, invalid and first runtime periods, out-of-order IDs
+and targets, exact/beyond horizon, regressive selections and integer boundaries.
+
+GCC C++20 -Wall -Wextra -Werror -pedantic passes policy and serialization tests.
+Clang C++20 AddressSanitizer + UndefinedBehaviorSanitizer passes both executables.
+LeakSanitizer is unavailable under this host's ptrace sandbox; the initial exit
+reported that environment limitation after assertions passed. Repeat executions
+used ASAN_OPTIONS=detect_leaks=0; memory access and UB instrumentation stayed on.
+
+All 38 emitted C++ decision fixtures pass the independently written Python
+selection_replay.replay. Fixtures contain synthetic policy inputs, including
+malformed metadata; they are not runtime trace or latency qualification evidence.
+
+Android stream.cpp syntax compilation passes with the cached NDK29 Android arm64
+compile command, replacing object/dependency emission with -fsyntax-only. No APK
+was linked or installed by this task. Log: /tmp/vr444-stream-syntax.log.
+
+No custom compositor or shader is required for this scheduling experiment. Prior
+0.14.1 evidence points to candidate retention before selection: median selected
+pair readiness age 12.27-17.33 ms versus native 6.95 ms, with newer complete encoded
+pairs available in 66.9-91.1% of warm unique custom selections. Those observations
+do not demonstrate newer scene content, a safe pose/display policy, or a latency
+improvement. Source-generation mapping and live, untraced comparisons remain
+required. Production OpenXR submission, Vulkan fences and resource lifetime are
+unchanged; the opt-in future horizon alone does not qualify sub-15 ms operation.

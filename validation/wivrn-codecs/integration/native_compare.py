@@ -24,7 +24,8 @@ PACKAGE = 'org.meumeu.wivrn.codectest'
 MODES = ('native-h264', 'native-hevc', 'custom-vr444')
 CONFIG_FILES = ('client.json', 'codec-test-kernel.txt', 'codec-test-backend.txt',
                 'codec-test-pairing.txt', 'codec-test-compression.txt', 'codec-test-gaze-timing.txt',
-                'codec-test-selection.txt', 'codec-test-candidate-trace.txt')
+                'codec-test-selection.txt', 'codec-test-candidate-trace.txt',
+                'codec-test-cpu-output.txt', 'codec-test-selection-policy.txt')
 
 
 def save(path, value):
@@ -42,6 +43,32 @@ def command(argv, **kwargs):
 
 def read_rows(path):
     return [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()] if Path(path).exists() else []
+
+
+def experimental_settings(args):
+    """Explicit experimental controls; default choices preserve existing behavior."""
+    output = getattr(args, 'cpu_output', 'cached-copy')
+    selection = getattr(args, 'selection_policy', 'closest-target')
+    if output not in ('cached-copy', 'mapped-direct') or selection not in ('closest-target', 'bounded-newest'):
+        raise ValueError('invalid CPU output/selection policy')
+    if output == 'mapped-direct' and (args.mode != 'custom-vr444' or args.decoder_backend != 'cpu-neon'):
+        raise ValueError('mapped-direct requires custom CPU NEON decoding')
+    if selection == 'bounded-newest' and not getattr(args, 'candidate_trace', False):
+        raise ValueError('bounded-newest currently requires diagnostic candidate tracing')
+    return {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection}
+
+
+def source_trace_complete(path):
+    """Bounded footer probe used only while waiting for graceful test teardown."""
+    try:
+        with Path(path).open('rb') as stream:
+            stream.seek(0, os.SEEK_END)
+            stream.seek(max(0, stream.tell()-4096))
+            lines = stream.read(4096).splitlines()
+        footer = json.loads(lines[-1])
+        return type(footer) is dict and footer.get('type') == 'footer' and footer.get('complete') is True
+    except (OSError, ValueError, IndexError):
+        return False
 
 
 def build_configuration(args, runtime, source, output):
@@ -67,10 +94,13 @@ def build_configuration(args, runtime, source, output):
     }
     # Prevent inherited codec-test activation or capture paths contaminating native.
     env = {k: v for k, v in os.environ.items()
-           if not k.startswith('WIVRN_CODEC_TEST') and k not in ('VR444_KERNEL', 'VR444_DEVICE', 'WIVRN_DUMP_VIDEO')}
+           if not k.startswith('WIVRN_CODEC_TEST') and k not in (
+               'VR444_KERNEL', 'VR444_DEVICE', 'WIVRN_DUMP_VIDEO', 'WIVRN_CODEC_SOURCE_TRACE')}
     env.update({'XDG_RUNTIME_DIR': str(runtime), 'XDG_CONFIG_HOME': str(runtime/'config'),
                 'XR_RUNTIME_JSON': str(source/'build/codec-server/openxr_wivrn-dev.json'),
                 'XRT_COMPOSITOR_FORCE_GPU_INDEX': '0', 'WIVRN_CODEC_COMPARE': '1'})
+    if getattr(args, 'source_trace', False):
+        env['WIVRN_CODEC_SOURCE_TRACE'] = str(output/'host/source-trace.jsonl')
     if custom:
         env.update({'WIVRN_CODEC_TEST': 'vulkan-vr444', 'WIVRN_CODEC_TEST_Q': str(args.q),
                     'WIVRN_CODEC_TEST_FRAME_STRIDE': '1', 'VR444_KERNEL': 'baseline',
@@ -108,6 +138,7 @@ def evaluate_output(output):
 
 
 def run(args):
+    experiment_config = experimental_settings(args)
     if args.mode not in MODES or not 10 <= args.seconds <= 30 or args.fps_divider not in (1, 2):
         raise ValueError('mode/10..30 seconds/fps-divider1|2 required')
     if not 1024 <= args.port <= 65535 or not 1_000_000 <= args.bitrate <= 200_000_000 or not 1 <= args.q <= 1024:
@@ -175,7 +206,9 @@ def run(args):
         helpers = ('server/encoder/encoder_settings.cpp', 'server/encoder/ffmpeg/video_encoder_va.cpp',
                    'server/encoder/video_encoder.cpp', 'server/driver/performance_feed.cpp',
                    'client/decoder/android/android_decoder.cpp', 'client/scenes/stream.cpp',
-                   'server/compositor/foveation.cpp')
+                   'server/compositor/foveation.cpp', 'server/compositor/compositor.cpp',
+                   'server/driver/app_pacer.cpp', 'server/driver/codec_source_trace.h',
+                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h')
         save(output/'provenance.json', {
             'schema': 1, 'mode': args.mode, 'source': str(source), 'server_sha256': sha(server),
             'installed_apk_sha256': apk_hash, 'runtime_manifest_sha256': sha(manifest),
@@ -194,6 +227,8 @@ def run(args):
             'custom_compression': args.compression if args.mode == 'custom-vr444' else None,
             'custom_decoder': kernel, 'decoder_backend': args.decoder_backend,
             'selection_phase': args.selection_phase, 'candidate_trace': args.candidate_trace,
+            'cpu_output': args.cpu_output, 'selection_policy': args.selection_policy,
+            'source_trace': args.source_trace,
             'scene_reference_space': 'Local',
             'application_source_sha256': sha(source/'client/application.cpp'),
             'application_header_sha256': sha(source/'client/application.h'),
@@ -219,6 +254,7 @@ def run(args):
                         'codec-test-compression.txt': args.compression if args.mode == 'custom-vr444' else 'none',
                         'codec-test-gaze-timing.txt': '0', 'codec-test-selection.txt': args.selection_phase,
                         'codec-test-candidate-trace.txt': '1' if args.candidate_trace else '0'}
+            settings.update(experiment_config)
             for name, text in settings.items():
                 write_config(name, (text+'\n').encode())
             save(output/'client-config-readback.json', {name: read_config(name).decode() for name in settings})
@@ -269,6 +305,15 @@ def run(args):
                     state['cleanup_errors'].append(label+': '+str(exc))
             if app_touched:
                 cleanup('stop dedicated APK', lambda: ac('shell', 'am', 'force-stop', PACKAGE, stdout=subprocess.DEVNULL))
+            if args.source_trace and process:
+                # Disconnect lets the compositor export bounded in-memory records.
+                # Never prolong headset wearing or turn missing teardown into PASS.
+                deadline = time.monotonic()+5
+                while time.monotonic() < deadline and not source_trace_complete(output/'host/source-trace.jsonl'):
+                    if process.poll() is not None:
+                        break
+                    time.sleep(.1)
+                state['source_trace_footer_before_termination'] = source_trace_complete(output/'host/source-trace.jsonl')
             if process and process.poll() is None:
                 cleanup('stop private server', lambda: os.killpg(process.pid, signal.SIGTERM))
                 try:
@@ -350,10 +395,15 @@ def run(args):
                 read_rows(output/'client/codec-test-present.jsonl'),
                 [r for p in (output/'client/codec-test').glob('decode-*.jsonl')
                  for r in read_rows(p) if r.get('type') != 'summary'],
-                args.decoder_backend, args.selection_phase)
+                args.decoder_backend, args.selection_phase,
+                cpu_output=args.cpu_output if args.decoder_backend == 'cpu-neon' else 'not_used',
+                selection_policy=args.selection_policy)
             custom['runtime_validation_source_sha256'] = sha(runtime_path)
-            custom['decode_output_reference_scope'] = ('CPU NEON RGBA before upload compared byte-for-byte with host reference; not a texture readback or displayed pixel check'
-                if args.decoder_backend == 'cpu-neon' else 'GPU output-buffer readback compared byte-for-byte with host reference; not a displayed pixel check')
+            if args.decoder_backend == 'cpu-neon':
+                location = 'mapped staging snapshot after upload completion' if args.cpu_output == 'mapped-direct' else 'cached CPU output before upload'
+                custom['decode_output_reference_scope'] = f'CPU NEON RGBA from {location}, compared byte-for-byte with host reference; not a texture readback or displayed pixel check'
+            else:
+                custom['decode_output_reference_scope'] = 'GPU output-buffer readback compared byte-for-byte with host reference; not a displayed pixel check'
             if custom['runtime_validation']['status'] != 'pass':
                 custom['status'] = 'fail'
             save(output/'custom-evidence.json', custom)
@@ -391,6 +441,23 @@ def run(args):
             result['latency_gate'] = {'status': 'fail', 'errors': [str(exc)]}
             result['promotion_status'] = 'blocked'
         result['release_ready'] = False
+    if args.mode == 'custom-vr444' and args.decoder_backend == 'cpu-neon':
+        try:
+            target_path = Path(__file__).with_name('cpu_target.py')
+            spec = importlib.util.spec_from_file_location('codec_cpu_target', target_path)
+            target_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(target_module)
+            result['preliminary_cpu_target'] = target_module.evaluate(
+                read_rows(output/'client/codec-test-present.jsonl'),
+                json.loads((output/'provenance.json').read_text()))
+            result['preliminary_cpu_target_source_sha256'] = sha(target_path)
+            result['preliminary_cpu_target_policy_sha256'] = sha(target_path.with_name('CPU-LATENCY-TARGET.json'))
+            if result['preliminary_cpu_target']['status'] != 'pass':
+                result['promotion_status'] = 'blocked_preliminary_cpu_target'
+        except Exception as exc:
+            result['preliminary_cpu_target'] = {'status': 'fail', 'errors': [str(exc)], 'promotion_eligible': False}
+            result['status'] = 'fail'
+            result['promotion_status'] = 'blocked'
     try:
         trace_path = Path(__file__).with_name('candidate_trace.py')
         spec = importlib.util.spec_from_file_location('codec_candidate_trace', trace_path)
@@ -398,7 +465,7 @@ def run(args):
         spec.loader.exec_module(trace_module)
         result['candidate_trace'] = trace_module.evaluate(
             read_rows(output/'client/codec-test/selection-trace.jsonl'),
-            read_rows(output/'client/codec-test-present.jsonl'), args.candidate_trace)
+            read_rows(output/'client/codec-test-present.jsonl'), args.candidate_trace, args.selection_policy)
         result['candidate_trace_source_sha256'] = sha(trace_path)
         if result['candidate_trace']['status'] not in ('pass', 'off'):
             result['status'] = 'fail'
@@ -409,6 +476,29 @@ def run(args):
         result['promotion_status'] = 'blocked'
     if args.candidate_trace:
         result['promotion_status'] = 'blocked_diagnostic_trace'
+        result['release_ready'] = False
+    source_trace_file = output/'host/source-trace.jsonl'
+    if args.source_trace:
+        try:
+            analyzer = Path(__file__).resolve().parents[3]/'prototypes/vr444/experiments/compositor_freshness/analyze.py'
+            spec = importlib.util.spec_from_file_location('codec_source_freshness', analyzer)
+            source_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(source_module)
+            result['source_trace'] = source_module.evaluate(
+                read_rows(source_trace_file),
+                [r['left'] for r in read_rows(output/'client/codec-test-present.jsonl')])
+            result['source_trace_analyzer_sha256'] = sha(analyzer)
+            if result['source_trace']['status'] != 'pass':
+                result['status'] = 'fail'
+        except Exception as exc:
+            result['source_trace'] = {'status': 'fail', 'errors': [str(exc)]}
+            result['status'] = 'fail'
+    else:
+        result['source_trace'] = {'status': 'fail' if source_trace_file.exists() else 'off'}
+        if source_trace_file.exists():
+            result['status'] = 'fail'
+    if args.source_trace or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
+        result['promotion_status'] = 'blocked_experimental_path'
         result['release_ready'] = False
     # Preserve matching log lines for review without treating a support probe or
     # requested configuration as proof of the active native backend.
@@ -439,6 +529,11 @@ def main():
     parser.add_argument('--decoder-backend', choices=('resident', 'cpu-neon'), default='resident')
     parser.add_argument('--selection-phase', choices=('early', 'after-fence'), default='early')
     parser.add_argument('--candidate-trace', action='store_true', help='Bounded diagnostic candidate trace; not eligible for latency promotion')
+    parser.add_argument('--cpu-output', choices=('cached-copy', 'mapped-direct'), default='cached-copy',
+                        help='CPU NEON output destination; mapped-direct remains experimental')
+    parser.add_argument('--selection-policy', choices=('closest-target', 'bounded-newest'), default='closest-target',
+                        help='bounded-newest requires --candidate-trace and cannot be promoted')
+    parser.add_argument('--source-trace', action='store_true', help='Bounded host app/compositor mapping trace; diagnostic only')
     args = parser.parse_args()
     result = run(args)
     print(json.dumps(result, indent=2))

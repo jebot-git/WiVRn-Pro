@@ -89,6 +89,10 @@ class CandidateEvidenceTests(unittest.TestCase):
             'common/codec_test/vr444/direct.cpp': 'c'*64,
             'client/decoder/test_decoder.cpp': 'd'*64,
             'client/scenes/stream.cpp': 'e'*64}}
+        self.helpers = {name:'e'*64 for name in ('client/scenes/stream.cpp','common/codec_test/selection_policy.h',
+            'common/codec_test/selection_trace.h','server/driver/app_pacer.cpp',
+            'server/driver/codec_source_trace.h','server/compositor/compositor.cpp')}
+        self.receipt['sha256'].update(self.helpers)
 
     def seal(self, directory):
         manifest = {str(p.relative_to(directory)): hashlib.sha256(p.read_bytes()).hexdigest()
@@ -104,6 +108,27 @@ class CandidateEvidenceTests(unittest.TestCase):
         self.assertEqual(result['status'], 'fail')
         self.assertIn('diagnostic candidate trace is not eligible for promotion', result['errors'])
 
+    def test_new_experimental_controls_and_hidden_source_trace_block_promotion(self):
+        for key, value in (('cpu_output','mapped-direct'),('selection_policy','bounded-newest'),('source_trace',True)):
+            d = self.make_run(key)
+            self.mutate(d,'provenance.json',lambda p:p.update({key:value}))
+            self.assertEqual(module.inspect_run(d,self.receipt)['status'],'fail')
+        d = self.make_run('hidden_source')
+        (d/'host').mkdir()
+        (d/'host/source-trace.jsonl').write_text('{}\n')
+        self.seal(d)
+        self.assertIn('source tracing cannot masquerade as an untraced candidate',module.inspect_run(d,self.receipt)['errors'])
+
+    def test_executable_helper_headers_must_match_build_receipt(self):
+        for key in ('common/codec_test/selection_policy.h', 'server/driver/codec_source_trace.h'):
+            for mutation in ('missing','mismatch'):
+                d = self.make_run(key.replace('/','_')+mutation)
+                def alter(p):
+                    if mutation == 'missing':p['source_helper_sha256'].pop(key)
+                    else:p['source_helper_sha256'][key]='a'*64
+                self.mutate(d,'provenance.json',alter)
+                self.assertIn('missing or mismatched helper source provenance',module.inspect_run(d,self.receipt)['errors'])
+
     def test_trace_cannot_be_hidden_by_false_provenance_flag(self):
         d = self.make_run('hidden_trace')
         p = d/'client/codec-test-present.jsonl'
@@ -118,7 +143,7 @@ class CandidateEvidenceTests(unittest.TestCase):
         d = self.root/name
         (d/'client/codec-test').mkdir(parents=True)
         provenance = module.load_policy()['profile'] | dict(
-            mode='custom-vr444', candidate_trace=False, server_sha256='a'*64, installed_apk_sha256='b'*64,
+            mode='custom-vr444', candidate_trace=False, cpu_output='cached-copy', selection_policy='closest-target', source_trace=False, server_sha256='a'*64, installed_apk_sha256='b'*64,
             headset_serial='test-headset', custom_q=8, custom_compression='lz4',
             custom_decoder='direct-neon', decoder_backend='cpu-neon', selection_phase='after-fence',
             bitrate_bps=50_000_000, scene_reference_space='Local', gaze_enabled=False,
@@ -128,7 +153,7 @@ class CandidateEvidenceTests(unittest.TestCase):
             comparison_worker_disabled_by_test_only_guard=True,
             harness_sha256=module._sha(module.HERE/'native_compare.py'),
             direct_decoder_source_sha256='c'*64, client_decoder_source_sha256='d'*64,
-            source_helper_sha256={'client/scenes/stream.cpp':'e'*64},
+            source_helper_sha256=self.helpers,
             shader_sha256={'decode.spv':'f'*64}, main_source_sha256='1'*64, runtime_manifest_sha256='2'*64)
         client = dict(preferred_refresh_rate=90, fps_divider=1, bitrate_bps=50_000_000,
                       resolution_scale=1.0, stream_scale=.3, eye_gaze=False, face_tracking=False,
@@ -137,26 +162,31 @@ class CandidateEvidenceTests(unittest.TestCase):
         readback = {'client.json': json.dumps(client), 'codec-test-kernel.txt':'direct-neon',
                     'codec-test-backend.txt':'cpu-neon', 'codec-test-pairing.txt':'paired',
                     'codec-test-compression.txt':'lz4', 'codec-test-gaze-timing.txt':'0',
-                    'codec-test-selection.txt':'after-fence','codec-test-candidate-trace.txt':'0'}
-        presented = rows()
+                    'codec-test-selection.txt':'after-fence','codec-test-candidate-trace.txt':'0',
+                    'codec-test-cpu-output.txt':'cached-copy','codec-test-selection-policy.txt':'closest-target'}
+        presented = rows(14)
         decoded = []
         for row in presented:
             for key in list(row):
                 if key.endswith('_xr_ns'):
                     row[key] += offset
             t = row['submit_xr_ns']
-            row.update(selection_phase='after-fence', render_fence_begin_xr_ns=t-4_000_000,
+            row.update(selection_phase='after-fence', selection_policy='closest-target', render_fence_begin_xr_ns=t-4_000_000,
                        render_fence_end_xr_ns=t-3_000_000, selection_begin_xr_ns=t-2_000_000,
                        selection_end_xr_ns=t-1_000_000, end_frame_return_xr_ns=t-100_000)
             for eye in (0,1):
                 decoded.append(dict(frame=row['left'],warp=42,eye=eye,decoder_backend='cpu-neon',
                     decoder_kernel='direct-neon',cpu_vector_backend='aarch64-neon',gpu_timing_valid=False,
                     decode_gpu_ms=0,cpu_decode_ms=1,staging_copy_ms=.1,submit_fence_wait_ms=1,
-                    queue_wait_ms=.1,decode_upload_ms=2,decompression_ms=.1))
+                    queue_wait_ms=.1,decode_upload_ms=2,decompression_ms=.1, cpu_output_mode='cached-copy',
+                    staging_memory_type=4,staging_memory_flags=15,capture_snapshot_ms=0,
+                    capture_source='cpu_cached_output' if row['left']%90==0 else 'not_captured'))
         custom = dict(status='pass',decoder_selection={'status':'verified'},compression={'status':'active'},
                       runtime_validation={'status':'pass'},
                       runtime_validation_source_sha256=module._sha(module.HERE/'latency_runtime.py'))
-        files = {'provenance.json':provenance,'summary.json':dict(status='pass',custom_evidence=custom,candidate_trace={'status':'off'},
+        files = {'provenance.json':provenance,'summary.json':dict(status='pass',custom_evidence=custom,candidate_trace={'status':'off'},source_trace={'status':'off'},
+                    preliminary_cpu_target_source_sha256=module._sha(module.HERE/'cpu_target.py'),
+                    preliminary_cpu_target_policy_sha256=module._sha(module.HERE/'CPU-LATENCY-TARGET.json'),
                     latency_policy_source_sha256=module._sha(module.HERE/'latency_policy.py')),
                  'custom-evidence.json':custom,'client-config.json':client,'client-config-readback.json':readback,
                  'server-config.json':dict(port=9700,tcp_only=True, **{'tcp-only':True,'bit-depth':8,

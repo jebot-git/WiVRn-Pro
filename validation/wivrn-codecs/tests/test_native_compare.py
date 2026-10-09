@@ -70,6 +70,40 @@ class NativeComparisonConfiguration(unittest.TestCase):
 
 
 class NativeComparisonGates(unittest.TestCase):
+    def test_experimental_controls_are_explicit_and_backed_up(self):
+        from argparse import Namespace
+        args = Namespace(mode='custom-vr444', decoder_backend='cpu-neon', cpu_output='mapped-direct',
+                         selection_policy='bounded-newest', candidate_trace=True)
+        settings = compare.experimental_settings(args)
+        self.assertEqual(settings['codec-test-cpu-output.txt'], 'mapped-direct')
+        self.assertTrue(set(settings).issubset(compare.CONFIG_FILES))
+        for change in (dict(mode='native-hevc'), dict(decoder_backend='resident'), dict(candidate_trace=False),
+                       dict(cpu_output='invalid'), dict(selection_policy='invalid')):
+            with self.assertRaises(ValueError):
+                compare.experimental_settings(Namespace(**(vars(args) | change)))
+
+    def test_inherited_source_trace_is_removed_and_only_explicitly_enabled(self):
+        from argparse import Namespace
+        args = Namespace(mode='custom-vr444', seconds=30, port=9767, fps_divider=1,
+                         bitrate=20_000_000, q=8, compression='lz4', source_trace=False)
+        with patch.dict(compare.os.environ, {'WIVRN_CODEC_SOURCE_TRACE': '/unrelated'}):
+            _,_,env = compare.build_configuration(args, Path('/runtime'), Path('/source'), Path('/result'))
+            self.assertNotIn('WIVRN_CODEC_SOURCE_TRACE',env)
+            args.source_trace=True
+            _,_,env = compare.build_configuration(args, Path('/runtime'), Path('/source'), Path('/result'))
+            self.assertEqual(env['WIVRN_CODEC_SOURCE_TRACE'], '/result/host/source-trace.jsonl')
+
+    def test_source_footer_wait_never_accepts_partial_or_false_completion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'trace.jsonl'
+            self.assertFalse(compare.source_trace_complete(path))
+            for text in ('', '{}', '{"type":"footer","complete":1}',
+                         '{"type":"footer","complete":false}', '{"type":"footer","complete":'):
+                path.write_text(text)
+                self.assertFalse(compare.source_trace_complete(path))
+            path.write_text('x'*5000+'\n'+json.dumps({'type':'footer','complete':True})+'\n')
+            self.assertTrue(compare.source_trace_complete(path))
+
     def presentations(self, count=30, spacing=100_000_000):
         rows = []
         for frame in range(count):

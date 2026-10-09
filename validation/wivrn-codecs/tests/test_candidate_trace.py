@@ -32,7 +32,82 @@ def fixture():
     return r, p
 
 
+def bounded_fixture():
+    r, p = fixture()
+    r.update(schema=2, selection_policy='bounded-newest', predicted_display_period_xr_ns=20,
+             previous_predicted_display_xr_ns=80, max_ahead_xr_ns=20, selected_alpha_required=False,
+             closest=copy.deepcopy(r['selected']), previous=[dict(decoder=i,present=False) for i in range(3)],
+             chosen_slots=[1,1,-1], eligible_left_slots=[True,True,False], reason='bounded_newest')
+    r['selected'] = [dict(r['history'][1]), dict(r['history'][4]), dict(decoder=2,present=False)]
+    for f in r['selected']:
+        f.pop('slot',None)
+    p.update(left=2,right=2,left_warp=12,right_warp=12)
+    for key in ('selection_policy','predicted_display_period_xr_ns','previous_predicted_display_xr_ns','max_ahead_xr_ns'):
+        p[key]=r[key]
+    return r,p
+
+
 class CandidateTraceTests(unittest.TestCase):
+    def test_schema2_bounded_choice_replays_actual_eligibility(self):
+        r,p = bounded_fixture()
+        result=module.evaluate([r],[p],selection_policy='bounded-newest')
+        self.assertEqual(result['status'],'pass',result['errors'])
+        self.assertEqual(result['higher_frame_id_available'],0)
+        self.assertFalse(result['promotion_eligible'])
+
+    def test_schema2_policy_bound_slots_and_metadata_fail_closed(self):
+        for key,value in (('max_ahead_xr_ns',21),('max_ahead_xr_ns',True),
+                          ('predicted_display_period_xr_ns',-1),('selected_alpha_required',True),
+                          ('chosen_slots',[0,0,-1]),('chosen_slots',[True,1,-1]),
+                          ('eligible_left_slots',[True,False,False]),('selection_policy','latest')):
+            r,p=bounded_fixture();r[key]=value
+            if key in p:p[key]=value
+            self.assertEqual(module.evaluate([r],[p])['status'],'fail',key)
+        r,p=bounded_fixture();r['previous']=[]
+        self.assertEqual(module.evaluate([r],[p])['status'],'fail')
+
+    def test_future_bound_and_previous_choice_cannot_be_forged(self):
+        r,p=bounded_fixture()
+        for frame in (r['history'][1],r['history'][4],r['selected'][0],r['selected'][1]):
+            frame['view_display_time_xr_ns']=121
+        self.assertEqual(module.evaluate([r],[p])['status'],'fail')
+        r,p=bounded_fixture()
+        r['previous']=copy.deepcopy(r['selected'])
+        for frame in r['previous'][:2]:frame.update(frame=3,warp=13,view_display_time_xr_ns=130)
+        self.assertEqual(module.evaluate([r],[p])['status'],'fail')
+
+    def test_schema2_closest_default_and_requested_policy_binding(self):
+        r,p=bounded_fixture();r['selection_policy']=p['selection_policy']='closest-target'
+        r.update(reason='closest_target',selected=copy.deepcopy(r['closest']),chosen_slots=[0,0,-1])
+        p.update(left=1,right=1,left_warp=11,right_warp=11)
+        self.assertEqual(module.evaluate([r],[p],selection_policy='closest-target')['status'],'pass')
+        self.assertEqual(module.evaluate([r],[p],selection_policy='bounded-newest')['status'],'fail')
+        r,p=fixture()
+        self.assertEqual(module.evaluate([r],[p],selection_policy='bounded-newest')['status'],'fail')
+
+    def test_bounded_policy_cannot_run_without_diagnostic_trace(self):
+        self.assertEqual(module.evaluate([],[],False,selection_policy='bounded-newest')['status'],'fail')
+
+    def test_schema2_first_previous_must_be_coherent_and_repeat_flag_honest(self):
+        r,p=bounded_fixture();r['previous'][0]=copy.deepcopy(r['selected'][0])
+        self.assertEqual(module.evaluate([r],[p])['status'],'fail')
+
+    def test_schema2_default_cannot_qualify_mismatched_eye_targets(self):
+        r,p=bounded_fixture();r['selection_policy']=p['selection_policy']='closest-target'
+        r.update(reason='closest_target',selected=copy.deepcopy(r['closest']),chosen_slots=[0,0,-1])
+        p.update(left=1,right=1,left_warp=11,right_warp=11)
+        for f in (r['selected'][1],r['closest'][1],r['history'][3]):f['view_display_time_xr_ns']=101
+        self.assertEqual(module.evaluate([r],[p])['status'],'fail')
+        r,p=bounded_fixture();r['previous']=copy.deepcopy(r['selected'])
+        r['eligible_left_slots']=[False,True,False]
+        self.assertEqual(module.evaluate([r],[p])['status'],'fail')
+        r['repeat_previous']=True
+        self.assertEqual(module.evaluate([r],[p])['status'],'pass')
+        r,p=bounded_fixture();p['max_ahead_xr_ns']=20.0
+        self.assertEqual(module.evaluate([r],[p])['status'],'fail')
+        r,p=bounded_fixture();r['projection_submitted']=False
+        self.assertEqual(module.evaluate([r],[p])['status'],'fail')
+
     def test_observed_newer_frame_is_opportunity_not_speedup(self):
         r,p = fixture(); x = module.evaluate([r],[p])
         self.assertEqual(x['errors'], [])
@@ -152,3 +227,62 @@ class CandidateTraceTests(unittest.TestCase):
         self.assertEqual(module.evaluate(None,[])['status'],'fail')
         self.assertEqual(module.evaluate([], [None])['status'],'fail')
         self.assertEqual(module.evaluate([], [dict(candidate_trace_write_ns=0)],False)['status'],'fail')
+
+    def test_schema2_alpha_fallback_does_not_invent_a_complete_candidate(self):
+        r,p=bounded_fixture();r2,p2=copy.deepcopy(r),copy.deepcopy(p)
+        r2.update(sequence=2,reason='no_complete_fallback',repeat_previous=True,
+                  alpha_required=True,selected_alpha_required=False,
+                  previous=copy.deepcopy(r['selected']),
+                  closest=[dict(decoder=i,present=False) for i in range(3)],
+                  chosen_slots=[-1]*3,eligible_left_slots=[False]*3)
+        r2['history']=[dict(decoder=i//3,slot=i%3,present=False) for i in range(9)]
+        # The new alpha-bearing left/right pair lacks its required third handle.
+        # The retained selection legitimately has no alpha participation.
+        for eye in range(2):
+            r2['history'][eye*3]=dict(decoder=eye,slot=0,present=True,frame=3,warp=13,
+                view_display_time_xr_ns=210,receive_xr_ns=10,ready_xr_ns=20,alpha=True)
+        for key in ('wait_frame_begin_xr_ns','wait_frame_end_xr_ns','render_entry_xr_ns',
+                    'selection_begin_xr_ns','selection_end_xr_ns','end_frame_return_xr_ns',
+                    'predicted_display_xr_ns'):
+            r2[key]+=100
+            if key in p2:p2[key]+=100
+        r2['previous_predicted_display_xr_ns']=p2['previous_predicted_display_xr_ns']=100
+        p2.update(candidate_trace_records=2,submit_xr_ns=165,
+                  render_fence_begin_xr_ns=152,render_fence_end_xr_ns=153)
+        result=module.evaluate([r,r2],[p,p2],selection_policy='bounded-newest')
+        self.assertEqual(result['status'],'pass',result['errors'])
+        self.assertEqual(result['fallback_records'],1)
+        self.assertEqual(result['higher_frame_id_available'],0)
+        self.assertEqual(result['selected_differs_from_newest_complete'],0)
+
+    def test_schema2_requested_policy_is_bound_after_trace_cap(self):
+        r,p=bounded_fixture()
+        r.update(selection_policy='closest-target',reason='closest_target',
+                 selected=copy.deepcopy(r['closest']),chosen_slots=[0,0,-1],
+                 eligible_left_slots=[True,False,False])
+        p.update(selection_policy='closest-target',left=1,right=1,left_warp=11,right_warp=11)
+        for pos in (1,4):r['history'][pos]=dict(decoder=pos//3,slot=1,present=False)
+        traces=[];presents=[]
+        for i in range(4097):
+            rr,pp=copy.deepcopy(r),dict(p)
+            rr.update(sequence=i+1,repeat_previous=bool(i))
+            if i:rr['previous']=copy.deepcopy(r['selected'])
+            for key in ('wait_frame_begin_xr_ns','wait_frame_end_xr_ns','render_entry_xr_ns',
+                        'selection_begin_xr_ns','selection_end_xr_ns','end_frame_return_xr_ns',
+                        'predicted_display_xr_ns'):
+                rr[key]+=100*i
+                if key in pp:pp[key]+=100*i
+            if i:rr['previous_predicted_display_xr_ns']=pp['previous_predicted_display_xr_ns']=100*i
+            pp.update(submit_xr_ns=65+100*i,render_fence_begin_xr_ns=52+100*i,
+                      render_fence_end_xr_ns=53+100*i,candidate_trace_records=min(i+1,4096),
+                      candidate_trace_dropped=max(0,i+1-4096),
+                      candidate_trace_write_ns=10000 if i<4096 else 0)
+            if i<4096:traces.append(rr)
+            presents.append(pp)
+        result=module.evaluate(traces,presents,selection_policy='closest-target')
+        self.assertEqual(result['status'],'pass',result['errors'])
+        presents[-1]['selection_policy']='bounded-newest'
+        for requested in ('closest-target',None):
+            result=module.evaluate(traces,presents,selection_policy=requested)
+            self.assertEqual(result['status'],'fail')
+            self.assertIn('presentation selection policy differs within diagnostic run',result['errors'])

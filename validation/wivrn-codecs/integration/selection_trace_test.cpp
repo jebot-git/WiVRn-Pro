@@ -56,6 +56,11 @@ int main(int argc, char**) {
     std::ostringstream output;
     write_json(output, copied);
     const auto text = output.str();
+    assert(text.find("\"schema\":2") != std::string::npos);
+    assert(text.find("\"selection_policy\":\"closest-target\"") != std::string::npos);
+    assert(text.find("\"max_ahead_xr_ns\":0") != std::string::npos);
+    assert(text.find("\"chosen_slots\":[-1,-1,-1]") != std::string::npos);
+    assert(text.find("\"eligible_left_slots\":[false,false,false]") != std::string::npos);
     assert(text.find("\"frame\":9007199254740993") != std::string::npos);
     assert(text.find("\"warp\":18446744073709551615") != std::string::npos);
     assert(text.find("\"view_display_time_xr_ns\":-9223372036854775808") != std::string::npos);
@@ -64,6 +69,9 @@ int main(int argc, char**) {
     assert(text.find("\"decoder\":2,\"slot\":2,\"present\":true") != std::string::npos);
     assert(text.ends_with("}\n"));
     assert(std::string(reason_name(Reason::closest_target)) == "closest_target");
+    assert(std::string(reason_name(Reason::bounded_newest)) == "bounded_newest");
+    assert(std::string(reason_name(Reason::no_eligible_fallback)) == "no_eligible_fallback");
+    assert(std::string(policy_name(Policy::bounded_newest)) == "bounded-newest");
     assert(std::string(reason_name(Reason::unavailable)) == "unavailable");
     // Optional JSON emission permits an independent strict parser round-trip.
     if (argc > 1) std::cout << text;

@@ -335,3 +335,17 @@ of duplicate eye snapshots). ASan/UBSan and TSAN recipes/results are recorded in
 validation/results/stereo-admission-20261008/REPORT.txt in the working workspace.
 Paired dropping is only valid for independent raw/VR444/all-intra test payloads;
 future predictive video streams require dependency-aware handling.
+0.15 CPU path and bounded-selection experiments (source-only validation)
+=====================================================================
+native_compare.py accepts --cpu-output cached-copy|mapped-direct (default cached),
+--selection-policy closest-target|bounded-newest (default closest), and
+--source-trace. Mapped output requires custom-vr444 plus --decoder-backend cpu-neon.
+Bounded selection requires --candidate-trace. Both diagnostic tracers and either
+experimental path block promotion. All new client configuration is backed up,
+read back and restored; missing trace export or inconsistent evidence fails.
+
+CPU-LATENCY-TARGET.json adds the preliminary strict p95 < 15 ms RGB444 software
+target without relaxing the original correctness/cadence/p99 policy. Existing
+hardware results predate this source iteration. Source, build and device states
+must remain separate; no 0.15 APK or live result exists yet. The current sandbox
+blocks ADB. See docs/codec/cpu-development-0.15.0.txt for checks and next-run plan.
