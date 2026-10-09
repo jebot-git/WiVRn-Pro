@@ -6,7 +6,7 @@ The research branches repair diagnostic contracts, add opt-in capture, and
 bound selection alternatives using immutable recorded evidence. Runtime
 policy and production qualification limits are unchanged.
 
-catalog.json pins 24 separately pushed approach branches and 66 notes,
+catalog.json pins 25 separately pushed approach branches and 70 notes,
 validation or analysis artifacts at full immutable Git commit IDs. It is
 the machine-readable branch/artifact index. Each artifact is read from its
 own commit, never silently compared against later changed source files.
@@ -33,13 +33,13 @@ the old receipt or relabel full historical source integrity as passing.
 Fresh Python mode additionally runs the entire current validation suite,
 requires nonzero execution and plain OK without skips, and rehashes all
 files in the declared source directories before/after. The completed run
-has 331 passing tests, including eight catalog/runner tests covering omitted
+has 336 passing tests, including eight catalog/runner tests covering omitted
 or duplicate approaches, altered artifacts/sources, malformed digest maps,
 external source references, exact known-gap declarations and all-skipped
 test output. A transport-team independent read-only review found no blocker.
 
 Separate final receipts rechecked all 1,492 original acquisition files in
-five manifests and matched all 24 branch heads on origin to their catalog
+five manifests and matched all 25 branch heads on origin to their catalog
 commits. These are read-only integrity checks, not fresh device evidence.
 The primary fresh-suite receipt still honestly marks those separate stages
 as outside its own scope. Output receipts are copied into this directory
@@ -85,6 +85,13 @@ Most useful results and boundaries:
    27.037346 ms versus encoded 26.927659 ms, with 14 older known origins.
    It rescored the exact-phase winning paths without reoptimizing this new
    diagnostic. It is not complete input/application or optical latency.
+
+7. SOURCE-AGE-BOUND derives source-p95 optimum brackets from pointwise age
+   dominance and legal rescored witnesses. Within the same exact-phase
+   model, one-horizon encoded source age lies in [19.241095, 19.311512] ms;
+   unbounded-target encoded in [14.852189, 14.974637] ms; both source-distinct
+   models in [15.924690, 15.998856] ms. These are inclusive bounds, not new
+   exact optima. A separate rendered figure and receipt show all intervals.
 
 Native integration remains outstanding and owned by the integration team:
 regenerate integration.patch and overlay-manifest, include the pacer init

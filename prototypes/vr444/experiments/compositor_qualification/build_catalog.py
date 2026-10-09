@@ -36,6 +36,7 @@ MILESTONES=(
  ('compositor-receipt-floor','754ab4c4',S,'RECEIPT-FLOOR.txt','receipt-floor-validation-20261009.json','receipt-floor-20261009.json'),
  ('compositor-exact-phase','30692027',S,'EXACT-PHASE.txt','phase-exact-validation-20261009.json','phase-exact-20261009.json'),
  ('compositor-source-receipt-age','5dca6628',S,'SOURCE-RECEIPT-AGE.txt','source-receipt-age-validation-20261009.json','source-receipt-age-20261009.json'),
+ ('compositor-source-age-bound','8d808fd',S,'SOURCE-AGE-BOUND.txt','source-age-bound-validation-20261009.json','source-age-bound-20261009.json','source-age-bound-figure-20261009.json'),
 )
 
 

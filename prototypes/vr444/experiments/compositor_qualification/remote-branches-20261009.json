@@ -2,7 +2,7 @@
   "schema": 1,
   "status": "pass",
   "kind": "remote_published_branch_identity",
-  "checked_at_utc": "2026-10-09T10:21:10.387344+00:00",
+  "checked_at_utc": "2026-10-09T10:30:46.099198+00:00",
   "remote": "https://github.com/jebot-git/WiVRn-Pro.git",
   "command": [
     "git",
@@ -10,7 +10,7 @@
     "--heads",
     "origin"
   ],
-  "catalog_sha256": "b8735b85b4f6935b504e2f9402e0b39b56e4e97dfb502dc51136e4a3830eea7b",
+  "catalog_sha256": "cd5b3d1ddcf9d93e60338798429d049eb0a2fc6a262046c4262a662736f44904",
   "branches": [
     {
       "branch": "research/sub15-20261009/compositor",
@@ -107,9 +107,13 @@
     {
       "branch": "research/sub15-20261009/compositor-source-receipt-age",
       "commit": "5dca66284036955f0232a24c2b94075b16927ccd"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-source-age-bound",
+      "commit": "8d808fd84ac4554eea032ed45db0ec65a7cc9bea"
     }
   ],
-  "branch_count": 24,
+  "branch_count": 25,
   "headset_operations": false,
   "source_execution": false
 }

@@ -29,8 +29,8 @@ def fixture(receipt=None):
 class CompositorQualificationTests(unittest.TestCase):
     def test_complete_catalog_checks_pinned_sources_without_execution_claim(self):
         catalog,_,read=fixture();result=h.verify(catalog,read)
-        self.assertEqual(result['approach_count'],24)
-        self.assertEqual(result['repository_source_bindings_verified'],24)
+        self.assertEqual(result['approach_count'],25)
+        self.assertEqual(result['repository_source_bindings_verified'],25)
         for key in ('fresh_test_execution','external_artifacts_verified','headset_operations','native_build_qualified','latency_gate_pass','promotion_eligible'):
             self.assertIs(result[key],False)
 

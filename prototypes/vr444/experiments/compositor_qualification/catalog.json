@@ -573,6 +573,37 @@
           "source_bindings": 21
         }
       ]
+    },
+    {
+      "id": "compositor-source-age-bound",
+      "branch": "research/sub15-20261009/compositor-source-age-bound",
+      "commit": "8d808fd84ac4554eea032ed45db0ec65a7cc9bea",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/SOURCE-AGE-BOUND.txt",
+          "kind": "notes",
+          "sha256": "3afc7541a725176c93a8b2bf7adfb356df947d3b4c3f3170604f02bdfc216e4f",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/source-age-bound-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "de29530da5b7668d9b8adbaad1e3c61c3ee017d9ceb5e73ad15bdcd5c7511d14",
+          "source_bindings": 55
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/source-age-bound-20261009.json",
+          "kind": "analysis",
+          "sha256": "b47258c97f87c63b097ceb491c55b87545fb58474d7bcb42fa92c315756d2671",
+          "source_bindings": 22
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/source-age-bound-figure-20261009.json",
+          "kind": "figure_receipt",
+          "sha256": "360897f6d913a572a812e741a47db39dac61c6c04a13daa5dd14f8597a360779",
+          "source_bindings": 3
+        }
+      ]
     }
   ],
   "native_integration_required": [
