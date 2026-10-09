@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "offline scalar saved-payload audit; no device/network execution or native promotion",
+  "source_sha256": {
+    "validation/wivrn-codecs/integration/rrb_payload_audit.py": "4a258f36a260fce65b13eec431b4259b6c707af26b53810b7149df20cc1ac5ea",
+    "validation/wivrn-codecs/integration/rrb_reference.cpp": "fc07580f0869030cdc894b860f24abed55f4bb5749bca21fbf250dd618956afe",
+    "validation/wivrn-codecs/integration/RRB_PAYLOAD_AUDIT.txt": "1dc95ce8e8e96f8e9933e32f74cc2f432a5c51c40b10612dc7638e191f5571e5",
+    "validation/wivrn-codecs/tests/test_rrb_payload_audit.py": "cc8f375e6e896619be44ab34709bb03616a2e58d1616d350aaaa43dc2773fbb8",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/rowblocks.hpp": "e6a1c2c9e21f2145168cae1a805ae47e2a5bfd6a8c04396ecec7631eb55a236d",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/rowfilter.hpp": "03db15be3fc88e91d697bd7818fb1dc653456837e6f3dfe5c7f06af494ab9439",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/simd.hpp": "941cdd3dbd09db0fc708b3d4b55b3d608cfc6462a6f12d29173f079c4c1c3703",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/wpc.hpp": "6a5e96c8bae24f9fa39947ec014f2a86c68b43dc3e6c1885df316ae52ff85763",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f"
+  },
+  "test_command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "validation/wivrn-codecs/tests",
+    "-p",
+    "test_rrb_payload_audit.py",
+    "-v"
+  ],
+  "test_stderr": "test_actual_valid_raw_pair_over_cap_is_rejected (test_rrb_payload_audit.PayloadAudit.test_actual_valid_raw_pair_over_cap_is_rejected) ... ok\ntest_exec_uses_hashed_snapshot_during_original_replacement (test_rrb_payload_audit.PayloadAudit.test_exec_uses_hashed_snapshot_during_original_replacement) ... ok\ntest_independent_compressed_and_row_up_goldens (test_rrb_payload_audit.PayloadAudit.test_independent_compressed_and_row_up_goldens) ... ok\ntest_inner_corruption_even_with_repaired_outer_crc_rejected (test_rrb_payload_audit.PayloadAudit.test_inner_corruption_even_with_repaired_outer_crc_rejected) ... ok\ntest_missing_mate_bad_binary_and_symlink_rejected (test_rrb_payload_audit.PayloadAudit.test_missing_mate_bad_binary_and_symlink_rejected) ... ok\ntest_no_presented_capture_cannot_qualify (test_rrb_payload_audit.PayloadAudit.test_no_presented_capture_cannot_qualify) ... ok\ntest_outer_identity_and_source_corruption_rejected (test_rrb_payload_audit.PayloadAudit.test_outer_identity_and_source_corruption_rejected) ... ok\ntest_real_scalar_oracle_matches_both_distinct_eyes (test_rrb_payload_audit.PayloadAudit.test_real_scalar_oracle_matches_both_distinct_eyes) ... ok\ntest_reference_and_client_mismatch_rejected (test_rrb_payload_audit.PayloadAudit.test_reference_and_client_mismatch_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 1.299s\n\nOK\n",
+  "checks": [
+    "real freshly built scalarCLI",
+    "independent raw/compressed/up residual goldens,32row reset andoddheight",
+    "distinctleft/right bytes",
+    "outeridentity/source/reference/client corruption",
+    "innerCRCerror despite repairedouterCRC",
+    "missingmate/expectedbinaryhash/symlink rejection",
+    "real valid overcap raw pair",
+    "no presentedcapturedpair rejection",
+    "executes exact hashed executable snapshot during replace-and-restore of original buildpath"
+  ],
+  "binary_binding_requirement": "Caller must additionally bind --reference-sha256 to build receipt forrrb_reference.cpp andexactdependencies; adapterdoesnotinventbinary/source provenance.",
+  "peer_review": "GPU peer reviewed payload/canonical identity/source/client comparisons; binary-path replacement gap fixed by executing private hashed-byte snapshot and adversarial regression"
+}
