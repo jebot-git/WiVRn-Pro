@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "created_utc": "2026-10-09T05:38:14.632024+00:00",
+  "scope": "offline feasibility and correctness only",
+  "headset_used": false,
+  "performance_claim": false,
+  "promotion_blocked": true,
+  "local_raw_directory": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-direct-image",
+  "runs": [
+    {
+      "path": "validation/results/sub15-gpu-direct-image/intel-code-preserving.json",
+      "sha256": "78b3e6e20beac056009acdd0628a9289c454ea0ff6f2789e41b8006e1ba6c86e",
+      "bytes": 112921,
+      "correctness_pass": true,
+      "case_count": 96,
+      "measured_iterations": 288,
+      "devices": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)"
+      ],
+      "software": false,
+      "format_list": false,
+      "max_ideal_linear_error": 0.00114763,
+      "max_srgb_code_error": 0.193304,
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false
+    },
+    {
+      "path": "validation/results/sub15-gpu-direct-image/intel-format-list-corpus.json",
+      "sha256": "f9b0bec64003cec439d8de61f02ae22de1290fa9b9ed3211790efcebe7b4865d",
+      "bytes": 157534,
+      "correctness_pass": true,
+      "case_count": 134,
+      "measured_iterations": 402,
+      "devices": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)"
+      ],
+      "software": false,
+      "format_list": true,
+      "max_ideal_linear_error": 0.00114763,
+      "max_srgb_code_error": 0.193304,
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false
+    },
+    {
+      "path": "validation/results/sub15-gpu-direct-image/intel-final-default.json",
+      "sha256": "75bcf4e2eae60792be2629e4c533a81853ebf5f98219e37aa952e13b89c8a662",
+      "bytes": 98904,
+      "correctness_pass": true,
+      "case_count": 84,
+      "measured_iterations": 252,
+      "devices": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)"
+      ],
+      "software": false,
+      "format_list": false,
+      "max_ideal_linear_error": 0.00114763,
+      "max_srgb_code_error": 0.193304,
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false
+    },
+    {
+      "path": "validation/results/sub15-gpu-direct-image/intel-final-format-list.json",
+      "sha256": "94dcda0ab3b318e2e871b40dcb01b2b5c86a03e53913c8c500957b62fef4082e",
+      "bytes": 98936,
+      "correctness_pass": true,
+      "case_count": 84,
+      "measured_iterations": 252,
+      "devices": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)"
+      ],
+      "software": false,
+      "format_list": true,
+      "max_ideal_linear_error": 0.00114763,
+      "max_srgb_code_error": 0.193304,
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false
+    }
+  ],
+  "cpu_final": {
+    "schema": 1,
+    "cpu_fixture_pass": true,
+    "fixture_count": 96,
+    "extension_gate_pass": true,
+    "vulkan_initialized": false,
+    "headset_used": false
+  },
+  "cpu_asan_ubsan": {
+    "schema": 1,
+    "cpu_fixture_pass": true,
+    "fixture_count": 96,
+    "extension_gate_pass": true,
+    "vulkan_initialized": false,
+    "headset_used": false
+  },
+  "leak_detection": "disabled: environment executes under ptrace",
+  "python_unittests": {
+    "tests": 3,
+    "negative_mutations": 13,
+    "pass": true
+  },
+  "builds": {
+    "host": true,
+    "android_api29_arm64": true,
+    "warnings_as_errors": true,
+    "spirv_val_vulkan_1_1_modules": 4,
+    "pass": true
+  },
+  "retained_rejected_evidence": [
+    {
+      "path": "validation/results/sub15-gpu-direct-image/intel-default.json",
+      "sha256": "b138e9bb35086b9f997a1f75d7000e490f13b498b922742a645e0f639dc25d43",
+      "bytes": 2020
+    },
+    {
+      "path": "validation/results/sub15-gpu-direct-image/intel-diagnostic.json",
+      "sha256": "5ff72f75a6f5a46530034a4baa7055aae037f9c35da9694d121f14c8f6dd5011",
+      "bytes": 2017
+    },
+    {
+      "path": "validation/results/sub15-gpu-direct-image/intel-strict-baseline.json",
+      "sha256": "36ba2cc41bb94969dc3065bf1e5c6c12f8968ccdb9e316841ea1339f867e3341",
+      "bytes": 2021
+    },
+    {
+      "path": "validation/results/sub15-gpu-direct-image/intel-strict-baseline.stderr",
+      "sha256": "a8887d3c32bccc3a4fe14ee671550793fe2248393f17cc4903603bc90c02f267",
+      "bytes": 127
+    }
+  ],
+  "sources": [
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/README.txt",
+      "sha256": "4cbd4f596331e691fec77181dd6d9f9bfbe1bcfd490fe7af9f415e134ef72d2a",
+      "bytes": 9634
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/audit.py",
+      "sha256": "9bcc467f2f2b5e28b2f9f4941b1409d74108ae177f7ef2bbdd0af42bcaf366af",
+      "bytes": 3826
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build.sh",
+      "sha256": "3658f13a473627a9e74e303299ea04d5ff87e772fc769dfe81a41583633ba8be",
+      "bytes": 1116
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/decode.comp",
+      "sha256": "e858f28905e9f9ebd2aff0e84ca93eaa4ed5ab0579c0923ffa06d66a065a32c9",
+      "bytes": 5600
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/probe.cpp",
+      "sha256": "371e6615cbc48c899e99ec2102575506d70042d01df57fb17502de520e0e7399",
+      "bytes": 36338
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/sample.comp",
+      "sha256": "b146b902a79640cdd887061a9475217aa156a763ee04bbfa521e20be2f32938c",
+      "bytes": 436
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/test_audit.py",
+      "sha256": "9d6ebe7d40c37127966d5e594af437b9b9b8088d091dbb2b41d3b9f45ce8768c",
+      "bytes": 3004
+    }
+  ],
+  "reference_sources": [
+    {
+      "path": "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp",
+      "sha256": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+      "bytes": 10900
+    },
+    {
+      "path": "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp",
+      "sha256": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+      "bytes": 935
+    }
+  ],
+  "binaries": [
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/direct-image-host",
+      "sha256": "321bd25aa3711aa65628742478721fa08cd85fa13b7b32ae4642366e63f474df",
+      "bytes": 132312
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/direct-image-android",
+      "sha256": "563c02dfb6f8a013cd92dbe80ac62acac519ccca2c2b9779fa9296e79a179e50",
+      "bytes": 6863696
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/direct-image-asan",
+      "sha256": "32a7cd3abc20901e7e3364ca4aa90fa934c485bec8b73ee1f26986688337916d",
+      "bytes": 3239576
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/shaders/buffer.spv",
+      "sha256": "4506a680b58f97d5989cf126c3e0948462fcc5369b0dde460ba854b879676934",
+      "bytes": 16028
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/shaders/sample.spv",
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "bytes": 1344
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/shaders/uint.spv",
+      "sha256": "5d4063d3f7167d9cf493050125231766edaae1c1d81011891d0424e020ae27f6",
+      "bytes": 16296
+    },
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/build/shaders/unorm.spv",
+      "sha256": "82cba0d422d5c5e611c1d27883285070ad5b26853cc921b2f4667f2690d8d65c",
+      "bytes": 16504
+    }
+  ],
+  "final_binary_gpu_scope": "84 generated fixtures both extension modes after helper extraction; prior broader runs used identical shader hashes and same computation/color gates before helper extraction"
+}
