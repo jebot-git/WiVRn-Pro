@@ -478,7 +478,7 @@ def run(args):
             'quality_capture': getattr(args, 'quality_capture', False),
             'quality_max_pairs': getattr(args, 'quality_max_pairs', 6),
             'quality_frame_stride': getattr(args, 'quality_frame_stride', 90),
-            'scene_reference_space': 'View' if quality_application_record is not None else 'Local',
+            'scene_reference_space': quality_application_record['source_application_space'].title() if quality_application_record is not None else 'Local',
             'quality_application': quality_application_record is not None,
             'quality_application_plan_sha256': getattr(args, 'quality_application_plan_sha256', None),
             'quality_application_adapter_sha256': sha(quality_application_path) if quality_application_record is not None else None,
