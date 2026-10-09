@@ -85,11 +85,11 @@
   },
   "client/scenes/stream.cpp": {
     "before_sha256": "27250cf4d1dd6549f62f6a25b3aa33833cb6238cdc1ff1339a69bb07ef740584",
-    "after_sha256": "6cd9ecd367023eeabd97f50c9156b1bfb6533682ec26e2c8e0b508b2b0bb1895"
+    "after_sha256": "d180adf7d87d15486cac066521f5eba92bbe6cec0264c36db3601c7e1c44c6a3"
   },
   "client/scenes/stream.h": {
     "before_sha256": "d04badaf6c9f403076a6f5051c7e0fad0748cc64a13c30796ad2db025cb14d25",
-    "after_sha256": "3a611f266d65106265402b8c594d8e72de3f845bd2456e44ac6b5ea09f09feee"
+    "after_sha256": "eeab6896d9b53d205f7bd610f27affdfb0450792cb980d35df6f4210b2e09dd6"
   },
   "client/scenes/stream_defoveator.cpp": {
     "before_sha256": "11be925cd47b7cadbf07b8f21253f3b95135a9df9623c93abef51ba7aa0b8b82",
@@ -99,6 +99,10 @@
     "before_sha256": "e307c1ba633f2f8b31bbdfcaa26ab2d5e94f4734bd5c78ded005283832268981",
     "after_sha256": "9eb2660bc62b75342bd1c5e333311649c48e00531f9f84ff78d498ebe3ceca55"
   },
+  "client/scenes/stream_quality_capture.h": {
+    "before_sha256": null,
+    "after_sha256": "a24ee012c3c73d28fc58ff4e679f3fe80680346f1189a4a092dfccf02f484717"
+  },
   "client/scenes/stream_tracking.cpp": {
     "before_sha256": "a2065a3d859541b5248ba92b3cfa53009fbeb6b708ed9b2856e79d3c66819027",
     "after_sha256": "65a33beacc0991ae8ee2f9425c6564409205c96358d1d8bba69ed92a325b8bbc"
@@ -106,6 +110,14 @@
   "client/wivrn_client.cpp": {
     "before_sha256": "2ea21c24c39da70b05ff2245b8b1903bce0c91879fbcb34fb854200d81363877",
     "after_sha256": "2d4244cc6596cb73d4d0957a886e865ba36cd937358b9eddc69f2fe03eb0e5ad"
+  },
+  "client/xr/swapchain.cpp": {
+    "before_sha256": "6ea1bc533301018546badb2fd29e2380376074f08d78fc6fcc5d9a44a36c7572",
+    "after_sha256": "74a9b7c2a18684236426fde34b84645b01315c05be0a9a6d1dbe9b5d1508a0d1"
+  },
+  "client/xr/swapchain.h": {
+    "before_sha256": "e59441827835d9f3ed9715beafe15d208a208b4b51b1a007227af769a5f1b625",
+    "after_sha256": "c1f328e064d4b9c80793817553656b9a6843873773911be7f77f09b8a025b0c8"
   },
   "common/CMakeLists.txt": {
     "before_sha256": "b4a09e59bd76d23e02198b627fe7aeb2117502334752a7bc2ff51a60ae16bcb7",
@@ -170,6 +182,10 @@
   "common/codec_test/stereo_publication.h": {
     "before_sha256": null,
     "after_sha256": "669a93c54a8f8a7c282be05871153d03daa041eaae57e685e59d1c2edc76fa30"
+  },
+  "common/codec_test/submitted_capture.h": {
+    "before_sha256": null,
+    "after_sha256": "272ac6020f77cdc2b47881996fe4e3618fc5a231168bfc43fffd3b440b455de7"
   },
   "common/codec_test/vr444/codec.cpp": {
     "before_sha256": null,

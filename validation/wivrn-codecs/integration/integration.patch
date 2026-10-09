@@ -984,7 +984,7 @@ index 0c209aa..3386c2d 100644
  	        .type = XR_TYPE_COMPOSITION_LAYER_SETTINGS_FB,
  	        .layerFlags = flags,
 diff --git a/client/scenes/stream.cpp b/client/scenes/stream.cpp
-index 509b924..8e31e79 100644
+index 509b924..3f112c8 100644
 --- a/client/scenes/stream.cpp
 +++ b/client/scenes/stream.cpp
 @@ -1,3 +1,9 @@
@@ -997,17 +997,18 @@ index 509b924..8e31e79 100644
  /*
   * WiVRn VR streaming
   * Copyright (C) 2022  Guillaume Meunier <guillaume.meunier@centraliens.net>
-@@ -34,6 +40,9 @@
+@@ -34,6 +40,10 @@
  #include "audio/audio.h"
  #include "boost/pfr/core.hpp"
  #include "decoder/shard_accumulator.h"
 +#ifdef WIVRN_CODEC_TESTS
 +#include "decoder/test_decoder.h"
++#include "stream_quality_capture.h"
 +#endif
  #include "inplace_vector.hpp"
  #include "spdlog/spdlog.h"
  #include "utils/named_thread.h"
-@@ -173,6 +182,17 @@ static const std::array supported_depth_formats{
+@@ -173,6 +183,17 @@ static const std::array supported_depth_formats{
          vk::Format::eX8D24UnormPack32,
  };
  
@@ -1025,11 +1026,12 @@ index 509b924..8e31e79 100644
  scenes::stream::stream(std::string server_name, scene & parent_scene) :
          scene_impl<stream>(supported_color_formats, supported_depth_formats, parent_scene),
          apps{*this, std::move(server_name)}
-@@ -180,6 +200,57 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
+@@ -180,6 +201,58 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
  	auto views = system.view_configuration_views(viewconfig);
  	width = views[0].recommendedImageRectWidth;
  	height = views[0].recommendedImageRectHeight;
 +#ifdef WIVRN_CODEC_TESTS
++    test_quality_capture = std::make_unique<stream_quality_capture>(application::get_config_path());
 +    std::ifstream selection_file(application::get_config_path() / "codec-test-selection.txt");
 +    std::string selection;
 +    if (selection_file >> selection) {
@@ -1083,7 +1085,7 @@ index 509b924..8e31e79 100644
  }
  
  static from_headset::visibility_mask_changed::masks get_visibility_mask(xr::instance & inst, xr::session & session, int view)
-@@ -249,6 +320,10 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
+@@ -249,6 +322,10 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
  			auto scale = config.get_stream_scale();
  			info.stream_eye_width = info.render_eye_width * scale;
  			info.stream_eye_height = info.render_eye_height * scale;
@@ -1094,7 +1096,7 @@ index 509b924..8e31e79 100644
  		}
  
  		if (self->instance.has_extension(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME))
-@@ -352,6 +427,14 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
+@@ -352,6 +429,14 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
  	self->network_session->send_control(from_headset::session_state_changed{
  	        .state = application::get_session_state(),
  	});
@@ -1109,7 +1111,7 @@ index 509b924..8e31e79 100644
  	self->network_session->send_control(from_headset::stream_tab_changed{
  	        .tab = self->gui_status,
  	});
-@@ -617,6 +700,22 @@ scenes::stream::~stream()
+@@ -617,6 +702,22 @@ scenes::stream::~stream()
  
  	if (network_thread.joinable())
  		network_thread.join();
@@ -1132,7 +1134,7 @@ index 509b924..8e31e79 100644
  }
  
  void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_ptr<shard_accumulator::blit_handle> handle)
-@@ -634,7 +733,17 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+@@ -634,7 +735,17 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
  			if (decoder != decoders[stream].decoder.get())
  				return;
  			handle->feedback.received_from_decoder = instance.now();
@@ -1150,7 +1152,7 @@ index 509b924..8e31e79 100644
  		}
  
  		if (state_ != state::streaming and not(decoders[0].empty() or decoders[1].empty()))
-@@ -650,6 +759,46 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+@@ -650,6 +761,46 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
  	}
  }
  
@@ -1197,7 +1199,7 @@ index 509b924..8e31e79 100644
  bool scenes::stream::accumulator_images::empty() const
  {
  	for (const auto & frame: latest_frames)
-@@ -660,11 +809,57 @@ bool scenes::stream::accumulator_images::empty() const
+@@ -660,11 +811,57 @@ bool scenes::stream::accumulator_images::empty() const
  	return true;
  }
  
@@ -1256,7 +1258,7 @@ index 509b924..8e31e79 100644
  	inplace_vector<shard_accumulator::blit_handle *, decoder_count> common_frames;
  	const bool alpha = decoders[0].latest_frames[0] and decoders[0].latest_frames[0]->view_info.alpha;
  	for (size_t i = 0; i < view_count + alpha; ++i)
-@@ -742,14 +937,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
+@@ -742,14 +939,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
  		}
  	}
  	return result;
@@ -1279,7 +1281,7 @@ index 509b924..8e31e79 100644
  }
  
  void scenes::stream::update_gui_position(xr::spaces controller, float predicted_display_period)
-@@ -838,6 +1041,25 @@ bool scenes::stream::is_gui_interactable() const
+@@ -838,6 +1043,25 @@ bool scenes::stream::is_gui_interactable() const
  
  void scenes::stream::render(const XrFrameState & frame_state)
  {
@@ -1305,7 +1307,7 @@ index 509b924..8e31e79 100644
  	if (state_ == state::shutdown)
  		application::pop_scene();
  
-@@ -882,6 +1104,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -882,6 +1106,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		// TODO: stop/restart video stream
  		session.begin_frame();
  		session.end_frame(frame_state.predictedDisplayTime, {});
@@ -1318,7 +1320,7 @@ index 509b924..8e31e79 100644
  		return;
  	}
  
-@@ -897,11 +1125,42 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -897,11 +1127,42 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		application::pop_scene();
  	}
  
@@ -1361,7 +1363,7 @@ index 509b924..8e31e79 100644
  
  	gpu_timestamps timestamps;
  	if (query_pool_filled)
-@@ -940,7 +1199,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -940,7 +1201,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
  
  	// Search for frame with desired display time on all decoders
  	// If no such frame exists, use the latest frame for each decoder
@@ -1373,7 +1375,7 @@ index 509b924..8e31e79 100644
  	std::array<XrPosef, view_count> pose{};
  	std::array<XrFovf, view_count> fov{};
  	std::array<wivrn::to_headset::foveation_parameter, view_count> foveation;
-@@ -997,6 +1260,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -997,6 +1262,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			                .extent = blit_handle->extent,
  			        },
  			        .layout_rgb = blit_handle->current_layout,
@@ -1381,7 +1383,71 @@ index 509b924..8e31e79 100644
  			};
  		}
  		else
-@@ -1175,9 +1439,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1076,7 +1342,17 @@ void scenes::stream::render(const XrFrameState & frame_state)
+ 		assert(swapchain);
+ 		// defoveate the image, apply scale/bias
+ 		int image_index = swapchain.acquire();
+-		swapchain.wait();
++#ifdef WIVRN_CODEC_TESTS
++        const bool image_waited = swapchain.wait();
++        if (test_quality_capture->enabled() && !image_waited)
++            throw std::runtime_error("quality capture swapchain wait did not complete");
++#else
++        swapchain.wait();
++#endif
++        const bool room_capture = spatial && spatial->capture_active();
++#ifdef WIVRN_CODEC_TESTS
++        test_quality_capture->cancel_ready();
++#endif
+ 
+ 		switch (gui_status)
+ 		{
+@@ -1107,7 +1383,22 @@ void scenes::stream::render(const XrFrameState & frame_state)
+ 		                      {bias, bias, bias, 0.},
+ 		                      image_index, cutout_masks);
+ 
+-		command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, *query_pool, 1);
++#ifdef WIVRN_CODEC_TESTS
++        if (test_quality_capture->enabled() && !room_capture) {
++            const auto& left = current_blit_handles[0]; const auto& right = current_blit_handles[1];
++            if (!left || !right || left->feedback.frame_index != right->feedback.frame_index
++                || !codec_test::stereo_publication::same_view(left->view_info,right->view_info))
++                throw std::runtime_error("quality capture requires a coherent full stereo view");
++            for (unsigned eye=0;eye<2;++eye) {
++                const auto natural = stream_defoveator::defoveated_size(foveation[eye]);
++                if (natural.width != extents[eye].width || natural.height != extents[eye].height)
++                    throw std::runtime_error("quality capture clamped viewport has no verified ray mapping");
++            }
++            test_quality_capture->record(device,command_buffer,swapchain.image(image_index),swapchain.format(),image_index,
++                std::array<XrExtent2Di,2>{extents[0],extents[1]},left->feedback.frame_index);
++        }
++#endif
++        command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, *query_pool, 1);
+ 
+ 		command_buffer.end();
+ 		vk::SubmitInfo submit_info;
+@@ -1135,13 +1426,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
+ 		submit_info.pNext = &sem_info;
+ 
+ 		device.resetFences(*fence);
+-		queue.lock()->submit(submit_info, *fence);
++#ifdef WIVRN_CODEC_TESTS
++        test_quality_capture->before_submit();
++#endif
++        queue.lock()->submit(submit_info, *fence);
++#ifdef WIVRN_CODEC_TESTS
++        test_quality_capture->observe(device,*fence);
++#endif
+ #if WIVRN_FEATURE_RENDERDOC
+ 		renderdoc_end(*vk_instance);
+ #endif
+ 		swapchain.release();
+ 
+-		const bool room_capture = spatial && spatial->capture_active();
+ 		if (output_alpha || room_capture)
+ 			session.enable_passthrough(system);
+ 		else
+@@ -1175,9 +1471,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			        application::space(xr::spaces::world),
  			        layer_view);
  
@@ -1403,7 +1469,7 @@ index 509b924..8e31e79 100644
  
  		accumulate_metrics(frame_state.predictedDisplayTime, current_blit_handles, timestamps);
  
-@@ -1186,6 +1459,91 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1186,6 +1491,94 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		try
  		{
  			render_end();
@@ -1415,6 +1481,9 @@ index 509b924..8e31e79 100644
 +            const auto actual_filter_flags = !room_capture && projection_layer_index
 +                && layers[projection_layer_index - 1].settings
 +                ? layers[projection_layer_index - 1].settings->layerFlags : 0;
++            if (!room_capture) test_quality_capture->finish(current_blit_handles,images,cutout_masks,*video_stream_description,
++                layer_view,test_end_frame_return,frame_state.predictedDisplayTime,scale,bias,output_alpha,
++                requested_filter_flags,actual_filter_flags,filter_extension_enabled,application::get_hmd_traits().needs_srgb_conversion);
 +            if (test_layer_filter.observe({requested_filter_flags, actual_filter_flags, filter_extension_enabled, !room_capture})) {
 +                std::ofstream filter_log(application::get_config_path() / "codec-test/layer-filter.jsonl", std::ios::app);
 +                filter_log << "{\"generation\":" << test_layer_filter.generation
@@ -1495,7 +1564,7 @@ index 509b924..8e31e79 100644
  		}
  		catch (std::system_error & e)
  		{
-@@ -1195,6 +1553,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1195,6 +1588,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
  				throw;
  		}
  	}
@@ -1509,7 +1578,7 @@ index 509b924..8e31e79 100644
  
  	// Network operations may be blocking, do them once everything was submitted
  	{
-@@ -1287,12 +1652,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1287,12 +1687,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  		current_blit_handles.fill(nullptr);
  		retired.swap(decoders);
  		video_stream_description.reset();
@@ -1532,7 +1601,7 @@ index 509b924..8e31e79 100644
  		for (const auto & [stream_index, item]: utils::enumerate(replacement))
  			item.decoder = std::make_unique<shard_accumulator>(device, physical_device, instance, queue_family_index, description, shared_from_this(), stream_index);
  	}
-@@ -1306,6 +1681,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1306,6 +1716,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  	{
  		std::unique_lock lock(decoder_mutex);
  		decoders.swap(replacement);
@@ -1542,11 +1611,29 @@ index 509b924..8e31e79 100644
  		video_stream_description = description;
  		if (defoveator)
  			defoveator->reset_pipelines();
+@@ -1321,7 +1734,16 @@ void scenes::stream::setup_reprojection_swapchain(uint32_t swapchain_width, uint
+ 
+ 	auto views = system.view_configuration_views(viewconfig);
+ 
+-	swapchain = xr::swapchain(instance, session, device, swapchain_format, swapchain_width, swapchain_height, 1, views.size());
++    XrSwapchainUsageFlags additional_usage = 0;
++#ifdef WIVRN_CODEC_TESTS
++    if (test_quality_capture->enabled()) {
++        (void)codec_test::submitted_capture::bytes(swapchain_width,swapchain_height);
++        if (!(physical_device.getFormatProperties(swapchain_format).optimalTilingFeatures & vk::FormatFeatureFlagBits::eTransferSrc))
++            throw std::runtime_error("quality capture format lacks transfer-source support");
++        additional_usage = XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT;
++    }
++#endif
++    swapchain = xr::swapchain(instance, session, device, swapchain_format, swapchain_width, swapchain_height, 1, views.size(),additional_usage);
+ 	spdlog::info("Created stream swapchain: {}x{}", swapchain.width(), swapchain.height());
+ 	for (auto view: views)
+ 	{
 diff --git a/client/scenes/stream.h b/client/scenes/stream.h
-index a7d95ff..7781a27 100644
+index a7d95ff..19978bd 100644
 --- a/client/scenes/stream.h
 +++ b/client/scenes/stream.h
-@@ -39,6 +39,15 @@
+@@ -39,6 +39,16 @@
  #include <thread>
  #include <vulkan/vulkan_core.h>
  
@@ -1557,12 +1644,13 @@ index a7d95ff..7781a27 100644
 +#include "codec_test/selection_policy.h"
 +#include <fstream>
 +namespace wivrn { class test_stereo_state; }
++class stream_quality_capture;
 +#endif
 +
  namespace scenes
  {
  class stream : public scene_impl<stream>, public std::enable_shared_from_this<stream>
-@@ -73,7 +82,12 @@ private:
+@@ -73,7 +83,12 @@ private:
  
  	// for frames inside accumulator images
  	std::mutex frames_mutex;
@@ -1576,7 +1664,7 @@ index a7d95ff..7781a27 100644
  
  	wivrn::spatial_source * spatial = nullptr; // Owned by application, not the stream.
  	std::unique_ptr<wivrn_session> network_session;
-@@ -94,6 +108,20 @@ private:
+@@ -94,12 +109,30 @@ private:
  	// Network-thread state: decoder recovery must not replay an old display rate.
  	bool initial_refresh_rate_applied = false;
  	std::optional<to_headset::video_stream_description> video_stream_description;
@@ -1597,7 +1685,17 @@ index a7d95ff..7781a27 100644
  	std::array<accumulator_images, decoder_count> decoders; // Locked by decoder_mutex
  
  	std::optional<stream_defoveator> defoveator;
-@@ -257,7 +285,18 @@ public:
+ 
+ 	vk::raii::Fence fence = nullptr;
+ 	vk::raii::CommandBuffer command_buffer = nullptr;
++#ifdef WIVRN_CODEC_TESTS
++    // Destroy readback allocations before the fence; terminal queue drain first.
++    std::unique_ptr<stream_quality_capture> test_quality_capture;
++#endif
+ 
+ 	struct haptics_action
+ 	{
+@@ -257,7 +290,18 @@ public:
  	void operator()(to_headset::running_applications &&);
  	void operator()(audio_data &&);
  
@@ -1713,6 +1811,199 @@ index 3fa440c..7bf897e 100644
  		vk::ImageView a;
  		vk::Sampler sampler_a;
  		vk::Rect2D rect_a;
+diff --git a/client/scenes/stream_quality_capture.h b/client/scenes/stream_quality_capture.h
+new file mode 100644
+index 0000000..72d4019
+--- /dev/null
++++ b/client/scenes/stream_quality_capture.h
+@@ -0,0 +1,187 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++#pragma once
++#ifdef WIVRN_CODEC_TESTS
++#include "codec_test/submitted_capture.h"
++#include "vk/allocation.h"
++#include <cmath>
++#include <iomanip>
++#include <locale>
++#include <sstream>
++#include <vulkan/vulkan_raii.hpp>
++
++// Render-thread only. Owned after the stream fence/command buffer; the stream
++// terminal queue drain runs before this object's buffers can be destroyed.
++// Copy + fence wait happens while the XR image is still acquired. File exposure
++// waits for successful xrEndFrame, so these are submitted images, not photons.
++class stream_quality_capture {
++    using Config = wivrn::codec_test::submitted_capture::Config;
++    wivrn::codec_test::submitted_capture::Budget budget_;
++    std::filesystem::path folder_;
++    std::array<buffer_allocation, 2> buffers_;
++    std::array<uint8_t*, 2> mapped_{};
++    std::array<XrExtent2Di, 2> extents_{};
++    std::array<uint64_t, 2> bytes_{};
++    vk::Format format_{};
++    uint32_t image_index_ = 0;
++    bool active_ = false, pending_ = false, observed_ = false;
++
++public:
++    explicit stream_quality_capture(const std::filesystem::path& config_root) :
++        budget_{wivrn::codec_test::submitted_capture::load(config_root/"codec-test-quality-capture.json")},
++        folder_(config_root/"codec-test/quality") {
++        if (enabled()) {
++            std::filesystem::create_directories(folder_.parent_path());
++            if (!std::filesystem::create_directory(folder_))
++                throw std::runtime_error("quality capture output directory already exists");
++        }
++    }
++    bool enabled() const { return budget_.config.enabled; }
++    void cancel_ready() {
++        if (pending_) throw std::runtime_error("quality capture prior queue completion unknown");
++        active_=observed_=false;
++    }
++    bool record(vk::raii::Device& device, vk::raii::CommandBuffer& command,
++                vk::Image image, vk::Format format, uint32_t image_index,
++                std::array<XrExtent2Di,2> extents, uint64_t frame) {
++        if (pending_) throw std::runtime_error("quality capture prior queue completion unknown");
++        active_ = observed_ = false; // Prior failed xrEndFrame has no completion marker.
++        if (!budget_.take(frame)) return false;
++        if (format != vk::Format::eR8G8B8A8Srgb && format != vk::Format::eB8G8R8A8Srgb)
++            throw std::runtime_error("quality capture unsupported actual swapchain format");
++        if (extents[0].width != extents[1].width || extents[0].height != extents[1].height)
++            throw std::runtime_error("quality capture unequal viewports require a separate ray mapping");
++        format_ = format; image_index_ = image_index; extents_ = extents;
++        for (unsigned eye=0; eye<2; ++eye) {
++            bytes_[eye] = wivrn::codec_test::submitted_capture::bytes(extents[eye].width,extents[eye].height);
++            buffers_[eye] = buffer_allocation(device,
++                vk::BufferCreateInfo{.size=bytes_[eye],.usage=vk::BufferUsageFlagBits::eTransferDst},
++                VmaAllocationCreateInfo{.requiredFlags=VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
++                                        .preferredFlags=VK_MEMORY_PROPERTY_HOST_CACHED_BIT},
++                "codec submitted-image readback");
++            mapped_[eye] = buffers_[eye].data<uint8_t>();
++        }
++        vk::ImageMemoryBarrier transfer{
++            .srcAccessMask=vk::AccessFlagBits::eColorAttachmentWrite,
++            .dstAccessMask=vk::AccessFlagBits::eTransferRead,
++            .oldLayout=vk::ImageLayout::eColorAttachmentOptimal,
++            .newLayout=vk::ImageLayout::eTransferSrcOptimal,
++            .srcQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,.dstQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
++            .image=image,
++            .subresourceRange={.aspectMask=vk::ImageAspectFlagBits::eColor,.levelCount=1,.layerCount=2}};
++        command.pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput,
++                                vk::PipelineStageFlagBits::eTransfer,{}, {}, {}, transfer);
++        std::array<vk::BufferMemoryBarrier,2> host;
++        for (unsigned eye=0; eye<2; ++eye) {
++            const vk::BufferImageCopy region{
++                .imageSubresource={.aspectMask=vk::ImageAspectFlagBits::eColor,.mipLevel=0,.baseArrayLayer=eye,.layerCount=1},
++                .imageExtent={uint32_t(extents[eye].width),uint32_t(extents[eye].height),1}};
++            command.copyImageToBuffer(image,vk::ImageLayout::eTransferSrcOptimal,vk::Buffer(buffers_[eye]),region);
++            host[eye] = vk::BufferMemoryBarrier{
++                .srcAccessMask=vk::AccessFlagBits::eTransferWrite,.dstAccessMask=vk::AccessFlagBits::eHostRead,
++                .srcQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,.dstQueueFamilyIndex=VK_QUEUE_FAMILY_IGNORED,
++                .buffer=vk::Buffer(buffers_[eye]),.offset=0,.size=bytes_[eye]};
++        }
++        command.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,vk::PipelineStageFlagBits::eHost,{}, {},host,{});
++        transfer.srcAccessMask=vk::AccessFlagBits::eTransferRead;
++        transfer.dstAccessMask=vk::AccessFlagBits::eColorAttachmentRead|vk::AccessFlagBits::eColorAttachmentWrite;
++        transfer.oldLayout=vk::ImageLayout::eTransferSrcOptimal;
++        transfer.newLayout=vk::ImageLayout::eColorAttachmentOptimal;
++        command.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,vk::PipelineStageFlagBits::eColorAttachmentOutput,{}, {}, {},transfer);
++        active_=true;
++        return true;
++    }
++    void before_submit() { if (active_) pending_=true; }
++    void observe(vk::raii::Device& device, vk::Fence fence) {
++        if (!active_) return;
++        if (!pending_) throw std::runtime_error("quality capture missing queue submit");
++        // External acquisition watchdog bounds a broken driver. Never release an
++        // in-flight readback allocation on a finite-timeout exception.
++        if (device.waitForFences(fence,VK_TRUE,UINT64_MAX) != vk::Result::eSuccess)
++            throw std::runtime_error("quality capture readback fence not completed");
++        pending_=false; observed_=true;
++    }
++    static void number(std::ostream& out, float n) {
++        if (!std::isfinite(n)) throw std::runtime_error("quality capture nonfinite metadata");
++        out << n;
++    }
++    static void fov(std::ostream& out, const XrFovf& value) {
++        out << '['; number(out,value.angleLeft); out << ','; number(out,value.angleRight);
++        out << ','; number(out,value.angleDown); out << ','; number(out,value.angleUp); out << ']';
++    }
++    static void pose(std::ostream& out, const XrPosef& value) {
++        out << "{\"position\":["; number(out,value.position.x);out<<',';number(out,value.position.y);out<<',';number(out,value.position.z);
++        out << "],\"orientation_xyzw\":["; number(out,value.orientation.x);out<<',';number(out,value.orientation.y);out<<',';number(out,value.orientation.z);out<<',';number(out,value.orientation.w);out<<"]}";
++    }
++    template<class Handles, class Inputs, class Masks, class Description>
++    void finish(const Handles& handles, const Inputs& inputs, const Masks& masks,
++                const Description& description, const std::array<XrCompositionLayerProjectionView,2>& views,
++                XrTime submitted, XrTime predicted, float scale, float bias, bool alpha,
++                uint64_t requested_filter, uint64_t submitted_filter, bool filter_extension, bool hmd_srgb_conversion) {
++        if (!active_) return;
++        if (pending_ || !observed_ || submitted<=0) throw std::runtime_error("quality capture completion contract");
++        const std::string stem="capture-"+std::to_string(budget_.attempts);
++        std::array<std::string,2> metadata;
++        for (unsigned eye=0; eye<2; ++eye) {
++            const auto& handle=handles[eye]; const auto& view=views[eye];
++            if (!handle || view.subImage.imageArrayIndex!=eye || view.subImage.imageRect.offset.x || view.subImage.imageRect.offset.y
++                || view.subImage.imageRect.extent.width!=extents_[eye].width || view.subImage.imageRect.extent.height!=extents_[eye].height)
++                throw std::runtime_error("quality capture submitted subimage mismatch");
++            std::ostringstream out; out.imbue(std::locale::classic());out<<std::setprecision(9);
++            const bool test_sampler=description.codec[eye]==wivrn::video_codec::raw;
++            out << "{\"schema\":1,\"capture_id\":"<<budget_.attempts<<",\"source_boundary\":\"submitted-image\",\"eye\":"<<eye
++                <<",\"frame\":"<<handle->feedback.frame_index<<",\"warp\":"<<wivrn::codec_test::warp_hash(handle->view_info)
++                <<",\"decoder_generation_first_frame\":"<<description.first_frame
++                <<",\"raw_file\":\""<<stem<<"-eye-"<<eye<<".raw\",\"bytes\":"<<bytes_[eye]
++                <<",\"width\":"<<extents_[eye].width<<",\"height\":"<<extents_[eye].height
++                <<",\"row_bytes\":"<<extents_[eye].width*4<<",\"row_order\":\"top-to-bottom\",\"channel_order\":\""
++                <<(format_==vk::Format::eR8G8B8A8Srgb?"RGBA":"BGRA")<<"\",\"vk_format\":"<<int(format_)
++                <<",\"srgb_encoded_rgb\":true,\"alpha_unorm\":true,\"canonical_rgba\":"<<(format_==vk::Format::eR8G8B8A8Srgb?"true":"false")
++                <<",\"swapchain_image_index\":"<<image_index_<<",\"array_layer\":"<<eye
++                <<",\"subimage_rect\":[0,0,"<<extents_[eye].width<<','<<extents_[eye].height<<']'
++                <<",\"successful_submit_xr_ns\":"<<submitted<<",\"predicted_display_xr_ns\":"<<predicted
++                <<",\"readback_fence_observed\":true,\"projection_submitted\":true,\"transfer_src_usage\":true"
++                <<",\"render_fov_left_right_down_up_radians\":";fov(out,view.fov);
++            out << ",\"encoded_input_fov_left_right_down_up_radians\":";fov(out,handle->view_info.fov[eye]);
++            out << ",\"unwarped_fov\":";fov(out,view.fov);
++            out << ",\"render_pose\":";pose(out,view.pose);
++            out << ",\"encoded_input_pose\":";pose(out,handle->view_info.pose[eye]);
++            out << ",\"encoded_input_extent\":["<<inputs[eye].rect_rgb.extent.width<<','<<inputs[eye].rect_rgb.extent.height<<']';
++            out << ",\"rect_rgb\":["<<inputs[eye].rect_rgb.offset.x<<','<<inputs[eye].rect_rgb.offset.y<<','<<inputs[eye].rect_rgb.extent.width<<','<<inputs[eye].rect_rgb.extent.height<<']'
++                <<",\"rect_a\":["<<inputs[eye].rect_a.offset.x<<','<<inputs[eye].rect_a.offset.y<<','<<inputs[eye].rect_a.extent.width<<','<<inputs[eye].rect_a.extent.height<<']'
++                <<",\"alpha_image_bound\":"<<(inputs[eye].a?"true":"false")<<",\"alpha_sampler_bound\":"<<(inputs[eye].sampler_a?"true":"false")
++                <<",\"shader_alpha_specialization\":"<<(inputs[eye].sampler_a?1:0)
++                <<",\"hmd_needs_srgb_conversion\":"<<(hmd_srgb_conversion?"true":"false")
++                <<",\"shader_srgb_decode\":"<<(hmd_srgb_conversion && !inputs[eye].sampled_rgb_is_linear?"true":"false")
++                <<",\"input_image_layout\":"<<int(inputs[eye].layout_rgb)<<",\"input_view_format_source_bound\":"<<(test_sampler?"true":"false")
++                <<",\"input_view_vk_format\":";
++            if(test_sampler)out<<int(vk::Format::eR8G8B8A8Srgb);else out<<"null";
++            out << ",\"shader_load_names\":[\"reprojection.vert\",\"reprojection.frag\"],\"shader_bytes_bound_by_collector\":false";
++            out << ",\"foveation_x\":[";bool comma=false;
++            for(auto n:handle->view_info.foveation[eye].x){if(comma)out<<',';out<<n;comma=true;}
++            out << "],\"foveation_y\":[";comma=false;
++            for(auto n:handle->view_info.foveation[eye].y){if(comma)out<<',';out<<n;comma=true;}
++            out << "],\"scale_rgba\":[";number(out,scale);out<<',';number(out,scale);out<<',';number(out,scale);out<<",1],\"bias_rgba\":[";
++            number(out,bias);out<<',';number(out,bias);out<<',';number(out,bias);out<<",0],\"cutout_mask\":[";
++            for(unsigned row=0;row<3;++row){if(row)out<<',';out<<'[';for(unsigned col=0;col<4;++col){if(col)out<<',';number(out,masks[eye][row][col]);}out<<']';}
++            out << "],\"output_alpha\":"<<(alpha?"true":"false")<<",\"sampled_rgb_is_linear\":"<<(inputs[eye].sampled_rgb_is_linear?"true":"false")
++                <<",\"sampler_contract_source_bound\":"<<(test_sampler?"true":"false")
++                <<",\"sampler_runtime_queried\":false,\"sampler_contract\":";
++            if(test_sampler) out<<"{\"origin\":\"test_decoder::rgb_sampler\",\"min\":\"LINEAR\",\"mag\":\"LINEAR\",\"mipmap\":\"NEAREST\",\"address_uvw\":\"CLAMP_TO_EDGE\",\"normalized_coordinates\":true,\"min_lod\":0,\"max_lod\":0,\"lod_bias\":0,\"anisotropy\":false,\"max_anisotropy\":0,\"compare\":false,\"compare_op\":\"NEVER\",\"border_color\":\"FLOAT_TRANSPARENT_BLACK\"}";
++            else out<<"null";
++            out << ",\"requested_filter_flags\":"<<requested_filter<<",\"submitted_filter_flags\":"<<submitted_filter
++                <<",\"filter_extension_enabled\":"<<(filter_extension?"true":"false")
++                <<",\"runtime_filter_effect_verified\":false,\"displayed_pixels_verified\":false,\"independent_reference\":false,\"quality_pass\":false,\"latency_eligible\":false}\n";
++            metadata[eye]=out.str();
++        }
++        // Validate both metadata objects before any file is exposed. Completion
++        // marker last: a disk error cannot turn a partial stereo pair into pass.
++        for(unsigned eye=0;eye<2;++eye) {
++            wivrn::codec_test::submitted_capture::exclusive_write(folder_/(stem+"-eye-"+std::to_string(eye)+".raw"),std::span(mapped_[eye],bytes_[eye]));
++            wivrn::codec_test::submitted_capture::exclusive_write(folder_/(stem+"-eye-"+std::to_string(eye)+".json"),metadata[eye]);
++        }
++        wivrn::codec_test::submitted_capture::exclusive_write(folder_/(stem+"-pair.json"),
++            "{\"schema\":1,\"capture_id\":"+std::to_string(budget_.attempts)+",\"complete_eyes\":[0,1],\"source_boundary\":\"submitted-image\",\"quality_pass\":false,\"latency_eligible\":false}\n");
++        active_=false;
++    }
++};
++#endif
 diff --git a/client/scenes/stream_tracking.cpp b/client/scenes/stream_tracking.cpp
 index 1015ff8..359860a 100644
 --- a/client/scenes/stream_tracking.cpp
@@ -1893,6 +2184,43 @@ index 3152963..6059fa6 100644
  	ifaddrs * raw = nullptr;
  	if (getifaddrs(&raw) != 0)
  		throw std::system_error(errno, std::system_category(), "Cannot enumerate Wi-Fi interfaces");
+diff --git a/client/xr/swapchain.cpp b/client/xr/swapchain.cpp
+index 8bc94b2..589453a 100644
+--- a/client/xr/swapchain.cpp
++++ b/client/xr/swapchain.cpp
+@@ -30,7 +30,8 @@ xr::swapchain::swapchain(
+         int32_t width,
+         int32_t height,
+         int sample_count,
+-        uint32_t array_size) :
++        uint32_t array_size,
++        XrSwapchainUsageFlags additional_usage) :
+         width_(width),
+         height_(height),
+         sample_count_(sample_count),
+@@ -58,7 +59,7 @@ xr::swapchain::swapchain(
+ 	XrSwapchainCreateInfo create_info{
+ 	        .type = XR_TYPE_SWAPCHAIN_CREATE_INFO,
+ 	        .createFlags = 0,
+-	        .usageFlags = usage_flags,
++	        .usageFlags = usage_flags | additional_usage,
+ 	        .format = static_cast<VkFormat>(format),
+ 	        .sampleCount = (uint32_t)sample_count,
+ 	        .width = (uint32_t)width,
+diff --git a/client/xr/swapchain.h b/client/xr/swapchain.h
+index 5c9b8ec..5a2fee2 100644
+--- a/client/xr/swapchain.h
++++ b/client/xr/swapchain.h
+@@ -53,7 +53,8 @@ public:
+ 	        int32_t width,
+ 	        int32_t height,
+ 	        int sample_count = 1,
+-	        uint32_t array_size = 1);
++	        uint32_t array_size = 1,
++	        XrSwapchainUsageFlags additional_usage = 0);
+ 
+ 	int32_t width() const
+ 	{
 diff --git a/common/CMakeLists.txt b/common/CMakeLists.txt
 index bbeef59..81c57c9 100644
 --- a/common/CMakeLists.txt
@@ -6830,6 +7158,91 @@ index 0000000..002bb9d
 +    return true;
 +}
 +} // namespace wivrn::codec_test::stereo_publication
+diff --git a/common/codec_test/submitted_capture.h b/common/codec_test/submitted_capture.h
+new file mode 100644
+index 0000000..35ab437
+--- /dev/null
++++ b/common/codec_test/submitted_capture.h
+@@ -0,0 +1,79 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++#pragma once
++// Diagnostic acquisition contract; no image quality or displayed-pixel verdict.
++#include <simdjson.h>
++#include <array>
++#include <cerrno>
++#include <cstdint>
++#include <filesystem>
++#include <fcntl.h>
++#include <fstream>
++#include <span>
++#include <stdexcept>
++#include <string>
++#include <unistd.h>
++
++namespace wivrn::codec_test::submitted_capture {
++struct Config { bool enabled = false; uint32_t max_pairs = 6, frame_stride = 90; };
++inline Config parse(std::string_view text) {
++    if (text.empty() || text.size() > 1024) throw std::runtime_error("quality capture config size");
++    simdjson::dom::parser parser;
++    auto document = parser.parse(text.data(), text.size());
++    Config config; unsigned seen = 0;
++    for (auto field : document.get_object()) {
++        unsigned bit;
++        if (field.key == "enabled") { bit = 1; config.enabled = bool(field.value.get_bool()); }
++        else if (field.key == "max_pairs") { bit = 2; auto n = uint64_t(field.value.get_uint64());
++            if (n < 1 || n > 8) throw std::runtime_error("quality capture max_pairs"); config.max_pairs = n; }
++        else if (field.key == "frame_stride") { bit = 4; auto n = uint64_t(field.value.get_uint64());
++            if (n < 1 || n > 900) throw std::runtime_error("quality capture frame_stride"); config.frame_stride = n; }
++        else throw std::runtime_error("quality capture unknown config key");
++        if (seen & bit) throw std::runtime_error("quality capture duplicate config key");
++        seen |= bit;
++    }
++    if (!(seen & 1)) throw std::runtime_error("quality capture enabled key required");
++    return config;
++}
++inline Config load(const std::filesystem::path& path) {
++    if (!std::filesystem::exists(path)) return {};
++    if (std::filesystem::file_size(path) > 1024) throw std::runtime_error("quality capture config size");
++    std::ifstream file(path, std::ios::binary);
++    if (!file) throw std::runtime_error("quality capture config read");
++    std::string text((std::istreambuf_iterator<char>(file)), {});
++    return parse(text);
++}
++inline uint64_t bytes(uint32_t width, uint32_t height) {
++    if (!width || !height || width > 4096 || height > 4096 || uint64_t(width)*height > 4*1024*1024)
++        throw std::runtime_error("quality capture eye exceeds 4MP/4096-axis bound");
++    return uint64_t(width)*height*4;
++}
++struct Budget {
++    Config config;
++    uint32_t attempts = 0;
++    bool have_frame = false;
++    uint64_t last_frame = 0;
++    bool take(uint64_t frame) {
++        if (!config.enabled || attempts >= config.max_pairs) return false;
++        if (have_frame && (frame <= last_frame || frame-last_frame < config.frame_stride)) return false;
++        have_frame = true; last_frame = frame; ++attempts; return true;
++    }
++};
++// O_EXCL never overwrites existing evidence. A short write leaves an incomplete
++// artifact and throws; the final pair.json completion marker is written last.
++inline void exclusive_write(const std::filesystem::path& path, std::span<const uint8_t> data) {
++    int fd = ::open(path.c_str(), O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC, 0600);
++    if (fd < 0) throw std::runtime_error("quality capture exclusive output open");
++    size_t offset = 0;
++    while (offset < data.size()) {
++        const auto n = ::write(fd, data.data()+offset, data.size()-offset);
++        if (n < 0 && errno == EINTR) continue;
++        if (n <= 0) { ::close(fd); throw std::runtime_error("quality capture output write"); }
++        offset += size_t(n);
++    }
++    const int synced = ::fsync(fd), closed = ::close(fd);
++    if (synced || closed) throw std::runtime_error("quality capture output sync/close");
++}
++inline void exclusive_write(const std::filesystem::path& path, const std::string& text) {
++    exclusive_write(path, std::span(reinterpret_cast<const uint8_t*>(text.data()), text.size()));
++}
++} // namespace
 diff --git a/common/codec_test/vr444/codec.cpp b/common/codec_test/vr444/codec.cpp
 new file mode 100644
 index 0000000..af034b1
