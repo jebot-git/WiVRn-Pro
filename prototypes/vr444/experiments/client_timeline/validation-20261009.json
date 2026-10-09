@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "validation/wivrn-codecs/tests"
+  ],
+  "cwd": "/home/blux/spatial-bridge/.worktrees/sub15-compositor",
+  "returncode": 0,
+  "stdout": "",
+  "stderr": ".......................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 231 tests in 4.262s\n\nOK\n",
+  "sources_sha256": {
+    "prototypes/vr444/experiments/client_timeline/validate.py": "72ddeeff961625ffa383e076481b87403ed5be8bbb53cfc9c43ca90177e6d5a4",
+    "prototypes/vr444/experiments/client_timeline/analyze.py": "898c4184f35cb7514405ce69b020a5b98c493adc917d1ec7c502e667d37aa60b",
+    "validation/wivrn-codecs/tests/test_client_timeline.py": "120d91ef839316d5f0bd42cd0bf145e892975f890b991f71d22915386b5de7ca",
+    "validation/wivrn-codecs/integration/candidate_trace.py": "161e20fa104c42a1cc5ecdfc3786a8125100662e2ab6ec8a1aa0c98397470196",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b",
+    "validation/wivrn-codecs/integration/latency_runtime.py": "52849a220316633e2fb20fb92c314f6a87dd618cc6422bd38bab024fc9eb1628",
+    "validation/wivrn-codecs/integration/native_metrics.py": "0075fd06c5fcc1045785e104ed74a03db0fbd3130d3edc11a9cc10abd99f5825"
+  },
+  "headset_operations": false,
+  "measured_speedup": false,
+  "qualification_changed": false,
+  "scope": "Offline interval/manifest/identity correctness, without runtime execution."
+}

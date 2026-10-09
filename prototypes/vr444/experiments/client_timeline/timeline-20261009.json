@@ -1,0 +1,1615 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "analysis_kind": "sealed_observed_timeline_comparison",
+  "runs": [
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "observed_stereo_timeline_decomposition",
+      "warmup_ns": 2000000000,
+      "first_stereo_submissions": 1879,
+      "strict_threshold_ns": 15000000,
+      "total_at_or_above_threshold": 1316,
+      "cumulative_threshold_first_crossing_counts": {
+        "receipt_to_stereo_publication_ns": 3,
+        "publication_to_selection_end_ns": 835,
+        "selection_end_to_xr_end_frame_return_ns": 469,
+        "return_to_log_ns": 9
+      },
+      "stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1879,
+          "p50": 2.206667,
+          "p95": 8.327241,
+          "p99": 10.176043,
+          "min": 1.036771,
+          "max": 16.957762
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1879,
+          "p50": 11.908386,
+          "p95": 17.952814,
+          "p99": 20.204481,
+          "min": 0.066719,
+          "max": 22.302502
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1879,
+          "p50": 1.391251,
+          "p95": 1.917656,
+          "p99": 2.332188,
+          "min": 0.870521,
+          "max": 3.484167
+        },
+        "return_to_log_ns": {
+          "count": 1879,
+          "p50": 0.03099,
+          "p95": 0.063229,
+          "p99": 0.09349,
+          "min": 0.013125,
+          "max": 0.455416
+        },
+        "total_ns": {
+          "count": 1879,
+          "p50": 16.188491,
+          "p95": 21.968492,
+          "p99": 24.48693,
+          "min": 3.480574,
+          "max": 25.9237
+        }
+      },
+      "at_or_above_threshold_stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1316,
+          "p50": 2.129583,
+          "p95": 8.506616,
+          "p99": 10.484428,
+          "min": 1.036771,
+          "max": 16.957762
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1316,
+          "p50": 13.055366,
+          "p95": 18.884898,
+          "p99": 21.115159,
+          "min": 0.85875,
+          "max": 22.302502
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1316,
+          "p50": 1.394063,
+          "p95": 1.889219,
+          "p99": 2.298906,
+          "min": 0.870521,
+          "max": 3.484167
+        },
+        "return_to_log_ns": {
+          "count": 1316,
+          "p50": 0.031459,
+          "p95": 0.063542,
+          "p99": 0.09349,
+          "min": 0.015416,
+          "max": 0.455416
+        },
+        "total_ns": {
+          "count": 1316,
+          "p50": 17.076251,
+          "p95": 22.754429,
+          "p99": 24.702242,
+          "min": 15.004011,
+          "max": 25.9237
+        }
+      },
+      "p95_total_ranked_sample": {
+        "frame": 289,
+        "total_ns": 21968492,
+        "intervals_ns": {
+          "receipt_to_stereo_publication_ns": 1149219,
+          "publication_to_selection_end_ns": 19130106,
+          "selection_end_to_xr_end_frame_return_ns": 1665365,
+          "return_to_log_ns": 23802
+        }
+      },
+      "prediction_phase_ms": {
+        "runtime_target_minus_log_ns": {
+          "count": 1879,
+          "p50": 19.207127,
+          "p95": 20.19917,
+          "p99": 20.953396,
+          "min": 16.807576,
+          "max": 22.636303
+        }
+      },
+      "selected_warm_eye_decoder_ms": {
+        "decode_gpu_ms": {
+          "count": 3758,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "cpu_decode_ms": {
+          "count": 3758,
+          "p50": 0.5875,
+          "p95": 1.05661,
+          "p99": 1.30083,
+          "min": 0.224635,
+          "max": 2.45375
+        },
+        "staging_copy_ms": {
+          "count": 3758,
+          "p50": 0.261459,
+          "p95": 0.599688,
+          "p99": 0.925365,
+          "min": 0.123542,
+          "max": 2.29536
+        },
+        "submit_fence_wait_ms": {
+          "count": 3758,
+          "p50": 0.379167,
+          "p95": 1.53156,
+          "p99": 1.8113,
+          "min": 0.139167,
+          "max": 2.82833
+        },
+        "queue_wait_ms": {
+          "count": 3758,
+          "p50": 0.17875,
+          "p95": 5.6237,
+          "p99": 7.46427,
+          "min": 0.014167,
+          "max": 14.3584
+        },
+        "decode_upload_ms": {
+          "count": 3758,
+          "p50": 1.54375,
+          "p95": 2.72146,
+          "p99": 3.24766,
+          "min": 0.695313,
+          "max": 4.31312
+        },
+        "decompression_ms": {
+          "count": 3758,
+          "p50": 0.014948,
+          "p95": 0.026198,
+          "p99": 0.052604,
+          "min": 0.006458,
+          "max": 0.402917
+        }
+      },
+      "runtime_validation": {
+        "status": "pass",
+        "backend": "cpu-neon",
+        "selection_phase": "early",
+        "errors": [],
+        "presented_rows": 2050,
+        "decoded_rows": 4166,
+        "clock_domain": "headset_local_openxr",
+        "optical_motion_to_photon_verified": false,
+        "scope": "Runtime telemetry contract only; not the mission latency gate",
+        "render_fence_wait_ms": {
+          "count": 2050,
+          "min": 0.002343,
+          "max": 0.176406,
+          "p50": 0.008906,
+          "p95": 0.016354,
+          "p99": 0.031198
+        },
+        "selection_end_to_end_frame_return_ms": {
+          "count": 2050,
+          "min": 0.870521,
+          "max": 46.02714,
+          "p50": 1.410573,
+          "p95": 2.017292,
+          "p99": 2.430886
+        },
+        "decoder_duration_ms": {
+          "decode_gpu_ms": {
+            "count": 4166,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "cpu_decode_ms": {
+            "count": 4166,
+            "min": 0.224635,
+            "max": 2.45375,
+            "p50": 0.562135,
+            "p95": 1.03552,
+            "p99": 1.29505
+          },
+          "staging_copy_ms": {
+            "count": 4166,
+            "min": 0.123542,
+            "max": 2.35511,
+            "p50": 0.261407,
+            "p95": 0.618907,
+            "p99": 0.995989
+          },
+          "submit_fence_wait_ms": {
+            "count": 4166,
+            "min": 0.139167,
+            "max": 9.13833,
+            "p50": 0.378333,
+            "p95": 1.54411,
+            "p99": 2.02307
+          },
+          "queue_wait_ms": {
+            "count": 4166,
+            "min": 0.014167,
+            "max": 17.973,
+            "p50": 0.159323,
+            "p95": 5.58568,
+            "p99": 7.54422
+          },
+          "decode_upload_ms": {
+            "count": 4166,
+            "min": 0.695313,
+            "max": 10.3129,
+            "p50": 1.52417,
+            "p95": 2.73667,
+            "p99": 3.35958
+          },
+          "decompression_ms": {
+            "count": 4166,
+            "min": 0.006458,
+            "max": 0.402917,
+            "p50": 0.014479,
+            "p95": 0.026093,
+            "p99": 0.053594
+          }
+        },
+        "observed_decoder_kernels": [
+          "direct-neon"
+        ],
+        "observed_cpu_output_modes": [
+          "cached-copy"
+        ],
+        "matched_presented_eye_identities": 4100
+      },
+      "identity_validation_status": "pass",
+      "candidate_trace_validation": null,
+      "observed_unique_stereo_hz": 89.1228816463471,
+      "measured_speedup": false,
+      "latency_gate_evaluated": false,
+      "qualification_changed": false,
+      "promotion_eligible": false,
+      "limitations": [
+        "Receipt-to-publication includes stereo transport completion, queueing, decode/upload, evidence I/O and publication locking.",
+        "Publication-to-selection is observed waiting for the selected pair, not a directly removable service cost.",
+        "Individual stage percentiles must not be summed; only each exact sample decomposition sums to its total.",
+        "Threshold crossing identifies when cumulative observed age reaches the threshold, not a causal blame assignment.",
+        "Decoder subdurations overlap/nest and are not added to local-clock intervals.",
+        "Prediction phase differences describe estimated targets in the headset-local namespace, not display photons.",
+        "Repeated frames count only at their first successful submission, even if later repeats cross the warmup boundary.",
+        "Existing diagnostic instrumentation and original pass/fail status are retained; no new hardware result is acquired.",
+        "Matched decoder rows establish selected-frame observations only, not complete worker/process-tail accounting."
+      ],
+      "original_run": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/01-cached",
+      "original_run_status": "pass",
+      "original_manifest_sha256": "e73b9d059f67b42863ad46ff81ceb458d8a3b88463aa9c96d0a64539491f750a",
+      "original_manifest_files_verified": 298,
+      "original_summary_sha256": "05ef758f34da53621c7f903f5a650222ee9a883c5392644dd4fb095994951450",
+      "original_result_overwritten": false,
+      "observed_cpu_output": "cached-copy",
+      "observed_candidate_trace": false,
+      "decoder_terminal_summary_present": [
+        false,
+        false
+      ],
+      "decoder_process_tail_verified": false
+    },
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "observed_stereo_timeline_decomposition",
+      "warmup_ns": 2000000000,
+      "first_stereo_submissions": 1886,
+      "strict_threshold_ns": 15000000,
+      "total_at_or_above_threshold": 1536,
+      "cumulative_threshold_first_crossing_counts": {
+        "receipt_to_stereo_publication_ns": 0,
+        "publication_to_selection_end_ns": 1069,
+        "selection_end_to_xr_end_frame_return_ns": 464,
+        "return_to_log_ns": 3
+      },
+      "stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1886,
+          "p50": 1.434167,
+          "p95": 7.142449,
+          "p99": 9.001563,
+          "min": 0.751719,
+          "max": 12.26797
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1886,
+          "p50": 13.778959,
+          "p95": 17.346356,
+          "p99": 18.803127,
+          "min": 0.028854,
+          "max": 19.948492
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1886,
+          "p50": 1.380937,
+          "p95": 1.859687,
+          "p99": 2.294636,
+          "min": 0.895677,
+          "max": 4.080574
+        },
+        "return_to_log_ns": {
+          "count": 1886,
+          "p50": 0.03,
+          "p95": 0.056667,
+          "p99": 0.075938,
+          "min": 0.013542,
+          "max": 0.146771
+        },
+        "total_ns": {
+          "count": 1886,
+          "p50": 16.826043,
+          "p95": 20.515887,
+          "p99": 21.946929,
+          "min": 3.480625,
+          "max": 24.519482
+        }
+      },
+      "at_or_above_threshold_stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1536,
+          "p50": 1.440833,
+          "p95": 7.286616,
+          "p99": 9.001563,
+          "min": 0.751719,
+          "max": 12.26797
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1536,
+          "p50": 14.393335,
+          "p95": 17.686565,
+          "p99": 18.936877,
+          "min": 5.1375,
+          "max": 19.948492
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1536,
+          "p50": 1.383646,
+          "p95": 1.864011,
+          "p99": 2.321876,
+          "min": 0.911823,
+          "max": 4.080574
+        },
+        "return_to_log_ns": {
+          "count": 1536,
+          "p50": 0.030573,
+          "p95": 0.057552,
+          "p99": 0.078646,
+          "min": 0.013542,
+          "max": 0.146771
+        },
+        "total_ns": {
+          "count": 1536,
+          "p50": 17.312241,
+          "p95": 20.709689,
+          "p99": 21.998752,
+          "min": 15.012293,
+          "max": 24.519482
+        }
+      },
+      "p95_total_ranked_sample": {
+        "frame": 375,
+        "total_ns": 20515887,
+        "intervals_ns": {
+          "receipt_to_stereo_publication_ns": 1435625,
+          "publication_to_selection_end_ns": 16958491,
+          "selection_end_to_xr_end_frame_return_ns": 2086458,
+          "return_to_log_ns": 35313
+        }
+      },
+      "prediction_phase_ms": {
+        "runtime_target_minus_log_ns": {
+          "count": 1886,
+          "p50": 18.799578,
+          "p95": 19.883905,
+          "p99": 21.239654,
+          "min": 16.570646,
+          "max": 24.818414
+        }
+      },
+      "selected_warm_eye_decoder_ms": {
+        "decode_gpu_ms": {
+          "count": 3772,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "cpu_decode_ms": {
+          "count": 3772,
+          "p50": 0.319063,
+          "p95": 0.69276,
+          "p99": 0.835312,
+          "min": 0.126302,
+          "max": 1.15531
+        },
+        "staging_copy_ms": {
+          "count": 3772,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "submit_fence_wait_ms": {
+          "count": 3772,
+          "p50": 0.344115,
+          "p95": 1.25901,
+          "p99": 1.80005,
+          "min": 0.128334,
+          "max": 2.40193
+        },
+        "queue_wait_ms": {
+          "count": 3772,
+          "p50": 0.193906,
+          "p95": 0.893802,
+          "p99": 7.01557,
+          "min": 0.015729,
+          "max": 10.2821
+        },
+        "decode_upload_ms": {
+          "count": 3772,
+          "p50": 0.899219,
+          "p95": 1.95745,
+          "p99": 2.74182,
+          "min": 0.391771,
+          "max": 4.65839
+        },
+        "decompression_ms": {
+          "count": 3772,
+          "p50": 0.01198,
+          "p95": 0.020677,
+          "p99": 0.039479,
+          "min": 0.005573,
+          "max": 0.137448
+        }
+      },
+      "runtime_validation": {
+        "status": "pass",
+        "backend": "cpu-neon",
+        "selection_phase": "early",
+        "errors": [],
+        "presented_rows": 2063,
+        "decoded_rows": 4180,
+        "clock_domain": "headset_local_openxr",
+        "optical_motion_to_photon_verified": false,
+        "scope": "Runtime telemetry contract only; not the mission latency gate",
+        "render_fence_wait_ms": {
+          "count": 2063,
+          "min": 0.00224,
+          "max": 0.096198,
+          "p50": 0.008333,
+          "p95": 0.013229,
+          "p99": 0.020625
+        },
+        "selection_end_to_end_frame_return_ms": {
+          "count": 2063,
+          "min": 0.895677,
+          "max": 52.445734,
+          "p50": 1.397553,
+          "p95": 1.988073,
+          "p99": 2.373438
+        },
+        "decoder_duration_ms": {
+          "decode_gpu_ms": {
+            "count": 4180,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "cpu_decode_ms": {
+            "count": 4180,
+            "min": 0.126302,
+            "max": 2.50328,
+            "p50": 0.322343,
+            "p95": 0.751718,
+            "p99": 0.895677
+          },
+          "staging_copy_ms": {
+            "count": 4180,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "submit_fence_wait_ms": {
+            "count": 4180,
+            "min": 0.128334,
+            "max": 5.38625,
+            "p50": 0.34625,
+            "p95": 1.2626,
+            "p99": 1.82224
+          },
+          "queue_wait_ms": {
+            "count": 4180,
+            "min": 0.015729,
+            "max": 10.2821,
+            "p50": 0.18849,
+            "p95": 0.900573,
+            "p99": 7.01906
+          },
+          "decode_upload_ms": {
+            "count": 4180,
+            "min": 0.391771,
+            "max": 6.00099,
+            "p50": 0.912656,
+            "p95": 2.01588,
+            "p99": 3.12078
+          },
+          "decompression_ms": {
+            "count": 4180,
+            "min": 0.005156,
+            "max": 0.178125,
+            "p50": 0.012031,
+            "p95": 0.021562,
+            "p99": 0.040833
+          }
+        },
+        "observed_decoder_kernels": [
+          "direct-neon"
+        ],
+        "observed_cpu_output_modes": [
+          "mapped-direct"
+        ],
+        "matched_presented_eye_identities": 4126
+      },
+      "identity_validation_status": "pass",
+      "candidate_trace_validation": null,
+      "observed_unique_stereo_hz": 89.02670809781942,
+      "measured_speedup": false,
+      "latency_gate_evaluated": false,
+      "qualification_changed": false,
+      "promotion_eligible": false,
+      "limitations": [
+        "Receipt-to-publication includes stereo transport completion, queueing, decode/upload, evidence I/O and publication locking.",
+        "Publication-to-selection is observed waiting for the selected pair, not a directly removable service cost.",
+        "Individual stage percentiles must not be summed; only each exact sample decomposition sums to its total.",
+        "Threshold crossing identifies when cumulative observed age reaches the threshold, not a causal blame assignment.",
+        "Decoder subdurations overlap/nest and are not added to local-clock intervals.",
+        "Prediction phase differences describe estimated targets in the headset-local namespace, not display photons.",
+        "Repeated frames count only at their first successful submission, even if later repeats cross the warmup boundary.",
+        "Existing diagnostic instrumentation and original pass/fail status are retained; no new hardware result is acquired.",
+        "Matched decoder rows establish selected-frame observations only, not complete worker/process-tail accounting."
+      ],
+      "original_run": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/02-mapped",
+      "original_run_status": "pass",
+      "original_manifest_sha256": "0ab8828fb4ff5e8d7a26ea0b1dfbd1ded12dfb43acbbf344993249b8eb75ff99",
+      "original_manifest_files_verified": 298,
+      "original_summary_sha256": "d97ebd6db8a6a3e2535cb3892ffe0819201fc327ab14cae83e9f8e5a7a17de38",
+      "original_result_overwritten": false,
+      "observed_cpu_output": "mapped-direct",
+      "observed_candidate_trace": false,
+      "decoder_terminal_summary_present": [
+        false,
+        false
+      ],
+      "decoder_process_tail_verified": false
+    },
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "observed_stereo_timeline_decomposition",
+      "warmup_ns": 2000000000,
+      "first_stereo_submissions": 1899,
+      "strict_threshold_ns": 15000000,
+      "total_at_or_above_threshold": 1488,
+      "cumulative_threshold_first_crossing_counts": {
+        "receipt_to_stereo_publication_ns": 1,
+        "publication_to_selection_end_ns": 935,
+        "selection_end_to_xr_end_frame_return_ns": 547,
+        "return_to_log_ns": 5
+      },
+      "stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1899,
+          "p50": 1.691615,
+          "p95": 7.504741,
+          "p99": 9.214428,
+          "min": 0.833438,
+          "max": 16.429793
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1899,
+          "p50": 12.7887,
+          "p95": 18.657137,
+          "p99": 21.308961,
+          "min": 0.235417,
+          "max": 23.276461
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1899,
+          "p50": 1.428282,
+          "p95": 1.905208,
+          "p99": 2.214479,
+          "min": 0.934271,
+          "max": 2.594479
+        },
+        "return_to_log_ns": {
+          "count": 1899,
+          "p50": 0.028907,
+          "p95": 0.053437,
+          "p99": 0.073646,
+          "min": 0.012813,
+          "max": 0.157344
+        },
+        "total_ns": {
+          "count": 1899,
+          "p50": 16.492762,
+          "p95": 22.353492,
+          "p99": 24.413076,
+          "min": 3.426511,
+          "max": 25.849274
+        }
+      },
+      "at_or_above_threshold_stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1488,
+          "p50": 1.617709,
+          "p95": 7.607188,
+          "p99": 9.347814,
+          "min": 0.833438,
+          "max": 16.429793
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1488,
+          "p50": 13.755783,
+          "p95": 19.385418,
+          "p99": 21.58344,
+          "min": 0.801875,
+          "max": 23.276461
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1488,
+          "p50": 1.43625,
+          "p95": 1.929531,
+          "p99": 2.232396,
+          "min": 0.934271,
+          "max": 2.594479
+        },
+        "return_to_log_ns": {
+          "count": 1488,
+          "p50": 0.029687,
+          "p95": 0.054948,
+          "p99": 0.076354,
+          "min": 0.012813,
+          "max": 0.157344
+        },
+        "total_ns": {
+          "count": 1488,
+          "p50": 16.960835,
+          "p95": 23.054481,
+          "p99": 24.572659,
+          "min": 15.001564,
+          "max": 25.849274
+        }
+      },
+      "p95_total_ranked_sample": {
+        "frame": 300,
+        "total_ns": 22353492,
+        "intervals_ns": {
+          "receipt_to_stereo_publication_ns": 1227708,
+          "publication_to_selection_end_ns": 19011356,
+          "selection_end_to_xr_end_frame_return_ns": 2068751,
+          "return_to_log_ns": 45677
+        }
+      },
+      "prediction_phase_ms": {
+        "runtime_target_minus_log_ns": {
+          "count": 1899,
+          "p50": 18.689717,
+          "p95": 19.659182,
+          "p99": 21.761466,
+          "min": 16.831691,
+          "max": 25.45457
+        }
+      },
+      "selected_warm_eye_decoder_ms": {
+        "decode_gpu_ms": {
+          "count": 3798,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "cpu_decode_ms": {
+          "count": 3798,
+          "p50": 0.545052,
+          "p95": 0.856979,
+          "p99": 1.00677,
+          "min": 0.131667,
+          "max": 1.53563
+        },
+        "staging_copy_ms": {
+          "count": 3798,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "submit_fence_wait_ms": {
+          "count": 3798,
+          "p50": 0.336042,
+          "p95": 1.34037,
+          "p99": 1.80812,
+          "min": 0.124791,
+          "max": 2.34417
+        },
+        "queue_wait_ms": {
+          "count": 3798,
+          "p50": 0.194636,
+          "p95": 1.02755,
+          "p99": 7.13912,
+          "min": 0.015573,
+          "max": 14.3917
+        },
+        "decode_upload_ms": {
+          "count": 3798,
+          "p50": 1.06786,
+          "p95": 2.13026,
+          "p99": 2.66187,
+          "min": 0.430833,
+          "max": 4.16823
+        },
+        "decompression_ms": {
+          "count": 3798,
+          "p50": 0.017604,
+          "p95": 0.026094,
+          "p99": 0.044896,
+          "min": 0.007343,
+          "max": 0.210885
+        }
+      },
+      "runtime_validation": {
+        "status": "pass",
+        "backend": "cpu-neon",
+        "selection_phase": "early",
+        "errors": [],
+        "presented_rows": 2059,
+        "decoded_rows": 4222,
+        "clock_domain": "headset_local_openxr",
+        "optical_motion_to_photon_verified": false,
+        "scope": "Runtime telemetry contract only; not the mission latency gate",
+        "render_fence_wait_ms": {
+          "count": 2059,
+          "min": 0.002396,
+          "max": 0.056979,
+          "p50": 0.008594,
+          "p95": 0.013281,
+          "p99": 0.01849
+        },
+        "selection_end_to_end_frame_return_ms": {
+          "count": 2059,
+          "min": 0.934271,
+          "max": 62.23886,
+          "p50": 1.45,
+          "p95": 2.050729,
+          "p99": 7.816147
+        },
+        "decoder_duration_ms": {
+          "decode_gpu_ms": {
+            "count": 4222,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "cpu_decode_ms": {
+            "count": 4222,
+            "min": 0.131667,
+            "max": 1.67724,
+            "p50": 0.529219,
+            "p95": 0.85375,
+            "p99": 1.03542
+          },
+          "staging_copy_ms": {
+            "count": 4222,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "submit_fence_wait_ms": {
+            "count": 4222,
+            "min": 0.124791,
+            "max": 14.1328,
+            "p50": 0.336146,
+            "p95": 1.36885,
+            "p99": 1.93422
+          },
+          "queue_wait_ms": {
+            "count": 4222,
+            "min": 0.015573,
+            "max": 14.8466,
+            "p50": 0.185365,
+            "p95": 3.9963,
+            "p99": 7.15276
+          },
+          "decode_upload_ms": {
+            "count": 4222,
+            "min": 0.430833,
+            "max": 14.8058,
+            "p50": 1.05531,
+            "p95": 2.20948,
+            "p99": 3.55995
+          },
+          "decompression_ms": {
+            "count": 4222,
+            "min": 0.007187,
+            "max": 0.210885,
+            "p50": 0.017083,
+            "p95": 0.026041,
+            "p99": 0.046042
+          }
+        },
+        "observed_decoder_kernels": [
+          "direct-neon"
+        ],
+        "observed_cpu_output_modes": [
+          "mapped-direct"
+        ],
+        "matched_presented_eye_identities": 4118
+      },
+      "identity_validation_status": "pass",
+      "candidate_trace_validation": null,
+      "observed_unique_stereo_hz": 88.75524490106268,
+      "measured_speedup": false,
+      "latency_gate_evaluated": false,
+      "qualification_changed": false,
+      "promotion_eligible": false,
+      "limitations": [
+        "Receipt-to-publication includes stereo transport completion, queueing, decode/upload, evidence I/O and publication locking.",
+        "Publication-to-selection is observed waiting for the selected pair, not a directly removable service cost.",
+        "Individual stage percentiles must not be summed; only each exact sample decomposition sums to its total.",
+        "Threshold crossing identifies when cumulative observed age reaches the threshold, not a causal blame assignment.",
+        "Decoder subdurations overlap/nest and are not added to local-clock intervals.",
+        "Prediction phase differences describe estimated targets in the headset-local namespace, not display photons.",
+        "Repeated frames count only at their first successful submission, even if later repeats cross the warmup boundary.",
+        "Existing diagnostic instrumentation and original pass/fail status are retained; no new hardware result is acquired.",
+        "Matched decoder rows establish selected-frame observations only, not complete worker/process-tail accounting."
+      ],
+      "original_run": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/03-mapped",
+      "original_run_status": "pass",
+      "original_manifest_sha256": "bb2d24476ad40aaf66b530d3565c0307564d8bbbb6d92b989e80a12806bf4bae",
+      "original_manifest_files_verified": 298,
+      "original_summary_sha256": "61b6e0aa01f7be32da03885f88e2f2deed623411e457669fcce34fa9c38daa9b",
+      "original_result_overwritten": false,
+      "observed_cpu_output": "mapped-direct",
+      "observed_candidate_trace": false,
+      "decoder_terminal_summary_present": [
+        false,
+        false
+      ],
+      "decoder_process_tail_verified": false
+    },
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "observed_stereo_timeline_decomposition",
+      "warmup_ns": 2000000000,
+      "first_stereo_submissions": 1898,
+      "strict_threshold_ns": 15000000,
+      "total_at_or_above_threshold": 1578,
+      "cumulative_threshold_first_crossing_counts": {
+        "receipt_to_stereo_publication_ns": 1,
+        "publication_to_selection_end_ns": 1250,
+        "selection_end_to_xr_end_frame_return_ns": 321,
+        "return_to_log_ns": 6
+      },
+      "stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1898,
+          "p50": 1.972084,
+          "p95": 8.154688,
+          "p99": 9.632292,
+          "min": 1.062812,
+          "max": 15.347501
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1898,
+          "p50": 13.660835,
+          "p95": 21.618127,
+          "p99": 32.581201,
+          "min": 0.233437,
+          "max": 38.581462
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1898,
+          "p50": 1.42224,
+          "p95": 1.858333,
+          "p99": 2.141771,
+          "min": 0.901406,
+          "max": 3.052344
+        },
+        "return_to_log_ns": {
+          "count": 1898,
+          "p50": 0.030833,
+          "p95": 0.057396,
+          "p99": 0.075313,
+          "min": 0.012552,
+          "max": 0.488646
+        },
+        "total_ns": {
+          "count": 1898,
+          "p50": 17.298543,
+          "p95": 26.085992,
+          "p99": 36.69792,
+          "min": 4.109063,
+          "max": 42.266098
+        }
+      },
+      "at_or_above_threshold_stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1578,
+          "p50": 1.971719,
+          "p95": 8.232814,
+          "p99": 9.761043,
+          "min": 1.062812,
+          "max": 15.347501
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1578,
+          "p50": 14.168699,
+          "p95": 23.763231,
+          "p99": 32.907191,
+          "min": 0.508021,
+          "max": 38.581462
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1578,
+          "p50": 1.422136,
+          "p95": 1.858333,
+          "p99": 2.102344,
+          "min": 0.901406,
+          "max": 2.733646
+        },
+        "return_to_log_ns": {
+          "count": 1578,
+          "p50": 0.031302,
+          "p95": 0.058698,
+          "p99": 0.073125,
+          "min": 0.014063,
+          "max": 0.158802
+        },
+        "total_ns": {
+          "count": 1578,
+          "p50": 17.815054,
+          "p95": 27.452295,
+          "p99": 37.01891,
+          "min": 15.000419,
+          "max": 42.266098
+        }
+      },
+      "p95_total_ranked_sample": {
+        "frame": 475,
+        "total_ns": 26085992,
+        "intervals_ns": {
+          "receipt_to_stereo_publication_ns": 2152813,
+          "publication_to_selection_end_ns": 22537346,
+          "selection_end_to_xr_end_frame_return_ns": 1374635,
+          "return_to_log_ns": 21198
+        }
+      },
+      "prediction_phase_ms": {
+        "runtime_target_minus_log_ns": {
+          "count": 1898,
+          "p50": 18.758686,
+          "p95": 22.082852,
+          "p99": 26.769647,
+          "min": 16.147784,
+          "max": 42.028282
+        }
+      },
+      "selected_warm_eye_decoder_ms": {
+        "decode_gpu_ms": {
+          "count": 3796,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "cpu_decode_ms": {
+          "count": 3796,
+          "p50": 0.571562,
+          "p95": 1.00484,
+          "p99": 1.25432,
+          "min": 0.241146,
+          "max": 1.85953
+        },
+        "staging_copy_ms": {
+          "count": 3796,
+          "p50": 0.213594,
+          "p95": 0.537135,
+          "p99": 0.882083,
+          "min": 0.123594,
+          "max": 1.34349
+        },
+        "submit_fence_wait_ms": {
+          "count": 3796,
+          "p50": 0.348229,
+          "p95": 1.34448,
+          "p99": 1.73,
+          "min": 0.131407,
+          "max": 2.47969
+        },
+        "queue_wait_ms": {
+          "count": 3796,
+          "p50": 0.125313,
+          "p95": 5.54177,
+          "p99": 7.22458,
+          "min": 0.014531,
+          "max": 14.2232
+        },
+        "decode_upload_ms": {
+          "count": 3796,
+          "p50": 1.34729,
+          "p95": 2.48042,
+          "p99": 3.14031,
+          "min": 0.705105,
+          "max": 3.79521
+        },
+        "decompression_ms": {
+          "count": 3796,
+          "p50": 0.015573,
+          "p95": 0.025416,
+          "p99": 0.045833,
+          "min": 0.005364,
+          "max": 0.175573
+        }
+      },
+      "runtime_validation": {
+        "status": "pass",
+        "backend": "cpu-neon",
+        "selection_phase": "early",
+        "errors": [],
+        "presented_rows": 2061,
+        "decoded_rows": 4222,
+        "clock_domain": "headset_local_openxr",
+        "optical_motion_to_photon_verified": false,
+        "scope": "Runtime telemetry contract only; not the mission latency gate",
+        "render_fence_wait_ms": {
+          "count": 2061,
+          "min": 0.002188,
+          "max": 0.050156,
+          "p50": 0.009166,
+          "p95": 0.015364,
+          "p99": 0.022813
+        },
+        "selection_end_to_end_frame_return_ms": {
+          "count": 2061,
+          "min": 0.901406,
+          "max": 50.036307,
+          "p50": 1.444219,
+          "p95": 1.944688,
+          "p99": 2.400782
+        },
+        "decoder_duration_ms": {
+          "decode_gpu_ms": {
+            "count": 4222,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "cpu_decode_ms": {
+            "count": 4222,
+            "min": 0.241146,
+            "max": 1.85953,
+            "p50": 0.575208,
+            "p95": 1.00302,
+            "p99": 1.25432
+          },
+          "staging_copy_ms": {
+            "count": 4222,
+            "min": 0.123594,
+            "max": 2.64995,
+            "p50": 0.216042,
+            "p95": 0.562396,
+            "p99": 0.912969
+          },
+          "submit_fence_wait_ms": {
+            "count": 4222,
+            "min": 0.131407,
+            "max": 7.95396,
+            "p50": 0.350156,
+            "p95": 1.34448,
+            "p99": 1.77859
+          },
+          "queue_wait_ms": {
+            "count": 4222,
+            "min": 0.014531,
+            "max": 14.2232,
+            "p50": 0.128959,
+            "p95": 5.5963,
+            "p99": 7.36094
+          },
+          "decode_upload_ms": {
+            "count": 4222,
+            "min": 0.705105,
+            "max": 9.32453,
+            "p50": 1.35443,
+            "p95": 2.50542,
+            "p99": 3.16599
+          },
+          "decompression_ms": {
+            "count": 4222,
+            "min": 0.005364,
+            "max": 0.175573,
+            "p50": 0.015521,
+            "p95": 0.025573,
+            "p99": 0.045885
+          }
+        },
+        "observed_decoder_kernels": [
+          "direct-neon"
+        ],
+        "observed_cpu_output_modes": [
+          "cached-copy"
+        ],
+        "matched_presented_eye_identities": 4122
+      },
+      "identity_validation_status": "pass",
+      "candidate_trace_validation": null,
+      "observed_unique_stereo_hz": 88.4003384623695,
+      "measured_speedup": false,
+      "latency_gate_evaluated": false,
+      "qualification_changed": false,
+      "promotion_eligible": false,
+      "limitations": [
+        "Receipt-to-publication includes stereo transport completion, queueing, decode/upload, evidence I/O and publication locking.",
+        "Publication-to-selection is observed waiting for the selected pair, not a directly removable service cost.",
+        "Individual stage percentiles must not be summed; only each exact sample decomposition sums to its total.",
+        "Threshold crossing identifies when cumulative observed age reaches the threshold, not a causal blame assignment.",
+        "Decoder subdurations overlap/nest and are not added to local-clock intervals.",
+        "Prediction phase differences describe estimated targets in the headset-local namespace, not display photons.",
+        "Repeated frames count only at their first successful submission, even if later repeats cross the warmup boundary.",
+        "Existing diagnostic instrumentation and original pass/fail status are retained; no new hardware result is acquired.",
+        "Matched decoder rows establish selected-frame observations only, not complete worker/process-tail accounting."
+      ],
+      "original_run": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/04-cached",
+      "original_run_status": "pass",
+      "original_manifest_sha256": "26da311a0b022761359515878cece849f28f4aecceaef8fe73a7283e8fecf15f",
+      "original_manifest_files_verified": 298,
+      "original_summary_sha256": "f5fb33825fd7b2a6c3642a26bcac5396a92c956fcf5a1261f1afbfba3bf5209e",
+      "original_result_overwritten": false,
+      "observed_cpu_output": "cached-copy",
+      "observed_candidate_trace": false,
+      "decoder_terminal_summary_present": [
+        false,
+        false
+      ],
+      "decoder_process_tail_verified": false
+    },
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "observed_stereo_timeline_decomposition",
+      "warmup_ns": 2000000000,
+      "first_stereo_submissions": 1900,
+      "strict_threshold_ns": 15000000,
+      "total_at_or_above_threshold": 1716,
+      "cumulative_threshold_first_crossing_counts": {
+        "receipt_to_stereo_publication_ns": 1,
+        "publication_to_selection_end_ns": 1467,
+        "selection_end_to_xr_end_frame_return_ns": 248,
+        "return_to_log_ns": 0
+      },
+      "stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1900,
+          "p50": 1.676459,
+          "p95": 7.812084,
+          "p99": 9.662553,
+          "min": 1.029271,
+          "max": 18.328752
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1900,
+          "p50": 14.587033,
+          "p95": 22.735211,
+          "p99": 26.553701,
+          "min": 0.234792,
+          "max": 28.525159
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1900,
+          "p50": 1.403802,
+          "p95": 1.820209,
+          "p99": 2.171823,
+          "min": 0.927917,
+          "max": 2.861875
+        },
+        "return_to_log_ns": {
+          "count": 1900,
+          "p50": 0.030417,
+          "p95": 0.054531,
+          "p99": 0.074375,
+          "min": 0.012552,
+          "max": 0.19974
+        },
+        "total_ns": {
+          "count": 1900,
+          "p50": 18.075523,
+          "p95": 26.927659,
+          "p99": 29.827295,
+          "min": 3.466823,
+          "max": 31.151097
+        }
+      },
+      "at_or_above_threshold_stage_ms": {
+        "receipt_to_stereo_publication_ns": {
+          "count": 1716,
+          "p50": 1.649375,
+          "p95": 8.008595,
+          "p99": 9.766824,
+          "min": 1.029271,
+          "max": 18.328752
+        },
+        "publication_to_selection_end_ns": {
+          "count": 1716,
+          "p50": 14.826773,
+          "p95": 23.080836,
+          "p99": 26.580315,
+          "min": 2.542552,
+          "max": 28.525159
+        },
+        "selection_end_to_xr_end_frame_return_ns": {
+          "count": 1716,
+          "p50": 1.404219,
+          "p95": 1.814896,
+          "p99": 2.090781,
+          "min": 0.936667,
+          "max": 2.861875
+        },
+        "return_to_log_ns": {
+          "count": 1716,
+          "p50": 0.030573,
+          "p95": 0.055833,
+          "p99": 0.075834,
+          "min": 0.012552,
+          "max": 0.19974
+        },
+        "total_ns": {
+          "count": 1716,
+          "p50": 18.387398,
+          "p95": 27.25068,
+          "p99": 29.954483,
+          "min": 15.028908,
+          "max": 31.151097
+        }
+      },
+      "p95_total_ranked_sample": {
+        "frame": 469,
+        "total_ns": 26927659,
+        "intervals_ns": {
+          "receipt_to_stereo_publication_ns": 1701562,
+          "publication_to_selection_end_ns": 23824326,
+          "selection_end_to_xr_end_frame_return_ns": 1372448,
+          "return_to_log_ns": 29323
+        }
+      },
+      "prediction_phase_ms": {
+        "runtime_target_minus_log_ns": {
+          "count": 1900,
+          "p50": 18.607902,
+          "p95": 19.350293,
+          "p99": 22.615038,
+          "min": 16.903518,
+          "max": 23.724697
+        },
+        "wire_target_minus_receipt_ns": {
+          "count": 1900,
+          "p50": 36.406893,
+          "p95": 45.42781,
+          "p99": 48.07307,
+          "min": 0.707276,
+          "max": 49.336106
+        },
+        "wire_target_minus_publication_ns": {
+          "count": 1900,
+          "p50": 34.370719,
+          "p95": 42.624926,
+          "p99": 46.247348,
+          "min": -0.498349,
+          "max": 48.166731
+        },
+        "runtime_target_minus_wire_target_ns": {
+          "count": 1900,
+          "p50": 0.377699,
+          "p95": 0.474653,
+          "p99": 0.856911,
+          "min": -10.755646,
+          "max": 22.67717
+        }
+      },
+      "selected_warm_eye_decoder_ms": {
+        "decode_gpu_ms": {
+          "count": 3800,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "cpu_decode_ms": {
+          "count": 3800,
+          "p50": 0.403542,
+          "p95": 0.881719,
+          "p99": 1.16938,
+          "min": 0.219427,
+          "max": 1.55505
+        },
+        "staging_copy_ms": {
+          "count": 3800,
+          "p50": 0.196979,
+          "p95": 0.489114,
+          "p99": 0.819219,
+          "min": 0.119271,
+          "max": 1.16719
+        },
+        "submit_fence_wait_ms": {
+          "count": 3800,
+          "p50": 0.335469,
+          "p95": 1.25594,
+          "p99": 1.53635,
+          "min": 0.124271,
+          "max": 2.94573
+        },
+        "queue_wait_ms": {
+          "count": 3800,
+          "p50": 0.131145,
+          "p95": 5.06964,
+          "p99": 7.11391,
+          "min": 0.015365,
+          "max": 17.2442
+        },
+        "decode_upload_ms": {
+          "count": 3800,
+          "p50": 1.1388,
+          "p95": 2.32958,
+          "p99": 2.78875,
+          "min": 0.632031,
+          "max": 3.82677
+        },
+        "decompression_ms": {
+          "count": 3800,
+          "p50": 0.011927,
+          "p95": 0.021771,
+          "p99": 0.034584,
+          "min": 0.005625,
+          "max": 0.688906
+        }
+      },
+      "runtime_validation": {
+        "status": "pass",
+        "backend": "cpu-neon",
+        "selection_phase": "early",
+        "errors": [],
+        "presented_rows": 2066,
+        "decoded_rows": 4200,
+        "clock_domain": "headset_local_openxr",
+        "optical_motion_to_photon_verified": false,
+        "scope": "Runtime telemetry contract only; not the mission latency gate",
+        "render_fence_wait_ms": {
+          "count": 2066,
+          "min": 0.0025,
+          "max": 0.062968,
+          "p50": 0.00875,
+          "p95": 0.014115,
+          "p99": 0.019688
+        },
+        "selection_end_to_end_frame_return_ms": {
+          "count": 2066,
+          "min": 0.927917,
+          "max": 43.171515,
+          "p50": 1.423594,
+          "p95": 1.9075,
+          "p99": 2.351979
+        },
+        "decoder_duration_ms": {
+          "decode_gpu_ms": {
+            "count": 4200,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "cpu_decode_ms": {
+            "count": 4200,
+            "min": 0.219427,
+            "max": 1.55505,
+            "p50": 0.406354,
+            "p95": 0.875416,
+            "p99": 1.15396
+          },
+          "staging_copy_ms": {
+            "count": 4200,
+            "min": 0.119271,
+            "max": 2.03922,
+            "p50": 0.201823,
+            "p95": 0.509843,
+            "p99": 0.867083
+          },
+          "submit_fence_wait_ms": {
+            "count": 4200,
+            "min": 0.124271,
+            "max": 6.79573,
+            "p50": 0.338751,
+            "p95": 1.27109,
+            "p99": 1.77651
+          },
+          "queue_wait_ms": {
+            "count": 4200,
+            "min": 0.015365,
+            "max": 17.2442,
+            "p50": 0.127552,
+            "p95": 5.19349,
+            "p99": 7.16083
+          },
+          "decode_upload_ms": {
+            "count": 4200,
+            "min": 0.632031,
+            "max": 7.66234,
+            "p50": 1.15156,
+            "p95": 2.38047,
+            "p99": 2.92464
+          },
+          "decompression_ms": {
+            "count": 4200,
+            "min": 0.005625,
+            "max": 0.688906,
+            "p50": 0.01198,
+            "p95": 0.021771,
+            "p99": 0.038437
+          }
+        },
+        "observed_decoder_kernels": [
+          "direct-neon"
+        ],
+        "observed_cpu_output_modes": [
+          "cached-copy"
+        ],
+        "matched_presented_eye_identities": 4132
+      },
+      "identity_validation_status": "pass",
+      "candidate_trace_validation": {
+        "status": "pass",
+        "records": 2066,
+        "promotion_eligible": false,
+        "scope": "Observed candidate availability and target choice only; no measured alternate-policy speedup or source-content age",
+        "errors": [],
+        "selected_differs_from_newest_complete": 1692,
+        "higher_frame_id_available": 1692,
+        "fallback_records": 0,
+        "repeated_records": 0,
+        "unrecorded_render_target_gaps": 25,
+        "render_attempt_coverage": "not_recorded",
+        "skipped_render_count": null,
+        "skipped_render_reasons": null,
+        "terminal_render_tail": "not_recorded",
+        "continuity_scope": "Successful projection submissions only; schema 1/2 does not record every render attempt. Target gaps establish only compatibility with intervening renders, not their count or outcome.",
+        "distributions": {
+          "wait_frame_ms": {
+            "count": 2066,
+            "p50": 8.588855,
+            "p95": 9.179063,
+            "p99": 9.940001,
+            "min": 0.03151,
+            "max": 19.570419
+          },
+          "wait_return_to_selection_ms": {
+            "count": 2066,
+            "p50": 0.321094,
+            "p95": 0.693646,
+            "p99": 0.83224,
+            "min": 0.246927,
+            "max": 1.270365
+          },
+          "render_entry_to_selection_ms": {
+            "count": 2066,
+            "p50": 0.319219,
+            "p95": 0.691667,
+            "p99": 0.829636,
+            "min": 0.245417,
+            "max": 1.269115
+          },
+          "selected_target_minus_runtime_target_ms": {
+            "count": 2066,
+            "p50": -0.379517,
+            "p95": -0.2122,
+            "p99": 0.55496,
+            "min": -82.077418,
+            "max": 10.865735
+          },
+          "newest_target_minus_selected_target_ms": {
+            "count": 2066,
+            "p50": 11.132583,
+            "p95": 22.266962,
+            "p99": 22.351875,
+            "min": 0.0,
+            "max": 22.436764
+          },
+          "trace_write_ms": {
+            "count": 2066,
+            "p50": 0.170104,
+            "p95": 0.217344,
+            "p99": 0.256927,
+            "min": 0.086198,
+            "max": 0.615208
+          },
+          "prior_submission_to_previous_render_target_ms": {
+            "count": 2065,
+            "p50": 0.0,
+            "p95": 0.0,
+            "p99": 11.13632,
+            "min": 0.0,
+            "max": 22.275269
+          }
+        },
+        "warning": "Higher frame ID or target is not proof of a newer application scene or physical display time"
+      },
+      "observed_unique_stereo_hz": 89.22049239341645,
+      "measured_speedup": false,
+      "latency_gate_evaluated": false,
+      "qualification_changed": false,
+      "promotion_eligible": false,
+      "limitations": [
+        "Receipt-to-publication includes stereo transport completion, queueing, decode/upload, evidence I/O and publication locking.",
+        "Publication-to-selection is observed waiting for the selected pair, not a directly removable service cost.",
+        "Individual stage percentiles must not be summed; only each exact sample decomposition sums to its total.",
+        "Threshold crossing identifies when cumulative observed age reaches the threshold, not a causal blame assignment.",
+        "Decoder subdurations overlap/nest and are not added to local-clock intervals.",
+        "Prediction phase differences describe estimated targets in the headset-local namespace, not display photons.",
+        "Repeated frames count only at their first successful submission, even if later repeats cross the warmup boundary.",
+        "Existing diagnostic instrumentation and original pass/fail status are retained; no new hardware result is acquired.",
+        "Matched decoder rows establish selected-frame observations only, not complete worker/process-tail accounting."
+      ],
+      "original_run": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced",
+      "original_run_status": "fail",
+      "original_manifest_sha256": "38502bec943be9ad1c778a4775327dd4dbb0a32940b3fcc7946607a26b031371",
+      "original_manifest_files_verified": 300,
+      "original_summary_sha256": "2b206db570603e8d54c04bd4f650ac187d903e05e79af073036a8a95adf6eb28",
+      "original_result_overwritten": false,
+      "observed_cpu_output": "cached-copy",
+      "observed_candidate_trace": true,
+      "decoder_terminal_summary_present": [
+        false,
+        false
+      ],
+      "decoder_process_tail_verified": false
+    }
+  ],
+  "measured_speedup": false,
+  "qualification_changed": false,
+  "sources_sha256": {
+    "prototypes/vr444/experiments/client_timeline/analyze.py": "898c4184f35cb7514405ce69b020a5b98c493adc917d1ec7c502e667d37aa60b",
+    "validation/wivrn-codecs/integration/latency_runtime.py": "52849a220316633e2fb20fb92c314f6a87dd618cc6422bd38bab024fc9eb1628",
+    "validation/wivrn-codecs/integration/native_metrics.py": "0075fd06c5fcc1045785e104ed74a03db0fbd3130d3edc11a9cc10abd99f5825",
+    "validation/wivrn-codecs/integration/candidate_trace.py": "161e20fa104c42a1cc5ecdfc3786a8125100662e2ab6ec8a1aa0c98397470196",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b"
+  }
+}

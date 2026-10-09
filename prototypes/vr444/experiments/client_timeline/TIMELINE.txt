@@ -1,0 +1,70 @@
+OBSERVED STEREO TIMELINE -- 2026-10-09
+
+This branch decomposes the first successful stereo submissions in all five
+preserved CPU captures. It validates runtime frame/warp/eye joins, timestamp
+order, stable repeats and all 1,492 manifest entries before deriving metrics.
+The 2-second warmup and exact first-submission rules match the existing metrics.
+No original summary changes. Runs 01--04 retain their original pass status;
+run05 retains its original failed diagnostic status, with separate trace
+reinterpretation from the prior repair branch.
+
+Each sample is decomposed exactly into:
+  earliest eye receipt -> complete stereo publication,
+  publication -> end of selection,
+  end of selection -> successful xrEndFrame return,
+  return -> the older post-submit log observation.
+The first interval includes transport completion, queueing, decode, upload,
+evidence I/O and publication locking. It is not a pure decoder time. Decoder
+subinterval distributions are joined to the same warm selected frame/eye IDs
+but remain separate because they overlap/nest.
+
+Observed p95 values in milliseconds (columns must NOT be added):
+run             receipt/publication  publication/selection  selection/return  total
+01 cached             8.327241              17.952814             1.917656     21.968492
+02 mapped             7.142449              17.346356             1.859687     20.515887
+03 mapped             7.504741              18.657137             1.905208     22.353492
+04 cached             8.154688              21.618127             1.858333     26.085992
+05 closest traced     7.812084              22.735211             1.820209     26.927659
+
+Only 3, 0, 1, 1 and 1 warm pairs, respectively, had accumulated 15 ms by stereo
+publication. Most over-threshold samples reached 15 ms later. The exact p95
+ranked sample in run05 is frame469: 1.701562 ms receipt/publication +23.824326 ms
+publication/selection +1.372448 ms selection/return +0.029323 ms return/log =
+26.927659 ms total. This is one actual ranked sample, not a sum of unrelated
+stage percentiles or a claim that every tail sample has this composition.
+
+The traced run's wire prediction target was a median34.370719 ms ahead of
+publication; the runtime prediction target was a median18.607902 ms ahead of
+the logged submission. The median runtime target minus wire target was0.377699 ms.
+These are prediction-phase observations in the headset-local namespace, not
+photon times or subtraction of host and client clocks. They motivate observing
+the actual host pacer budgets; they do not prove that a particular budget can
+be reduced. The default-off pacer telemetry branch exists for that purpose.
+
+Interpretation limits
+Most observed selected-frame age accumulated after publication, but causes and
+removability remain unresolved. Earlier decode/arrival can change which frame
+is eligible at a deadline, causing discrete effects rather than a simple sum
+of stage savings. Waiting may reflect intentional target alignment, ownership,
+render-loop cadence or other dependencies. No measured speedup, causal blame,
+new native behavior, optical measurement or latency gate is asserted here.
+
+The original decoder files have no terminal worker summaries because the app
+was terminated. That does not invalidate the already observed, individually
+joined selected frame rows, but full decoder/process-tail accounting is NOT
+verified. The report exposes terminal-summary presence and always leaves
+process-tail verification false. No current qualification policy is relaxed.
+
+Validation
+validation-20261009.json records231 Python tests passing. New tests cover exact
+stereo decomposition, each threshold boundary, common clock translation,
+repeats spanning warmup, corrupted times/joins, sealed-file tampering and path
+traversal, and explicit absence of terminal summaries without inventing tail
+coverage. All existing trace/oracle/selection/runtime tests also pass.
+
+Reproduce (offline only; outputs must be new and outside original captures)
+  python3 prototypes/vr444/experiments/client_timeline/validate.py \
+    --out /tmp/timeline-validation-new.json
+  python3 prototypes/vr444/experiments/client_timeline/analyze.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/0[1-5]-*/ \
+    --out /tmp/timeline-comparison-new.json
