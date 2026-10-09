@@ -1,0 +1,94 @@
+Explicit render-attempt accounting, 2026-10-09
+============================================
+
+Problem and scope
+Schema-2 candidate records cover submitted projections. Empty render iterations
+advance last_display_time without emitting a selection record. The historical
+repair in TRACE-GAP-REPAIR.txt recognizes compatible target gaps but cannot know
+the skipped count or reasons. New live diagnostic traces use schema 3, keeping
+the original selection/metadata fields and adding render_attempts to both the
+candidate row and its presentation row.
+
+This is disabled with candidate tracing. It changes no selection, OpenXR call,
+Vulkan fence, resource lifetime, refresh request or codec behavior. It does not
+qualify latency or permit headset testing while acquisition is suspended.
+
+Contract
+render_attempts contains exactly:
+  render_attempt: 1-based render() entry count from scene construction
+  previous_submission_attempt: prior successful projection attempt, or 0
+  previous_submission_target_xr_ns: that submission's runtime target, or 0
+  aborted: unfinished/failed attempt count since the previous submission
+  valid: sticky validity flag
+  skipped: fixed reason counters since the previous submission
+
+Each render entry checks the previous-render target against the ledger's actual
+last target, checks positive advancing targets, and advances its own identity.
+Successful projection submission captures the interval counters, links the prior
+submission, then begins a new interval. The original previous-render target
+remains a separate field and still determines the bounded selector horizon.
+
+Skip reasons are distinct:
+  should_not_render: runtime shouldRender=false, successful empty xrEndFrame
+  decoders_unavailable: missing left/right decoder, successful empty xrEndFrame
+  shutdown: scene shutdown, successful empty xrEndFrame
+  no_complete_pair: selector found no complete pair, successful empty xrEndFrame
+  retained_pair: the existing repeated-pair branch omitted projection rendering
+The retained-pair branch does not assert that an empty xrEndFrame was called.
+Reason priority follows actual source branches: shutdown, should-not-render,
+unavailable decoders, then the separate pair-selection and retained-pair paths.
+
+A stack guard marks an unfinished attempt invalid. A thrown/failed xrEndFrame,
+caught invalid-pose exception, duplicate completion or unexplained return never
+becomes a benign skip. The invalid flag remains sticky across later successful
+submissions. Counters saturate and invalidate rather than wrapping at INT64_MAX.
+The ledger has fixed storage and no allocations, locks, clocks or serialization.
+Only successful presentation rows serialize its small snapshot after xrEndFrame.
+
+Validation requires exact preceding submission links, integer types/bounds,
+  render_attempt - previous_submission_attempt == 1 + sum(skipped)
+and previous-render target equality when there are no skips. A nonzero skip count
+requires a strictly intermediate previous-render target. Unknown reason keys,
+aborted attempts and invalid accounting fail. Trace and presentation snapshots
+must agree. The first submitted selection has no invented prior selected pair.
+All prior selection identity, clock/fence, metadata, policy and replay checks stay.
+Mixed schema traces and schema-2 rows carrying ignored schema-3 data fail.
+
+Coverage and cap
+The 4,096 full-snapshot cap is unchanged. Compact attempt accounting remains in
+every presentation row after the cap and is still checked. Successful results say
+render_attempt_coverage=scene_start_through_last_submission. The complete prefix
+includes startup attempts; it excludes the terminal tail after the last observed
+submission. terminal_render_tail is always not_recorded. Android force-stop can
+interrupt an attempt and cannot guarantee a destructor/footer, so this contract
+does not claim a complete process lifetime or infer missing terminal outcomes.
+An aborted attempt followed by another submission fails. An aborted terminal tail
+cannot be established from this journal and remains explicitly outside coverage.
+
+Tests and receipts
+  python3 -B -m unittest discover -s validation/wivrn-codecs/tests
+197 tests pass, including startup skips, mixed reasons, consecutive submissions,
+missing/extra/unknown fields, strict counter types/overflow, target/counter
+contradictions, attempt/submission link changes, trace/presentation disagreement,
+unobserved previous selections, schema downgrades and accounting after the cap.
+
+  python3 -B prototypes/vr444/experiments/selection_policy/validate_attempts.py \
+    --native-source /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests \
+    --compile-commands /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests/.cxx/Debug/2hd2e6j2/arm64-v8a/compile_commands.json \
+    --out NEW_RECEIPT.json
+
+attempt-validation-20261009.json binds source hashes and exact commands. Host C++
+state-machine tests pass ASan/UBSan, including guard unwind, duplicate/missing
+completion, each reason, target links and counter saturation. Two C++ serialized
+fixture rows pass the independent Python accounting validator. Android stream.cpp
+passes full translation-unit syntax checking with the actual cached compile
+command and a read-only Clang VFS overlay for stream.cpp, stream.h and
+selection_trace.h. No native source/cache mutation, linking, install or headset
+operation occurs. LeakSanitizer is disabled for the ptrace environment; ASan and
+UBSan remain enabled. Test fixtures are synthetic and are not hardware evidence.
+
+Primary reference
+  https://registry.khronos.org/OpenXR/specs/1.1-khr/html/xrspec.html#frame-synchronization
+Frame synchronization and optional layer submission have separate semantics.
+The exact implementation and reason boundaries above follow the local stream
+render loop; this telemetry does not reinterpret runtime API results.

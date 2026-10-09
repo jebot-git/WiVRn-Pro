@@ -7,6 +7,8 @@ _spec = importlib.util.spec_from_file_location('selection_replay', Path(__file__
 _replay = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_replay)
 
+SKIP_REASONS = ('should_not_render', 'decoders_unavailable', 'shutdown', 'no_complete_pair', 'retained_pair')
+
 
 def _int(value, positive=False):
     return type(value) is int and (1 if positive else 0) <= value < 2**63
@@ -39,6 +41,37 @@ def _stats(values):
                 min=values[0], max=values[-1])
 
 
+def _attempt_accounting(row, previous):
+    """Validate schema-3 accounting through a successful submission, not its tail."""
+    a = row.get('render_attempts')
+    fields = {'render_attempt', 'previous_submission_attempt', 'previous_submission_target_xr_ns',
+              'aborted', 'valid', 'skipped'}
+    if type(a) is not dict or set(a) != fields:
+        raise ValueError('missing or malformed render-attempt accounting')
+    if a['valid'] is not True or not _int(a['aborted']) or a['aborted'] != 0:
+        raise ValueError('render-attempt accounting contains an aborted or unaccounted attempt')
+    if not _int(a['render_attempt'], True) or not _int(a['previous_submission_attempt']):
+        raise ValueError('invalid render-attempt identity')
+    skipped = a['skipped']
+    if type(skipped) is not dict or set(skipped) != set(SKIP_REASONS) or any(not _int(n) for n in skipped.values()):
+        raise ValueError('invalid render-attempt skip reasons or counts')
+    previous_attempt = previous['render_attempts']['render_attempt'] if previous else 0
+    previous_target = previous['predicted_display_xr_ns'] if previous else 0
+    if (a['previous_submission_attempt'] != previous_attempt
+            or not _int(a['previous_submission_target_xr_ns'])
+            or a['previous_submission_target_xr_ns'] != previous_target):
+        raise ValueError('render-attempt previous submission link differs')
+    count = sum(skipped.values())
+    if count >= 2**63 or a['render_attempt'] - previous_attempt != count + 1:
+        raise ValueError('render-attempt delta does not equal submission plus explicit skips')
+    target, prior = row.get('predicted_display_xr_ns'), row.get('previous_predicted_display_xr_ns')
+    if not _int(target, True) or not _int(prior) or not previous_target <= prior < target:
+        raise ValueError('render-attempt target chain is invalid')
+    if (count == 0 and prior != previous_target) or (count > 0 and prior <= previous_target):
+        raise ValueError('render-attempt target gap disagrees with explicit skips')
+    return skipped
+
+
 def evaluate(traces, presented, enabled=True, selection_policy=None):
     if type(traces) is not list or type(presented) is not list:
         return dict(status='fail', errors=['trace and presentation inputs must be lists'], promotion_eligible=False)
@@ -46,16 +79,20 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
     result = dict(status='fail', records=len(traces), promotion_eligible=False,
                   scope='Observed candidate availability and target choice only; no measured alternate-policy speedup or source-content age')
     if not enabled:
-        bad = bool(traces) or any(type(p) is not dict or any(k.startswith('candidate_trace_') for k in p if type(k) is str) for p in presented)
+        bad = bool(traces) or any(type(p) is not dict or 'render_attempts' in p or
+                                 any(k.startswith('candidate_trace_') for k in p if type(k) is str) for p in presented)
         bad |= selection_policy == 'bounded-newest' or (selection_policy is not None and any(
             type(p) is not dict or p.get('selection_policy') != selection_policy for p in presented))
         return result | dict(status='fail' if bad else 'off', errors=['trace present while disabled'] if bad else [])
     if not traces or len(traces) > 4096 or not presented:
         errors.add('missing or oversized diagnostic trace/presentation evidence')
     by_selection = {}
+    schema = traces[0].get('schema') if traces and type(traces[0]) is dict else None
     observed_policy = selection_policy
-    if observed_policy is None and traces and type(traces[0]) is dict and traces[0].get('schema') == 2:
+    if observed_policy is None and schema in (2, 3):
         observed_policy = traces[0].get('selection_policy')
+    prior_presentation = None
+    skipped_totals = dict.fromkeys(SKIP_REASONS, 0)
     for index, p in enumerate(presented, 1):
         if type(p) is not dict:
             errors.add('invalid presentation row')
@@ -72,6 +109,15 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                 or not _int(p.get('candidate_trace_write_ns'))
                 or (index > 4096 and p['candidate_trace_write_ns'] != 0)):
             errors.add('trace counter/drop/write failure')
+        if schema == 3:
+            try:
+                for reason, count in _attempt_accounting(p, prior_presentation).items():
+                    skipped_totals[reason] += count
+                prior_presentation = p
+            except (ValueError, KeyError, TypeError) as exc:
+                errors.add(str(exc))
+        elif 'render_attempts' in p:
+            errors.add('render-attempt accounting requires schema 3')
     if len(traces) != min(len(presented), 4096):
         errors.add('trace does not cover the bounded presentation prefix')
     previous = None
@@ -85,7 +131,7 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                              'trace_write_ms', 'prior_submission_to_previous_render_target_ms')}
     for index, r in enumerate(traces, 1):
         try:
-            if type(r) is not dict or type(r.get('schema')) is not int or r['schema'] not in (1, 2) or type(r.get('sequence')) is not int or r['sequence'] != index:
+            if type(r) is not dict or type(r.get('schema')) is not int or r['schema'] not in (1, 2, 3) or r['schema'] != schema or type(r.get('sequence')) is not int or r['sequence'] != index:
                 raise ValueError('invalid trace schema/sequence')
             fields = ('wait_frame_begin_xr_ns', 'wait_frame_end_xr_ns', 'render_entry_xr_ns',
                       'selection_begin_xr_ns', 'selection_end_xr_ns', 'end_frame_return_xr_ns')
@@ -100,11 +146,17 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                 raise ValueError('selected trace did not submit a projection layer')
             if r.get('selection_phase') not in ('early', 'after-fence'):
                 raise ValueError('invalid selection phase')
-            if observed_policy is not None and (r['schema'] != 2 or r.get('selection_policy') != observed_policy):
+            if observed_policy is not None and (r['schema'] not in (2, 3) or r.get('selection_policy') != observed_policy):
                 raise ValueError('trace differs from requested selection policy')
             p = by_selection.get(r['selection_end_xr_ns'])
             if p is None:
                 raise ValueError('trace lacks presentation join')
+            if r['schema'] == 3:
+                _attempt_accounting(r, previous_record)
+                if r['render_attempts'] != p.get('render_attempts'):
+                    raise ValueError('trace/presentation render-attempt accounting differs')
+            elif 'render_attempts' in r:
+                raise ValueError('render-attempt accounting requires schema 3')
             for k in ('selection_phase', 'render_entry_xr_ns', 'selection_begin_xr_ns', 'selection_end_xr_ns',
                       'predicted_display_xr_ns', 'end_frame_return_xr_ns'):
                 if p.get(k) != r[k]:
@@ -133,7 +185,7 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                 _frame(f, times[-2])
                 if type(f.get('decoder')) is not int or f['decoder'] != eye:
                     raise ValueError('selected decoder ordering')
-            if r['schema'] == 2:
+            if r['schema'] in (2, 3):
                 for name in ('closest', 'previous'):
                     frames = r.get(name)
                     if type(frames) is not list or len(frames) != 3:
@@ -147,6 +199,8 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                         raise ValueError('trace/presentation policy or period mismatch')
                 if any(f['present'] for f in r['previous']) and not _replay.coherent(r['previous']):
                     raise ValueError('previous selection snapshot is not a coherent complete pair')
+                if r['schema'] == 3 and previous_record is None and any(f['present'] for f in r['previous']):
+                    raise ValueError('first render-attempt trace has an unobserved previous selection')
                 if not _replay.coherent(selected) or (any(f['present'] for f in r['closest']) and not _replay.coherent(r['closest'])):
                     raise ValueError('selected/closest snapshot is not a coherent complete pair')
                 repeat_snapshot = (r['previous'][0]['present'] and r['previous'][1]['present']
@@ -172,14 +226,14 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                 raise ValueError('alpha participation disagrees with actual oldest-slot policy')
             metadata_keys = ('present','frame','warp','view_display_time_xr_ns','receive_xr_ns','ready_xr_ns','alpha')
             snapshots = [tuple(f.get(k) for k in metadata_keys) for f in selected]
-            for f in history + selected + (r['previous']+r['closest'] if r['schema'] == 2 else []):
+            for f in history + selected + (r['previous']+r['closest'] if r['schema'] in (2, 3) else []):
                 if f['present']:
                     key = f['frame'], f['warp'], f['decoder']
                     value = tuple(f.get(k) for k in metadata_keys)
                     if key in observed_metadata and observed_metadata[key] != value:
                         raise ValueError('immutable frame metadata changed across snapshots')
                     observed_metadata[key] = value
-            required = 2 + int(r['selected_alpha_required'] if r['schema'] == 2 and r['selection_policy'] == 'bounded-newest' else r['alpha_required'])
+            required = 2 + int(r['selected_alpha_required'] if r['schema'] in (2, 3) and r['selection_policy'] == 'bounded-newest' else r['alpha_required'])
             if any(not s['present'] for s in selected[:required]) or any(_identity(s) != _identity(selected[0]) for s in selected[:required]):
                 raise ValueError('selected stereo/alpha identity mismatch')
             for eye, side in enumerate(('left', 'right')):
@@ -191,7 +245,7 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
             candidate_required = 2 + int(r['alpha_required'])
             eligible = [f for f in history[:3] if f['present'] and all(
                 any(g['present'] and _identity(g) == _identity(f) for g in history[eye*3:eye*3+3]) for eye in range(1, candidate_required))]
-            if r['schema'] == 2:
+            if r['schema'] in (2, 3):
                 if decision['fallback']:
                     fallback += 1
                     if previous is None or snapshots != previous_frames:
@@ -223,7 +277,7 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                 raise ValueError('repeat flag disagrees with prior selection')
             previous = identities
             previous_frames = snapshots
-            if r['schema'] == 2 and previous_record is not None:
+            if r['schema'] in (2, 3) and previous_record is not None:
                 runtime_target_gaps += gap > 0
                 values['prior_submission_to_previous_render_target_ms'].append(gap / 1e6)
             previous_record = r
@@ -245,9 +299,13 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                          selected_differs_from_newest_complete=different,
                          higher_frame_id_available=newer, fallback_records=fallback, repeated_records=repeats,
                          unrecorded_render_target_gaps=runtime_target_gaps,
-                         render_attempt_coverage='not_recorded',
-                         skipped_render_count=None, skipped_render_reasons=None,
-                         continuity_scope='Successful projection submissions only; schema 1/2 does not record every render attempt. '
-                                          'Target gaps establish only compatibility with intervening renders, not their count or outcome.',
+                         render_attempt_coverage='scene_start_through_last_submission' if schema == 3 and not errors else 'not_recorded',
+                         skipped_render_count=sum(skipped_totals.values()) if schema == 3 and not errors else None,
+                         skipped_render_reasons=skipped_totals if schema == 3 and not errors else None,
+                         terminal_render_tail='not_recorded',
+                         continuity_scope=('Schema 3 accounts render outcomes from scene start through the last successful submission; '
+                                           'individual skipped targets and the terminal tail are not recorded.' if schema == 3 else
+                                           'Successful projection submissions only; schema 1/2 does not record every render attempt. '
+                                           'Target gaps establish only compatibility with intervening renders, not their count or outcome.'),
                          distributions={k: _stats(v) for k, v in values.items()},
                          warning='Higher frame ID or target is not proof of a newer application scene or physical display time')
