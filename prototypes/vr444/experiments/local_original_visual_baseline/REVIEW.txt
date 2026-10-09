@@ -1,0 +1,12 @@
+Read-only design review, 2026-10-09
+
+The compositor teammate independently reviewed DESIGN.txt and acquisition-plan.json
+at ba1b58d. No blocker was found in the explicit deferred/non-executable scope.
+The review checked the current coherent world-pose/FOV route, temporal pose
+limitation, and the fact that the original arm removes host foveation as well as
+codec processing. It also checked independent literal two-eye source bytes,
+per-arm replay inputs, allocation bounds, producer/consumer/sampler retention,
+offscreen-only omission testing and preservation of the negative visual report.
+
+No renderer implementation, runtime execution, device action or quality result
+was implied by this review. The design-input-binding receipt remains unchanged.
