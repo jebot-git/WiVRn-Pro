@@ -2,6 +2,7 @@
 #pragma once
 // Shared standalone image/byte/color oracle. No XR or network operations.
 #include "codec.hpp"
+#include "host_copy.hpp"
 #include <vulkan/vulkan.h>
 #include <algorithm>
 #include <array>
@@ -100,10 +101,11 @@ struct Session {
     Owner o;
     unsigned width,height,tiles;
     VkPhysicalDevice physical{}; VkPhysicalDeviceProperties properties{}; VkPhysicalDeviceMemoryProperties memory{};
-    VkQueue queue{}; VkCommandBuffer command{}; unsigned family{},timestamp_bits{},submissions=0; bool failed=false,use_format_list=false;
+    VkQueue queue{}; VkCommandBuffer command{}; unsigned family{},timestamp_bits{},submissions=0; bool failed=false,use_format_list=false,use_host_copy=false,host_image_available=false;
+    host_copy::Support host;
     std::array<std::array<VkDescriptorSet,2>,modes> decode_sets{},sample_sets{};
-    Session(unsigned w,unsigned h,const std::filesystem::path& shaders,unsigned selected,bool software,bool format_list,unsigned index_words=1)
-        :width(w),height(h),tiles(((w+15)/16)*((h+15)/16)),use_format_list(format_list) {
+    Session(unsigned w,unsigned h,const std::filesystem::path& shaders,unsigned selected,bool software,bool format_list,unsigned index_words=1,bool host_copy=false)
+        :width(w),height(h),tiles(((w+15)/16)*((h+15)/16)),use_format_list(format_list),use_host_copy(host_copy) {
         require(w&&h&&w<=4096&&h<=4096&&uint64_t(w)*h<=8388608,"dimensions");
         require(index_words>=1&&index_words<=16,"index stride bound");
         VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};
@@ -129,16 +131,19 @@ struct Session {
               (VK_QUEUE_GRAPHICS_BIT|VK_QUEUE_COMPUTE_BIT)||!qs[family].timestampValidBits)) ++family;
         require(family<n,"graphics+compute+timestamp queue required"); timestamp_bits=qs[family].timestampValidBits;
         std::vector<const char*> extensions;
-        if(format_list) {
+        if(format_list||use_host_copy) {
             check(vkEnumerateDeviceExtensionProperties(physical,nullptr,&n,nullptr));
             std::vector<VkExtensionProperties> available(n); check(vkEnumerateDeviceExtensionProperties(physical,nullptr,&n,available.data()));
-            extensions=enabled_extensions(true,&available);
+            if(format_list)extensions=enabled_extensions(true,&available);
+            if(use_host_copy){auto extra=host.query(physical,w,h,available);extensions.insert(extensions.end(),extra.begin(),extra.end());}
         }
         float priority=1;
         VkDeviceQueueCreateInfo qi{VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO}; qi.queueFamilyIndex=family; qi.queueCount=1; qi.pQueuePriorities=&priority;
         VkDeviceCreateInfo di{VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO}; di.queueCreateInfoCount=1; di.pQueueCreateInfos=&qi;
         di.enabledExtensionCount=extensions.size(); di.ppEnabledExtensionNames=extensions.data();
+        if(use_host_copy)di.pNext=&host.enabled;
         check(vkCreateDevice(physical,&di,nullptr,&o.device)); vkGetDeviceQueue(o.device,family,0,&queue);
+        if(use_host_copy)host.load(o.device);
         for(unsigned eye=0;eye<2;++eye) {
             make_buffer(o.inputs[eye][0],VkDeviceSize(tiles)*vr444::SLOT_WORDS*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT|VK_BUFFER_USAGE_TRANSFER_SRC_BIT,true);
             make_buffer(o.inputs[eye][1],VkDeviceSize(tiles)*index_words*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,true);
@@ -209,6 +214,7 @@ struct Session {
         ii.flags=mode?VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT:0; ii.imageType=VK_IMAGE_TYPE_2D; ii.format=base;
         ii.extent={width,height,1}; ii.mipLevels=ii.arrayLayers=1; ii.samples=VK_SAMPLE_COUNT_1_BIT; ii.tiling=VK_IMAGE_TILING_OPTIMAL;
         ii.usage=VK_IMAGE_USAGE_SAMPLED_BIT|VK_IMAGE_USAGE_TRANSFER_SRC_BIT|VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        if(!mode&&use_host_copy)ii.usage|=VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT;
         if(mode) ii.usage|=VK_IMAGE_USAGE_STORAGE_BIT;
         if(mode&&use_format_list) ii.pNext=&list;
         VkPhysicalDeviceImageFormatInfo2 query{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2};
@@ -260,6 +266,7 @@ struct Session {
     }
     void begin() {
         require(!failed,"session poisoned by an uncertain submission"); check(vkResetCommandBuffer(command,0));
+        host_image_available=false;
         VkCommandBufferBeginInfo b{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}; b.flags=VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; check(vkBeginCommandBuffer(command,&b));
     }
     void submit() {
@@ -294,8 +301,31 @@ struct Session {
             vkCmdFillBuffer(command,o.linear[eye].handle,0,VK_WHOLE_SIZE,0x7fc00000); // NaN poison
         }
         memory_barrier(VK_ACCESS_TRANSFER_WRITE_BIT,VK_ACCESS_SHADER_WRITE_BIT|VK_ACCESS_TRANSFER_WRITE_BIT,VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT|VK_PIPELINE_STAGE_TRANSFER_BIT);
+        // A fence proves completion; host image transitions additionally need
+        // availability of the preceding GPU clear writes to HOST_READ.
+        if(!mode&&use_host_copy)memory_barrier(VK_ACCESS_TRANSFER_WRITE_BIT,VK_ACCESS_HOST_READ_BIT,VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_HOST_BIT);
         submit();
+        host_image_available=!mode&&use_host_copy;
         for(auto& raw:o.raw) std::memset(raw.mapped,0x5a,raw.bytes);
+    }
+    void host_upload(const std::array<std::vector<uint32_t>,2>& pixels) {
+        require(use_host_copy&&host_image_available&&!failed,"host copy requires completed available poison images");
+        for(unsigned eye=0;eye<2;++eye){require(pixels[eye].size()==size_t(width)*height,"host copy stereo shape");require(o.images[0][eye].layout==VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,"host copy old layout");}
+        // Keep both image owners until every host call and the next submit have
+        // completed. Any partial Vulkan failure permanently poisons this session.
+        failed=true;host_image_available=false;
+        for(unsigned eye=0;eye<2;++eye) {
+            auto& image=o.images[0][eye];
+            VkHostImageLayoutTransitionInfoEXT transition{VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO_EXT};transition.image=image.handle;transition.oldLayout=image.layout;transition.newLayout=VK_IMAGE_LAYOUT_GENERAL;transition.subresourceRange={VK_IMAGE_ASPECT_COLOR_BIT,0,1,0,1};
+            check(host.transition(o.device,1,&transition));image.layout=transition.newLayout;
+            VkMemoryToImageCopyEXT region{VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT};region.pHostPointer=pixels[eye].data();region.imageSubresource={VK_IMAGE_ASPECT_COLOR_BIT,0,0,1};region.imageExtent={width,height,1};
+            VkCopyMemoryToImageInfoEXT copy{VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT};copy.dstImage=image.handle;copy.dstImageLayout=image.layout;copy.regionCount=1;copy.pRegions=&region;
+            // flags=0: ordinary tightly packed RGBA, never opaque swizzled memcpy.
+            check(host.copy(o.device,&copy));
+            transition.oldLayout=image.layout;transition.newLayout=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            check(host.transition(o.device,1,&transition));image.layout=transition.newLayout;
+        }
+        failed=false;
     }
     Measurement run(const std::array<vr444::Frame,2>& frames,unsigned mode,const std::array<std::vector<uint32_t>,2>& expected) {
         require(mode<modes,"mode"); Measurement m;

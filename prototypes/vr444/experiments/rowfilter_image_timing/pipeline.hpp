@@ -12,22 +12,25 @@ struct Result {
 struct ImagePath {
     Session session;
     unsigned columns,mode;
-    bool cpu;
+    bool cpu,host_copy;
     std::array<rowfilter::Workspace,2> workspace;
     std::array<std::vector<uint32_t>,2> decoded;
-    ImagePath(unsigned width,unsigned height,const std::filesystem::path& shaders,unsigned cols,unsigned output,bool cpu_decode,unsigned selected=0)
-        :session(width,height,shaders/("shaders-"+std::to_string(cols)),selected,false,false),columns(cols),mode(output),cpu(cpu_decode) {
+    ImagePath(unsigned width,unsigned height,const std::filesystem::path& shaders,unsigned cols,unsigned output,bool cpu_decode,unsigned selected=0,bool host_upload=false)
+        :session(width,height,shaders/("shaders-"+std::to_string(cols)),selected,false,false,1,host_upload),columns(cols),mode(output),cpu(cpu_decode),host_copy(host_upload) {
         require(cols==1||cols==4||cols==16,"column layout");
         require((cpu&&mode==0)||(!cpu&&(mode==1||mode==2)),"pipeline output arm");
+        require(!host_copy||cpu,"host copy takes checked CPU RGBA");
         require(session.properties.deviceType==VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU||session.properties.deviceType==VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,"hardware GPU required");
         if(cpu)for(auto& pixels:decoded)pixels.resize(size_t(width)*height);
     }
-    std::string name() const {return cpu?"cpu_simd_rgba_copy":"gpu_c"+std::to_string(columns)+(mode==1?"_unorm":"_uint");}
+    std::string name() const {return host_copy?"cpu_simd_host_image_copy":cpu?"cpu_simd_rgba_copy":"gpu_c"+std::to_string(columns)+(mode==1?"_unorm":"_uint");}
     Measurement copy_rgba(Measurement m) {
         auto& s=session;auto start=Clock::now();s.begin();vkCmdResetQueryPool(s.command,s.o.queries,0,2);
-        s.memory_barrier(VK_ACCESS_HOST_WRITE_BIT,VK_ACCESS_TRANSFER_READ_BIT,VK_PIPELINE_STAGE_HOST_BIT,VK_PIPELINE_STAGE_TRANSFER_BIT);
+        s.memory_barrier(VK_ACCESS_HOST_WRITE_BIT,host_copy?VK_ACCESS_SHADER_READ_BIT:VK_ACCESS_TRANSFER_READ_BIT,VK_PIPELINE_STAGE_HOST_BIT,host_copy?VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT:VK_PIPELINE_STAGE_TRANSFER_BIT);
+        // Host copies are synchronous; this otherwise empty readiness submit
+        // publishes their writes to the device and retains a common fence endpoint.
         vkCmdWriteTimestamp(s.command,VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,s.o.queries,0);
-        for(unsigned eye=0;eye<2;++eye) {
+        if(!host_copy)for(unsigned eye=0;eye<2;++eye) {
             auto& image=s.o.images[0][eye];require(image.layout==VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,"CPU copy image layout");
             auto region=s.region();vkCmdCopyBufferToImage(s.command,s.o.inputs[eye][0].handle,image.handle,image.layout,1,&region);
             s.barrier(image,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,VK_ACCESS_TRANSFER_WRITE_BIT,VK_ACCESS_SHADER_READ_BIT,VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
@@ -59,7 +62,10 @@ struct ImagePath {
         }
         result.stages.validation_ms=elapsed(start);
         auto stage=Clock::now();s.poison(mode);result.poison_ms=elapsed(stage);stage=Clock::now();
-        for(unsigned eye=0;eye<2;++eye) {
+        if(host_copy) {
+            s.host_upload(decoded);
+            result.uploaded_bytes=uint64_t(s.width)*s.height*8;
+        } else for(unsigned eye=0;eye<2;++eye) {
             auto& input=s.o.inputs[eye];const void* source=cpu?static_cast<const void*>(decoded[eye].data()):static_cast<const void*>(workspace[eye].rgb.data());
             size_t bytes=cpu?decoded[eye].size()*4:workspace[eye].rgb.size();
             std::memcpy(input[0].mapped,source,bytes);
