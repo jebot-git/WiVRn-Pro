@@ -105,6 +105,9 @@ private:
 	std::optional<std::thread> tracking_thread;
 
 	std::shared_mutex decoder_mutex;
+#ifdef WIVRN_CODEC_TESTS
+    std::once_flag test_exit_once;
+#endif
 	// Network-thread state: decoder recovery must not replay an old display rate.
 	bool initial_refresh_rate_applied = false;
 	std::optional<to_headset::video_stream_description> video_stream_description;
@@ -245,6 +248,9 @@ private:
 
 public:
 	~stream();
+#ifdef WIVRN_CODEC_TESTS
+    void prepare_exit() noexcept override;
+#endif
 
 	static std::shared_ptr<stream> create(
 	        std::unique_ptr<wivrn_session> session,
