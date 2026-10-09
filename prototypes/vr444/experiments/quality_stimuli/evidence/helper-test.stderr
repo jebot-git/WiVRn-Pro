@@ -1,0 +1,11 @@
+test_binary_pin_symlink_and_changed_output_rejected (test_quality_application.QualityApplication.test_binary_pin_symlink_and_changed_output_rejected) ... ok
+test_cached_exact_bytes_and_private_runtime_argv (test_quality_application.QualityApplication.test_cached_exact_bytes_and_private_runtime_argv) ... ok
+test_duplicate_json_and_tampered_cached_bytes_rejected (test_quality_application.QualityApplication.test_duplicate_json_and_tampered_cached_bytes_rejected) ... ok
+test_native_scope_negative_matrix (test_quality_application.QualityApplication.test_native_scope_negative_matrix) ... ok
+test_no_plan_is_no_application_override (test_quality_application.QualityApplication.test_no_plan_is_no_application_override) ... ok
+test_rehashed_plan_cannot_substitute_host_command (test_quality_application.QualityApplication.test_rehashed_plan_cannot_substitute_host_command) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.004s
+
+OK

@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "source_directory": "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli",
+  "source_sha256": {
+    "app.cpp": "93684d553f4754907b9ba91214a1cd474fe4af7294aa761191cef6fa9f0d415e",
+    "pattern.hpp": "19b5bf7a118e5231ff28bb28b2c3796524858d70bcf6a644cbaf27fbfb3c6d58",
+    "test_transfer.cpp": "c0e13448c1945870a7e8ec29ffbe539961f4020d5f33d6ab91ab76290a10db45",
+    "build.py": "81936a1bae15e6d2ec30eeb55b2a76a3dca188d592a62c17a40d7ce0dc9fd84d",
+    "build.sh": "11c2486183b4aabcad0d2cefd7a5bf91f009001f529f039e27eed2289eed35ab"
+  },
+  "compiler": "/usr/bin/c++",
+  "compiler_sha256": "579d25c2d1e45abeed0c63a517b5c52f6d09ea811a787bf7a7c677a7fd0726f6",
+  "compiler_version": "c++ (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "pkg_config_versions": [
+    "1.1",
+    "1.4.341",
+    "3.5.9"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/c++",
+        "-std=c++20",
+        "-O2",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-missing-field-initializers",
+        "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/app.cpp",
+        "-o",
+        "/tmp/sub15-quality-stimuli-final/quality-stimuli",
+        "-lopenxr_loader",
+        "-lvulkan",
+        "-lssl",
+        "-lcrypto"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 5.226668652030639
+    },
+    {
+      "argv": [
+        "/usr/bin/c++",
+        "-std=c++20",
+        "-O2",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-missing-field-initializers",
+        "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/test_transfer.cpp",
+        "-o",
+        "/tmp/sub15-quality-stimuli-final/test-transfer",
+        "-lopenxr_loader",
+        "-lvulkan",
+        "-lssl",
+        "-lcrypto"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 5.525623248016927
+    }
+  ],
+  "sanitizers": false,
+  "binary_sha256": {
+    "quality-stimuli": "768621976665bbf9991c610aaab22f7724f4ea266bddcc73a3882218b1a725c7",
+    "test-transfer": "ffbd440c861e88d94b033068ba641f49c2db8c69d5f1cd24f9135c0c277f5d62"
+  },
+  "log_sha256": {
+    "quality-stimuli.build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "quality-stimuli.build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test-transfer.build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test-transfer.build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "openxr_exercised": false,
+  "gpu_exercised": false,
+  "headset_exercised": false,
+  "scope": "Local exact source/command/binary binding; no compiler/runtime reproducibility claim"
+}

@@ -50,7 +50,7 @@ Live launch preparation (does not launch anything):
   python3 plan.py --binary /tmp/quality-stimuli-build/quality-stimuli \
     --binary-sha256 SHA_FROM_BUILD_RECEIPT --bundle /tmp/new-quality-app-bundle \
     --capture /ABSOLUTE/NEW/RUN/app-source --pattern chroma-grid \
-    --width 576 --height 640 --frames 900 --seconds 30
+    --width 1800 --height 1980 --frames 1800 --seconds 20
 
 The coordinator can replace ONLY server configuration `application` with the
 plan's exact argv while recording the plan, binary/build hashes, actual command
@@ -72,7 +72,9 @@ separately because a complete finite pixel capture does not imply the runtime
 acknowledged session exit; the native cleanup gate must enforce restoration.
 
 Actual source evidence:
-  app.jsonl: immutable source metadata; state transitions; each successful
+  app.jsonl: immutable source metadata; state transitions; first 32 frame
+    admission decisions BEFORE image work (shouldRender, locate_called, actual
+    viewStateFlags, required-valid bits and skip reason); each successful
     xrEndFrame target, period, eye/image identity, pose and FOV; final counts.
   eye{0,1}.source.rgba: original CPU-generated application pixels.
   eyeE-imageI.readback.rgba: actual image readback on first use, independently
@@ -82,6 +84,10 @@ Actual source evidence:
   Pose orientation is XYZW. Float bit vectors preserve actual float values.
   `predicted_display_time` is XrTime; it is not a measured display/photon time.
   Source is VIEW-space/head-locked with actual located eye poses and FOVs.
+  Both position/orientation VALID flags are mandatory, just as in hello_xr.
+  No tracking/presence flags are fabricated and shouldRender is never ignored.
+  A zero-layer run leaves bounded diagnostic records and exits nonzero; it
+  cannot produce a complete source-evidence footer.
 
 `audit.py CAPTURE NEW_AUDIT.json` independently regenerates original app pixels,
 checks both eye/source/readback byte sets and hashes, exact float-bit metadata,
@@ -100,3 +106,27 @@ Qualification is recorded in qualification.json; this milestone has no actual
 OpenXR/headset fixture run yet. Its direct byte-upload source path is a first
 structured corpus. A shader-rendered world-space scene, motion, gaze, natural
 textures and a broader content corpus remain separate future coverage.
+
+Native harness adapter:
+  validation/wivrn-codecs/integration/quality_application.py
+  --quality-application-plan /ABS/BUNDLE/plan.json
+  --quality-application-plan-sha256 EXACT_PLAN_SHA256
+Its preflight(args) performs only bounded reads and validation before ADB. It
+requires custom-rrb32, source=q1, q=1, outer compression=none, source_trace and
+quality_capture, cpu-neon coordinator/cached-copy, two/four configured workers,
+and an explicit cpu/staged-gpu RRB output. The plan capture directory must be
+exactly args.out/app-source. Application seconds must end at least five seconds
+before native seconds (20s app / 30s native for the first diagnostic profile).
+configure(cached,runtime,output) copies only cached bytes to a private runtime
+executable and archives the original plan; it returns (record, exact argv).
+Record has original_plan_sha256, executable_sha256, actual_application,
+snapshot_path, original/planned executable paths and helper/source-profile
+bindings. The root harness remains responsible for actual launch/acquisition,
+before/after snapshot hashes, server config, installed native build, cleanup,
+and invoking the source auditor. This helper launches no process itself.
+
+The diagnostic follow-up adds no rendering fallback: shouldRender false and
+missing position/orientation validity still produce zero projection layers.
+Its actual transfer/ownership function is byte-identical to the qualified
+prior commit; gate-record changes were rebuilt and tested without another GPU
+run. qualification.json identifies that exact earlier GPU binary/source pin.

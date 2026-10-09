@@ -1,0 +1,13 @@
+test_actual_capture_stereo_and_bits (test_audit.Audit.test_actual_capture_stereo_and_bits) ... ok
+test_corrupt_source_and_readback (test_audit.Audit.test_corrupt_source_and_readback) ... ok
+test_independent_cpp_fixture_oracle (test_audit.Audit.test_independent_cpp_fixture_oracle) ... ok
+test_invalid_cli_never_starts_xr (test_audit.Audit.test_invalid_cli_never_starts_xr) ... ok
+test_metadata_mutations (test_audit.Audit.test_metadata_mutations) ... ok
+test_symlink_and_incomplete_capture (test_audit.Audit.test_symlink_and_incomplete_capture) ... ok
+test_plan_rejects_bad_pin_and_overlapping_outputs (test_audit.Plan.test_plan_rejects_bad_pin_and_overlapping_outputs) ... ok
+test_snapshot_and_bounded_quality_argv (test_audit.Plan.test_snapshot_and_bounded_quality_argv) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.935s
+
+OK

@@ -116,6 +116,18 @@ def vector(record, name, count):
         require(struct.unpack('<I', struct.pack('<f', value))[0] == encoded, 'float bits disagree')
     return values
 
+def gate_decision(row):
+    require(type(row.get('should_render')) is bool and type(row.get('locate_called')) is bool, 'typed frame gate')
+    flags = integer(row.get('view_state_flags'), 0, 15)
+    require(row['locate_called'] == row['should_render'], 'locate/shouldRender mismatch')
+    if not row['should_render']:
+        require(flags == 0, 'unlocated frame carries pose validity')
+        expected_decision = 'should_render_false'
+    else:
+        expected_decision = 'admitted' if flags & 3 == 3 else 'view_pose_invalid'
+    require(row.get('decision') == expected_decision, 'forged tracking gate decision')
+    return expected_decision
+
 def application(directory):
     directory = Path(directory); snapshots = {}
     raw = load_file(directory, 'app.jsonl', 32 * 1024 * 1024, snapshots)
@@ -131,7 +143,7 @@ def application(directory):
     limit = integer(head.get('frame_limit'), 1, 10800); integer(head.get('seconds_limit'), 1, 120)
     require(tail.get('complete') is True and tail.get('quality_only') is True and tail.get('latency_comparable') is False, 'complete quality footer')
     require(tail.get('stop_reason') in ('time_limit', 'frame_limit', 'runtime_terminal') and type(tail.get('session_ended')) is bool, 'session termination record')
-    eye_records = {}; capture_records = {}; frames = []; captures_seen = set(); submitted = 0
+    eye_records = {}; capture_records = {}; frames = []; captures_seen = set(); submitted = 0; gates = {}
     for row in rows[1:-1]:
         kind = row.get('type')
         if kind == 'eye':
@@ -157,7 +169,13 @@ def application(directory):
             require(set(eye_records) == {0, 1}, 'frame before stereo setup')
             require(type(row.get('sequence')) is int and row['sequence'] == len(frames)+1, 'frame sequence')
             integer(row.get('predicted_display_time'), 1, 2**63-1); integer(row.get('predicted_display_period'), 1, 10**10)
+            require(not frames or row['predicted_display_time'] > frames[-1]['predicted_display_time'], 'nonincreasing app target')
+            decision = gate_decision(row)
+            if row['sequence'] <= 32:
+                require(row['sequence'] in gates and all(row[k] == gates[row['sequence']][k]
+                    for k in ('should_render', 'locate_called', 'view_state_flags', 'decision')), 'missing/mismatched early frame gate')
             require(type(row.get('should_render')) is bool and type(row.get('projection_submitted')) is bool and type(row.get('views')) is list, 'frame flags')
+            require(row['projection_submitted'] == (decision == 'admitted'), 'projection ignored validity gate')
             if row['projection_submitted']:
                 require(row['should_render'] and len(row['views']) == 2, 'submitted stereo views')
                 for eye, view in enumerate(row['views']):
@@ -175,12 +193,18 @@ def application(directory):
             else:
                 require(row['views'] == [], 'unsubmitted frame has submitted views')
             frames.append(row)
+        elif kind == 'frame_gate':
+            sequence = integer(row.get('sequence'), 1, 32)
+            require(sequence == len(frames)+1 and sequence not in gates, 'misordered early frame gate')
+            require(type(row.get('required_valid_flags')) is int and row['required_valid_flags'] == 3, 'validity requirement changed')
+            integer(row.get('session_state'), 1, 8); gate_decision(row); gates[sequence] = row
         elif kind == 'session_state':
             integer(row.get('state'), 1, 8); integer(row.get('xr_time'), 0, 2**63-1)
         else:
             raise ValueError('unknown/misordered app record')
     require(type(tail.get('frames')) is int and type(tail.get('submitted')) is int
             and 0 < submitted <= len(frames) <= limit and tail['frames'] == len(frames) and tail['submitted'] == submitted, 'frame/footer population')
+    require(set(gates) == set(range(1, min(len(frames), 32)+1)), 'early frame gate population')
     return {'schema': 1, 'status': 'pass', 'profile': 'application_quality_source',
             'pattern': head['pattern'], 'frames': len(frames), 'submitted_stereo_frames': submitted,
             'captured_swapchain_images': len(capture_records), 'session_ended': tail['session_ended'],
