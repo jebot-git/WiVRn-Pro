@@ -9,7 +9,7 @@
 
 namespace wivrn::codec_test {
 constexpr size_t header_size = 48, max_payload = 16*1024*1024;
-enum class Kind : uint32_t { hevc_carrier=1, vr444=2, raw_rgba=3 };
+enum class Kind : uint32_t { hevc_carrier=1, vr444=2, raw_rgba=3, rrb32=4 };
 inline constexpr auto crc_table=[] {
     std::array<uint32_t,256> table{};
     for(unsigned n=0;n<256;++n){uint32_t c=n;for(int i=0;i<8;++i)c=(c>>1)^(0xedb88320u & (0u-(c&1)));table[n]=c;}
@@ -32,7 +32,7 @@ inline void put(std::vector<uint8_t>& p,size_t at,uint64_t v,size_t n) {
 constexpr uint32_t flag_lz4 = 1;
 struct Header { Kind kind; uint32_t width,height,eye; uint64_t frame,warp; uint32_t flags=0; };
 inline void validate(const Header& h) {
-    if((h.kind!=Kind::hevc_carrier && h.kind!=Kind::vr444 && h.kind!=Kind::raw_rgba)||h.width<2||h.height<2||h.width>4096||h.height>4096||uint64_t(h.width)*h.height>4194304||h.eye>1||(h.flags & ~flag_lz4)||(h.flags && h.kind!=Kind::vr444))
+    if((h.kind!=Kind::hevc_carrier && h.kind!=Kind::vr444 && h.kind!=Kind::raw_rgba && h.kind!=Kind::rrb32)||h.width<2||h.height<2||h.width>4096||h.height>4096||uint64_t(h.width)*h.height>4194304||h.eye>1||(h.flags & ~flag_lz4)||(h.flags && h.kind!=Kind::vr444))
         throw std::runtime_error("invalid test envelope dimensions/kind/eye");
 }
 inline std::vector<uint8_t> pack(const Header& h,std::span<const uint8_t> data) {
