@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "adb_target": "192.168.1.105:5555",
+  "expected_serial": "230YC01D8W000E",
+  "scope": "Private borrowed-device staged RRB image helper; exact both-eye bytes and sampled consumer versus uncompressed same-device reference. No OpenXR, native decoder callsite, network, timing or full-goal qualification.",
+  "source_receipt_commit": "1b3541c91cb77eff6ba032052b254f48fc86d2a2",
+  "source_receipt_path": "prototypes/vr444/experiments/native_staged_image/results/qualification.json",
+  "files": [
+    {
+      "local": "/tmp/sub15-native-staged-image-final/staged-image-test-android",
+      "remote": "staged-image-test",
+      "sha256": "98bf648a3f17d6973cf401f4f71790537a3cd08f9a5c90330c9b072189b3cbc8",
+      "executable": true
+    },
+    {
+      "local": "/tmp/sub15-native-staged-image-final/shaders/buffer.spv",
+      "remote": "shaders/buffer.spv",
+      "sha256": "b408089ce94765a38c30f2e98f2f6881c209646da10353ceef30ea22ead867ca",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-native-staged-image-final/shaders/sample.spv",
+      "remote": "shaders/sample.spv",
+      "sha256": "ac1ecc27bc18c9bac1bb44aa81f6b6008a2cb527d62ae5ee7b564feb314538aa",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-native-staged-image-final/shaders/staged.spv",
+      "remote": "shaders/staged.spv",
+      "sha256": "c6bf3b7816d69ee6556292076a0898ce9f2b96feadc4008350339dc452340948",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-native-staged-image-final/shaders/uint.spv",
+      "remote": "shaders/uint.spv",
+      "sha256": "076230140137e8b10b6a6f085b028b021f9d419b742906cefdfd41cd7d3ef416",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-native-staged-image-final/shaders/unorm.spv",
+      "remote": "shaders/unorm.spv",
+      "sha256": "2ec428dab6a4dc25188ee57b42464c511b5c2d99fcfd563916ac188c60c3b087",
+      "executable": false
+    }
+  ],
+  "runs": [
+    {
+      "name": "staged-cpu-guards",
+      "argv": [
+        "{remote}/staged-image-test",
+        "--cpu-only"
+      ],
+      "timeout_s": 30
+    },
+    {
+      "name": "staged-image-consumer",
+      "argv": [
+        "{remote}/staged-image-test",
+        "{remote}/shaders",
+        "--device",
+        "0",
+        "--full"
+      ],
+      "timeout_s": 120
+    }
+  ]
+}

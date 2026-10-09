@@ -1,0 +1,10 @@
+test_complete_synthetic_capture_and_negative_command_controls (test_android_audit.AndroidAudit.test_complete_synthetic_capture_and_negative_command_controls) ... ok
+test_raw_digest_and_deployed_name_are_bound (test_android_audit.AndroidAudit.test_raw_digest_and_deployed_name_are_bound) ... ok
+test_replace_restore_cannot_change_the_parsed_hashed_bytes (test_android_audit.AndroidAudit.test_replace_restore_cannot_change_the_parsed_hashed_bytes) ... ok
+test_result_population_and_scope (test_android_audit.AndroidAudit.test_result_population_and_scope) ... ok
+test_unqualified_artifact_identity_rejected (test_android_audit.AndroidAudit.test_unqualified_artifact_identity_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.300s
+
+OK
