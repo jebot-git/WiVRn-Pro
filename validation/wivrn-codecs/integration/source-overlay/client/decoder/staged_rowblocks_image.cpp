@@ -2,6 +2,7 @@
 #include "staged_rowblocks_image.h"
 #include <array>
 #include <cstring>
+#include <exception>
 #include <limits>
 #include <stdexcept>
 #include <string>
