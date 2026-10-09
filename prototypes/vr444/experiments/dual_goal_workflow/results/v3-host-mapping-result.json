@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "cmake",
+    "--build",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-v3-build/build/codec-server",
+    "--target",
+    "wivrn-server",
+    "openxr_wivrn",
+    "monado",
+    "-j4"
+  ],
+  "returncode": 0,
+  "elapsed_s": 200.43121417600196,
+  "scope": "isolated v3 97-file source-mapping union"
+}

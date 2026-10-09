@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "status": "diagnostic_recovery_only",
+  "original_run": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v3-build/native-quality1152-suite/rrb4-q1-chroma-grid-r1",
+  "original_hashes_sha256": "375a6995d25ff4642aeb206a5c994bdaf6f7b425856a062a751fcacae95adb57",
+  "original_summary_sha256": "e28da1ada5d36f75936d53bc892cf7cbbc289d80e1f78d83dabad36f71e8b9fc",
+  "original_cleanup_sha256": "50c6f46f85455cfc4529429dbfdc7f378df1b312b0813dbec59f3288a188e670",
+  "original_campaign_sha256": "62aaa33cb7fc7c68e143e07e8ba455e2c9cb6754c451b67cca38e021b363b8e6",
+  "acquisition_status": "fail_capture_transfer_timeout",
+  "user_observation": {
+    "response": "Colored grid visible",
+    "scope": "visibility only; no artifact assessment in this reply",
+    "recorded_utc": "2026-10-09T16:32:48.050213+00:00"
+  },
+  "recovery_receipt_sha256": "ede3611b8e016b1c63ce74985e27906e358468f786c17f29a0b290e60a953324",
+  "recovered_decode_rows_by_eye": [
+    1328,
+    1328
+  ],
+  "recovered_presentation_rows": 1213,
+  "recovery_qualifies_original_failed_run": false,
+  "next_step": "fresh six-run acquisition after compressed archive transfer fix",
+  "restoration": {
+    "analysis_sources_unchanged": true,
+    "final_config_matches_initial": true,
+    "own_reverse_absent": true,
+    "dedicated_app_stopped": true,
+    "production_package_unchanged": true,
+    "final_check_errors": []
+  }
+}

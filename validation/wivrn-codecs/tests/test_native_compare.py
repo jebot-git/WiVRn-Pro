@@ -1,9 +1,11 @@
 """Guard against cross-mode configuration leakage and insufficient comparison evidence."""
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
 import tempfile
+import tarfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -11,6 +13,48 @@ from unittest.mock import patch
 spec = importlib.util.spec_from_file_location('native_compare', Path(__file__).resolve().parents[1]/'integration/native_compare.py')
 compare = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(compare)
+
+
+class NativeClientTransfer(unittest.TestCase):
+    def test_compressed_transfer_preserves_binary_evidence(self):
+        payload = bytes(range(256))*32
+        stream = io.BytesIO()
+        with tarfile.open(fileobj=stream, mode='w:gz') as archive:
+            entry = tarfile.TarInfo('codec-test/capture.rgba'); entry.size = len(payload)
+            archive.addfile(entry, io.BytesIO(payload))
+        def transfer(argv, **kwargs):
+            self.assertIn('-czf', argv)
+            self.assertEqual(kwargs['timeout'], 90)
+            self.assertTrue(kwargs['check'])
+            kwargs['stdout'].write(stream.getvalue())
+        with tempfile.TemporaryDirectory() as folder, patch.object(compare.subprocess, 'run', side_effect=transfer):
+            out = Path(folder)
+            compare.capture_client(['adb', '-s', 'test-device'], out)
+            self.assertEqual((out/'client/codec-test/capture.rgba').read_bytes(), payload)
+            self.assertEqual((out/'client-transfer-stderr.txt').read_bytes(), b'')
+
+    def test_failed_or_timed_out_transfer_retains_partial_evidence_without_extraction(self):
+        for error in (compare.subprocess.TimeoutExpired(['adb'], 90),
+                      compare.subprocess.CalledProcessError(1, ['adb'])):
+            def transfer(argv, **kwargs):
+                kwargs['stdout'].write(b'partial archive')
+                kwargs['stderr'].write(b'transfer diagnostic')
+                raise error
+            with self.subTest(error=type(error).__name__), tempfile.TemporaryDirectory() as folder:
+                out = Path(folder)
+                with patch.object(compare.subprocess, 'run', side_effect=transfer), patch.object(compare.tarfile, 'open') as extract:
+                    with self.assertRaises(type(error)):
+                        compare.capture_client(['adb'], out)
+                    extract.assert_not_called()
+                self.assertEqual((out/'client.tar').read_bytes(), b'partial archive')
+                self.assertEqual((out/'client-transfer-stderr.txt').read_bytes(), b'transfer diagnostic')
+
+    def test_corrupt_successful_transfer_is_still_failure(self):
+        def transfer(argv, **kwargs):
+            kwargs['stdout'].write(b'not a complete gzip archive')
+        with tempfile.TemporaryDirectory() as folder, patch.object(compare.subprocess, 'run', side_effect=transfer):
+            with self.assertRaises(tarfile.ReadError):
+                compare.capture_client(['adb'], Path(folder))
 
 
 class NativeComparisonConfiguration(unittest.TestCase):

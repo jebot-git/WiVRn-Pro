@@ -40,8 +40,23 @@ def sha(path):
         return hashlib.file_digest(f, 'sha256').hexdigest()
 
 
-def command(argv, **kwargs):
-    return subprocess.run([str(x) for x in argv], check=True, timeout=30, **kwargs)
+def command(argv, *, timeout=30, **kwargs):
+    return subprocess.run([str(x) for x in argv], check=True, timeout=timeout, **kwargs)
+
+
+def capture_client(adb, output):
+    """Copy stopped-app evidence losslessly within a bounded wireless transfer.
+
+    Keep the archive name for existing consumers; tarfile detects gzip itself.
+    A failed or timed-out transfer remains an acquisition failure, with its
+    partial archive and stderr retained and no extraction attempted.
+    """
+    with (output/'client.tar').open('wb') as archive, (output/'client-transfer-stderr.txt').open('wb') as errors:
+        command(adb+['exec-out', 'run-as', PACKAGE, 'tar', '-C', 'files', '-czf', '-',
+                     'codec-test', 'codec-test-present.jsonl'],
+                stdout=archive, stderr=errors, timeout=90)
+    with tarfile.open(output/'client.tar') as archive:
+        archive.extractall(output/'client', filter='data')
 
 
 def read_rows(path):
@@ -644,13 +659,7 @@ def run(args):
                         cleanup('remove config '+name, lambda name=name: ac('shell', 'run-as', PACKAGE, 'rm', '-f', 'files/'+name))
                     else:
                         cleanup('restore config '+name, lambda name=name, data=data: write_config(name, data))
-                def capture():
-                    with (output/'client.tar').open('wb') as f:
-                        ac('exec-out', 'run-as', PACKAGE, 'tar', '-C', 'files', '-cf', '-',
-                           'codec-test', 'codec-test-present.jsonl', stdout=f, stderr=subprocess.PIPE)
-                    with tarfile.open(output/'client.tar') as archive:
-                        archive.extractall(output/'client', filter='data')
-                cleanup('capture client', capture)
+                cleanup('capture client', lambda: capture_client(adb, output))
             def logs():
                 with (output/'wivrn-logcat.txt').open('w') as f:
                     ac('logcat', '-d', '-s', 'WiVRn', stdout=f)

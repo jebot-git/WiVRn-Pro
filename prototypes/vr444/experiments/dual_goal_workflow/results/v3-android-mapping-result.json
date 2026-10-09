@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-v3-build/gradlew",
+    "-p",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-v3-build",
+    "assembleDebug",
+    "--offline",
+    "--no-daemon",
+    "--max-workers=4",
+    "-Pwivrn_app_name=WiVRn Codec Tests",
+    "-Pwivrn_version=26.9-codec-test1",
+    "-Pwivrn_offline=1",
+    "-Pwivrn_codec_tests=1",
+    "-Pfetchcontent_base_dir=/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-v3-build/build/android-deps"
+  ],
+  "returncode": 0,
+  "elapsed_s": 187.1270164179732,
+  "scope": "isolated v3 97-file source-mapping union"
+}
