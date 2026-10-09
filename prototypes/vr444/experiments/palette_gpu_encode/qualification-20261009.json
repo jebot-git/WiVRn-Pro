@@ -1,0 +1,226 @@
+{
+  "schema": 1,
+  "created_utc": "2026-10-09T06:18:37.762050+00:00",
+  "scope": "offline canonical RPT1 GPU encoder correctness, host source and full-capacity readback",
+  "headset_used": false,
+  "performance_claim": false,
+  "promotion_blocked": true,
+  "local_raw_directory": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-palette-gpu-encode",
+  "runs": [
+    {
+      "path": "validation/results/sub15-palette-gpu-encode/arc-final-full.json",
+      "sha256": "98a272aa9d29bcb07a4c8e53be821febbfabb93d81f190d170a437012c80194b",
+      "bytes": 117228,
+      "correctness_pass": true,
+      "case_count": 186,
+      "measured_stereo_iterations": 186,
+      "devices": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)"
+      ],
+      "software": false,
+      "maximum_scan_blocks": 64,
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false
+    },
+    {
+      "path": "validation/results/sub15-palette-gpu-encode/uhd-final-small.json",
+      "sha256": "06caa38852f3f9a0253105a81d32fa3c80e84b71152991ab781e80c14219cc9f",
+      "bytes": 81046,
+      "correctness_pass": true,
+      "case_count": 130,
+      "measured_stereo_iterations": 130,
+      "devices": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)"
+      ],
+      "software": false,
+      "maximum_scan_blocks": 2,
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false
+    }
+  ],
+  "cpu_asan_ubsan": {
+    "cpu_fixture_pass": true,
+    "fixture_count": 186,
+    "canonical_modes": 6,
+    "vulkan_initialized": false,
+    "headset_used": false
+  },
+  "admission_asan_ubsan": {
+    "pass": true,
+    "invalid_source_cases": 7,
+    "negative_capability_cases": 10,
+    "independent_body_assembly": true,
+    "vulkan_initialized": false
+  },
+  "leak_detection": "disabled: environment executes under ptrace",
+  "builds": {
+    "host": true,
+    "android_api29_arm64": true,
+    "warnings_as_errors": true,
+    "spirv_val_vulkan_1_1_modules": 3,
+    "pass": true
+  },
+  "python_tests": {
+    "count": 3,
+    "rejected_mutations": 21,
+    "passed": true
+  },
+  "sources": [
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/README.txt",
+      "sha256": "cdb81a63e9c9820aea19b497ff0a37c3a02c50e6091baf9805956c4e870dcf25",
+      "bytes": 8150
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/admission_test.cpp",
+      "sha256": "be74c3560a2ef2e7b7c6879651968c2acdab9b60e5715b5c36c80e6ba354c9a0",
+      "bytes": 2513
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/audit.py",
+      "sha256": "c6b65e0f46a30ce4d70124436ac00ffe1be060de1a7ceaa9be2705f20cad2d47",
+      "bytes": 3971
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build.sh",
+      "sha256": "7e68d870c28c19f329bcf89c133f38c7a32c41723982fe73ccd3e2be7895ff9a",
+      "bytes": 1186
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/compact.comp",
+      "sha256": "9810b9c61375bf693609edc95907f0a0e6c7a8a5d2925a06bb025a2148abcb35",
+      "bytes": 1311
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/encode.comp",
+      "sha256": "f0b86c19578308cdcfb7e0d909edd64178aa258f398cf8ea61777c1c71c3851d",
+      "bytes": 2766
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/encoder.hpp",
+      "sha256": "7263f5ab85c52e897bf57f750aa0c063733efd26f60ea3cee8d4e08b8c767df1",
+      "bytes": 12483
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/probe.cpp",
+      "sha256": "7e11aae7e9e32bab168d82ca0c23f34e0403e0bcd03ab917dbd3036e8cca5c40",
+      "bytes": 7979
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/scan.comp",
+      "sha256": "793440766ffb30808dd4347542d88b43ad03e6bf1c185db9175e487fb509b295",
+      "bytes": 929
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/test_audit.py",
+      "sha256": "9beb279731b4b5f6090ce07c8a268a9099ef0c907696fe8adacc025bb22891b7",
+      "bytes": 2689
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp",
+      "sha256": "47fb6b5c601e78c4c1b0ac85b7f0056072deb4a7fb9d9bb96e8cdf67547496a0",
+      "bytes": 29394
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.cpp",
+      "sha256": "9235f3dd3aa3eec1f8ff343e3e7507519a1c831c1af0c05ab03888f36f6eb80a",
+      "bytes": 9452
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.hpp",
+      "sha256": "d74b1b524ec5664b489a8d5c827ce753c526984ca422bfef4497e889fda1ff10",
+      "bytes": 1718
+    },
+    {
+      "path": "prototypes/vr444/experiments/native_lz4/wpc.hpp",
+      "sha256": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+      "bytes": 5435
+    },
+    {
+      "path": "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp",
+      "sha256": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+      "bytes": 10900
+    },
+    {
+      "path": "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp",
+      "sha256": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+      "bytes": 935
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/manifest.json",
+      "sha256": "0072489466e2edd827201506e6bad40aa44ca718dc958ff5c33bc8922323c0c4",
+      "bytes": 2047
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/manifest.json",
+      "sha256": "dcf949bde96e19e289fdeda730098910d82c7d9572b7f5c1d39d5810e2ebb5a5",
+      "bytes": 1194
+    }
+  ],
+  "captured_manifest": {
+    "path": "/tmp/sub15-rgb-palette-gpu-corpus-manifest.json",
+    "sha256": "f3e7ffc5ef06407fcc83ba93d7b1298aa6837e227a5ab18182fd64888a9c0787",
+    "bytes": 6456
+  },
+  "binaries": [
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/admission-test",
+      "sha256": "c821a807642195bea7187d6a99d476828455f76ec6448c3d3cbfd9fff04e203f",
+      "bytes": 40272
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/admission-test-asan",
+      "sha256": "dab3b79bd1227d595fd2f92d4ab6549302fd8ca1ceee4e6b9a7b2c676df6c1e7",
+      "bytes": 2180840
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/palette-encode-android",
+      "sha256": "c9858fcd8bfcdf9e2434ff8c0d1a5480eb21dd4cbd12789ad296dd774dc3cc24",
+      "bytes": 6871128
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/palette-encode-asan",
+      "sha256": "8638633d540cbb00e4783461a4239e7df04f1a1c550b1849662dc17aab5dc633",
+      "bytes": 3254776
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/palette-encode-host",
+      "sha256": "6c2d7d16542c3931a9472478c919eb3c7dc3647d5fa43bd4a0f6ea0ea7912f43",
+      "bytes": 136768
+    }
+  ],
+  "shader_modules": [
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/shaders/compact.spv",
+      "sha256": "b1c44740ba3c4f504ef0cda4740e8576d78757dd74568f13e23c8a4fe3ab1106",
+      "bytes": 3300,
+      "spirv_val": true,
+      "capabilities": [
+        "OpCapability Shader"
+      ]
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/shaders/encode.spv",
+      "sha256": "23babf51175ae1c38020df4e11c4ea2a26d0ddb51618e96304ebdb5eb64d1348",
+      "bytes": 14004,
+      "spirv_val": true,
+      "capabilities": [
+        "OpCapability Shader"
+      ]
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/shaders/scan.spv",
+      "sha256": "ec029a18e8703307552d4933f57030c4a77f676056a0e130bca0549dd7bd0f63",
+      "bytes": 3216,
+      "spirv_val": true,
+      "capabilities": [
+        "OpCapability Shader"
+      ]
+    }
+  ],
+  "cost_scope": "GPU timestamp includes poison/clear, encode, scan, compact and full-capacity readback; CPU upload, source checks, assembly/CRC reported; no CPU reference comparison timing or renderer integration claimed"
+}

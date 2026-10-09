@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: MIT
+#version 450
+// Canonical RPT1 tile records; one workgroup/tile, no optional shader feature.
+layout(local_size_x=128) in;
+layout(set=0,binding=0,std430) readonly buffer Input { uint rgba[]; };
+layout(set=0,binding=1,std430) writeonly buffer Records { uint records[]; };
+layout(set=0,binding=2,std430) writeonly buffer Lengths { uint lengths[]; };
+layout(push_constant) uniform Params { uint width,height,tiles,blocks; } pc;
+shared uint pixels[256],indexes[256],palette[16],run_starts[256],run_lengths[256];
+shared uint mode,bytes,colors,bits,runs;
+uint rgb_byte(uint color,uint c) { return (color>>(8*c))&255; }
+uint payload_byte(uint i) {
+    if(i>=bytes)return 0;
+    if(mode==0)return rgb_byte(pixels[i/3],i%3);
+    if(mode==1)return rgb_byte(pixels[0],i);
+    if(mode==5) { uint r=i/4,c=i%4; return c==0?run_lengths[r]-1:rgb_byte(pixels[run_starts[r]],c-1); }
+    if(i==0)return colors;
+    if(i<1+3*colors)return rgb_byte(palette[(i-1)/3],(i-1)%3);
+    uint first=(i-1-3*colors)*8/bits,value=0;
+    for(uint j=0;j<8/bits;++j)value|=indexes[first+j]<<(j*bits);
+    return value;
+}
+void main() {
+    uint tile=gl_WorkGroupID.x,lane=gl_LocalInvocationID.x;
+    if(tile>=pc.tiles)return;
+    uint columns=(pc.width+15)/16,x=(tile%columns)*16,y=(tile/columns)*16;
+    uint width=min(16,pc.width-x),height=min(16,pc.height-y),count=width*height;
+    for(uint i=lane;i<256;i+=128) { pixels[i]=i<count?rgba[(y+i/width)*pc.width+x+i%width]:0; indexes[i]=0; }
+    barrier();
+    if(lane==0) {
+        bool constant=true; for(uint i=1;i<count;++i)constant=constant&&pixels[i]==pixels[0];
+        mode=0;bytes=count*3;colors=0;bits=0;runs=0;
+        if(constant) { mode=1;bytes=3; }
+        else {
+            for(uint i=0;i<count;++i) {
+                uint j=0;while(j<colors&&palette[j]!=pixels[i])++j;
+                if(j==colors) { if(colors==16) { colors=17;break; } palette[colors++]=pixels[i]; }
+                indexes[i]=j;
+            }
+            if(colors<=16) {
+                bits=colors<=2?1:colors<=4?2:4;
+                uint candidate=1+3*colors+(count*bits+7)/8;
+                if(candidate<bytes) { bytes=candidate;mode=bits==1?2:bits==2?3:4; }
+            }
+            for(uint i=0;i<count;) {
+                uint end=i+1;while(end<count&&pixels[end]==pixels[i])++end;
+                run_starts[runs]=i;run_lengths[runs]=end-i;++runs;i=end;
+            }
+            if(runs*4<bytes) { bytes=runs*4;mode=5; }
+        }
+        records[tile*193]=bytes|(mode<<16); lengths[tile]=bytes+4;
+    }
+    barrier();
+    for(uint word=lane;word<(bytes+3)/4;word+=128) {
+        uint p=word*4;
+        records[tile*193+1+word]=payload_byte(p)|(payload_byte(p+1)<<8)|(payload_byte(p+2)<<16)|(payload_byte(p+3)<<24);
+    }
+}

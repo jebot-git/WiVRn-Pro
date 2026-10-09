@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: MIT
+#version 450
+layout(local_size_x=128) in;
+layout(set=0,binding=2,std430) readonly buffer Lengths { uint lengths[]; };
+layout(set=0,binding=3,std430) writeonly buffer Offsets { uint offsets[]; };
+layout(set=0,binding=4,std430) writeonly buffer Blocks { uint sums[]; };
+layout(push_constant) uniform Params { uint width,height,tiles,blocks; } pc;
+shared uint scan[256],scratch[256];
+void main() {
+    uint lane=gl_LocalInvocationID.x,start=gl_WorkGroupID.x*256;
+    for(uint i=lane;i<256;i+=128)scan[i]=start+i<pc.tiles?lengths[start+i]:0;
+    barrier();
+    for(uint step=1;step<256;step*=2) {
+        for(uint i=lane;i<256;i+=128)scratch[i]=scan[i]+(i>=step?scan[i-step]:0);
+        barrier();for(uint i=lane;i<256;i+=128)scan[i]=scratch[i];barrier();
+    }
+    for(uint i=lane;i<256;i+=128)if(start+i<pc.tiles)offsets[start+i]=i==0?0:scan[i-1];
+    if(lane==0)sums[gl_WorkGroupID.x]=scan[255];
+}

@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: MIT
+#version 450
+layout(local_size_x=128) in;
+layout(set=0,binding=1,std430) readonly buffer Records { uint records[]; };
+layout(set=0,binding=2,std430) readonly buffer Lengths { uint lengths[]; };
+layout(set=0,binding=3,std430) readonly buffer Offsets { uint offsets[]; };
+layout(set=0,binding=4,std430) readonly buffer Blocks { uint sums[]; };
+layout(set=0,binding=5,std430) buffer Output { uint output_words[]; };
+layout(push_constant) uniform Params { uint width,height,tiles,blocks; } pc;
+shared uint destination;
+void main() {
+    uint tile=gl_WorkGroupID.x,lane=gl_LocalInvocationID.x;
+    if(tile>=pc.tiles)return;
+    if(lane==0) {
+        destination=offsets[tile];for(uint b=0;b<tile/256;++b)destination+=sums[b];
+        if(tile==0) { uint total=0;for(uint b=0;b<pc.blocks;++b)total+=sums[b];output_words[0]=total; }
+    }
+    barrier();
+    uint shift=(destination%4)*8,at=1+destination/4;
+    for(uint i=lane;i<(lengths[tile]+3)/4;i+=128) {
+        uint value=records[tile*193+i];
+        // Output was cleared and made visible before this dispatch. Adjacent
+        // tile records may share a word, so disjoint byte fields use atomic OR.
+        atomicOr(output_words[at+i],value<<shift);
+        if(shift!=0)atomicOr(output_words[at+i+1],value>>(32-shift));
+    }
+}
