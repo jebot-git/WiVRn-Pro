@@ -85,3 +85,41 @@ RRB wire cost differs from RRF and is reported per source and partition. A bette
 client-only result would not establish a whole-pipeline improvement or sub-15 ms
 readiness. Existing transport size caps still apply to every complete stereo
 packet; large/noise packets require rejection or an explicit fallback.
+
+2026-10-09 result
+-----------------
+Qualification receipt: qualification-20261009.json (source milestone 5831edd).
+Arc 170 profiles x 10 arms x 2 reuse rounds: 3,400 exact invocations. UHD and
+ASan/UBSan each 26 paired profiles x 10 arms x 4 rounds: 1,040 exact. Five audit tests
+include 52 rejection mutations. Host/Android compilation and eight Vulkan 1.1
+SPIR-V validators pass; every module requests only the core Shader capability.
+The independent compositor-team source review found no blocker.
+
+Coordinated Arc batch: 09:11:51.276123 to 09:22:56.119282 UTC, 664.842844 seconds.
+Both research teams held execution; desktop workload remained uncontrolled.
+All nineteen local source dependencies, executable, eight SPIR-V modules,
+manifests and source-corpus files remained unchanged. All 26 x 10 x 31 = 8,060
+measured invocations plus 780 warmups retained exact image and color outputs.
+Full per-case p50/p95/max, stages, wire bytes and hashes: timing-20261009.json.
+
+Captured median of pair medians, whole stereo readiness including poison (ms):
+  path                        Q1 (4 pairs)     Q8 (8 pairs)
+  RRF CPU SIMD copy              3.038800         3.254680
+  RRF c4 GPU UNORM               2.785115         2.929710
+  RRB16 GPU UNORM                2.718050         2.871065
+  RRB32 GPU UNORM                2.686000         2.846720
+  RRB64 GPU UNORM                2.761340         2.966415
+  RRB128 GPU UNORM               3.082895         3.250015
+  RRB32 CPU SIMD copy            3.139820         3.308435
+
+RRB32 GPU improves all 12 captured p50 and p95 values against RRF CPU copy and
+same-format RRB32 CPU copy in this batch. Against the existing RRF c4 GPU path,
+it improves 10/12 p50 and 8/12 p95 values; four p95 values regress. The median of
+the twelve paired per-case p50 differences is only -0.021630ms. That statistic
+is distinct from subtracting the two quality-group median-of-medians above.
+
+RRB32 also raises captured wire totals relative to RRF: Q1 55,655 to 66,332 bytes
+(+19.2%); Q8 418,483 to 439,947 (+5.1%). The 128-row arm reduces this inflation but
+is slower here. These tradeoffs block global promotion. Do not add this image
+table to separate server-worker server+client medians: their client decode work
+overlaps this endpoint. UHD has correctness qualification only in this branch.
