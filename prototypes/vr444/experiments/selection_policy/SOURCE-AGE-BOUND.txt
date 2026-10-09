@@ -1,0 +1,67 @@
+Known-source receipt-age optimum brackets, 2026-10-09
+
+SOURCE-RECEIPT-AGE rescored existing paths but did not optimize its separate
+metric. This follow-up derives rigorous lower and upper bounds without
+claiming a new exact source-age optimizer.
+
+For every known encoded frame, the earliest known receipt of its canonical
+application-source set is no later than that frame's own receipt. Therefore
+known-source age is at least encoded age, component by component, on every
+legal path and phase. Nearest-rank p95 is monotone under such increases.
+The exact global encoded-age minimum is consequently a lower bound on the
+source-age minimum over the same feasible set. Independently rescoring one
+legal witness supplies an upper bound. The code verifies receipt dominance
+across the entire known population, not only the selected witness.
+
+Model                           minimum known-source p95 interval, ms
+  encoded, one target horizon              [19.241095, 19.311512]
+  encoded, no target ceiling               [14.852189, 14.974637]
+  distinct source, two horizons            [15.924690, 15.998856]
+  distinct source, no target ceiling       [15.924690, 15.998856]
+
+All endpoints are inclusive bounds. None of these intervals collapses to
+one value, so no exact source-age optimum is reported. The legal upper-bound
+witness phases are respectively 0, 4.387188, 5.488282 and 5.488282 ms.
+
+Under this declared model, a strict source-age p95 below 15 ms is impossible
+for the one-horizon encoded model and for both source-distinct models. The
+unbounded-target encoded model has a legal witness below 15 ms even after
+known-source age is used (14.974637 ms). That witness still permits repeated
+source generations, unlimited retention and later-observed information.
+Neither verdict is a headset or optical-latency claim.
+
+The scope is unchanged from EXACT-PHASE: every integer-nanosecond common
+selection/submit shift from 0 through 11,111,111, zero receive-to-publication
+delay clipped to each participating eye's original receipt, fixed runtime
+target sequence, fixed warm membership and actual pre-warm identity history,
+and the sufficient 1,875-choice count for 88 Hz over the full warm span.
+Earlier physical receipts, unseen frames, native ownership/feedback, and
+smaller counts over shorter endpoint spans remain outside these bounds.
+
+The lower-bound basis is pinned byte-for-byte to phase-exact-20261009.json
+at qualified commit 306920270d9a5b4601851e8fe3958f32e9306d5a. A newly supplied
+plausible but altered optimum cannot become a lower-bound premise. The
+original exact solver is not rerun here. All four witness certificates are
+independently reaudited for count, readiness, target/order, source novelty
+when required and original integer encoded p95. Source-age p95 is computed
+directly from integer samples, never rounded summary floats.
+
+Validation: 336 Python tests pass, including five focused tests. Exhaustive
+enumeration of 2,048 bounded finite path populations checks that the true
+source optimum always lies inside the derived interval. Tests include
+strict 15 ms boundaries, an unresolved interval, invalid exact types,
+violated pointwise dominance and altered pinned lower-bound artifact.
+An independent transport-team read-only review found no blocker in the
+monotonicity proof, strict-threshold verdicts or immutable lower-bound basis.
+All 300 original run05 manifest files and implementation hashes are checked
+before/after. Original failed evidence remains unmodified.
+
+Reproduce with new outputs outside immutable acquisition:
+
+  python3 prototypes/vr444/experiments/selection_policy/validate_source_age_bound.py --out /tmp/source-age-bound-validation.json
+  python3 prototypes/vr444/experiments/selection_policy/source_age_bound.py /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced --exact-phase prototypes/vr444/experiments/selection_policy/phase-exact-20261009.json --out /tmp/source-age-bound.json
+
+The structured result and validation receipt are source-age-bound-20261009.json
+and source-age-bound-validation-20261009.json. No runtime code, transport,
+policy limit or native integration artifact is changed. No device operation,
+performance measurement or production qualification is performed.
