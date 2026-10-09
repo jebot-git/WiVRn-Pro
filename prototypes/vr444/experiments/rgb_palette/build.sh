@@ -13,4 +13,6 @@ clang++ "${flags[@]}" -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointe
 clang -O3 -DNDEBUG -c "$lz/vendor/lz4.c" -o "$out/lz4.o"
 clang++ "${flags[@]}" -O3 -DNDEBUG "$exp/rgb_palette.cpp" "$exp/bench.cpp" \
   "$ref/codec.cpp" "$direct/direct.cpp" "$out/lz4.o" -o "$out/bench"
-printf '%s\n' "$out/test" "$out/bench"
+clang++ "${flags[@]}" -O2 "$exp/rgb_palette.cpp" "$exp/export.cpp" \
+  "$ref/codec.cpp" -o "$out/export"
+printf '%s\n' "$out/test" "$out/bench" "$out/export"

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "independent_of_cpp_encoder": true,
+  "cases": [
+    {
+      "name": "raw",
+      "width": 3,
+      "height": 2,
+      "mode": 0,
+      "rpt": "raw.rpt",
+      "rgba": "raw.rgba",
+      "rpt_sha256": "cd6a0f5c411e974f4c23a5c80c2c3673f8ecc94452aa729a0791818c5401605e",
+      "rgba_sha256": "868a4061d0f5e9e70214d4020cf8daacce1dc97aa2b433d9a924d6d1c5fd2bbe"
+    },
+    {
+      "name": "constant",
+      "width": 3,
+      "height": 2,
+      "mode": 1,
+      "rpt": "constant.rpt",
+      "rgba": "constant.rgba",
+      "rpt_sha256": "b47f3a8e8c1df2714bb00a877c49a9db8c1937b4680435d8ff13ed8bd799e67f",
+      "rgba_sha256": "ff6530419f4962c649dc3a4c6ec239b36865fb610bc98621c028c2899713b79c"
+    },
+    {
+      "name": "palette2",
+      "width": 3,
+      "height": 2,
+      "mode": 2,
+      "rpt": "palette2.rpt",
+      "rgba": "palette2.rgba",
+      "rpt_sha256": "e5e7a4333e84571d1106cbcaec81561b6fe2d4c429a808f6cc31ad7a6f70f46f",
+      "rgba_sha256": "d0dea3e50cd76474df1a6c93340f5022248c5bafb4d5c085a9fc4cbc5e36e2e0"
+    },
+    {
+      "name": "palette4",
+      "width": 5,
+      "height": 3,
+      "mode": 3,
+      "rpt": "palette4.rpt",
+      "rgba": "palette4.rgba",
+      "rpt_sha256": "bca0992c4810b50ca0ff6edf66bece5c983be4f8b54e852f37f304afa13f6852",
+      "rgba_sha256": "fbc8b9bbef3ae42a47f72d5d819556c9d8374a0ace3592d26b8168c4a31f5a7a"
+    },
+    {
+      "name": "palette16",
+      "width": 5,
+      "height": 3,
+      "mode": 4,
+      "rpt": "palette16.rpt",
+      "rgba": "palette16.rgba",
+      "rpt_sha256": "fa55e533c9a16f33dec1408da6a5df9be145a25f394da33d4d50825b08640bef",
+      "rgba_sha256": "81ee5ee04d75adaae785eb3dd11734b7e80b8953fae1aa3fb03438b53d05946e"
+    },
+    {
+      "name": "runs",
+      "width": 5,
+      "height": 3,
+      "mode": 5,
+      "rpt": "runs.rpt",
+      "rgba": "runs.rgba",
+      "rpt_sha256": "6a1512801e6718d212f6816871cb07664d029e231e7fb519790cba1d1922222c",
+      "rgba_sha256": "ee7e1fb9c2ff1affe92701b9beaf586b9eda70a03e963fc4b89563758d2e0ffe"
+    }
+  ],
+  "cpp_verified": true
+}

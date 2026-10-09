@@ -14,11 +14,14 @@ static void set32(Bytes& p,size_t at,uint32_t v){for(int i=0;i<4;++i)p[at+i]=uin
 static void repair(Bytes& p) {set32(p,24,wpc::crc(std::span(p).subspan(32)));set32(p,28,wpc::crc(std::span(p).first(28)));}
 template<class F> static void reject(F fn) { bool failed=false;try{fn();}catch(const std::runtime_error&){failed=true;}need(failed);++rejections; }
 static void reject_wire(const Bytes& p,size_t pixels=256) {
-    reject([&]{decode(p);});std::vector<uint32_t> out(pixels,0x12345678u);
+    reject([&]{decode(p);});reject([&]{inspect(p);});std::vector<uint32_t> out(pixels,0x12345678u);
     reject([&]{decode_into(p,out);});for(auto c:out)need(c==0x12345678u);
 }
 static Bytes trip(std::vector<uint32_t> p,unsigned w,unsigned h) {
     auto wire=encode(p,w,h);auto out=decode(wire);need(out.width==w&&out.height==h&&out.rgba==p);
+    auto layout=inspect(wire);need(layout.width==w&&layout.height==h);
+    size_t covered=0;for(auto&t:layout.tiles){need(t.byte_offset>=36&&size_t(t.byte_offset)+t.byte_length<=wire.size());need(t.pixel_data_offset>=t.byte_offset&&t.pixel_data_offset<t.byte_offset+t.byte_length);covered+=size_t(t.width)*t.height;}
+    need(covered==p.size());
     std::vector<uint32_t> into(p.size(),0x12345678u);decode_into(wire,into);need(into==p);++roundtrips;return wire;
 }
 int main(){try{
