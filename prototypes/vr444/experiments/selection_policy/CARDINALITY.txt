@@ -1,0 +1,138 @@
+EXACT SMALL-SKIP COUNT / AGE FRONTIER -- 2026-10-09
+
+Question
+The full-deadline model is stricter than the 88Hz cadence reference. This
+experiment solves every exact count from 1,900 down to 1,875 choices across
+the same warm deadlines, rather than assuming that a loose good-count ceiling
+can be filled with arbitrary additional frames.
+
+For the preserved 21.284347901-second warm deadline span, a sufficient count
+for (N-1)/span >= 88Hz is:
+  ceil(88 * 21.284347901) + 1 = 1875
+This allows up to 25 explicit skips. It is sufficient, not a claim that all
+lower counts fail the cadence floor: a path whose first/last endpoints form
+a shorter interval could also meet it. The analysis recomputes actual
+conditional first-to-last cadence for every audited certificate.
+
+No native policy, headset state or qualification limit changes. The strict
+under-15ms age test is this research question, not a rewrite of the existing
+historical LATENCY-POLICY.json thresholds. All paths remain hypothetical.
+
+Checked exact solver
+cardinality_oracle.h is a standalone host-only C++ dynamic program. It requires
+strictly increasing frame IDs and globally nondecreasing source targets in
+the admitted known universe. That target property is checked, not assumed or
+silently imposed by sorting. Nonmonotonic inputs fail instead of receiving an
+incorrect one-dimensional optimization.
+
+At each observed deadline, states distinguish exact skip count and ending
+frame. A skip transition preserves the ending frame and score. A choose
+transition takes a strictly later ready frame and adds its integer under-age
+indicator. Previous/current arrays are swapped only after the whole deadline,
+so a frame cannot be selected twice within one deadline. Empty prefixes are
+represented explicitly by the first-choice rule after initial skips.
+
+Let K be the minimum requested count, N the known identities and c the number
+already chosen. Any path that can finish with at least K choices has ending
+rank in [c-1, N-K+c-1], clipped to [0,N-1]. This necessary band is broad enough
+for every exact skip budget in the frontier. Prefix maxima consume previous
+states at strictly lower rank; globally nondecreasing targets make that rank
+condition sufficient for target order too. For a fixed deadline, skip count
+and ending frame, only the best good-count score is retained because future
+feasibility is identical.
+
+Every final count has its own optimum and backtracked certificate. The solver
+rechecks cardinality, deadline/frame/target order, readiness and exact score.
+Its parent storage fails above 25 million slots; it never silently reduces
+the search. Frame/deadline populations are bounded at 10,000 and skips at 64.
+
+Warm-start alternatives
+relaxed_known_universe keeps all ever-observed complete pairs, including old
+startup identities. This preserves the optimistic earlier sensitivity model,
+but its choices cannot be called actual new warm first submissions.
+
+observed_submission_prefix excludes every frame actually submitted before the
+warm cutoff, then requires forward frame ID and nonregressing target from the
+last actual pre-warm submission. This preserves actual prior first-use identity
+while retaining the declared hypothetical choices after the cutoff. It still
+does not prove handle ownership, retention, projection quality or runtime
+feasibility.
+
+Both models admit only exact complete per-eye metadata with source joins.
+Unlimited retention and earlier use of later-observed pairs remain relaxed.
+Per-eye hypothetical publication advance is clipped at receipt, including
+alpha when present. Sampling shift moves selection and submit together,
+preserves the observed interval, and respects recorded wait/render/required
+fence admission. Future-target ceilings remain removed; no visual qualification
+is inherited from the existing one-period selector.
+
+Independent audit and provenance
+cardinality.py serializes exact bounded integer populations to the validated
+native solver, then independently recomputes EVERY returned certificate in
+Python. It rejects invented identities, missing budgets, score/count mismatches,
+unavailable frames, repeated deadlines/frames and source-target regression.
+It recomputes exact good counts, nearest-rank age distributions, conditional
+cadence and source-target lead. It retains zero-skip, maximum-skip and highest
+conditionally qualifying-count certificates; all other audited paths have
+exact compact-JSON SHA256 hashes for deterministic reproduction.
+
+The executable is bound to its build receipt and C++ source hashes before
+analysis. All 300 original manifest entries are checked, and used inputs,
+manifest, solver, build receipt and loaded source hashes are rechecked after
+analysis. Outputs must be new files outside the immutable run. Missing or
+failed original evidence is not repaired into passing acquisition evidence.
+
+cardinality-validation-20261009.json records:
+  - 1,024 exhaustive small populations under ASan/UBSan, comparing every skip
+    budget to an independent recursive enumeration;
+  - deterministic initial-skip, exact-threshold, target/order, readiness,
+    invalid-input and parent-budget boundaries;
+  - eight malformed strict-integer CLI inputs rejected before a result;
+  - 263 passing Python tests, including adversarial certificate output and
+    pre-warm identity filtering;
+  - compiler invocation/version/binary hash and exact solver executable hash.
+The harness preserves the clang++ invocation name because resolving that
+symlink can select the C driver link mode. Final validation uses the corrected
+invocation; no solver algorithm change was needed for that harness issue.
+
+The transport team independently reviewed strict-prefix initialization,
+previous/current layer isolation, exact skip transitions, rank-band width,
+compact parent bounds, implicit initial skips and the observed warm-prefix
+filter. It found no blocker. This is code review, not new device evidence.
+
+Results
+All ten scenarios complete, with every original manifest entry and every
+returned path checked. The two warm-start alternatives have identical optimum
+good counts on this recording. Maximum strict-under-15ms choices are:
+
+  sampling shift    publication advance    at 1900 choices    at 1875 choices
+    0.000000ms           0ms                    184                848
+    0.000000ms           8ms                    184               1008
+   +5.555555ms           0ms                     26               1600
+   +5.555555ms           2ms                     26               1739
+   +5.555555ms           4ms                     26               1766
+
+At 1,875 choices, nearest-rank p95 strictly below 15ms requires 1,782 good
+choices. No exact count in the tested 1,875..1,900 frontier meets its required
+good count, even with all future-target ceilings removed. The best tested
+phase/publication scenario misses that requirement by 16 choices at the
+maximum permitted skip budget. This is a negative result within the declared
+known-supply model, not a general impossibility proof: a shorter endpoint
+interval with fewer choices, unknown unobserved supply, changed admission or
+different publication/phase scenarios remain outside this frontier.
+
+The large improvement from allowing 25 skips reinforces why the earlier loose
+good-count ceiling and all-deadline optimum cannot be interpolated into a
+cadence-qualified claim. Each count here is solved directly. Certificate age
+percentiles are descriptive; the solver maximizes the number below threshold,
+not every percentile. Original failed acquisition status remains unchanged.
+
+Reproduce offline with a new build directory and new output files:
+  python3 prototypes/vr444/experiments/selection_policy/validate_cardinality.py \
+    --build-dir /tmp/sub15-cardinality-new \
+    --out /tmp/cardinality-validation-new.json
+  python3 prototypes/vr444/experiments/selection_policy/cardinality.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --solver /tmp/sub15-cardinality-new/cardinality-probe \
+    --build-receipt /tmp/cardinality-validation-new.json \
+    --out /tmp/cardinality-new.json

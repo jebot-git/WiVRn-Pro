@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "compiler": "/usr/bin/clang++",
+  "compiler_binary": "/usr/bin/clang-22",
+  "compiler_sha256": "4ea85504401d9f5c05109d6cb05778b241aa8d56fde1da2e5bc7ba46cffd44f5",
+  "compiler_version": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang++.cfg\n",
+  "checks": [
+    {
+      "command": [
+        "/usr/bin/clang++",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang++.cfg\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/usr/bin/clang++",
+        "-std=c++20",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/blux/spatial-bridge/.worktrees/sub15-compositor/prototypes/vr444/experiments/selection_policy/cardinality_test.cpp",
+        "-o",
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-sanitized"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-sanitized"
+      ],
+      "returncode": 0,
+      "stdout": "1024 exhaustive skip/cardinality populations and deterministic boundary checks passed\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/usr/bin/clang++",
+        "-std=c++20",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-O2",
+        "/home/blux/spatial-bridge/.worktrees/sub15-compositor/prototypes/vr444/experiments/selection_policy/cardinality_probe.cpp",
+        "-o",
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 0,
+      "stdout": "{\"schema\":1,\"rank_band_width\":2,\"parent_slots\":8,\"stored_states\":4,\"frontier\":[{\"skips\":0,\"required_count\":2,\"feasible\":true,\"maximum_good\":2,\"certificate\":[[1,1],[2,2]]},{\"skips\":1,\"required_count\":1,\"feasible\":true,\"maximum_good\":1,\"certificate\":[[1,1]]}]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "missing/oversize integer\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "trailing input\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid exact integer\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid exact integer\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "input population bounds\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid exact integer\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "strict frame IDs and globally nondecreasing targets required\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+        "/tmp/sub15-cardinality-validated-v2-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid frame identity/timing\n"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".......................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 263 tests in 4.373s\n\nOK\n"
+    }
+  ],
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/validate_cardinality.py": "7f277f90a376200252c053019e3f99aab119d4d2a6efba10517dc44e2b8bfa5c",
+    "prototypes/vr444/experiments/selection_policy/cardinality_oracle.h": "50ba2b3e25dc555d117502491eca9502932bfbad064868dac15a76a9ce5254b1",
+    "prototypes/vr444/experiments/selection_policy/cardinality_test.cpp": "b5c952822d25602438f82d4c0083f4505cf582a8798fd3762806598115deaafc",
+    "prototypes/vr444/experiments/selection_policy/cardinality_probe.cpp": "b18b6a363cb8277d9f0f05610128619feefdfd2e1e11321bc309cd14f0aa9970",
+    "prototypes/vr444/experiments/selection_policy/cardinality.py": "58545fa8eb40278ea0245f78903e9ace1537785c387293def11c710fb7f9e8b5",
+    "validation/wivrn-codecs/tests/test_cardinality.py": "4703eaf3f0e8cced57165cfc83b076b1d162101825eec7d2c90e6b7b7ece541d"
+  },
+  "solver_path": "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+  "solver_sha256": "2c6cfa6668d7225fbd7edb61efcb76401a66bed5870b0f1c0987330fd3c1d918",
+  "sanitizer": "address,undefined; leak detection disabled for this environment",
+  "exhaustive_small_populations": 1024,
+  "malformed_cli_cases": 8,
+  "headset_operations": false,
+  "native_behavior_changed": false,
+  "measured_speedup": false,
+  "latency_gate_evaluated": false,
+  "scope": "Host-only exact cardinality solver correctness and independent certificate audit."
+}
