@@ -55,6 +55,13 @@ def pacer_tail_adapter():
     return module
 
 
+def source_mapping_adapter():
+    spec = importlib.util.spec_from_file_location('codec_source_mapping_adapter', Path(__file__).with_name('source_mapping_control.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def rrb_settings(args):
     """Explicit payload/output selection, including resets for every control run."""
     enabled = args.mode == 'custom-rrb32'
@@ -409,6 +416,8 @@ def run(args):
     quality_helpers = quality_source_helpers(args, source)
     geometry_helpers = quality_geometry_helpers(args, source)
     tail_helpers = pacer_tail_adapter().validate(args, source)
+    mapping_adapter = source_mapping_adapter()
+    mapping_helpers = mapping_adapter.validate(args, source)
     quality_application_module = quality_cached = None
     if getattr(args, 'quality_application_plan', None) is not None or getattr(args, 'quality_application_plan_sha256', None) is not None:
         quality_application_path = Path(__file__).with_name('quality_application.py')
@@ -472,6 +481,7 @@ def run(args):
         runtime = Path(temporary)
         os.chmod(runtime, 0o700)
         config, client_config, env = build_configuration(args, runtime, source, output)
+        mapping_provenance = mapping_adapter.configure(args, env, output)
         quality_application_record = None
         if quality_cached is not None:
             quality_application_record, config['application'] = quality_application_module.configure(quality_cached, runtime, output)
@@ -483,7 +493,7 @@ def run(args):
                    'client/decoder/android/android_decoder.cpp', 'client/scenes/stream.cpp',
                    'server/compositor/foveation.cpp', 'server/compositor/compositor.cpp',
                    'server/driver/app_pacer.cpp', 'server/driver/codec_source_trace.h',
-                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers + rrb_helpers + quality_helpers + geometry_helpers + tail_helpers
+                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers + rrb_helpers + quality_helpers + geometry_helpers + tail_helpers + mapping_helpers
         save(output/'provenance.json', {
             'schema': 1, 'mode': args.mode, 'source': str(source), 'server_sha256': sha(server),
             'installed_apk_sha256': apk_hash, 'runtime_manifest_sha256': sha(manifest),
@@ -517,6 +527,8 @@ def run(args):
             'selection_phase': args.selection_phase, 'candidate_trace': args.candidate_trace,
             'cpu_output': args.cpu_output, 'selection_policy': args.selection_policy,
             'source_trace': args.source_trace, 'pacer_trace': getattr(args, 'pacer_trace', False),
+            'source_mapping': getattr(args, 'source_mapping', False),
+            **mapping_provenance,
             'pacer_window_frames': getattr(args, 'pacer_window_frames', 0),
             'pacer_tail_adapter_sha256': sha(Path(__file__).with_name('pacer_tail.py')),
             'publication_trace': getattr(args, 'publication_trace', False),
@@ -859,6 +871,10 @@ def run(args):
     if result['pacer_trace']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
         result['promotion_status'] = 'blocked'
+    result['source_mapping'] = mapping_adapter.evaluate(args, output)
+    if result['source_mapping']['status'] not in ('pass', 'off'):
+        result['status'] = 'fail'
+        result['promotion_status'] = 'blocked'
     result['pacer_tail'] = pacer_tail_adapter().evaluate(output, getattr(args, 'pacer_window_frames', 0))
     if result['pacer_tail']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
@@ -921,6 +937,12 @@ def main():
     parser.add_argument('--quality-application-plan-sha256')
     parser.add_argument('--quality-stream-scale', type=float, choices=(0.4, 0.5, 0.6),
                         help='Separate Q1 application quality geometry; never latency eligible')
+    parser.add_argument('--source-mapping', action='store_true',
+                        help='Q1 quality-only actual source mapping; formal byte audit follows capture sealing')
+    parser.add_argument('--source-mapping-build-receipt', type=Path)
+    parser.add_argument('--source-mapping-build-receipt-sha256')
+    parser.add_argument('--source-mapping-app-build-receipt', type=Path)
+    parser.add_argument('--source-mapping-app-build-receipt-sha256')
     args = parser.parse_args()
     result = run(args)
     print(json.dumps(result, indent=2))

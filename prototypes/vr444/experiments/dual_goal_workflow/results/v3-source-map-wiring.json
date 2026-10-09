@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "utc": "2026-10-09T16:20:25.279697+00:00",
+  "tests_passed": 326,
+  "test_log_sha256": "b52da0b7fb2af0097d4e10ddc8418d1a201ff5cc60488ecdd37a98f3e92b0d59",
+  "source_sha256": {
+    "validation/wivrn-codecs/integration/native_compare.py": "910a2504f679b950e86f4060bcfe3541776a635a0c212ab3e444a3c17482eaaf",
+    "validation/wivrn-codecs/integration/source_mapping_control.py": "52a4da25a69f372f9f313ebafeeca6365b8b8dac4539a090f9a971d38c400818",
+    "validation/wivrn-codecs/integration/source_mapping.py": "ca7a542b328d3a546fa12fcf39e78c2869240515f5c057e3fb97fbd68912c785"
+  },
+  "peer_review": "transport_compression independently reviewed pre-ADB controls, native pins, env/provenance wiring, provisional failure gate and all six fixture plans; no blocker",
+  "scope": "Host regression and acquisition wiring; native source-stage and full goal qualification await actual captures",
+  "full_goal_qualified": false
+}
