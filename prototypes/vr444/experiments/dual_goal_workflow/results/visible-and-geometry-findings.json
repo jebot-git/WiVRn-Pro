@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "visible_assessment": {
+    "status": "fail",
+    "source": "user direct report",
+    "observation": "Screen was black during the test",
+    "scope": "No optical success inferred from exact captured images"
+  },
+  "geometry_experiment": {
+    "status": "fail",
+    "requested_stream_scale": 0.5,
+    "observed_capture_geometries": [
+      [
+        576,
+        640
+      ]
+    ],
+    "reason": "Dedicated native client overrides stream dimensions to576x640; server requires same fixed shape. Settings were accepted but requested spatial change did not take effect.",
+    "native_capture_correctness_status": "pass",
+    "historical_summary_preserved": true,
+    "summary_sha256": "164d97c593b7046fb1f9e4237810850f3d8414e58dd09097bbb5a473f6d70754"
+  },
+  "suspected_visible_cause": {
+    "status": "source_confirmed_space_contract_mismatch_optical_causality_pending",
+    "description": "Monado preserves VIEW-relative poses with a view-space layer flag; WiVRn direct projection fast path copies poses without that flag; client submits in world/STAGE space. New LOCAL fixture rerun pending."
+  },
+  "quality_goal_verified": false,
+  "latency_goal_verified": false
+}

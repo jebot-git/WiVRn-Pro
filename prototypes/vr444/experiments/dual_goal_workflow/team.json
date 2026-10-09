@@ -15,7 +15,7 @@
     {
       "agent": "identify_sub15",
       "role": "compositor and publication",
-      "branch": "research/sub15-20261009/pacer-tail-window",
+      "branch": "research/sub15-20261009/pacer-recent-tail",
       "stage": "Opt-in bounded-age pacer estimator and exact source/pacer joins"
     },
     {
@@ -40,5 +40,5 @@
     "Independent same-headset native shader replay and central10 exact comparison",
     "Pacer-tail candidate review, isolated build and bounded A/B tests"
   ],
-  "known_quality_gap": "Native Q1 source/decoder and three submitted pairs verified; independent rendered-reference comparison and complete repeated fixture suite remain pending."
+  "known_quality_gap": "User observed black display; confirmed VIEW/world space-contract mismatch requires new LOCAL fixture test. Stream-scale experiment ineffective due fixed native codec dimensions; captured byte equality remains component-only."
 }
