@@ -23,3 +23,29 @@ shader, compression, transport, pacing and lifetime tests as reviewed changes
 arrive; planned or unsupported coverage is never counted as executed. Standalone
 CPU tests cannot qualify Android NEON, Vulkan image behavior or displayed output.
 See docs/codec/research-20261009/PLAN.txt for the staged research and future gates.
+
+Coverage-guided decoder fuzzing
+  bash validation/wivrn-codecs/research/build-fuzz.sh NEW_FUZZ_DIRECTORY
+  ASAN_OPTIONS=detect_leaks=0:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 \
+    NEW_FUZZ_DIRECTORY/fuzz-decode NEW_FUZZ_DIRECTORY/corpus \
+    -max_total_time=600 -timeout=5 -rss_limit_mb=1024 -max_len=65536 \
+    -seed=20261009 -print_final_stats=1
+
+The build generates 96 positive seeds spanning edge dimensions, dense/noisy,
+constant and mixed-color images, Q1/Q8/Q17/Q1024, and both uniform/per-tile q.
+The libFuzzer harness compares framing acceptance against the existing codec
+unpacker and compares scalar/SIMD direct output against the reference decoder.
+It checks output sentinels even on rejection and requires wrong-size output to
+remain unchanged. Exceptions are not silently treated as successful decoding.
+ASan/UBSan failures, oracle disagreement and bounds failures abort with a saved
+reproducer. Run inside a new evidence directory, preserve logs, tool/compile
+options, seed, corpus and source/binary hashes, and replay any finding before
+classifying it. A time-limited no-finding run is not proof of parser correctness.
+
+To keep inputs bounded for sustained exploration, the fuzz harness accepts up to
+65,536 wire bytes and reconstructs at most 4,096 pixels. Larger valid frame
+headers are parsed but not reconstructed. The maximum-dimension and guard-page
+tests remain separate; this fuzzer does not claim their coverage. The SIMD path
+on this host is SSE2, not Android NEON. It performs no Vulkan or headset work.
+Coordinate CPU comparison windows: pause fuzzing during timing measurements and
+record pauses; wall-clock fuzz duration is not identical to active CPU time.
