@@ -2,7 +2,7 @@ Direct checked decompression into owned mapped GPU input
 =======================================================
 
 This experiment is host-only and changes no production codec or wire format.
-Qualification is recorded below; no comparative performance result exists yet.
+Qualification and the matched two-device comparison are recorded below.
 
 Hypothesis: remove the intermediate RGB/residual workspace-to-input memcpy by
 writing the bounded LZ4 output directly into a retired, coherent mapped input
@@ -116,3 +116,60 @@ for the generated/boundary/maximum matrix or --reps N --device N for all matched
 captured/synthetic profiles. measure.py requires explicit research-team idle
 coordination and binds both complete source corpora, both manifests, all eight
 SPIR-V modules, executable and 22 recursively resolved local source dependencies.
+
+2026-10-09 coordinated comparison
+---------------------------------
+timing-20261009.json retains all 26 profiles, nine arms, per-case p50/p95/max and
+stage summaries for both physical devices. Each device completed 7,254 measured
+invocations (31 repetitions) plus 702 warmups. All exact image/color checks pass.
+Both research teams explicitly held builds/tests/measurements; desktop workload
+remained uncontrolled. The actual process intervals were:
+  Arc: 09:54:21.204192--10:01:21.522463 UTC, 420.317962 seconds.
+  UHD: 10:02:00.314918--10:09:04.299709 UTC, 423.984479 seconds.
+Both entire corpora, manifests, executable, eight shader modules and all 22
+measured source dependencies were unchanged before/after each run and identical
+between device batches. Source edits during the window were confined to a new,
+unrelated suite directory, outside these dependencies; no additional research
+build, test, benchmark or analysis ran.
+
+Captured-pair whole-readiness results: median of the 12 per-pair differences,
+candidate DIRECT minus matched STAGED, in milliseconds. Negative is faster.
+The last column is the number of captured pairs whose p95 improved (of 12).
+
+  GPU  format  actual-memory selection   paired p50 delta  paired p95 delta  p95
+  Arc  RRF     default                   -0.324525         -0.359235         11
+  Arc  RRF     cached                    -0.270860         -0.316665         10
+  Arc  RRB32   default                   -0.293470         -0.297620         11
+  Arc  RRB32   cached                    -0.280295         -0.206365         12
+  UHD  RRF     default                   -0.318030         -0.279020         12
+  UHD  RRF     cached                    -0.337430         -0.344830         12
+  UHD  RRB32   default                   -0.344665         -0.359460         12
+  UHD  RRB32   cached                    -0.354975         -0.445680         12
+
+All eight comparisons improve all 12 captured p50 values. Arc has four p95
+regressions across the four sets of 12 paired comparisons; they remain in the
+receipt, including a +0.440880 ms RRF cached-arm case. These sets are overlapping
+controls, not 48 independent captured pairs. Thirty-one samples do not establish
+a production tail bound. Direct output is promising for this isolated stage,
+while its cleared-workspace/temporary-index differences prevent attributing the
+whole gain solely to memcpy removal.
+
+The CPU reference comparison is device-dependent. RRF direct/cached improves all
+12 Arc p50/p95 pairs, but on UHD only 6/12 p50 and 7/12 p95 pairs improve, with
+median paired p50 delta -0.000450 ms. RRB32 direct/cached improves all 12 p50/p95
+pairs on both hosts: median paired p50 delta -0.666405 ms on Arc and -0.439975 ms
+on UHD. This does not include RRB's server work or wire inflation: the unchanged
+RRB32 captured wire is +19.18% at Q1 and +5.13% at Q8 versus whole-frame RRF.
+
+Cached/default Arc allocations are identical, so their differences are controls
+for run variation, not cache-selection gains. UHD's actual cached selection has
+a much smaller/inconsistent median benefit than direct output; no universal
+memory-policy promotion follows. All six stereo RGB bytes per pixel are still
+written to GPU-visible memory, and the private two-submit poisoned readiness
+path is not native packet-to-render/optical latency. No headset test or sub-15 ms
+gate was evaluated. Nine Python audit/summary tests now pass, including omission,
+changed-source and paired-quantile interpretation negative cases.
+
+Regenerate the numeric receipt from the audited reports with summarize.py. That
+postprocessor requires the complete captured/synthetic matrix, matched code/input
+identity and successful audit conditions; its own source hashes are recorded.
