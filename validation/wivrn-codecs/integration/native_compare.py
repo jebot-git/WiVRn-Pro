@@ -95,7 +95,8 @@ def build_configuration(args, runtime, source, output):
     # Prevent inherited codec-test activation or capture paths contaminating native.
     env = {k: v for k, v in os.environ.items()
            if not k.startswith('WIVRN_CODEC_TEST') and k not in (
-               'VR444_KERNEL', 'VR444_DEVICE', 'WIVRN_DUMP_VIDEO', 'WIVRN_CODEC_SOURCE_TRACE')}
+               'VR444_KERNEL', 'VR444_DEVICE', 'WIVRN_DUMP_VIDEO', 'WIVRN_CODEC_SOURCE_TRACE',
+               'WIVRN_CODEC_PACER_TRACE')}
     env.update({'XDG_RUNTIME_DIR': str(runtime), 'XDG_CONFIG_HOME': str(runtime/'config'),
                 'XR_RUNTIME_JSON': str(source/'build/codec-server/openxr_wivrn-dev.json'),
                 'XRT_COMPOSITOR_FORCE_GPU_INDEX': '0', 'WIVRN_CODEC_COMPARE': '1'})

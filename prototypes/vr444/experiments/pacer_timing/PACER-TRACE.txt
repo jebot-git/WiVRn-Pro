@@ -1,0 +1,111 @@
+HOST PACER INPUT OBSERVATION -- 2026-10-09
+
+Purpose
+The run05 source evidence describes application and compositor callbacks but
+omits the host compositor pacer's actual wake, decode and render-to-display
+budgets. Large target lead in that evidence does not identify a removable
+budget. Changing this algorithm before observing its inputs would be a guess.
+This branch adds an independent, default-off diagnostic contract to expose
+those inputs without changing the scheduling arithmetic.
+
+This branch is an observation approach, not a latency improvement. Headset
+work remains suspended. No original capture or summary is rewritten. There
+is no new timing measurement, linked native build, installation or launch.
+
+Files and integration boundary
+New overlay files:
+  server/compositor/pacer.cpp
+  server/compositor/pacer.h
+  server/compositor/codec_pacer_trace.h
+They are under validation/wivrn-codecs/integration/source-overlay. The native
+source tree remains untouched. Root must add these entries to the coordinated
+overlay manifest/patch and build provenance before any later live integration.
+The native pacer.cpp base SHA256 is:
+  2fd824158a9e49022e93c2e92c2ad4b0e1fd8e71491cfa8868fd68312938d1b6
+The validation receipt binds native header and cached compiler flags too.
+
+Activation and isolation
+WIVRN_CODEC_TESTS and WIVRN_CODEC_PACER_TRACE=/absolute/new/file.jsonl are both
+required. Storage and exclusive file creation happen at pacer construction.
+The existing comparison runner explicitly removes an inherited pacer trace
+variable; this branch does not add a runner option. The promotion evaluator
+rejects a declared pacer trace, a non-off summary, or a host/pacer-trace.jsonl
+artifact. Existing candidate/source trace schemas are unchanged.
+
+With the environment absent, no record buffer/file is allocated and the
+per-predict diagnostic condition short circuits on a zero instance ID. With
+the compile-time guard absent, all new pacer statements and members disappear.
+No new clock read is added: the snapshot uses the predictor's existing now.
+
+Contract
+A fixed 65,536-record buffer holds 112-byte records (7 MiB payload on this host).
+Append reserves a slot using atomics and copies the snapshot under the pacer's
+existing mutex. It does not allocate, format, perform I/O, or take another
+mutex. This is still extra diagnostic work and cannot qualify performance.
+
+Each record names a monotonically allocated pacer instance and its frame ID,
+then stores exactly the inputs consumed by the current predictor:
+  now, previous client-render phase, frame period,
+  mean wake-to-present, safe present-to-decode, mean render-to-display,
+  fixed margin and slop,
+plus the returned client-render, desired-present, wake and display times.
+All timestamps and duration budgets are in the host monotonic computation
+namespace. Budgets themselves include feedback-derived estimates. The trace
+does not expose individual clock conversions or their uncertainty.
+
+Serialization is teardown-only. Explicit flush closes admission, waits for
+in-flight appenders, and writes header, rows and footer. Missing footer, any
+dropped row, unknown fields, non-int64 values, missing/duplicate calls within
+an instance, invalid ranges, or arithmetic mismatch invalidate the capture.
+An instance starts at frame 0; capture starts at construction. Feedback can
+adjust the phase between predictions, so prior predicted phase is NOT assumed
+to equal the next snapshot's input phase. The validator independently replays
+the actual integer floor-period advancement, including its negative residual
+relative to now plus budgets. A negative residual is an observation, not an
+automatic proof of a scheduling defect.
+
+The header coverage is predict_calls_until_close. A complete file means the
+recorder finished serializing all admitted predictions, not that every future
+prediction or process-tail event was recorded. A crash/forced termination may
+leave an empty/partial file. Multiple pacer instances can repeat frame IDs;
+future joins must establish instance identity, not join by frame number alone.
+
+What remains unobserved
+Feedback estimator sample ages/counts, reset history, client clock conversion
+error, actual wake/submission timestamps, and future frame availability are
+not in this contract. Traces would need deliberate pairing with source/client
+evidence. The host predictor's display target remains an estimated target,
+not a photon time or input/simulation freshness measure. No selection or
+pacing counterfactual from prior branches is promoted by this trace.
+
+Offline validation
+validation-20261009.json records:
+  - ASan/UBSan recorder checks: disabled/invalid/existing path, no hot-path
+    file writes, bounded overflow, 8-writer 8,000-row capture, and concurrent
+    close without partially initialized rows;
+  - 512 deterministic C++-serialized synthetic snapshots, independently
+    replayed in Python with strict signed arithmetic and output checks;
+  - 217 Python regression/adversarial tests, including malformed fields,
+    missing/false footers, unknown fields, integer overflow, identity reuse,
+    phase adjustment, and hidden diagnostics rejected by promotion;
+  - full native pacer translation-unit syntax with read-only Clang VFS using
+    the cached GCC build include/define flags. This is syntax validation,
+    not execution of the native predictor or a linked native binary.
+The fixture generator is test data; its latency-shaped numbers are synthetic.
+
+Reproduce (offline only, output must be a new file)
+  python3 prototypes/vr444/experiments/pacer_timing/validate.py \
+    --native-source /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests \
+    --compile-commands /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests/build/codec-server/compile_commands.json \
+    --out /tmp/pacer-validation-new.json
+  python3 prototypes/vr444/experiments/pacer_timing/analyze.py /path/to/trace.jsonl
+
+Primary timing references
+OpenXR frame synchronization describes runtime prediction and frame pacing;
+its target timestamps are not optical measurements:
+https://registry.khronos.org/OpenXR/specs/1.1-khr/html/xrspec.html#frame-synchronization
+The official frame submission guide describes continued frame-loop calls and
+empty submissions when layers are not rendered:
+https://github.com/KhronosGroup/OpenXR-Guide/blob/main/chapters/frame_submission.md
+The actual floor-period arithmetic and feedback estimator are the native
+pacer.cpp snapshot bound above, not inferred from those general references.
