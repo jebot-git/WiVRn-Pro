@@ -144,7 +144,7 @@ file(GLOB_RECURSE VULKAN_SHADERS CONFIGURE_DEPENDS "*.glsl")
 target_sources(wivrn PRIVATE ${LOCAL_SOURCE} ${VULKAN_SHADERS})
 if(WIVRN_CODEC_TESTS)
     target_link_libraries(wivrn wivrn-test-codec)
-    set_source_files_properties(decoder/test_decoder.cpp decoder/test_gpu_decoder.cpp PROPERTIES COMPILE_OPTIONS "-O2")
+    set_source_files_properties(decoder/test_decoder.cpp decoder/test_gpu_decoder.cpp decoder/staged_rowblocks_image.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 endif()
 wivrn_compile_glsl(wivrn SHADERS ${VULKAN_SHADERS})
 

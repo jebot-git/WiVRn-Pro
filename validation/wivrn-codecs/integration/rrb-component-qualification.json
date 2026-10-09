@@ -1,50 +1,132 @@
 {
-  "schema": 1,
-  "scope": "offline component correctness, no native linking or headset execution",
-  "validations": {
-    "native_pair": "60 exact CPU/residual pair invocations across2/4 workers, odd shapes, repeated leases;12 band transcodes match canonical RGB encoder; malformed peer/cap/identity/orphan stop/publication controls",
-    "host_asan_ubsan": "pass; native component, wire test, exactcap/asymmetric/overcap/missing/failed/mixedmode batch controls",
-    "android_api29_arm64": "component test crosscompiled only; not executed",
-    "native_translation_units": "Server test encoder and Android test_decoder.cpp syntax pass with actual cached compiler flags. Android private source union includes peer atomic stream declaration, not final native link."
-  },
+  "schema": 2,
+  "scope": "offline native components and exact native translation-unit syntax; no full native link, device execution or latency claim",
   "source_sha256": {
+    "validation/wivrn-codecs/integration/RRB_INTEGRATION.txt": "d5526391bf94fb4a97fcb23bf9867bb45ba4dd62a6b86660d94276709c5ec5d9",
+    "validation/wivrn-codecs/integration/rrb_batch_test.cpp": "59f65ea9b228853cb1401f4c0934c287c61c929c5b6cb05c238dde1719bf987b",
+    "validation/wivrn-codecs/integration/rrb_mode_test.cpp": "40410b8d216dd73b794dc92ac9f48d05ab3ea04f7d6f3cf3711301c0ae16df54",
+    "validation/wivrn-codecs/integration/rrb_native_test.cpp": "e2420cb430a01922657bc6b5b254eb8adeb7a62f15ed2d9b70ff28a427136b0d",
+    "validation/wivrn-codecs/integration/rrb_reference.cpp": "fc07580f0869030cdc894b860f24abed55f4bb5749bca21fbf250dd618956afe",
+    "validation/wivrn-codecs/integration/source-overlay/assets/codec-test/staged-rowblocks-image.spv": "c6bf3b7816d69ee6556292076a0898ce9f2b96feadc4008350339dc452340948",
+    "validation/wivrn-codecs/integration/source-overlay/client/CMakeLists.txt": "ab0ef803cddeb5c1a07e1192af3cf13b66c7c23b22ecc391f3319844b26e2d24",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/test_decoder.cpp": "d0d6bc84cee707d9bc7939847bd426fc065137dde50f2af6d3f7c523745be0dd",
+    "validation/wivrn-codecs/integration/source-overlay/common/CMakeLists.txt": "8b12c1325d71331f9872e09ae8e1f68c6755cfc72565f489d0288e8bd6c773b0",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/metadata.h": "f79555b2718cdfd1f31070443addb867266040e10a28818797d82ab4ff6dbc9a",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/README.txt": "23b8e2682c38716c0346ac65e42215241ad0f9ab28361c9fc86d328277d488a7",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/band_encoder.hpp": "b31405afb1f9a5c58880cde589993cf9e3e74e2e286d1f9ea901b9c6914cabb5",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/direct_rgb.cpp": "645370bc8100b48f76465284f7392638761af22b3420b4fd1767cf4662622916",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/direct_rgb.hpp": "c1b78a5e96522a1aa9225e210112407b96ac9d67198e5c9b6429b50e99d33556",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/encode_rgb.hpp": "e6c0ee4672883d58d28232ea9db2b2f90116b88613f3744e1d02f3a95253ac09",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/encoder_base.hpp": "4cb6722c87ff3c0f6e085f183eaccbb08f3fb55fc0a87028fa7ca03dae5a9a72",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/import-provenance.json": "fc8d3d26a4a575d0f20ec8e83f951bccba360ef0526d3ee584c0c607538ede12",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/native.h": "816a803fc6a1e9076897db96acf20eea3d64fa99177567b8df8fb0f654af7da1",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/rowblocks.hpp": "e6a1c2c9e21f2145168cae1a805ae47e2a5bfd6a8c04396ecec7631eb55a236d",
     "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/rowfilter.hpp": "03db15be3fc88e91d697bd7818fb1dc653456837e6f3dfe5c7f06af494ab9439",
     "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/simd.hpp": "941cdd3dbd09db0fc708b3d4b55b3d608cfc6462a6f12d29173f079c4c1c3703",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/rowblocks.hpp": "e6a1c2c9e21f2145168cae1a805ae47e2a5bfd6a8c04396ecec7631eb55a236d",
     "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/workers.hpp": "45aa59251617793c914ea14613bb79e0803811ba98d3faee19ddb435611368d1",
     "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/wpc.hpp": "6a5e96c8bae24f9fa39947ec014f2a86c68b43dc3e6c1885df316ae52ff85763",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/encoder_base.hpp": "4cb6722c87ff3c0f6e085f183eaccbb08f3fb55fc0a87028fa7ca03dae5a9a72",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/band_encoder.hpp": "b31405afb1f9a5c58880cde589993cf9e3e74e2e286d1f9ea901b9c6914cabb5",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/encode_rgb.hpp": "e6c0ee4672883d58d28232ea9db2b2f90116b88613f3744e1d02f3a95253ac09",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/direct_rgb.hpp": "c1b78a5e96522a1aa9225e210112407b96ac9d67198e5c9b6429b50e99d33556",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/direct_rgb.cpp": "645370bc8100b48f76465284f7392638761af22b3420b4fd1767cf4662622916",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/import-provenance.json": "fc8d3d26a4a575d0f20ec8e83f951bccba360ef0526d3ee584c0c607538ede12",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/native.h": "e4ca7a5e6f18a249b3efe670a7e9dcb355c5ac4d44c181d5562d93bf97d09c38",
-    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/README.txt": "23b8e2682c38716c0346ac65e42215241ad0f9ab28361c9fc86d328277d488a7",
-    "validation/wivrn-codecs/integration/rrb_native_test.cpp": "e2420cb430a01922657bc6b5b254eb8adeb7a62f15ed2d9b70ff28a427136b0d",
-    "validation/wivrn-codecs/integration/rrb_batch_test.cpp": "fe29ce4ba1988dad8c7bf652dc9417bafe522a5b87a38dff4c1152ecda0973ff",
-    "validation/wivrn-codecs/integration/wire_test.cpp": "3081b4a7e72cc2a2bfbfb7ea5ea656edad2af36f423a4b21da8681db146f4242",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/test_mode.h": "9cc31b682f310cd9221da2b30fe093de1e7d683ea33fdb8d3616e0c921636098",
     "validation/wivrn-codecs/integration/source-overlay/common/codec_test/wire.h": "94befc99ef640615c75420836955ce089c4b3be7a5cf4545d210cc6b55bd472a",
-    "validation/wivrn-codecs/integration/source-overlay/client/decoder/test_decoder.cpp": "92a6a242c923802773d336f0a94be1b254425f480756a3d33b2fa5cad0732bbc",
-    "validation/wivrn-codecs/integration/source-overlay/server/encoder/encode_batch.h": "6d36366ea5dc898778281cc46e4c77d7844965aa30f3b8754390251da0f6e0f5",
-    "validation/wivrn-codecs/integration/source-overlay/server/encoder/video_encoder.h": "92deb38e23bac4e512e71b9cd7f39cc1e75865fc04132a0418bac790b3a337b8",
-    "validation/wivrn-codecs/integration/source-overlay/server/encoder/video_encoder_test.cpp": "56450f3d36ff4f6f8959000165a5dfcdcb35b9ebf9332b19fa789e72e32e2af3"
+    "validation/wivrn-codecs/integration/source-overlay/server/encoder/encode_batch.h": "763ec562ca3b4080d2e959b95b3d644919d2711cadd98625df583bf3273e8de9",
+    "validation/wivrn-codecs/integration/source-overlay/server/encoder/video_encoder.h": "16d3de5fc710e9c7b4149d387ad04e258df2389a0f75813ee48e7c82b59a9128",
+    "validation/wivrn-codecs/integration/source-overlay/server/encoder/video_encoder_test.cpp": "a9cd92dcc64f03e379b7db08d60b794ced59d36775ac33ecd610299683ea2493",
+    "validation/wivrn-codecs/integration/wire_test.cpp": "3081b4a7e72cc2a2bfbfb7ea5ea656edad2af36f423a4b21da8681db146f4242"
   },
-  "binary_sha256": {
-    "/tmp/sub15-native-rrb32-tests/test_decoder.syntax.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "/tmp/sub15-native-rrb32-tests/batch-test": "c6095f5e205e4e09fdce12e5dae5518760a11d7537f0d2643c4bd4eb333f1d08",
-    "/tmp/sub15-native-rrb32-tests/video_encoder.cpp.syntax.txt": "f79e4cf101d20730efa55ae175dc5be6f2a971d688196a61ce7f236cfca902e4",
-    "/tmp/sub15-native-rrb32-tests/video_encoder_test.cpp.syntax.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "/tmp/sub15-native-rrb32-tests/native-test-android": "7beeb719ff8180f6a1a926cc97ad8a928ae1eeb240e5ccdcb59396aceb91d6a1",
+  "runs": [
+    {
+      "argv": [
+        "/tmp/sub15-native-rrb32-tests/native-test-san"
+      ],
+      "returncode": 0,
+      "stdout": "native RRB32 exact source/band views, pair workers/residuals, malformed peer, cap, lifetime and stop checks passed\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-native-rrb32-tests/native-test-tsan"
+      ],
+      "returncode": 0,
+      "stdout": "native RRB32 exact source/band views, pair workers/residuals, malformed peer, cap, lifetime and stop checks passed\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-native-rrb32-tests/wire-test"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-native-rrb32-tests/batch-test"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-native-rrb32-tests/mode-on"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-native-rrb32-tests/mode-off"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "cross_compile": {
+    "platform": "Android API29 arm64",
+    "executed": false,
+    "binary": "/tmp/sub15-native-rrb32-tests/native-test-android",
+    "sha256": "23a5236b335d26ff45fbb998e8b2ddf028b6a0217ba9a3970d80b41e468533c7"
+  },
+  "native_syntax": {
+    "test_decoder.cpp.final-syntax.txt": {
+      "returncode": 0,
+      "diagnostics": ""
+    },
+    "video_encoder_test.cpp.final-syntax.txt": {
+      "returncode": 0,
+      "diagnostics": ""
+    }
+  },
+  "local_artifact_sha256": {
+    "/tmp/sub15-native-rrb32-tests/native-test-san": "57ca5a3ace94a3b1dc3b2e5e2871d7bc7de7fa70959643dda460980b39de6692",
+    "/tmp/sub15-native-rrb32-tests/native-test-tsan": "b6baba2a6030fec39128373ae46bb04425a2b0abb11f2a33728c4a2bb81ab771",
     "/tmp/sub15-native-rrb32-tests/wire-test": "76fb5e24e2ad8e81711ce11d378d33f17c0fa8ff23cb55d6495e74b3217308e6",
-    "/tmp/sub15-native-rrb32-tests/result.txt": "b639c0ac0856fe474ff67727f537313d4d7549380c68d97ee8d1a30eb385c125",
-    "/tmp/sub15-native-rrb32-tests/native-test-san": "f38dc97989ddba53865beb82c9d62e6e3aef8efc502bc5e0be88fc0ce526f0bc",
-    "/tmp/sub15-native-rrb32-tests/lz4.o": "ec36ddbc7dd561e21a356cd1978bc93b3a2e35ec5836982e3bda074cb361f541",
-    "/tmp/sub15-native-rrb32-tests/native-test": "6e26f9ab36f89b6160be149e8d035f8100ce0bd492b1e7dd31d65c6ad3e02619"
+    "/tmp/sub15-native-rrb32-tests/batch-test": "16a4b048f21dddc23d65cd0ab375ee817bbddf461aa85829acd457ce5d75a684",
+    "/tmp/sub15-native-rrb32-tests/mode-on": "35e4d5ddbcfb187a6d53518946fdd6e8d3e9910682d6bc29da22480a1ca73b65",
+    "/tmp/sub15-native-rrb32-tests/mode-off": "b15fd89fdea5585099e89b577cbe21620033193b32d8d99b44d903522dd6ba92",
+    "/tmp/sub15-native-rrb32-tests/rrb-reference": "4a2cf96f09319b03e27436f9326cbbf6ae7b7b848f68565c7c2539eabe40c1a9"
   },
-  "limitations": [
-    "Native decoder requires compositor atomic stream hook. Final linked native build and lifecycle qualification belong to root.",
-    "CRC is integrity checking, not authentication.",
-    "No performance measurements or device operations."
+  "external_dependencies": {
+    "atomic_stream_hook": "bb52541b9c243572e567f707b2e63d67c818de3f",
+    "staged_gpu_helper": "1b3541c91cb77eff6ba032052b254f48fc86d2a2",
+    "native_syntax_inputs": "Read-only cached native build flags/headers combined in private /tmp/sub15-native-rrb32-syntax; finalroot linkedbuild remainsrequired.",
+    "batch_executor_header_sha256": "6f0c3e36fb60ce9a83330082fcdf2ef85c6aca221b640aa29f1de4c2c33cb558"
+  },
+  "coverage": {
+    "pairs": 60,
+    "band_reference_comparisons": 12,
+    "controls": "malformedpeer, mismatchedidentity, oversizebody, orphanstop, nullpublication, duplicatearrival, exactcap/asymmetricpair, native3slots, alpha submitted/nonempty, missingoutput, peerexception, duplicateeye, mixedmode, testmodeON/OFF"
+  },
+  "reviews": [
+    "compositor: commonpairadapter and nativeadmission assumptions no blocker",
+    "GPU: CPUcap/publication and stagedimage callsite/asset/readback lease no blocker"
+  ],
+  "limits": [
+    "No purecopy timing for GPU prepare; newfield staging_prepare_ms bindsvalidation/copy/recording.",
+    "One sharedpair_decode_ms appears in both eye rows; never sumeyes.",
+    "Submitted renderer lease retirement/teardown, final application linking, native device behavior and liveORgates are root integration responsibilities.",
+    "ReferenceCLI passed independent hand-built2x2rawgolden; scalarpath is not independent algorithm proof.",
+    "The source hashes bind reviewed currentfiles; localnativebinary/Androidcompile receipts are not reproducibleenvironment claims."
   ]
 }
