@@ -56,6 +56,35 @@ class ReadySuccessorTests(unittest.TestCase):
         self.assertEqual(result['source_validation']['analyzed_frames'], 3)
         self.assertFalse(result['measured_speedup'])
 
+    def test_custom_selector_cannot_hide_or_forge_required_successor_witnesses(self):
+        traces, presented = triple()
+        for mutation in ('omit_support', 'empty_support', 'omit_witnesses', 'empty_witnesses',
+                         'self_witness', 'earlier_witness', 'unselected_eligible', 'bool_index'):
+            def dishonest(row, n, d, previous=None):
+                decision = module.choose(row, n, d, previous)
+                if mutation == 'omit_support':
+                    decision.pop('supporting_left_slots')
+                elif mutation == 'empty_support':
+                    decision['supporting_left_slots'] = []
+                elif mutation == 'omit_witnesses':
+                    decision.pop('successor_left_slots')
+                elif mutation == 'empty_witnesses':
+                    decision['successor_left_slots'] = [-1] * 3
+                    decision['supporting_left_slots'] = []
+                elif mutation in ('self_witness', 'earlier_witness'):
+                    value = 1 if mutation == 'self_witness' else 0
+                    decision['successor_left_slots'][1] = value
+                    decision['supporting_left_slots'] = [value]
+                elif mutation == 'unselected_eligible':
+                    decision['eligible_left_slots'][2] = True
+                else:
+                    decision['successor_left_slots'][1] = True
+                    decision['supporting_left_slots'] = [True]
+                return decision
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                module.cf.evaluate(traces, presented, sources(frames=(1, 2, 3)),
+                    fractions=((1, 1),), warmup_ns=0, selector=dishonest, selector_name='ready_successor')
+
     def test_forward_guard_can_retain_old_pair_without_inventing_a_reservation(self):
         row = triple()[0][0]
         previous = copy.deepcopy(row['selected'])

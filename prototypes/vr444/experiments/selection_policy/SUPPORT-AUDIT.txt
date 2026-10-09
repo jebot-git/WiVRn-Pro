@@ -1,0 +1,37 @@
+READY-SUCCESSOR WITNESS AUDIT -- 2026-10-09
+
+Independent GPU-team review found that the generic custom-selector analysis
+trusted supporting_left_slots independently of successor_left_slots. The
+shipped ready_successor.choose declared both correctly; a dishonest custom
+selector could omit a witness from required host source joins while preserving
+a witness declaration elsewhere in the result.
+
+The evaluator now binds these fields: support is exactly the distinct
+nonnegative witness set; a ready_successor-named analysis requires witness
+fields; every advancing eligible candidate needs a witness; a declared witness
+must be a later frame and later target within the second horizon; and the
+selected candidate must be eligible. Existing checks then validate coherent
+stereo/alpha metadata and require source provenance for every support frame.
+The generic API still cannot certify an arbitrary custom selector's entire
+implementation. It enforces the stated availability, identity and declared
+ready-successor witness contract, not arbitrary intent inferred from names.
+
+Eight adversarial custom outputs exercise omitted/empty support, omitted/empty
+witnesses, self/earlier witnesses, invented eligibility and bool slot indexes.
+218 Python tests pass. The sanitized C++ randomized checks and 256 independent
+Python fixture comparisons pass in ready-successor-audited-validation-20261009.json.
+
+Fresh, separate reanalysis of all immutable run05 manifest files passes in
+ready-successor-audited-counterfactual-20261009.json. All selection alternatives,
+full-horizon comparisons and observed-control metrics exactly equal the prior
+ready-successor-counterfactual-20261009.json. Its original hashes/results remain
+untouched. The original acquisition's failed status is not changed. No native
+source, runtime policy or headset operation changed in this audit.
+
+Reproduce
+  python3 -m unittest discover -s validation/wivrn-codecs/tests
+  python3 prototypes/vr444/experiments/selection_policy/validate_horizon.py \
+    --approach ready-successor --out /tmp/successor-audit-new.json
+  python3 prototypes/vr444/experiments/selection_policy/ready_successor.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --out /tmp/successor-audit-reanalysis-new.json

@@ -1,0 +1,373 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "analysis_kind": "frozen_history_hypothesis",
+  "selector": "ready_successor",
+  "observed_trace_records": 2066,
+  "warmup_ns": 2000000000,
+  "observed_diagnostic_control": {
+    "warm_unique_frames": 1900,
+    "unique_frame_cadence_hz": 89.22049239341645,
+    "first_receive_age_ms": {
+      "count": 1900,
+      "p50": 18.075523,
+      "p95": 26.927659,
+      "p99": 29.827295,
+      "min": 3.466823,
+      "max": 31.151097
+    }
+  },
+  "observed_trace_validation": {
+    "status": "pass",
+    "records": 2066,
+    "promotion_eligible": false,
+    "scope": "Observed candidate availability and target choice only; no measured alternate-policy speedup or source-content age",
+    "errors": [],
+    "selected_differs_from_newest_complete": 1692,
+    "higher_frame_id_available": 1692,
+    "fallback_records": 0,
+    "repeated_records": 0,
+    "unrecorded_render_target_gaps": 25,
+    "render_attempt_coverage": "not_recorded",
+    "skipped_render_count": null,
+    "skipped_render_reasons": null,
+    "terminal_render_tail": "not_recorded",
+    "continuity_scope": "Successful projection submissions only; schema 1/2 does not record every render attempt. Target gaps establish only compatibility with intervening renders, not their count or outcome.",
+    "distributions": {
+      "wait_frame_ms": {
+        "count": 2066,
+        "p50": 8.588855,
+        "p95": 9.179063,
+        "p99": 9.940001,
+        "min": 0.03151,
+        "max": 19.570419
+      },
+      "wait_return_to_selection_ms": {
+        "count": 2066,
+        "p50": 0.321094,
+        "p95": 0.693646,
+        "p99": 0.83224,
+        "min": 0.246927,
+        "max": 1.270365
+      },
+      "render_entry_to_selection_ms": {
+        "count": 2066,
+        "p50": 0.319219,
+        "p95": 0.691667,
+        "p99": 0.829636,
+        "min": 0.245417,
+        "max": 1.269115
+      },
+      "selected_target_minus_runtime_target_ms": {
+        "count": 2066,
+        "p50": -0.379517,
+        "p95": -0.2122,
+        "p99": 0.55496,
+        "min": -82.077418,
+        "max": 10.865735
+      },
+      "newest_target_minus_selected_target_ms": {
+        "count": 2066,
+        "p50": 11.132583,
+        "p95": 22.266962,
+        "p99": 22.351875,
+        "min": 0.0,
+        "max": 22.436764
+      },
+      "trace_write_ms": {
+        "count": 2066,
+        "p50": 0.170104,
+        "p95": 0.217344,
+        "p99": 0.256927,
+        "min": 0.086198,
+        "max": 0.615208
+      },
+      "prior_submission_to_previous_render_target_ms": {
+        "count": 2065,
+        "p50": 0.0,
+        "p95": 0.0,
+        "p99": 11.13632,
+        "min": 0.0,
+        "max": 22.275269
+      }
+    },
+    "warning": "Higher frame ID or target is not proof of a newer application scene or physical display time"
+  },
+  "source_validation": {
+    "status": "pass",
+    "diagnostic_only": true,
+    "promotion_blocked": true,
+    "errors": [],
+    "limitations": [
+      "Application frame identity is not a simulation or input epoch.",
+      "Host monotonic callbacks are not photon or client clock times.",
+      "Accepted compositor input is not proof of encoded delivery.",
+      "Projection target matching does not establish layer ownership when targets coincide.",
+      "Trace adds atomic and clock-read overhead; do not use for promotion."
+    ],
+    "records": 21110,
+    "event_counts": {
+      "app_predict": 2642,
+      "app_point": 5282,
+      "app_discarded": 532,
+      "app_delivered": 2109,
+      "compositor_frame": 2113,
+      "app_gpu_done": 2109,
+      "app_latched": 2108,
+      "projection_layer": 2106,
+      "app_retired": 2109
+    },
+    "app_frames": 2642,
+    "compositor_frames": 2113,
+    "direct_projection_frames": 2106,
+    "projection_target_matches": 2106,
+    "ambiguous_projection_matches": 0,
+    "analyzed_frames": 2066,
+    "unique_latched_app_sets": 2048,
+    "adjacent_reused_app_sets": 18,
+    "app_delivery_to_compositor_input_ms": {
+      "count": 2066,
+      "p50": 0.2682895,
+      "p95": 0.71495075,
+      "p99": 13.070556599999996,
+      "min": 0.03098,
+      "max": 15.753362
+    },
+    "callback_observation_delay_ms": {
+      "count": 21110,
+      "p50": 0.000221,
+      "p95": 0.006291,
+      "p99": 0.01808191,
+      "min": 0.0,
+      "max": 3.258512
+    }
+  },
+  "alternatives": [
+    {
+      "horizon_numerator": 1,
+      "horizon_denominator": 1,
+      "model": "local_actual_previous",
+      "counts": {
+        "warm_observed_submissions": 1900,
+        "retained_fallback": 0,
+        "different_encoded_frame": 106,
+        "encoded_frame_regressions": 0,
+        "different_latched_app_set": 105,
+        "strictly_advancing_latched_app_set": 105,
+        "warm_first_hypothetical_frame_submissions": 1879
+      },
+      "distributions": {
+        "conditional_receive_age_at_original_submit_ms": {
+          "count": 1900,
+          "p50": 17.886877,
+          "p95": 21.558909,
+          "p99": 26.767398,
+          "min": 3.466823,
+          "max": 31.151097
+        },
+        "source_target_minus_runtime_target_ms": {
+          "count": 1900,
+          "p50": -0.371427,
+          "p95": 10.662789,
+          "p99": 10.76436,
+          "min": -22.67717,
+          "max": 10.814959
+        },
+        "source_target_advance_over_observed_ms": {
+          "count": 1900,
+          "p50": 0.0,
+          "p95": 11.111111,
+          "p99": 11.16123,
+          "min": 0.0,
+          "max": 11.222613
+        },
+        "conditional_first_receive_age_at_original_submit_ms": {
+          "count": 1879,
+          "p50": 17.857658,
+          "p95": 21.35818,
+          "p99": 22.799794,
+          "min": 3.466823,
+          "max": 30.341774
+        }
+      },
+      "conditional_unique_frame_cadence_hz": 88.28148864676966
+    },
+    {
+      "horizon_numerator": 1,
+      "horizon_denominator": 1,
+      "model": "recurrent_hypothetical_previous",
+      "counts": {
+        "warm_observed_submissions": 1900,
+        "retained_fallback": 0,
+        "different_encoded_frame": 106,
+        "encoded_frame_regressions": 0,
+        "different_latched_app_set": 105,
+        "strictly_advancing_latched_app_set": 105,
+        "warm_first_hypothetical_frame_submissions": 1879
+      },
+      "distributions": {
+        "conditional_receive_age_at_original_submit_ms": {
+          "count": 1900,
+          "p50": 17.886877,
+          "p95": 21.558909,
+          "p99": 26.767398,
+          "min": 3.466823,
+          "max": 31.151097
+        },
+        "source_target_minus_runtime_target_ms": {
+          "count": 1900,
+          "p50": -0.371427,
+          "p95": 10.662789,
+          "p99": 10.76436,
+          "min": -22.67717,
+          "max": 10.814959
+        },
+        "source_target_advance_over_observed_ms": {
+          "count": 1900,
+          "p50": 0.0,
+          "p95": 11.111111,
+          "p99": 11.16123,
+          "min": 0.0,
+          "max": 11.222613
+        },
+        "conditional_first_receive_age_at_original_submit_ms": {
+          "count": 1879,
+          "p50": 17.857658,
+          "p95": 21.35818,
+          "p99": 22.799794,
+          "min": 3.466823,
+          "max": 30.341774
+        }
+      },
+      "conditional_unique_frame_cadence_hz": 88.28148864676966
+    }
+  ],
+  "measured_speedup": false,
+  "latency_gate_evaluated": false,
+  "promotion_eligible": false,
+  "release_ready": false,
+  "assumptions": [
+    "Original histories, receive/ready timestamps and submission times are held fixed.",
+    "Local decisions use the actual prior selection; recurrent decisions retain their hypothetical prior pair.",
+    "Alternate ownership, render workload, skipped iterations, decoder queues, transport and feedback are not simulated.",
+    "Source joins establish latched application IDs, not input/simulation age or displayed visual correctness.",
+    "No cross-device clock subtraction is performed. Conditional receive ages are not acquired latency measurements.",
+    "Original diagnostic instrumentation overhead remains in observations; it is not subtracted.",
+    "A ready successor is only observed in the snapshot; no resource is reserved or kept alive for it."
+  ],
+  "full_horizon_without_successor": [
+    {
+      "horizon_numerator": 1,
+      "horizon_denominator": 1,
+      "model": "local_actual_previous",
+      "counts": {
+        "warm_observed_submissions": 1900,
+        "retained_fallback": 0,
+        "different_encoded_frame": 1603,
+        "encoded_frame_regressions": 0,
+        "different_latched_app_set": 1600,
+        "strictly_advancing_latched_app_set": 1600,
+        "warm_first_hypothetical_frame_submissions": 1712
+      },
+      "distributions": {
+        "conditional_receive_age_at_original_submit_ms": {
+          "count": 1900,
+          "p50": 7.682917,
+          "p95": 18.733491,
+          "p99": 20.452919,
+          "min": 2.769428,
+          "max": 27.116097
+        },
+        "source_target_minus_runtime_target_ms": {
+          "count": 1900,
+          "p50": 10.746445,
+          "p95": 10.849139,
+          "p99": 10.927925,
+          "min": -22.67717,
+          "max": 11.077244
+        },
+        "source_target_advance_over_observed_ms": {
+          "count": 1900,
+          "p50": 11.13139,
+          "p95": 11.184117,
+          "p99": 11.214898,
+          "min": 0.0,
+          "max": 11.267941
+        },
+        "conditional_first_receive_age_at_original_submit_ms": {
+          "count": 1712,
+          "p50": 7.354896,
+          "p95": 17.468752,
+          "p99": 19.312554,
+          "min": 2.769428,
+          "max": 22.251929
+        }
+      },
+      "conditional_unique_frame_cadence_hz": 80.42599873792571
+    },
+    {
+      "horizon_numerator": 1,
+      "horizon_denominator": 1,
+      "model": "recurrent_hypothetical_previous",
+      "counts": {
+        "warm_observed_submissions": 1900,
+        "retained_fallback": 0,
+        "different_encoded_frame": 1603,
+        "encoded_frame_regressions": 0,
+        "different_latched_app_set": 1600,
+        "strictly_advancing_latched_app_set": 1600,
+        "warm_first_hypothetical_frame_submissions": 1712
+      },
+      "distributions": {
+        "conditional_receive_age_at_original_submit_ms": {
+          "count": 1900,
+          "p50": 7.682917,
+          "p95": 18.733491,
+          "p99": 20.452919,
+          "min": 2.769428,
+          "max": 27.116097
+        },
+        "source_target_minus_runtime_target_ms": {
+          "count": 1900,
+          "p50": 10.746445,
+          "p95": 10.849139,
+          "p99": 10.927925,
+          "min": -22.67717,
+          "max": 11.077244
+        },
+        "source_target_advance_over_observed_ms": {
+          "count": 1900,
+          "p50": 11.13139,
+          "p95": 11.184117,
+          "p99": 11.214898,
+          "min": 0.0,
+          "max": 11.267941
+        },
+        "conditional_first_receive_age_at_original_submit_ms": {
+          "count": 1712,
+          "p50": 7.354896,
+          "p95": 17.468752,
+          "p99": 19.312554,
+          "min": 2.769428,
+          "max": 22.251929
+        }
+      },
+      "conditional_unique_frame_cadence_hz": 80.42599873792571
+    }
+  ],
+  "original_run": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced",
+  "original_run_status": "fail",
+  "original_manifest_sha256": "38502bec943be9ad1c778a4775327dd4dbb0a32940b3fcc7946607a26b031371",
+  "original_manifest_files_verified": 300,
+  "original_result_overwritten": false,
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/ready_successor.py": "cd50fedec4a5b97410521068bf36d2af3e12edacfe847606fcc21dbb115b930c",
+    "prototypes/vr444/experiments/selection_policy/ready_successor_policy.h": "3c591db7bb8c6e063197c5b734ffb3247156ef97e6c7c3d73dc6f4ab8ae90f05",
+    "prototypes/vr444/experiments/selection_policy/horizon_policy.h": "3309374300c6596691391ab33be14b19a12458eff4e2a6b5f33d9df452bec3bf",
+    "prototypes/vr444/experiments/selection_policy/counterfactual.py": "857da8c912576b9cce34997300b169cf39e58c87786df8fdbd731bf82da7c827",
+    "prototypes/vr444/experiments/selection_policy/reanalyze_trace.py": "cd0b22f7c4f3be735672a98b435c40cf07754fec0173d3d3f0d016f07114c8ac",
+    "validation/wivrn-codecs/integration/candidate_trace.py": "161e20fa104c42a1cc5ecdfc3786a8125100662e2ab6ec8a1aa0c98397470196",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b",
+    "prototypes/vr444/experiments/compositor_freshness/analyze.py": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10"
+  }
+}

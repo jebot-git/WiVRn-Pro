@@ -127,6 +127,45 @@ def validate_choice(record, previous, decision, numerator, denominator):
                 raise ValueError('hypothetical replacement regresses a protected identity')
 
 
+
+def validate_successor_support(record, decision, selector_name):
+    """Bind ready-successor witnesses to source-join declarations and semantics."""
+    present = 'successor_left_slots' in decision
+    if selector_name == 'ready_successor' and not present:
+        raise ValueError('ready-successor result omits successor witness declarations')
+    if not present:
+        return
+    successors = decision['successor_left_slots']
+    eligible = decision.get('eligible_left_slots')
+    if (type(successors) is not list or len(successors) != 3
+            or any(type(i) is not int or not -1 <= i < 3 for i in successors)
+            or type(eligible) is not list or len(eligible) != 3
+            or any(type(v) is not bool for v in eligible)):
+        raise ValueError('invalid successor witness shape')
+    required = sorted({i for i in successors if i >= 0})
+    if decision.get('supporting_left_slots') != required:
+        raise ValueError('successor witnesses differ from required source-join support')
+    history, closest = record['history'], record['closest'][0]
+    target, bound = record['predicted_display_xr_ns'], decision['max_ahead_xr_ns']
+    for slot, witness in enumerate(successors):
+        candidate = history[slot]
+        advancing = (candidate['present'] and closest['present'] and candidate['frame'] > closest['frame'])
+        if eligible[slot] and advancing and witness < 0:
+            raise ValueError('advancing successor candidate lacks a witness')
+        if witness < 0:
+            continue
+        successor = history[witness]
+        if (not eligible[slot] or not advancing or not successor['present']
+                or successor['frame'] <= candidate['frame']
+                or successor['view_display_time_xr_ns'] <= candidate['view_display_time_xr_ns']
+                or successor['view_display_time_xr_ns'] > target + 2 * bound):
+            raise ValueError('successor witness violates advancement/second-horizon contract')
+    if not decision['fallback']:
+        slot = decision['chosen_slots'][0]
+        if not eligible[slot]:
+            raise ValueError('selected successor candidate is not eligible')
+
+
 def evaluate(traces, presented, source_rows, fractions=((0, 1), (1, 2), (3, 4), (31, 32), (1, 1)),
              warmup_ns=2_000_000_000, selector=choose, selector_name='fractional_horizon'):
     if type(warmup_ns) is not int or warmup_ns < 0:
@@ -153,6 +192,7 @@ def evaluate(traces, presented, source_rows, fractions=((0, 1), (1, 2), (3, 4), 
                 prior_pair = (previous if previous is not None else row['previous']) if model.startswith('recurrent') else row['previous']
                 result = selector(row, *fraction, previous=prior_pair)
                 validate_choice(row, prior_pair, result, *fraction)
+                validate_successor_support(row, result, selector_name)
                 supporting = result.get('supporting_left_slots', [])
                 if (type(supporting) is not list or any(type(i) is not int or not 0 <= i < 3 for i in supporting)
                         or supporting != sorted(set(supporting))):
