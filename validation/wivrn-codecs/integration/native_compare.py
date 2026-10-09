@@ -27,7 +27,8 @@ CONFIG_FILES = ('client.json', 'codec-test-kernel.txt', 'codec-test-backend.txt'
                 'codec-test-pairing.txt', 'codec-test-compression.txt', 'codec-test-gaze-timing.txt',
                 'codec-test-selection.txt', 'codec-test-candidate-trace.txt',
                 'codec-test-cpu-output.txt', 'codec-test-selection-policy.txt', 'codec-test-publication-trace.txt',
-                'codec-test-payload.txt', 'codec-test-rrb-workers.txt', 'codec-test-rrb-output.txt')
+                'codec-test-payload.txt', 'codec-test-rrb-workers.txt', 'codec-test-rrb-output.txt',
+                'codec-test-quality-capture.json')
 
 
 def save(path, value):
@@ -99,8 +100,38 @@ def experimental_settings(args):
     if selection == 'bounded-newest' and not getattr(args, 'candidate_trace', False):
         raise ValueError('bounded-newest currently requires diagnostic candidate tracing')
     publication_trace_helpers(args)
-    return rrb_settings(args) | {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection,
+    return rrb_settings(args) | quality_settings(args) | {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection,
             'codec-test-publication-trace.txt': '1' if getattr(args, 'publication_trace', False) else '0'}
+
+
+def quality_settings(args):
+    enabled = getattr(args, 'quality_capture', False)
+    pairs = getattr(args, 'quality_max_pairs', 6)
+    stride = getattr(args, 'quality_frame_stride', 90)
+    if type(enabled) is not bool or type(pairs) is not int or not 1 <= pairs <= 8 \
+            or type(stride) is not int or not 1 <= stride <= 900:
+        raise ValueError('invalid bounded quality capture configuration')
+    if enabled and args.mode not in CUSTOM_MODES:
+        raise ValueError('submitted quality capture currently requires a custom RGB path')
+    if not enabled and (pairs != 6 or stride != 90):
+        raise ValueError('quality capture limits require --quality-capture')
+    return {'codec-test-quality-capture.json': json.dumps(
+        dict(enabled=enabled, max_pairs=pairs, frame_stride=stride), separators=(',', ':'))}
+
+
+def quality_source_helpers(args, source=None):
+    if not getattr(args, 'quality_capture', False):
+        return ()
+    names = ('common/codec_test/submitted_capture.h', 'client/scenes/stream_quality_capture.h',
+             'client/scenes/stream.cpp', 'client/scenes/stream_defoveator.cpp',
+             'client/xr/swapchain.cpp', 'client/xr/swapchain.h')
+    overlay = Path(__file__).with_name('source-overlay')
+    if source is not None:
+        for name in names:
+            if not (Path(source)/name).is_file() or not (overlay/name).is_file() \
+                    or sha(Path(source)/name) != sha(overlay/name):
+                raise ValueError('submitted capture source is absent or differs from reviewed overlay: '+name)
+    return names
 
 
 
@@ -318,6 +349,7 @@ def run(args):
     pacer_helpers = pacer_trace_helpers(args, source)
     publication_helpers = publication_trace_helpers(args, source)
     rrb_helpers = rrb_source_helpers(args, source)
+    quality_helpers = quality_source_helpers(args, source)
     server = source/'build/codec-server/server/wivrn-pro-server'
     manifest = source/'build/codec-server/openxr_wivrn-dev.json'
     apk = source/'build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk'
@@ -375,7 +407,7 @@ def run(args):
                    'client/decoder/android/android_decoder.cpp', 'client/scenes/stream.cpp',
                    'server/compositor/foveation.cpp', 'server/compositor/compositor.cpp',
                    'server/driver/app_pacer.cpp', 'server/driver/codec_source_trace.h',
-                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers + rrb_helpers
+                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers + rrb_helpers + quality_helpers
         save(output/'provenance.json', {
             'schema': 1, 'mode': args.mode, 'source': str(source), 'server_sha256': sha(server),
             'installed_apk_sha256': apk_hash, 'runtime_manifest_sha256': sha(manifest),
@@ -400,6 +432,9 @@ def run(args):
             'cpu_output': args.cpu_output, 'selection_policy': args.selection_policy,
             'source_trace': args.source_trace, 'pacer_trace': getattr(args, 'pacer_trace', False),
             'publication_trace': getattr(args, 'publication_trace', False),
+            'quality_capture': getattr(args, 'quality_capture', False),
+            'quality_max_pairs': getattr(args, 'quality_max_pairs', 6),
+            'quality_frame_stride': getattr(args, 'quality_frame_stride', 90),
             'scene_reference_space': 'Local',
             'application_source_sha256': sha(source/'client/application.cpp'),
             'application_header_sha256': sha(source/'client/application.h'),
@@ -696,7 +731,7 @@ def run(args):
     if result['publication_trace']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
         result['promotion_status'] = 'blocked'
-    if args.source_trace or getattr(args, 'pacer_trace', False) or getattr(args, 'publication_trace', False) or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
+    if args.source_trace or getattr(args, 'pacer_trace', False) or getattr(args, 'publication_trace', False) or getattr(args, 'quality_capture', False) or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
         result['promotion_status'] = 'blocked_experimental_path'
         result['release_ready'] = False
     # Preserve matching log lines for review without treating a support probe or
@@ -740,6 +775,9 @@ def main():
                         help='Host pacer budget diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
     parser.add_argument('--publication-trace', action='store_true',
                         help='Client publication/eviction prefix diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
+    parser.add_argument('--quality-capture', action='store_true', help='Bounded submitted swapchain readback; diagnostic, not latency eligible')
+    parser.add_argument('--quality-max-pairs', type=int, default=6)
+    parser.add_argument('--quality-frame-stride', type=int, default=90)
     args = parser.parse_args()
     result = run(args)
     print(json.dumps(result, indent=2))

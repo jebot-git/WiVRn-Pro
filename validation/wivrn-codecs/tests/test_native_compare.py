@@ -72,6 +72,22 @@ class NativeComparisonConfiguration(unittest.TestCase):
 
 
 class NativeComparisonGates(unittest.TestCase):
+    def test_quality_capture_bounds_reset_and_source_preflight(self):
+        from argparse import Namespace
+        args = Namespace(mode='custom-rrb32', quality_capture=True, quality_max_pairs=6, quality_frame_stride=90)
+        name = 'codec-test-quality-capture.json'
+        self.assertIn(name, compare.CONFIG_FILES)
+        self.assertTrue(json.loads(compare.quality_settings(args)[name])['enabled'])
+        for changes in (dict(quality_capture=1), dict(quality_max_pairs=True), dict(quality_max_pairs=9),
+                        dict(quality_frame_stride=0), dict(quality_frame_stride=901), dict(mode='native-hevc')):
+            with self.assertRaises(ValueError): compare.quality_settings(Namespace(**(vars(args) | changes)))
+        with tempfile.TemporaryDirectory() as folder:
+            with self.assertRaisesRegex(ValueError, 'capture source'):
+                compare.quality_source_helpers(args, Path(folder))
+        args.quality_capture = False
+        self.assertFalse(json.loads(compare.quality_settings(args)[name])['enabled'])
+        self.assertEqual(compare.quality_source_helpers(args, Path('/absent')), ())
+
     def test_rrb_unintegrated_sources_stop_before_device_access(self):
         from argparse import Namespace
         with tempfile.TemporaryDirectory() as folder:

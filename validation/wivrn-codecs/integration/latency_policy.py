@@ -114,6 +114,9 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
                     errors.append('candidate does not match explicit build receipt: '+key)
             if provenance.get('candidate_trace') is not False:
                 errors.append('diagnostic candidate trace is not eligible for promotion')
+            if (provenance.get('quality_capture', False) is not False
+                    or (directory/'client/codec-test/quality').exists()):
+                errors.append('submitted quality readback is not eligible for latency promotion')
             if (summary.get('candidate_trace', {}).get('status') != 'off'
                     or any('render_attempts' in row or any(k.startswith('candidate_trace_') for k in row) for row in rows)
                     or (directory/'client/codec-test/selection-trace.jsonl').exists()):
