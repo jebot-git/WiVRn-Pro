@@ -85,7 +85,7 @@
   },
   "client/scenes/stream.cpp": {
     "before_sha256": "27250cf4d1dd6549f62f6a25b3aa33833cb6238cdc1ff1339a69bb07ef740584",
-    "after_sha256": "8075bbd7d853284295584535dd43244d600ec2065733df2039ac88c72f5e10f1"
+    "after_sha256": "6cd9ecd367023eeabd97f50c9156b1bfb6533682ec26e2c8e0b508b2b0bb1895"
   },
   "client/scenes/stream.h": {
     "before_sha256": "d04badaf6c9f403076a6f5051c7e0fad0748cc64a13c30796ad2db025cb14d25",

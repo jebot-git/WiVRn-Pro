@@ -1,0 +1,21 @@
+Terminal research stream queue drain (WIVRN_CODEC_TESTS only)
+
+The GUI renderer's wait_idle waits its own frame fences and does not cover the
+stream defoveation command buffer. The stream destructor now joins its tracking
+and network threads, then waits the actual application queue under its existing
+queue mutex before any member (including current image leases) is destroyed.
+Queue idle also handles a reset stream fence whose following submit failed;
+waiting that unsignaled fence alone could hang. Device loss is explicitly
+accepted for teardown; any other wait failure terminates rather than releasing
+possibly in-use images. No per-frame queue wait is added by this guard.
+
+GPU-team inspection confirmed scene.queue aliases application queue index0,
+and scene_renderer.cpp wait_idle covers only renderer.frame_resources. The
+producer helper requires this same actual queue unless explicit cross-queue
+synchronization is added. Root still owns actual native/device lifecycle tests.
+
+terminal-drain-validation-20261009.json records full Android stream syntax with
+WIVRN_CODEC_TESTS enabled and disabled, plus an explicitly source-only guard of
+join/drain/error-policy ordering. It does not simulate Vulkan failure behavior.
+terminal-overlay-parity-20261009.json independently checks69-file patch/overlay
+before/after identity. No headset operations or live qualification occurred.

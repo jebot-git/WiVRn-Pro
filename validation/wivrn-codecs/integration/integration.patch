@@ -984,7 +984,7 @@ index 0c209aa..3386c2d 100644
  	        .type = XR_TYPE_COMPOSITION_LAYER_SETTINGS_FB,
  	        .layerFlags = flags,
 diff --git a/client/scenes/stream.cpp b/client/scenes/stream.cpp
-index 509b924..b865f5f 100644
+index 509b924..8e31e79 100644
 --- a/client/scenes/stream.cpp
 +++ b/client/scenes/stream.cpp
 @@ -1,3 +1,9 @@
@@ -1109,7 +1109,30 @@ index 509b924..b865f5f 100644
  	self->network_session->send_control(from_headset::stream_tab_changed{
  	        .tab = self->gui_status,
  	});
-@@ -634,7 +717,17 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+@@ -617,6 +700,22 @@ scenes::stream::~stream()
+ 
+ 	if (network_thread.joinable())
+ 		network_thread.join();
++#ifdef WIVRN_CODEC_TESTS
++    // Decoder image leases are members destroyed after this body. The GUI
++    // renderer waits only its own fences, not the stream defoveation submit.
++    // Wait the actual shared queue before releasing any consumer-held lease.
++    // Queue idle also covers a fence reset followed by a failed submit, where
++    // waiting that never-submitted fence could hang indefinitely.
++    try {
++        queue.lock()->waitIdle();
++    } catch (const vk::DeviceLostError&) {
++        // A lost device cannot continue consuming the referenced resources.
++        spdlog::error("Codec test stream terminal drain: device lost");
++    } catch (...) {
++        spdlog::critical("Codec test stream terminal queue drain failed");
++        std::terminate(); // Never destroy possibly in-use decoder images.
++    }
++#endif
+ }
+ 
+ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_ptr<shard_accumulator::blit_handle> handle)
+@@ -634,7 +733,17 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
  			if (decoder != decoders[stream].decoder.get())
  				return;
  			handle->feedback.received_from_decoder = instance.now();
@@ -1127,7 +1150,7 @@ index 509b924..b865f5f 100644
  		}
  
  		if (state_ != state::streaming and not(decoders[0].empty() or decoders[1].empty()))
-@@ -650,6 +743,46 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+@@ -650,6 +759,46 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
  	}
  }
  
@@ -1174,7 +1197,7 @@ index 509b924..b865f5f 100644
  bool scenes::stream::accumulator_images::empty() const
  {
  	for (const auto & frame: latest_frames)
-@@ -660,11 +793,57 @@ bool scenes::stream::accumulator_images::empty() const
+@@ -660,11 +809,57 @@ bool scenes::stream::accumulator_images::empty() const
  	return true;
  }
  
@@ -1233,7 +1256,7 @@ index 509b924..b865f5f 100644
  	inplace_vector<shard_accumulator::blit_handle *, decoder_count> common_frames;
  	const bool alpha = decoders[0].latest_frames[0] and decoders[0].latest_frames[0]->view_info.alpha;
  	for (size_t i = 0; i < view_count + alpha; ++i)
-@@ -742,14 +921,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
+@@ -742,14 +937,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
  		}
  	}
  	return result;
@@ -1256,7 +1279,7 @@ index 509b924..b865f5f 100644
  }
  
  void scenes::stream::update_gui_position(xr::spaces controller, float predicted_display_period)
-@@ -838,6 +1025,25 @@ bool scenes::stream::is_gui_interactable() const
+@@ -838,6 +1041,25 @@ bool scenes::stream::is_gui_interactable() const
  
  void scenes::stream::render(const XrFrameState & frame_state)
  {
@@ -1282,7 +1305,7 @@ index 509b924..b865f5f 100644
  	if (state_ == state::shutdown)
  		application::pop_scene();
  
-@@ -882,6 +1088,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -882,6 +1104,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		// TODO: stop/restart video stream
  		session.begin_frame();
  		session.end_frame(frame_state.predictedDisplayTime, {});
@@ -1295,7 +1318,7 @@ index 509b924..b865f5f 100644
  		return;
  	}
  
-@@ -897,11 +1109,42 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -897,11 +1125,42 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		application::pop_scene();
  	}
  
@@ -1338,7 +1361,7 @@ index 509b924..b865f5f 100644
  
  	gpu_timestamps timestamps;
  	if (query_pool_filled)
-@@ -940,7 +1183,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -940,7 +1199,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
  
  	// Search for frame with desired display time on all decoders
  	// If no such frame exists, use the latest frame for each decoder
@@ -1350,7 +1373,7 @@ index 509b924..b865f5f 100644
  	std::array<XrPosef, view_count> pose{};
  	std::array<XrFovf, view_count> fov{};
  	std::array<wivrn::to_headset::foveation_parameter, view_count> foveation;
-@@ -997,6 +1244,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -997,6 +1260,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			                .extent = blit_handle->extent,
  			        },
  			        .layout_rgb = blit_handle->current_layout,
@@ -1358,7 +1381,7 @@ index 509b924..b865f5f 100644
  			};
  		}
  		else
-@@ -1175,9 +1423,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1175,9 +1439,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			        application::space(xr::spaces::world),
  			        layer_view);
  
@@ -1380,7 +1403,7 @@ index 509b924..b865f5f 100644
  
  		accumulate_metrics(frame_state.predictedDisplayTime, current_blit_handles, timestamps);
  
-@@ -1186,6 +1443,91 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1186,6 +1459,91 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		try
  		{
  			render_end();
@@ -1472,7 +1495,7 @@ index 509b924..b865f5f 100644
  		}
  		catch (std::system_error & e)
  		{
-@@ -1195,6 +1537,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1195,6 +1553,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
  				throw;
  		}
  	}
@@ -1486,7 +1509,7 @@ index 509b924..b865f5f 100644
  
  	// Network operations may be blocking, do them once everything was submitted
  	{
-@@ -1287,12 +1636,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1287,12 +1652,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  		current_blit_handles.fill(nullptr);
  		retired.swap(decoders);
  		video_stream_description.reset();
@@ -1509,7 +1532,7 @@ index 509b924..b865f5f 100644
  		for (const auto & [stream_index, item]: utils::enumerate(replacement))
  			item.decoder = std::make_unique<shard_accumulator>(device, physical_device, instance, queue_family_index, description, shared_from_this(), stream_index);
  	}
-@@ -1306,6 +1665,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1306,6 +1681,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  	{
  		std::unique_lock lock(decoder_mutex);
  		decoders.swap(replacement);
