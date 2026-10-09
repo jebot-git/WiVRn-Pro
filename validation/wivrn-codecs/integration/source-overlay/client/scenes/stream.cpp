@@ -214,6 +214,7 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
         test_candidate_trace.enabled = trace_mode == "1";
     }
     if (test_candidate_trace.enabled) {
+        test_render_attempts.enabled = true;
         const auto folder = application::get_config_path() / "codec-test";
         std::filesystem::create_directories(folder);
         test_candidate_trace_file.open(folder / "selection-trace.jsonl", std::ios::trunc);
@@ -960,11 +961,14 @@ void scenes::stream::render(const XrFrameState & frame_state)
 #ifdef WIVRN_CODEC_TESTS
     const XrTime test_render_entry = instance.now();
     const XrTime test_previous_predicted_display = last_display_time;
+    codec_test::selection_trace::AttemptGuard test_attempt_guard(
+        test_render_attempts, frame_state.predictedDisplayTime, test_previous_predicted_display);
     const XrDuration test_max_ahead = codec_test::selection_policy::period_bound(
         frame_state.predictedDisplayTime, frame_state.predictedDisplayPeriod, test_previous_predicted_display);
     codec_test::selection_trace::Record test_trace_record;
     const bool test_capture_candidates = test_candidate_trace.capture();
     if (test_capture_candidates) {
+        test_trace_record.schema = 3;
         auto [begin, end] = application::codec_test_wait_frame_times();
         test_trace_record.wait_begin = begin;
         test_trace_record.wait_end = end;
@@ -1017,6 +1021,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		// TODO: stop/restart video stream
 		session.begin_frame();
 		session.end_frame(frame_state.predictedDisplayTime, {});
+#ifdef WIVRN_CODEC_TESTS
+        // Only count an empty outcome after xrEndFrame actually succeeded.
+        using Skip = codec_test::selection_trace::Skip;
+        test_render_attempts.skip(state_ == state::shutdown ? Skip::shutdown :
+                                  !frame_state.shouldRender ? Skip::should_not_render : Skip::decoders_unavailable);
+#endif
 		return;
 	}
 
@@ -1045,6 +1055,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
     if (!test_select_after_fence && !select_test_pair()) {
         session.begin_frame();
         session.end_frame(frame_state.predictedDisplayTime, {});
+        test_render_attempts.skip(codec_test::selection_trace::Skip::no_complete_pair);
         return;
     }
     const XrTime test_fence_begin = instance.now();
@@ -1058,6 +1069,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
     if (test_select_after_fence && !select_test_pair()) {
         session.begin_frame();
         session.end_frame(frame_state.predictedDisplayTime, {});
+        test_render_attempts.skip(codec_test::selection_trace::Skip::no_complete_pair);
         return;
     }
 #endif
@@ -1366,6 +1378,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
 			render_end();
 #ifdef WIVRN_CODEC_TESTS
             const XrTime test_end_frame_return = instance.now();
+            const auto test_attempt_snapshot = test_render_attempts.submit();
             // Inspect the actual stream projection layer after successful xrEndFrame.
             // A submitted hint is not proof of the runtime's selected filter.
             const auto actual_filter_flags = !room_capture && projection_layer_index
@@ -1412,6 +1425,8 @@ void scenes::stream::render(const XrFrameState & frame_state)
                 // Snapshot collection above is fixed-size and under frames_mutex;
                 // serialization is here, after xrEndFrame, with that mutex released.
                 if (test_candidate_trace.enabled) {
+                    test_present << ",\"render_attempts\":";
+                    codec_test::selection_trace::write_attempts(test_present, test_attempt_snapshot);
                     XrDuration trace_write_ns = 0;
                     if (test_candidate_trace.commit()) {
                         const XrTime trace_write_begin = instance.now();
@@ -1420,6 +1435,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
                         test_trace_record.selection_end = test_select_end;
                         test_trace_record.end_frame_return = test_end_frame_return;
                         test_trace_record.projection_submitted = !room_capture && projection_layer_index;
+                        test_trace_record.attempts = test_attempt_snapshot;
                         codec_test::selection_trace::write_json(test_candidate_trace_file, test_trace_record);
                         test_candidate_trace_file.flush();
                         trace_write_ns = instance.now() - trace_write_begin;
@@ -1442,6 +1458,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
 				throw;
 		}
 	}
+#ifdef WIVRN_CODEC_TESTS
+    else {
+        // The existing retained-pair path omits a projection submission; it is
+        // distinct from a successful empty xrEndFrame and from a failed call.
+        test_render_attempts.skip(codec_test::selection_trace::Skip::retained_pair);
+    }
+#endif
 
 	// Network operations may be blocking, do them once everything was submitted
 	{

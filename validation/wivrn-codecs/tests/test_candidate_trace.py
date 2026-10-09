@@ -68,7 +68,149 @@ def fallback_after(r, p, previous_target=100):
     return r2, p2
 
 
+def attempt_record(r, p, attempt=1, previous_attempt=0, previous_target=0, **skips):
+    r['schema'] = 3
+    a = dict(render_attempt=attempt, previous_submission_attempt=previous_attempt,
+             previous_submission_target_xr_ns=previous_target, aborted=0, valid=True,
+             skipped=dict.fromkeys(module.SKIP_REASONS, 0))
+    a['skipped'].update(skips)
+    r['render_attempts'], p['render_attempts'] = copy.deepcopy(a), copy.deepcopy(a)
+    return r, p
+
+
 class CandidateTraceTests(unittest.TestCase):
+    def attempt_fixture(self, startup=False, gap=False):
+        r, p = bounded_fixture()
+        # The fixture previously modeled an unspecified prior render. Schema 3
+        # explicitly accounts that startup iteration when requested.
+        r['previous_predicted_display_xr_ns'] = p['previous_predicted_display_xr_ns'] = 80 if startup else 0
+        r['max_ahead_xr_ns'] = p['max_ahead_xr_ns'] = 20 if startup else 0
+        if not startup:
+            r.update(selection_policy='closest-target', reason='closest_target',
+                     selected=copy.deepcopy(r['closest']), chosen_slots=[0, 0, -1])
+            p.update(selection_policy='closest-target', left=1, right=1, left_warp=11, right_warp=11)
+        first = 2 if startup else 1
+        attempt_record(r, p, first, decoders_unavailable=int(startup))
+        r2, p2 = fallback_after(r, p, 150 if gap else 100)
+        attempt_record(r2, p2, first+2 if gap else first+1, first, 100, retained_pair=int(gap))
+        return [r, r2], [p, p2]
+
+    def test_schema3_startup_and_skipped_attempts_have_explicit_limited_coverage(self):
+        for startup in (False, True):
+            for gap in (False, True):
+                with self.subTest(startup=startup, gap=gap):
+                    traces, presented = self.attempt_fixture(startup, gap)
+                    result = module.evaluate(traces, presented)
+                    self.assertEqual(result['status'], 'pass', result['errors'])
+                    self.assertEqual(result['skipped_render_count'], int(startup)+int(gap))
+                    self.assertEqual(result['skipped_render_reasons']['retained_pair'], int(gap))
+                    self.assertEqual(result['render_attempt_coverage'], 'scene_start_through_last_submission')
+                    self.assertEqual(result['terminal_render_tail'], 'not_recorded')
+                    self.assertFalse(result['promotion_eligible'])
+
+    def test_schema3_every_skip_reason_is_counted_and_mixed_skips_sum_exactly(self):
+        for reason in module.SKIP_REASONS:
+            traces, presented = self.attempt_fixture(gap=True)
+            for row in (traces[1], presented[1]):
+                row['render_attempts']['skipped'] = dict.fromkeys(module.SKIP_REASONS, 0)
+                row['render_attempts']['skipped'][reason] = 1
+            self.assertEqual(module.evaluate(traces, presented)['status'], 'pass')
+        traces, presented = self.attempt_fixture(gap=True)
+        for row in (traces[1], presented[1]):
+            row['render_attempts']['skipped'] = dict.fromkeys(module.SKIP_REASONS, 3)
+            row['render_attempts']['render_attempt'] = 17
+        self.assertEqual(module.evaluate(traces, presented)['skipped_render_count'], 15)
+
+    def test_schema3_aborted_or_unaccounted_attempt_is_never_a_benign_skip(self):
+        for key, value in (('aborted', 1), ('valid', False), ('valid', 1), ('render_attempt', 4),
+                           ('render_attempt', True), ('previous_submission_attempt', 0),
+                           ('previous_submission_target_xr_ns', 99)):
+            with self.subTest(key=key, value=value):
+                traces, presented = self.attempt_fixture(gap=True)
+                for row in (traces[1], presented[1]):
+                    row['render_attempts'][key] = value
+                result = module.evaluate(traces, presented)
+                self.assertEqual(result['status'], 'fail')
+                self.assertIsNone(result['skipped_render_count'])
+        for value in (True, -1, 1.0, '1', 1 << 63):
+            traces, presented = self.attempt_fixture(gap=True)
+            for row in (traces[1], presented[1]):
+                row['render_attempts']['skipped']['retained_pair'] = value
+            self.assertEqual(module.evaluate(traces, presented)['status'], 'fail')
+
+    def test_schema3_gap_target_and_skipped_count_cannot_contradict_each_other(self):
+        for startup, gap in ((False, True), (True, False)):
+            traces, presented = self.attempt_fixture(startup, gap)
+            index = 1 if gap else 0
+            for row in (traces[index], presented[index]):
+                row['render_attempts']['skipped'] = dict.fromkeys(module.SKIP_REASONS, 0)
+                row['render_attempts']['render_attempt'] -= 1
+            self.assertEqual(module.evaluate(traces, presented)['status'], 'fail')
+        traces, presented = self.attempt_fixture(gap=True)
+        for row in (traces[1], presented[1]):
+            row['previous_predicted_display_xr_ns'] = 100
+        self.assertEqual(module.evaluate(traces, presented)['status'], 'fail')
+
+    def test_schema3_missing_extra_unknown_and_disagreeing_accounting_fail(self):
+        for mutation in ('missing', 'extra', 'unknown_reason', 'missing_reason', 'join', 'schema_downgrade'):
+            traces, presented = self.attempt_fixture(gap=True)
+            a = traces[1]['render_attempts']
+            if mutation == 'missing':
+                del traces[1]['render_attempts']
+            elif mutation == 'extra':
+                a['ignored_failure'] = 1
+            elif mutation == 'unknown_reason':
+                a['skipped']['xr_end_frame_failed'] = 1
+            elif mutation == 'missing_reason':
+                del a['skipped']['retained_pair']
+            elif mutation == 'join':
+                presented[1]['render_attempts']['skipped']['retained_pair'] = 0
+                presented[1]['render_attempts']['skipped']['no_complete_pair'] = 1
+            else:
+                traces[1]['schema'] = 2
+            self.assertEqual(module.evaluate(traces, presented)['status'], 'fail', mutation)
+
+    def test_schema3_first_submission_cannot_invent_previous_selection(self):
+        traces, presented = self.attempt_fixture(startup=True)
+        traces[0]['previous'] = copy.deepcopy(traces[0]['selected'])
+        traces[0]['repeat_previous'] = True
+        result = module.evaluate(traces, presented)
+        self.assertEqual(result['status'], 'fail')
+        self.assertIn('first render-attempt trace has an unobserved previous selection', result['errors'])
+
+    def test_schema3_attempt_accounting_remains_required_after_snapshot_cap(self):
+        initial, initial_p = self.attempt_fixture()
+        traces, presented = [initial[0]], [initial_p[0]]
+        for index in range(1, 4097):
+            r, p = copy.deepcopy(initial[1]), copy.deepcopy(initial_p[1])
+            r['sequence'] = index + 1
+            for key in ('wait_frame_begin_xr_ns', 'wait_frame_end_xr_ns', 'render_entry_xr_ns',
+                        'selection_begin_xr_ns', 'selection_end_xr_ns', 'end_frame_return_xr_ns',
+                        'predicted_display_xr_ns', 'previous_predicted_display_xr_ns'):
+                r[key] += (index-1)*100
+                if key in p:
+                    p[key] += (index-1)*100
+            p.update(submit_xr_ns=65+index*100, render_fence_begin_xr_ns=52+index*100,
+                     render_fence_end_xr_ns=53+index*100, candidate_trace_records=min(index+1, 4096),
+                     candidate_trace_dropped=max(0, index+1-4096),
+                     candidate_trace_write_ns=10000 if index < 4096 else 0)
+            attempt_record(r, p, index+1, index, index*100)
+            if index < 4096:
+                traces.append(r)
+            presented.append(p)
+        result = module.evaluate(traces, presented)
+        self.assertEqual(result['status'], 'pass', result['errors'])
+        self.assertEqual(result['skipped_render_count'], 0)
+        del presented[-1]['render_attempts']
+        self.assertEqual(module.evaluate(traces, presented)['status'], 'fail')
+
+    def test_schema2_cannot_silently_ignore_schema3_accounting(self):
+        traces, presented = self.attempt_fixture()
+        for row in traces:
+            row['schema'] = 2
+        self.assertEqual(module.evaluate(traces, presented)['status'], 'fail')
+        self.assertEqual(module.evaluate([], [{'render_attempts': {}}], False)['status'], 'fail')
+
     def test_schema2_intervening_render_target_preserves_submission_contract(self):
         for prior in (100, 101, 150, 199):
             with self.subTest(prior=prior):

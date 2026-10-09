@@ -130,14 +130,15 @@ class CandidateEvidenceTests(unittest.TestCase):
                 self.assertIn('missing or mismatched helper source provenance',module.inspect_run(d,self.receipt)['errors'])
 
     def test_trace_cannot_be_hidden_by_false_provenance_flag(self):
-        d = self.make_run('hidden_trace')
-        p = d/'client/codec-test-present.jsonl'
-        values = [json.loads(line) for line in p.read_text().splitlines()]
-        values[0]['candidate_trace_records'] = 1
-        p.write_text(''.join(json.dumps(v)+'\n' for v in values)); self.seal(d)
-        result = module.inspect_run(d, self.receipt)
-        self.assertEqual(result['status'], 'fail')
-        self.assertIn('diagnostic trace evidence cannot masquerade as an untraced candidate',result['errors'])
+        for key, value in (('candidate_trace_records', 1), ('render_attempts', {})):
+            d = self.make_run('hidden_trace_' + key)
+            p = d/'client/codec-test-present.jsonl'
+            values = [json.loads(line) for line in p.read_text().splitlines()]
+            values[0][key] = value
+            p.write_text(''.join(json.dumps(v)+'\n' for v in values)); self.seal(d)
+            result = module.inspect_run(d, self.receipt)
+            self.assertEqual(result['status'], 'fail')
+            self.assertIn('diagnostic trace evidence cannot masquerade as an untraced candidate',result['errors'])
 
     def make_run(self, name, offset=0):
         d = self.root/name

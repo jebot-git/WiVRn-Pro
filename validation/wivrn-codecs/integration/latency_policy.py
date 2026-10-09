@@ -115,7 +115,7 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
             if provenance.get('candidate_trace') is not False:
                 errors.append('diagnostic candidate trace is not eligible for promotion')
             if (summary.get('candidate_trace', {}).get('status') != 'off'
-                    or any(any(k.startswith('candidate_trace_') for k in row) for row in rows)
+                    or any('render_attempts' in row or any(k.startswith('candidate_trace_') for k in row) for row in rows)
                     or (directory/'client/codec-test/selection-trace.jsonl').exists()):
                 errors.append('diagnostic trace evidence cannot masquerade as an untraced candidate')
             backend, phase = provenance.get('decoder_backend'), provenance.get('selection_phase')

@@ -113,6 +113,7 @@ private:
 	bool test_select_after_fence = false;
 	wivrn::codec_test::selection_trace::Policy test_selection_policy = wivrn::codec_test::selection_trace::Policy::closest_target;
 	wivrn::codec_test::selection_trace::Budget test_candidate_trace;
+	wivrn::codec_test::selection_trace::AttemptLedger test_render_attempts;
 	std::ofstream test_candidate_trace_file;
 #endif
 	std::array<accumulator_images, decoder_count> decoders; // Locked by decoder_mutex
