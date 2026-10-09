@@ -1,0 +1,53 @@
+Frozen host observation, 2026-10-09
+===================================
+
+26 profiles x12 arms x31 repetitions:9,672 measured stereo invocations exact in
+30.876284 seconds. Both other teams explicitly idle before launch; sources, native
+and Android binaries and corpus hashes unchanged. Host i7-12700 / clang22.1.8 /
+Linux7.2.9; no affinity, frequency or thermal control. Ordinary desktop services
+remain uncontrolled. Twelve actual pairs plus fourteen duplicated-eye synthetic
+profiles do not establish general content or device behavior.
+
+Arithmetic means of four captured pair p50s per group, milliseconds:
+                            Q1          Q8-a        Q8-b
+VR444 matched total       0.692322    1.077391    0.909234
+RRB32 reference total     1.036987    1.764749    1.519972
+RRB32 staged4 total       0.882238    1.319903    1.178598
+RRB32 fused serial total  0.988260    1.685722    1.434837
+RRB32 fused2 total        0.741440    1.194880    1.064604
+RRB32 fused4 total        0.551786    0.930881    0.802054
+RRB128 fused4 total       0.634535    1.010136    0.937023
+
+RRB32 fused4 server wall  0.266692    0.467842    0.399063
+RRB32 fused4 server CPU   0.793426    1.438038    1.189053
+RRB32 fused4 client wall  0.281602    0.460554    0.402815
+
+The total is the p50 of matched server+client samples, not a sum of marginal p50s.
+All twelve captured pairs improve total p50 with RRB32 fused4. Aggregate process
+CPU remains higher and thread scheduling matters. These are host transcode plus
+host decode observations, not native display latency or framebuffer encoding.
+
+Four of twelve pairs regress at matched total p95 (31 samples per pair):
+pair                 VR444 p95     RRB32 fused4 p95, ms
+lossless/1260         0.697084       0.732689
+lossless/1080         0.723539       0.753724
+lossless/180          0.683340       0.684218
+paired-b/1170         0.895152       0.943684
+The other eight improve. A median win is not a strict tail-latency promotion;
+this small single-host batch offers no live-workload confidence guarantee.
+
+Exact wire bytes are unchanged by fusion. Corpus totals across four pairs:
+group       VR444       RRF-up       RRB32       RRB128
+Q1          98,239       55,655      66,332       58,298
+Q8-a       182,910      233,898     245,567      236,627
+Q8-b       135,653      184,585     194,380      186,904
+Q8 bandwidth inflation can outweigh its host CPU saving. Actual connection,
+packet recovery, rendering and runtime behavior have not been measured here.
+
+RRB32 fused4 retained staging vector capacity spans1,006,672..1,141,220 bytes
+among captured pairs. This excludes input/oracle storage, allocator overhead,
+thread stacks and any transient peak; it is not a process memory measurement.
+
+The result supports further bounded pipeline/transport investigation. Do not add
+these values to unrelated GPU clocks or claim a headset/sub15 result. Headset
+testing remains suspended, and no production path is changed by this branch.

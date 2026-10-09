@@ -1,0 +1,1 @@
+{"pass":true,"exact_canonical_stereo_cases":733,"rejections":3465,"worker_counts":[1,2,4],"reuse_batches":300,"max_block_jobs":512,"max_pixels_per_eye":4194304,"source_qmaps_and_odd_dimensions":true,"separate_published_lease_retained":true}
