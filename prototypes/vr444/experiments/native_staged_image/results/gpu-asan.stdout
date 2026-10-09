@@ -1,0 +1,9 @@
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_type":2,"vendor_id":32902,"device_id":22176,"driver":109060195,"api_version":4211051,"queue_family":0,"width":1,"height":1,"unorm_storage_srgb_linear_supported":true}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_type":2,"vendor_id":32902,"device_id":22176,"driver":109060195,"api_version":4211051,"queue_family":0,"width":1,"height":129,"unorm_storage_srgb_linear_supported":true}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_type":2,"vendor_id":32902,"device_id":22176,"driver":109060195,"api_version":4211051,"queue_family":0,"width":17,"height":33,"unorm_storage_srgb_linear_supported":true}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_type":2,"vendor_id":32902,"device_id":22176,"driver":109060195,"api_version":4211051,"queue_family":0,"width":129,"height":65,"unorm_storage_srgb_linear_supported":true}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_type":2,"vendor_id":32902,"device_id":22176,"driver":109060195,"api_version":4211051,"queue_family":0,"width":4095,"height":3,"unorm_storage_srgb_linear_supported":true}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_type":2,"vendor_id":32902,"device_id":22176,"driver":109060195,"api_version":4211051,"queue_family":0,"width":4096,"height":1,"unorm_storage_srgb_linear_supported":true}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_type":2,"vendor_id":32902,"device_id":22176,"driver":109060195,"api_version":4211051,"queue_family":0,"width":1,"height":4096,"unorm_storage_srgb_linear_supported":true}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_type":2,"vendor_id":32902,"device_id":22176,"driver":109060195,"api_version":4211051,"queue_family":0,"width":576,"height":640,"unorm_storage_srgb_linear_supported":true}
+{"pass":true,"checks":826,"gpu_used":true,"headset_used":false,"performance_claim":false,"native_renderer_executed":false}

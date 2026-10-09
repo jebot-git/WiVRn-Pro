@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+#version 450
+layout(local_size_x=128) in;
+layout(set=0,binding=0,std430) readonly buffer RGB { uint packed[]; };
+layout(set=0,binding=1,std430) readonly buffer Metadata { uvec4 blocks[]; };
+layout(set=0,binding=2,rgba8) writeonly uniform image2D output_image;
+layout(push_constant) uniform Params { uint width,height,count,raw_bytes; } pc;
+uint byte_at(uint p) { return (packed[p/4] >> ((p%4)*8)) & 255u; }
+void main() {
+    if (pc.count==0 || pc.count>256 || pc.raw_bytes!=pc.width*pc.height*3) return;
+    uint columns=(pc.width+127)/128;
+    uint block=gl_WorkGroupID.x/columns;
+    if (block>=pc.count) return;
+    uvec4 b=blocks[block]; // row, height, mode, raw byte offset
+    if (b.y==0 || b.y>128 || b.x>=pc.height || b.y>pc.height-b.x || b.z>2 || b.w!=b.x*pc.width*3) return;
+    uint x=(gl_WorkGroupID.x%columns)*128+gl_LocalInvocationID.x;
+    if (x>=pc.width) return;
+    uvec3 previous=uvec3(0);
+    for (uint y=0; y<b.y; ++y) {
+        uint p=b.w+(y*pc.width+x)*3;
+        uvec3 value=uvec3(byte_at(p),byte_at(p+1),byte_at(p+2));
+        if (b.z==2) { previous=(previous+value)&uvec3(255); value=previous; }
+        imageStore(output_image,ivec2(x,b.x+y),vec4(value,255u)/255.0);
+    }
+}
