@@ -41,7 +41,8 @@ def _distribution(values):
                    for q in (50, 95, 99)})
 
 
-def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, selection_policy=None):
+def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, selection_policy=None,
+             rrb_output=None, rrb_workers=None):
     """Return status pass/fail, errors, counts and millisecond distributions.
 
     XR times are client-local positive signed-64-bit values in this runtime log.
@@ -55,6 +56,13 @@ def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, sele
                   optical_motion_to_photon_verified=False,
                   scope='Runtime telemetry contract only; not the mission latency gate')
     errors = set()
+    rrb = rrb_output is not None
+    if rrb and (rrb_output not in ('cpu', 'staged-gpu') or backend != 'cpu-neon'
+                or type(rrb_workers) is not int or rrb_workers not in (2, 4)
+                or cpu_output != 'not_used'):
+        errors.add('invalid explicit RRB coordinator/output contract')
+    if not rrb and rrb_workers is not None:
+        errors.add('RRB worker request without an RRB output')
     if backend not in ('native', 'resident', 'readback', 'cpu-neon'):
         errors.add('unsupported requested backend')
     if selection_phase not in ('early', 'after-fence'):
@@ -65,7 +73,7 @@ def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, sele
         errors.add('unsupported requested selection policy')
     if cpu_output in ('cached-copy', 'mapped-direct') and backend != 'cpu-neon':
         errors.add('CPU output requires CPU NEON backend')
-    if cpu_output == 'not_used' and backend == 'cpu-neon':
+    if cpu_output == 'not_used' and backend == 'cpu-neon' and not rrb:
         errors.add('CPU NEON requires an output destination')
     if type(presented) is not list or not presented:
         errors.add('presented must be a nonempty list')
@@ -153,7 +161,28 @@ def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, sele
         else:
             for key in _DURATIONS:
                 duration_values[key].append(row[key])
-        if backend == 'cpu-neon':
+        if rrb:
+            expected_workers = rrb_workers if rrb_output == 'cpu' else 0
+            expected_vector = 'not_used' if rrb_output == 'cpu' else 'not_used_residual_unpack'
+            if (row.get('effective_codec') != 'rrb32' or row.get('rrb_output') != rrb_output
+                    or row.get('rrb_workers') != expected_workers
+                    or row.get('configured_rrb_workers') != rrb_workers
+                    or row.get('rrb_block_rows') != 32 or row.get('stereo_envelope_cap') != 262144
+                    or row.get('decoder_kernel') != 'direct-neon'
+                    or row.get('cpu_vector_backend') != expected_vector
+                    or row.get('gpu_timing_valid') is not False or row.get('decode_gpu_ms') != 0
+                    or not _duration(row.get('pair_decode_ms'))
+                    or row.get('cpu_decode_ms') != 0):
+                errors.add('RRB output/coordinator provenance or untimed GPU contract mismatch')
+            if rrb_output == 'cpu' and row.get('rrb_vector_backend') != 'aarch64-neon':
+                errors.add('RRB CPU vector implementation is not verified NEON')
+            if rrb_output == 'staged-gpu' and (row.get('rrb_vector_backend') != 'not_used_residual_unpack'
+                    or not _duration(row.get('staging_prepare_ms'))
+                    or row.get('staging_copy_ms') != 0 or row.get('staging_copy_timing_valid') is not False):
+                errors.add('RRB GPU residual/preparation timing contract differs')
+        elif row.get('effective_codec') == 'rrb32':
+            errors.add('RRB observations require an explicit requested RRB contract')
+        elif backend == 'cpu-neon':
             if (row.get('decoder_kernel') != 'direct-neon'
                     or row.get('cpu_vector_backend') != 'aarch64-neon'
                     or row.get('gpu_timing_valid') is not False
@@ -172,12 +201,12 @@ def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, sele
             mode = row.get('cpu_output_mode')
             if type(mode) is str:
                 output_modes.add(mode)
-            if mode not in (('cached-copy', 'mapped-direct') if backend == 'cpu-neon' else ('not_used',)):
+            if mode not in (('cached-copy', 'mapped-direct') if backend == 'cpu-neon' and not rrb else ('not_used',)):
                 errors.add('invalid observed CPU output mode')
             if cpu_output is not None and mode != cpu_output:
                 errors.add('observed CPU output differs from requested mode')
             flags = row.get('staging_memory_flags')
-            if (not _integer(row.get('staging_memory_type'), 0, 31)
+            if rrb_output != 'staged-gpu' and (not _integer(row.get('staging_memory_type'), 0, 31)
                     or not _integer(flags, 0, (1 << 32)-1) or flags & 6 != 6):
                 errors.add('staging memory lacks verified host-visible coherent allocation')
             if mode == 'mapped-direct' and row.get('staging_copy_ms') != 0:
@@ -186,14 +215,17 @@ def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, sele
             if not _duration(snapshot_ms):
                 errors.add('invalid capture snapshot duration')
             captured = row['frame'] % 90 == 0
-            expected_capture = ('cpu_mapped_staging_snapshot' if mode == 'mapped-direct' else
+            expected_capture = ('rrb_pair_cpu_output' if rrb_output == 'cpu' else
+                                'rrb_gpu_image_readback' if rrb_output == 'staged-gpu' else
+                                'cpu_mapped_staging_snapshot' if mode == 'mapped-direct' else
                                 'cpu_cached_output' if mode == 'cached-copy' else
                                 'gpu_output_readback' if backend == 'resident' else 'decoded_cpu_output')
             if row.get('capture_source') != (expected_capture if captured else 'not_captured'):
                 errors.add('capture source contradicts actual output path or sample cadence')
             if not captured and snapshot_ms != 0:
                 errors.add('uncaptured frame has snapshot overhead')
-            if not (captured and (mode == 'mapped-direct' or backend == 'resident')) and snapshot_ms != 0:
+            if not (captured and (mode == 'mapped-direct' or backend == 'resident'
+                                 or rrb_output == 'staged-gpu')) and snapshot_ms != 0:
                 errors.add('output path without snapshot reports snapshot overhead')
             if _duration(snapshot_ms) and _duration(row.get('decode_upload_ms')) and snapshot_ms > row['decode_upload_ms']:
                 errors.add('capture snapshot exceeds enclosing decode/upload interval')
@@ -209,5 +241,6 @@ def evaluate(presented, decoded, backend, selection_phase, cpu_output=None, sele
                   observed_decoder_kernels=sorted(actual_kernels),
                   observed_cpu_output_modes=sorted(output_modes),
                   matched_presented_eye_identities=len(identities & decoded_identities),
+                  requested_rrb_output=rrb_output, requested_rrb_workers=rrb_workers,
                   errors=sorted(errors), status='fail' if errors else 'pass')
     return result

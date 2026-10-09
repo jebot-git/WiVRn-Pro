@@ -16,7 +16,9 @@ spec.loader.exec_module(compare)
 class NativeComparisonConfiguration(unittest.TestCase):
     def args(self, mode, divider):
         return SimpleNamespace(mode=mode, fps_divider=divider, port=9767, seconds=30,
-                               bitrate=50_000_000, q=8, compression='lz4')
+                               bitrate=50_000_000, q=8,
+                               compression='none' if mode == 'custom-rrb32' else 'lz4',
+                               decoder_backend='cpu-neon' if mode == 'custom-rrb32' else 'resident')
 
     def test_all_modes_and_cadences_share_isolated_scene_and_comparison_optout(self):
         inherited = {'PATH': '/usr/bin', 'WIVRN_CODEC_COMPARE': '0',
@@ -47,12 +49,12 @@ class NativeComparisonConfiguration(unittest.TestCase):
                         self.assertFalse(client['eye_gaze'])
                         self.assertEqual(client['openxr_post_processing'], {'super_sampling': 0, 'sharpening': 0})
                         self.assertNotIn('WIVRN_CODEC_TEST_UNKNOWN', env)
-                        if mode == 'custom-vr444':
+                        if mode in compare.CUSTOM_MODES:
                             self.assertEqual(server['encoder']['encoder'], 'codec-test')
                             self.assertNotIn('codec', server['encoder'])
-                            self.assertEqual(env['WIVRN_CODEC_TEST'], 'vulkan-vr444')
+                            self.assertEqual(env['WIVRN_CODEC_TEST'], 'rrb32-vr444' if mode == 'custom-rrb32' else 'vulkan-vr444')
                             self.assertEqual(env['WIVRN_CODEC_TEST_FRAME_STRIDE'], '1')
-                            self.assertEqual(env['WIVRN_CODEC_TEST_COMPRESSION'], 'lz4')
+                            self.assertEqual(env['WIVRN_CODEC_TEST_COMPRESSION'], 'none' if mode == 'custom-rrb32' else 'lz4')
                             self.assertEqual(env['VR444_KERNEL'], 'baseline')
                             self.assertEqual(env['VR444_DEVICE'], '0')
                             self.assertNotIn('WIVRN_DUMP_VIDEO', env)
@@ -70,6 +72,39 @@ class NativeComparisonConfiguration(unittest.TestCase):
 
 
 class NativeComparisonGates(unittest.TestCase):
+    def test_rrb_unintegrated_sources_stop_before_device_access(self):
+        from argparse import Namespace
+        with tempfile.TemporaryDirectory() as folder:
+            args = Namespace(mode='custom-rrb32', decoder_backend='cpu-neon', seconds=30, port=9767,
+                fps_divider=1, bitrate=20_000_000, q=1, compression='none', source_trace=False,
+                candidate_trace=False, pacer_trace=False, selection_phase='after-fence',
+                cpu_output='cached-copy', selection_policy='closest-target',
+                rrb_source='q1', rrb_workers=4, rrb_output='cpu',
+                source=Path(folder)/'not-integrated', out=Path(folder)/'unused', serial='not-queried')
+            with patch.object(compare, 'command') as device, patch.object(compare.subprocess, 'run') as subprocess:
+                with self.assertRaisesRegex(ValueError, 'RRB native source'):
+                    compare.run(args)
+                device.assert_not_called(); subprocess.assert_not_called()
+                self.assertFalse(args.out.exists())
+
+    def test_rrb_modes_require_explicit_payload_workers_output_and_exact_q(self):
+        from argparse import Namespace
+        args = Namespace(mode='custom-rrb32', decoder_backend='cpu-neon', cpu_output='cached-copy',
+                         rrb_source='q1', rrb_workers=4, rrb_output='cpu', q=1, compression='none')
+        self.assertEqual(compare.rrb_settings(args)['codec-test-payload.txt'], 'rrb32')
+        self.assertTrue(set(compare.rrb_settings(args)).issubset(compare.CONFIG_FILES))
+        for changes in (dict(q=8), dict(compression='lz4'), dict(rrb_workers=True),
+                        dict(rrb_workers=3), dict(decoder_backend='resident'),
+                        dict(cpu_output='mapped-direct'), dict(rrb_output='unknown')):
+            with self.assertRaises(ValueError):
+                compare.rrb_settings(Namespace(**(vars(args) | changes)))
+        args.rrb_source = 'vr444'; args.q = 8; args.rrb_output = 'staged-gpu'
+        self.assertEqual(compare.rrb_settings(args)['codec-test-rrb-output.txt'], 'staged-gpu')
+        args.mode = 'custom-vr444'
+        with self.assertRaises(ValueError): compare.rrb_settings(args)
+        args.rrb_output = 'cpu'
+        self.assertEqual(compare.rrb_settings(args)['codec-test-payload.txt'], 'vr444')
+
     def test_experimental_controls_are_explicit_and_backed_up(self):
         from argparse import Namespace
         args = Namespace(mode='custom-vr444', decoder_backend='cpu-neon', cpu_output='mapped-direct',

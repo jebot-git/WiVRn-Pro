@@ -21,11 +21,13 @@ import tempfile
 import time
 
 PACKAGE = 'org.meumeu.wivrn.codectest'
-MODES = ('native-h264', 'native-hevc', 'custom-vr444')
+CUSTOM_MODES = ('custom-vr444', 'custom-rrb32')
+MODES = ('native-h264', 'native-hevc') + CUSTOM_MODES
 CONFIG_FILES = ('client.json', 'codec-test-kernel.txt', 'codec-test-backend.txt',
                 'codec-test-pairing.txt', 'codec-test-compression.txt', 'codec-test-gaze-timing.txt',
                 'codec-test-selection.txt', 'codec-test-candidate-trace.txt',
-                'codec-test-cpu-output.txt', 'codec-test-selection-policy.txt', 'codec-test-publication-trace.txt')
+                'codec-test-cpu-output.txt', 'codec-test-selection-policy.txt', 'codec-test-publication-trace.txt',
+                'codec-test-payload.txt', 'codec-test-rrb-workers.txt', 'codec-test-rrb-output.txt')
 
 
 def save(path, value):
@@ -45,6 +47,47 @@ def read_rows(path):
     return [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()] if Path(path).exists() else []
 
 
+def rrb_settings(args):
+    """Explicit payload/output selection, including resets for every control run."""
+    enabled = args.mode == 'custom-rrb32'
+    workers = getattr(args, 'rrb_workers', 4)
+    output = getattr(args, 'rrb_output', 'cpu')
+    source = getattr(args, 'rrb_source', 'vr444')
+    if type(workers) is not int or workers not in (2, 4) or output not in ('cpu', 'staged-gpu') or source not in ('q1', 'vr444'):
+        raise ValueError('invalid RRB workers/output/source')
+    if enabled:
+        if args.decoder_backend != 'cpu-neon' or getattr(args, 'cpu_output', 'cached-copy') != 'cached-copy':
+            raise ValueError('RRB32 requires explicit CPU NEON coordinator with cached-copy control')
+        if args.compression != 'none' or (source == 'q1' and args.q != 1):
+            raise ValueError('RRB32 uses internal block compression; exact source mode requires Q1')
+    elif output != 'cpu' or workers != 4 or source != 'vr444':
+        raise ValueError('RRB-specific options require custom-rrb32')
+    return {'codec-test-payload.txt': 'rrb32' if enabled else 'vr444',
+            'codec-test-rrb-workers.txt': str(workers), 'codec-test-rrb-output.txt': output}
+
+
+def rrb_source_helpers(args, source=None):
+    """Pin the complete RRB adapter and native callsites before device access."""
+    if args.mode != 'custom-rrb32':
+        return ()
+    overlay = Path(__file__).with_name('source-overlay')
+    names = ['common/CMakeLists.txt', 'client/CMakeLists.txt',
+             'common/codec_test/wire.h', 'common/codec_test/metadata.h',
+             'common/codec_test/test_mode.h', 'common/codec_test/stereo_publication.h',
+             'server/encoder/encode_batch.h', 'server/encoder/video_encoder_test.cpp',
+             'server/encoder/video_encoder_test.h', 'client/decoder/test_decoder.cpp',
+             'client/decoder/staged_rowblocks_image.h', 'client/decoder/staged_rowblocks_image.cpp',
+             'client/decoder/staged_rowblocks_image.comp',
+             'assets/codec-test/staged-rowblocks-image.spv']
+    names += [str(p.relative_to(overlay)) for p in sorted((overlay/'common/codec_test/rrb').rglob('*')) if p.is_file()]
+    if source is not None:
+        for name in names:
+            path = Path(source)/name
+            if not path.is_file() or sha(path) != sha(overlay/name):
+                raise ValueError('RRB native source is absent or differs from reviewed overlay: '+name)
+    return tuple(names)
+
+
 def experimental_settings(args):
     """Explicit experimental controls; default choices preserve existing behavior."""
     output = getattr(args, 'cpu_output', 'cached-copy')
@@ -56,7 +99,7 @@ def experimental_settings(args):
     if selection == 'bounded-newest' and not getattr(args, 'candidate_trace', False):
         raise ValueError('bounded-newest currently requires diagnostic candidate tracing')
     publication_trace_helpers(args)
-    return {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection,
+    return rrb_settings(args) | {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection,
             'codec-test-publication-trace.txt': '1' if getattr(args, 'publication_trace', False) else '0'}
 
 
@@ -68,7 +111,7 @@ def pacer_trace_helpers(args, source=None):
         raise ValueError('pacer trace control must be boolean')
     if not enabled:
         return ()
-    if (args.mode != 'custom-vr444' or args.decoder_backend != 'cpu-neon'
+    if (args.mode not in CUSTOM_MODES or args.decoder_backend != 'cpu-neon'
             or getattr(args, 'candidate_trace', False) is not True
             or getattr(args, 'source_trace', False) is not True):
         raise ValueError('pacer tracing requires custom CPU NEON plus candidate and source diagnostics')
@@ -85,7 +128,7 @@ def publication_trace_helpers(args, source=None):
         raise ValueError('publication trace control must be boolean')
     if not enabled:
         return ()
-    if (args.mode != 'custom-vr444' or args.decoder_backend != 'cpu-neon'
+    if (args.mode not in CUSTOM_MODES or args.decoder_backend != 'cpu-neon'
             or getattr(args, 'candidate_trace', False) is not True
             or getattr(args, 'source_trace', False) is not True):
         raise ValueError('publication tracing requires custom CPU NEON plus candidate and source diagnostics')
@@ -190,7 +233,8 @@ def build_configuration(args, runtime, source, output):
     """Pure configuration builder, also usable by offline tests/review."""
     pacer_trace_helpers(args)
     publication_trace_helpers(args)
-    custom = args.mode == 'custom-vr444'
+    rrb_settings(args)
+    custom = args.mode in CUSTOM_MODES
     codec = 'h264' if args.mode == 'native-h264' else 'h265'
     server_config = {
         'port': args.port, 'tcp-only': True, 'publish-service': 'none',
@@ -222,7 +266,7 @@ def build_configuration(args, runtime, source, output):
     if getattr(args, 'pacer_trace', False):
         env['WIVRN_CODEC_PACER_TRACE'] = str(output/'host/pacer-trace.jsonl')
     if custom:
-        env.update({'WIVRN_CODEC_TEST': 'vulkan-vr444', 'WIVRN_CODEC_TEST_Q': str(args.q),
+        env.update({'WIVRN_CODEC_TEST': ('rrb32-'+getattr(args, 'rrb_source', 'vr444')) if args.mode == 'custom-rrb32' else 'vulkan-vr444', 'WIVRN_CODEC_TEST_Q': str(args.q),
                     'WIVRN_CODEC_TEST_FRAME_STRIDE': '1', 'VR444_KERNEL': 'baseline',
                     'WIVRN_CODEC_TEST_COMPRESSION': args.compression,
                     'WIVRN_CODEC_TEST_SHADERS': str(source/'assets/codec-test'),
@@ -265,14 +309,15 @@ def run(args):
         raise ValueError('invalid port/1..200Mbps bitrate/quantizer')
     if args.decoder_backend not in ('resident', 'cpu-neon') or args.selection_phase not in ('early', 'after-fence'):
         raise ValueError('invalid decoder backend/selection phase')
-    if args.mode != 'custom-vr444' and args.decoder_backend != 'resident':
-        raise ValueError('CPU backend only applies to custom VR444')
+    if args.mode not in CUSTOM_MODES and args.decoder_backend != 'resident':
+        raise ValueError('CPU backend only applies to custom codec modes')
     kernel = 'direct-neon' if args.decoder_backend == 'cpu-neon' else 'coop128dc'
     if args.compression not in ('none', 'lz4'):
         raise ValueError('invalid custom compression')
     source, output = args.source.resolve(), args.out.resolve()
     pacer_helpers = pacer_trace_helpers(args, source)
     publication_helpers = publication_trace_helpers(args, source)
+    rrb_helpers = rrb_source_helpers(args, source)
     server = source/'build/codec-server/server/wivrn-pro-server'
     manifest = source/'build/codec-server/openxr_wivrn-dev.json'
     apk = source/'build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk'
@@ -330,7 +375,7 @@ def run(args):
                    'client/decoder/android/android_decoder.cpp', 'client/scenes/stream.cpp',
                    'server/compositor/foveation.cpp', 'server/compositor/compositor.cpp',
                    'server/driver/app_pacer.cpp', 'server/driver/codec_source_trace.h',
-                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers
+                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers + rrb_helpers
         save(output/'provenance.json', {
             'schema': 1, 'mode': args.mode, 'source': str(source), 'server_sha256': sha(server),
             'installed_apk_sha256': apk_hash, 'runtime_manifest_sha256': sha(manifest),
@@ -342,12 +387,15 @@ def run(args):
             'headset_serial': args.serial, 'duration_s': args.seconds, 'geometry': [576, 640],
             'requested_display_hz': 90, 'fps_divider': args.fps_divider,
             'requested_new_content_fps': 90/args.fps_divider, 'custom_frame_stride': 1,
-            'native_encoder_requested': None if args.mode == 'custom-vr444' else 'qsv',
+            'native_encoder_requested': None if args.mode in CUSTOM_MODES else 'qsv',
             'native_codec_requested': config['encoder'].get('codec'), 'bit_depth_requested': 8,
             'requested_render_node': '/dev/dri/renderD129', 'requested_gpu_index': 0,
             'bitrate_bps': args.bitrate, 'custom_q': args.q,
-            'custom_compression': args.compression if args.mode == 'custom-vr444' else None,
+            'custom_compression': args.compression if args.mode in CUSTOM_MODES else None,
             'custom_decoder': kernel, 'decoder_backend': args.decoder_backend,
+            'rrb_source': getattr(args, 'rrb_source', 'vr444') if args.mode == 'custom-rrb32' else None,
+            'rrb_workers': getattr(args, 'rrb_workers', 4) if args.mode == 'custom-rrb32' else None,
+            'rrb_output': getattr(args, 'rrb_output', 'cpu') if args.mode == 'custom-rrb32' else None,
             'selection_phase': args.selection_phase, 'candidate_trace': args.candidate_trace,
             'cpu_output': args.cpu_output, 'selection_policy': args.selection_policy,
             'source_trace': args.source_trace, 'pacer_trace': getattr(args, 'pacer_trace', False),
@@ -374,7 +422,7 @@ def run(args):
             ac('shell', 'run-as', PACKAGE, 'mkdir', '-p', 'files/codec-test')
             settings = {'client.json': json.dumps(client_config), 'codec-test-kernel.txt': kernel,
                         'codec-test-backend.txt': args.decoder_backend, 'codec-test-pairing.txt': 'paired',
-                        'codec-test-compression.txt': args.compression if args.mode == 'custom-vr444' else 'none',
+                        'codec-test-compression.txt': args.compression if args.mode in CUSTOM_MODES else 'none',
                         'codec-test-gaze-timing.txt': '0', 'codec-test-selection.txt': args.selection_phase,
                         'codec-test-candidate-trace.txt': '1' if args.candidate_trace else '0'}
             settings.update(experiment_config)
@@ -478,7 +526,7 @@ def run(args):
         result = evaluate_output(output)
     except Exception as exc:
         result = {'status': 'fail', 'errors': ['metrics error: '+str(exc)]}
-    if args.mode != 'custom-vr444':
+    if args.mode not in CUSTOM_MODES:
         evidence_path = Path(__file__).with_name('native_evidence.py')
         if evidence_path.is_file():
             try:
@@ -497,15 +545,15 @@ def run(args):
         else:
             result['status'] = 'unverified'
             result['bitstream_evidence_error'] = 'native_evidence.py unavailable'
-    if args.mode == 'custom-vr444':
+    if args.mode in CUSTOM_MODES:
         try:
             live_path = Path(__file__).with_name('live.py')
             spec = importlib.util.spec_from_file_location('codec_custom_live', live_path)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            custom = module.evaluate(output, 'vulkan-vr444')
+            custom = module.evaluate(output, ('rrb32-'+getattr(args, 'rrb_source', 'vr444')) if args.mode == 'custom-rrb32' else 'vulkan-vr444')
             encoded = {(r['frame'], r['eye']): r for p in (output/'host').glob('encode-*.jsonl')
-                       for r in read_rows(p) if 'frame' in r}
+                       for r in read_rows(p) if 'frame' in r and r.get('type') != 'rrb_pair_rejected'}
             decoded = {(r['frame'], r['eye']): r for p in (output/'client/codec-test').glob('decode-*.jsonl')
                        for r in read_rows(p) if 'eye' in r and not r.get('failed')}
             custom['decoder_selection'] = module.decoder_selection_metrics(decoded, kernel, args.decoder_backend, args.compression)
@@ -521,10 +569,16 @@ def run(args):
                 [r for p in (output/'client/codec-test').glob('decode-*.jsonl')
                  for r in read_rows(p) if r.get('type') != 'summary'],
                 args.decoder_backend, args.selection_phase,
-                cpu_output=args.cpu_output if args.decoder_backend == 'cpu-neon' else 'not_used',
-                selection_policy=args.selection_policy)
+                cpu_output=('not_used' if args.mode == 'custom-rrb32' else args.cpu_output)
+                    if args.decoder_backend == 'cpu-neon' else 'not_used',
+                selection_policy=args.selection_policy,
+                rrb_output=getattr(args, 'rrb_output', 'cpu') if args.mode == 'custom-rrb32' else None,
+                rrb_workers=getattr(args, 'rrb_workers', 4) if args.mode == 'custom-rrb32' else None)
             custom['runtime_validation_source_sha256'] = sha(runtime_path)
-            if args.decoder_backend == 'cpu-neon':
+            if args.mode == 'custom-rrb32':
+                location = 'actual GPU image readback' if getattr(args, 'rrb_output', 'cpu') == 'staged-gpu' else 'shared pair CPU output'
+                custom['decode_output_reference_scope'] = f'RRB32 {location}, compared with explicit host codec reference; source equality separately scored; not final rendered/displayed pixels'
+            elif args.decoder_backend == 'cpu-neon':
                 location = 'mapped staging snapshot after upload completion' if args.cpu_output == 'mapped-direct' else 'cached CPU output before upload'
                 custom['decode_output_reference_scope'] = f'CPU NEON RGBA from {location}, compared byte-for-byte with host reference; not a texture readback or displayed pixel check'
             else:
@@ -549,7 +603,7 @@ def run(args):
         result['status'] = 'fail'
     # Correct evidence collection can pass while the candidate remains too slow.
     # Keep latency explicitly release-blocking without discarding failed candidates.
-    if args.mode == 'custom-vr444':
+    if args.mode in CUSTOM_MODES:
         policy_path = Path(__file__).with_name('latency_policy.py')
         try:
             spec = importlib.util.spec_from_file_location('codec_latency_policy', policy_path)
@@ -660,6 +714,9 @@ def main():
     parser.add_argument('--q', type=int, default=8)
     parser.add_argument('--compression', choices=('none', 'lz4'), default='lz4', help='custom mode only; native streams are never WPC1 wrapped')
     parser.add_argument('--decoder-backend', choices=('resident', 'cpu-neon'), default='resident')
+    parser.add_argument('--rrb-source', choices=('q1', 'vr444'), default='vr444')
+    parser.add_argument('--rrb-workers', type=int, choices=(2, 4), default=4)
+    parser.add_argument('--rrb-output', choices=('cpu', 'staged-gpu'), default='cpu')
     parser.add_argument('--selection-phase', choices=('early', 'after-fence'), default='early')
     parser.add_argument('--candidate-trace', action='store_true', help='Bounded diagnostic candidate trace; not eligible for latency promotion')
     parser.add_argument('--cpu-output', choices=('cached-copy', 'mapped-direct'), default='cached-copy',

@@ -175,9 +175,90 @@ def scene_content(rgba):
     return dict(source_sampled_rgb_colors=colors,source_rgb_span=span,
                 source_has_scene_content=colors>=2 and span>=16)
 
+def rrb_metrics(encoded, decoded, rejected, mode, provenance):
+    """Check the selected native RRB path and joint envelope cap, not latency."""
+    errors = []
+    contract = 'post_foveation_rgb_exact' if mode == 'rrb32-q1' else 'decoded_vr444_rgb_exact'
+    workers = provenance.get('rrb_workers')
+    output = provenance.get('rrb_output')
+    if type(workers) is not int or workers not in (2, 4) or output not in ('cpu', 'staged-gpu'):
+        errors.append('missing requested RRB worker/output provenance')
+    rejected_frames = set()
+    for row in rejected:
+        if (type(row.get('frame')) is not int or row['frame'] < 0
+                or type(row.get('eye')) is not int or row['eye'] not in (0, 1) or row.get('pair_cap') != 262144
+                or type(row.get('staged_pair_bytes')) is not int or row['staged_pair_bytes'] < 0
+                or row.get('reason') not in ('cap_exceeded', 'incomplete_or_invalid_pair', 'batch_failed_or_unsubmitted')
+                or (row.get('reason') == 'cap_exceeded' and row['staged_pair_bytes'] <= 262144)):
+            errors.append('invalid RRB pair rejection')
+        else:
+            rejected_frames.add(row['frame'])
+    pairs = {}
+    for (frame, eye), row in encoded.items():
+        expected = {'effective_codec': 'rrb32', 'source_contract': contract,
+                    'rrb_block_rows': 32, 'stereo_envelope_cap': 262144}
+        if any(row.get(k) != v for k, v in expected.items()):
+            errors.append('sender RRB selection mismatch')
+        if mode == 'rrb32-q1' and row.get('quantizer') != 1:
+            errors.append('exact source RRB requires effective Q1')
+        if mode == 'rrb32-vr444' and (type(provenance.get('custom_q')) is not int
+                or row.get('quantizer') != provenance['custom_q']):
+            errors.append('RRB VR444 source quantizer differs from request')
+        size = row.get('payload_bytes')
+        if type(size) is not int or size < 48:
+            errors.append('invalid RRB envelope size')
+        else:
+            pairs.setdefault(frame, {})[eye] = size
+    for frame, eyes in pairs.items():
+        if set(eyes) == {0, 1} and sum(eyes.values()) > 262144 and frame not in rejected_frames:
+            errors.append('unrejected over-cap stereo pair')
+    decode_times = {}
+    frame_generations = {}
+    decoded_eyes = {}
+    for (frame, eye), row in decoded.items():
+        expected = {'effective_codec': 'rrb32', 'rrb_workers': workers if output == 'cpu' else 0,
+                    'configured_rrb_workers': workers, 'rrb_output': output,
+                    'rrb_block_rows': 32, 'stereo_envelope_cap': 262144}
+        if any(row.get(k) != v for k, v in expected.items()):
+            errors.append('receiver RRB selection mismatch')
+        if frame in rejected_frames:
+            errors.append('rejected stereo pair reached decoder')
+        if set(pairs.get(frame, {})) != {0, 1} or sum(pairs.get(frame, {}).values()) > 262144:
+            errors.append('decoded RRB lacks admitted bounded stereo source')
+        duration = row.get('pair_decode_ms')
+        identity = (row.get('rrb_generation'), frame)
+        decoded_eyes.setdefault(frame, set()).add(eye)
+        if row.get('pair_decode_scope') != 'stereo_once_reported_per_eye':
+            errors.append('shared pair duration scope differs')
+        if type(identity[0]) is not int or identity[0] <= 0:
+            errors.append('missing RRB generation identity')
+        elif frame in frame_generations and frame_generations[frame] != identity[0]:
+            errors.append('two eyes disagree on shared pair generation')
+        else:
+            frame_generations[frame] = identity[0]
+        if type(duration) not in (int, float) or not math.isfinite(duration) or duration < 0:
+            errors.append('invalid shared pair decode duration')
+        elif identity in decode_times and decode_times[identity] != duration:
+            errors.append('two eyes disagree on shared decode work')
+        else:
+            decode_times[identity] = duration
+    if any(eyes != {0, 1} for eyes in decoded_eyes.values()):
+        errors.append('incomplete decoded RRB stereo pair')
+    if not encoded or not decoded:
+        errors.append('missing actual RRB sender/receiver observations')
+    return dict(status='mismatch' if errors else 'verified', errors=sorted(set(errors)),
+                source_contract=contract, workers=workers, requested_output=output,
+                complete_encoded_pairs=sum(set(v) == {0, 1} for v in pairs.values()),
+                rejected_stereo_pairs=len(rejected_frames), stereo_envelope_cap=262144,
+                shared_pair_decode_ms=distribution(list(decode_times.values())),
+                scope='Effective RRB codec and joint wire admission; shared pair decode appears in both eyes and is counted once; no displayed quality or latency qualification')
+
+
 def evaluate(output, mode):
     output = Path(output)
-    encoded = {(r['frame'], r['eye']): r for p in (output/'host').glob('encode-*.jsonl') for r in records(p) if 'frame' in r}
+    encoder_rows = [r for p in (output/'host').glob('encode-*.jsonl') for r in records(p)]
+    rejected = [r for r in encoder_rows if r.get('type') == 'rrb_pair_rejected']
+    encoded = {(r['frame'], r['eye']): r for r in encoder_rows if 'frame' in r and r.get('type') != 'rrb_pair_rejected'}
     decoded = {(r['frame'], r['eye']): r for p in (output/'client/codec-test').glob('decode-*.jsonl') for r in records(p) if 'eye' in r}
     errors = []
     failed = [r for p in (output/'client/codec-test').glob('decode-*.jsonl') for r in records(p) if r.get('failed')]
@@ -207,6 +288,7 @@ def evaluate(output, mode):
         # RGB-only codec comparison. No lens-space or source-to-presented claim.
         squared = sum((x-y)**2 for i,(x,y) in enumerate(zip(a,b)) if i%4 != 3)
         hardware_reference_exact = None
+        reference_sha256 = None
         if mode=='hevc-carrier':
             payload=path.with_suffix('.payload')
             if not payload.is_file(): errors.append('missing HEVC payload reference')
@@ -214,17 +296,19 @@ def evaluate(output, mode):
                 software=command(['ffmpeg','-v','error','-f','hevc','-i',payload,'-vf','extractplanes=y','-f','rawvideo','-pix_fmt','gray','-'],capture_output=True).stdout
                 hardware_reference_exact = software == b[0::4]+b[1::4]+b[2::4]
                 if not hardware_reference_exact: errors.append('HEVC hardware/software luma mismatch '+path.name)
-        if mode=='vulkan-vr444':
+        if mode in ('vulkan-vr444', 'rrb32-q1', 'rrb32-vr444'):
             reference=path.with_suffix('.reference.rgba')
-            if not reference.is_file(): errors.append('missing VR444 CPU reference')
+            if not reference.is_file(): errors.append('missing explicit codec RGB reference')
             else:
-                hardware_reference_exact=reference.read_bytes()==b
-                if not hardware_reference_exact: errors.append('Vulkan/CPU decode mismatch '+path.name)
+                reference_bytes = reference.read_bytes()
+                reference_sha256 = hashlib.sha256(reference_bytes).hexdigest()
+                hardware_reference_exact=reference_bytes==b
+                if not hardware_reference_exact: errors.append('client/reference decode mismatch '+path.name)
         pixels = len(a)//4
         # A byte-exact black/no-layer frame cannot establish scene correctness.
         # Sample every fourth pixel; this is a scene-content sanity gate, not
         # the full corpus/protected-zone quality metric.
-        samples.append(dict(file=path.name, submitted_as_stereo=int(path.stem.split('-')[0]) in pairs, **scene_content(a), exact=a==b, hardware_reference_exact=hardware_reference_exact, rgb_psnr_db=None if squared==0 else 10*math.log10(255**2/(squared/(pixels*3))), host_sha256=sha(path), client_sha256=sha(other)))
+        samples.append(dict(file=path.name, submitted_as_stereo=int(path.stem.split('-')[0]) in pairs, **scene_content(a), exact=a==b, hardware_reference_exact=hardware_reference_exact, rgb_psnr_db=None if squared==0 else 10*math.log10(255**2/(squared/(pixels*3))), host_sha256=hashlib.sha256(a).hexdigest(), client_sha256=hashlib.sha256(b).hexdigest(), reference_sha256=reference_sha256))
     if not encoded: errors.append('no encoded frames')
     if len(pairs)<5: errors.append('fewer than five distinct stereo frames submitted to OpenXR')
     if len({int(s['file'].split('-')[1].split('.')[0]) for s in samples})<2:
@@ -235,10 +319,18 @@ def evaluate(output, mode):
         errors.append('missing nondegenerate RGB scene captures for both submitted eyes')
     if mode!='raw-rgba' and any(s['rgb_psnr_db'] is not None and s['rgb_psnr_db']<30 for s in samples): errors.append('RGB quality below 30 dB smoke threshold')
     if mode=='raw-rgba' and any(not s['exact'] for s in samples): errors.append('raw RGBA changed pixels')
+    rrb = None
+    if mode in ('rrb32-q1', 'rrb32-vr444'):
+        provenance = json.loads((output/'provenance.json').read_text())
+        rrb = rrb_metrics(encoded, decoded, rejected, mode, provenance)
+        if rrb['status'] != 'verified': errors.extend(rrb['errors'])
+        if mode == 'rrb32-q1' and any(not s['exact'] for s in samples):
+            errors.append('RRB Q1 changed original codec-source RGBA')
     return dict(schema=1, status='pass' if not errors else 'fail', profile='wivrn-correctness-smoke', mode=mode,
                 encoded_eye_frames=len(encoded), decoded_eye_frames=len(decoded), unique_stereo_submissions=len(pairs),
                 presentation_calls=len(presented), payload_bytes=sum(x['payload_bytes'] for x in encoded.values()),
                 quality_samples=samples, errors=errors, timings=timing_metrics(encoded,decoded,presented),
+                rrb_selection=rrb,
                 stereo=stereo_metrics(decoded,presented,[r for p in (output/'client/codec-test').glob('decode-*.jsonl') for r in records(p) if r.get('type')=='summary']),
                 limits=['576x640 per eye; offered cadence in provenance; TCP over ADB', 'hello_xr scene, not full VR corpus',
                         'submission to OpenXR is not measured photon time', 'wall times include CPU copies, startup and capture overhead',
