@@ -1,0 +1,20 @@
+test_cap_rejects_without_quality_or_size_change (test_model.TestModel.test_cap_rejects_without_quality_or_size_change) ... ok
+test_clean_parity_consumes_service_after_completion (test_model.TestModel.test_clean_parity_consumes_service_after_completion) ... ok
+test_component_arithmetic_and_no_gate_claim (test_model.TestModel.test_component_arithmetic_and_no_gate_claim) ... ok
+test_declared_scenario_bounds (test_model.TestModel.test_declared_scenario_bounds) ... ok
+test_distribution_order_statistics (test_model.TestModel.test_distribution_order_statistics) ... ok
+test_faster_rate_and_first_horizon (test_model.TestModel.test_faster_rate_and_first_horizon) ... ok
+test_group_all_requires_all_cases_eligible (test_model.TestModel.test_group_all_requires_all_cases_eligible) ... ok
+test_ipv6_exact_additional_wire (test_model.TestModel.test_ipv6_exact_additional_wire) ... ok
+test_lossless_evidence_table (test_model.TestModel.test_lossless_evidence_table) ... ok
+test_measured_samples_are_verified (test_model.TestModel.test_measured_samples_are_verified) ... ok
+test_record_formula_boundaries (test_model.TestModel.test_record_formula_boundaries) ... ok
+test_scenario_duplicates_and_empty_reject (test_model.TestModel.test_scenario_duplicates_and_empty_reject) ... ok
+test_single_source_loss (test_model.TestModel.test_single_source_loss) ... ok
+test_ticket_expiry_is_not_success (test_model.TestModel.test_ticket_expiry_is_not_success) ... ok
+test_tiny_two_eyes_and_first_record_horizon (test_model.TestModel.test_tiny_two_eyes_and_first_record_horizon) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.049s
+
+OK

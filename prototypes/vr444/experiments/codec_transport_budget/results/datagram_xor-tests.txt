@@ -1,0 +1,29 @@
+test_accounting (test_transport.Tests.test_accounting) ... ok
+test_all_small_permutations (test_transport.Tests.test_all_small_permutations) ... ok
+test_both_manifests_lost (test_transport.Tests.test_both_manifests_lost) ... ok
+test_candidate_and_orphan_caps (test_transport.Tests.test_candidate_and_orphan_caps) ... ok
+test_clock_rechecked_after_recovery_and_crc (test_transport.Tests.test_clock_rechecked_after_recovery_and_crc) ... ok
+test_crc_bad_packet_can_be_recovered (test_transport.Tests.test_crc_bad_packet_can_be_recovered) ... ok
+test_deadline_stereo_atomic_and_previous_retained (test_transport.Tests.test_deadline_stereo_atomic_and_previous_retained) ... ok
+test_each_single_packet_loss (test_transport.Tests.test_each_single_packet_loss) ... ok
+test_every_truncation_and_seeded_malformed_bounds (test_transport.Tests.test_every_truncation_and_seeded_malformed_bounds) ... ok
+test_exact_pair_and_packet_budget (test_transport.Tests.test_exact_pair_and_packet_budget) ... ok
+test_forged_parity_cannot_bypass_final_eye_crc (test_transport.Tests.test_forged_parity_cannot_bypass_final_eye_crc) ... ok
+test_maximum_pair_and_recovery (test_transport.Tests.test_maximum_pair_and_recovery) ... ok
+test_maximum_pair_first_manifest_loss (test_transport.Tests.test_maximum_pair_first_manifest_loss) ... ok
+test_missing_source_and_its_parity_never_publish (test_transport.Tests.test_missing_source_and_its_parity_never_publish) ... ok
+test_no_fec_missing_source (test_transport.Tests.test_no_fec_missing_source) ... ok
+test_nonzero_recovered_tail_rejected (test_transport.Tests.test_nonzero_recovered_tail_rejected) ... ok
+test_one_loss_per_stripe_recovers (test_transport.Tests.test_one_loss_per_stripe_recovers) ... ok
+test_orphan_geometry_rejected_after_manifest (test_transport.Tests.test_orphan_geometry_rejected_after_manifest) ... ok
+test_semantic_header_and_manifest_rejection (test_transport.Tests.test_semantic_header_and_manifest_rejection) ... ok
+test_shuffle_duplicate_and_conflict_preserves_data (test_transport.Tests.test_shuffle_duplicate_and_conflict_preserves_data) ... ok
+test_stale_epochs_uuid_and_config_reset (test_transport.Tests.test_stale_epochs_uuid_and_config_reset) ... ok
+test_superseded_newer_complete_and_late_old (test_transport.Tests.test_superseded_newer_complete_and_late_old) ... ok
+test_two_losses_same_stripe_never_publish (test_transport.Tests.test_two_losses_same_stripe_never_publish) ... ok
+test_unissued_and_modified_ticket (test_transport.Tests.test_unissued_and_modified_ticket) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.627s
+
+OK

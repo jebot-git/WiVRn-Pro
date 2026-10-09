@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "created_utc": "2026-10-09T08:13:32.004398+00:00",
+  "analysis_kind": "measured_codec_plus_synthetic_serialized_wire_component_model",
+  "git_input": "260a1a22 plus 2c4c907e",
+  "tests": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/codec_transport_budget",
+        "-v"
+      ],
+      "returncode": 0,
+      "test_count": 15,
+      "output_sha256": "9c3b19efb0191d5efbeec3a892fe737ac64c5d130495747e792d49b230378395"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/datagram_xor",
+        "-v"
+      ],
+      "returncode": 0,
+      "test_count": 24,
+      "output_sha256": "4d6054ce78061435821a6e184b5779f3579f2c00151fc713e969f6ee6d9f5014"
+    }
+  ],
+  "modeled_rows": 8320,
+  "source_cases": 26,
+  "actual_captured_pairs": 12,
+  "synthetic_duplicated_eye_profiles": 14,
+  "input_sha256": {
+    "prototypes/vr444/experiments/rowblocks_workers/results/benchmark.json": "84d49986c379a988b17dfd92023807595572328c6b2ca3e43e2cee9d43811fda",
+    "prototypes/vr444/experiments/rowblocks_workers/results/measurement-provenance.json": "241cb227fa4d8eca134664eb49ac8b4927586f1d36ce323cf1857259f8cb7493"
+  },
+  "model_source_sha256": {
+    "prototypes/vr444/experiments/codec_transport_budget/model.py": "3c31840433d53b3eea245ad4272f4a6e31c9dda352c0d88aeb029f123afc2185",
+    "prototypes/vr444/experiments/datagram_xor/transport.py": "6947a8a16ff5072c79f10b5de9ddce4ddbaefff8e3fe6d8005414ba46cbe0555",
+    "prototypes/vr444/experiments/datagram_v2/transport.py": "884cedd7b9883d70cba06677e0b452ab16c549278ae6f8b4c03853d8c1404b94"
+  },
+  "source_sha256": {
+    "prototypes/vr444/experiments/codec_transport_budget/model.py": "3c31840433d53b3eea245ad4272f4a6e31c9dda352c0d88aeb029f123afc2185",
+    "prototypes/vr444/experiments/codec_transport_budget/compact.py": "314271a65415aef54ac57d1d6f89236d37edf686cd6889d0f96e4019a1a8ba96",
+    "prototypes/vr444/experiments/codec_transport_budget/test_model.py": "07219d2b418f5ca6b1df48a01ce66e9c7d116f4f8b6ef9c7d4dd933672061f32",
+    "prototypes/vr444/experiments/codec_transport_budget/README.txt": "33e5f1a27e1ceb532cd571ea62454796246c314ee2853281a1beb042f8829b98",
+    "prototypes/vr444/experiments/datagram_xor/transport.py": "6947a8a16ff5072c79f10b5de9ddce4ddbaefff8e3fe6d8005414ba46cbe0555"
+  },
+  "full_local_result_sha256": "5d30d908a510f84ba41069af68df9cfa97b69b7d0a482432f001415fad1159ec",
+  "committed_table_sha256": "8f1da4daab1d84aa5e9a7aeaefd5c0e3ee44edf9065898e010eaa49f1eb37350",
+  "table_lossless_roundtrip_verified": true,
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "new_performance_measurement": false,
+  "sockets_opened": false,
+  "headset_accessed": false,
+  "production_changes": false
+}
