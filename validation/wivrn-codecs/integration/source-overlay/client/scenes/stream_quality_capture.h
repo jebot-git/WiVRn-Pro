@@ -128,6 +128,10 @@ public:
                 throw std::runtime_error("quality capture submitted subimage mismatch");
             std::ostringstream out; out.imbue(std::locale::classic());out<<std::setprecision(9);
             const bool test_sampler=description.codec[eye]==wivrn::video_codec::raw;
+            if(test_sampler && (!handle->codec_test_sampler_bound || handle->codec_test_rgb_sampler!=inputs[eye].sampler_rgb ||
+                (handle->codec_test_rgb_filter!=vk::Filter::eLinear && handle->codec_test_rgb_filter!=vk::Filter::eNearest)))
+                throw std::runtime_error("quality capture actual test sampler identity mismatch");
+            const char* sampler_filter=handle->codec_test_rgb_filter==vk::Filter::eNearest ? "NEAREST" : "LINEAR";
             out << "{\"schema\":1,\"capture_id\":"<<budget_.attempts<<",\"source_boundary\":\"submitted-image\",\"eye\":"<<eye
                 <<",\"frame\":"<<handle->feedback.frame_index<<",\"warp\":"<<wivrn::codec_test::warp_hash(handle->view_info)
                 <<",\"decoder_generation_first_frame\":"<<description.first_frame
@@ -166,7 +170,7 @@ public:
             out << "],\"output_alpha\":"<<(alpha?"true":"false")<<",\"sampled_rgb_is_linear\":"<<(inputs[eye].sampled_rgb_is_linear?"true":"false")
                 <<",\"sampler_contract_source_bound\":"<<(test_sampler?"true":"false")
                 <<",\"sampler_runtime_queried\":false,\"sampler_contract\":";
-            if(test_sampler) out<<"{\"origin\":\"test_decoder::rgb_sampler\",\"min\":\"LINEAR\",\"mag\":\"LINEAR\",\"mipmap\":\"NEAREST\",\"address_uvw\":\"CLAMP_TO_EDGE\",\"normalized_coordinates\":true,\"min_lod\":0,\"max_lod\":0,\"lod_bias\":0,\"anisotropy\":false,\"max_anisotropy\":0,\"compare\":false,\"compare_op\":\"NEVER\",\"border_color\":\"FLOAT_TRANSPARENT_BLACK\"}";
+            if(test_sampler) out<<"{\"origin\":\"test_decoder::rgb_sampler\",\"min\":\""<<sampler_filter<<"\",\"mag\":\""<<sampler_filter<<"\",\"mipmap\":\"NEAREST\",\"address_uvw\":\"CLAMP_TO_EDGE\",\"normalized_coordinates\":true,\"min_lod\":0,\"max_lod\":0,\"lod_bias\":0,\"anisotropy\":false,\"max_anisotropy\":0,\"compare\":false,\"compare_op\":\"NEVER\",\"border_color\":\"FLOAT_TRANSPARENT_BLACK\"}";
             else out<<"null";
             out << ",\"requested_filter_flags\":"<<requested_filter<<",\"submitted_filter_flags\":"<<submitted_filter
                 <<",\"filter_extension_enabled\":"<<(filter_extension?"true":"false")

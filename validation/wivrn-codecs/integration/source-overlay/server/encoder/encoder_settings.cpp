@@ -21,6 +21,7 @@
 #include "codec_test/metadata.h"
 #ifdef WIVRN_CODEC_TESTS
 #include "codec_test/quality_geometry.h"
+#include "codec_test/quality_sampler.h"
 #endif
 #include "rate_control.h"
 
@@ -238,6 +239,10 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
     const auto quality_token=quality_value ? std::optional<std::string_view>(quality_value) : std::nullopt;
     if (codec_test::quality_geometry::parse(quality_token).quality && !codec_test::enabled())
         throw std::runtime_error("quality geometry requires codec-test activation");
+    const auto sampler_value=std::getenv("WIVRN_CODEC_TEST_QUALITY_FILTER");
+    codec_test::quality_sampler::server(sampler_value ? std::optional<std::string_view>(sampler_value) : std::nullopt,
+        codec_test::enabled(),test_env("WIVRN_CODEC_TEST"),test_env("WIVRN_CODEC_TEST_Q"),
+        test_env("WIVRN_CODEC_TEST_COMPRESSION"),test_env("WIVRN_CODEC_TEST_QUALITY_CAPTURE"),test_env("WIVRN_CODEC_SOURCE_TRACE"));
     if(codec_test::enabled()) {
         if(!std::ranges::contains(info.supported_codecs, raw)) throw std::runtime_error("headset is not a codec-test build");
         const auto geometry=codec_test::quality_geometry::server(quality_token,

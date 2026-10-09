@@ -9,6 +9,8 @@
 #include "codec_test/rrb/native.h"
 #include "codec_test/stereo_admission.h"
 #include "codec_test/metadata.h"
+#include "codec_test/quality_sampler.h"
+#include "codec_test/submitted_capture.h"
 #include "codec_test/compression/frame_compression.h"
 #include "codec_test/vr444/vulkan_runner.hpp"
 #include "codec_test/vr444/direct.hpp"
@@ -37,6 +39,7 @@ public:
     std::unique_ptr<codec_test::rrb::PairDecoder> rrb_decoder;
     codec_test::rrb::Publication<test_publish_eye> rrb_publication;
     bool rrb_gpu_output=false;
+    codec_test::quality_sampler::Mode rgb_filter=codec_test::quality_sampler::Mode::linear;
     uint64_t generation=0;
     static std::string choice(const char* name,std::string fallback){
         std::ifstream file(application::get_config_path()/name);if(!file)return fallback;
@@ -54,6 +57,12 @@ public:
         enabled=policy=="paired";
         auto payload=choice("codec-test-payload.txt","vr444");
         if(payload!="vr444"&&payload!="rrb32")throw std::runtime_error("invalid test payload opt-in");
+        const auto filter_token=codec_test::quality_sampler::read(application::get_config_path()/"codec-test-quality-filter.txt");
+        rgb_filter=codec_test::quality_sampler::parse(filter_token ? std::optional<std::string_view>(*filter_token) : std::nullopt);
+        if(rgb_filter==codec_test::quality_sampler::Mode::nearest){
+            const auto capture=codec_test::submitted_capture::load(application::get_config_path()/"codec-test-quality-capture.json");
+            codec_test::quality_sampler::client(rgb_filter,capture.enabled,payload,choice("codec-test-compression.txt","none"),enabled);
+        }
         if(payload=="rrb32"){
             if(!enabled)throw std::runtime_error("RRB32 requires complete stereo pairing");
             auto count=choice("codec-test-rrb-workers.txt","4");
@@ -78,6 +87,7 @@ class test_decoder final:public decoder {
     uint8_t eye;
     std::weak_ptr<scenes::stream> scene;
     shard_accumulator* accumulator;
+    vk::Filter rgb_filter=vk::Filter::eLinear;
     vk::raii::Sampler rgb_sampler;
     vk::raii::CommandPool pool;
     vk::raii::CommandBuffer cmd=nullptr;
@@ -143,7 +153,8 @@ public:
     test_decoder(vk::raii::Device& d,vk::raii::PhysicalDevice& pd,uint32_t family,const to_headset::video_stream_description& desc,uint8_t e,
                  std::weak_ptr<scenes::stream> s,shard_accumulator* a,std::shared_ptr<test_stereo_state> state):device(d),physical(pd),queue_family(family),
         extent{desc.width,uint32_t(desc.height/(e==2?2:1))},eye(e),scene(s),accumulator(a),
-        rgb_sampler(d,{.magFilter=vk::Filter::eLinear,.minFilter=vk::Filter::eLinear,.mipmapMode=vk::SamplerMipmapMode::eNearest,
+        rgb_filter(state && state->rgb_filter==codec_test::quality_sampler::Mode::nearest ? vk::Filter::eNearest : vk::Filter::eLinear),
+        rgb_sampler(d,{.magFilter=rgb_filter,.minFilter=rgb_filter,.mipmapMode=vk::SamplerMipmapMode::eNearest,
             .addressModeU=vk::SamplerAddressMode::eClampToEdge,.addressModeV=vk::SamplerAddressMode::eClampToEdge,.addressModeW=vk::SamplerAddressMode::eClampToEdge}),
         pool(d,{.flags=vk::CommandPoolCreateFlagBits::eResetCommandBuffer,.queueFamilyIndex=family}),
         fence(d,{.flags=vk::FenceCreateFlagBits::eSignaled}) {
@@ -242,6 +253,8 @@ public:
     }
     void frame_completed(const from_headset::feedback& fb,const to_headset::video_stream_data_shard::view_info_t& vi) override {
         auto h=codec_test::unpack(assembling);
+        if(rgb_filter==vk::Filter::eNearest && (h.kind!=codec_test::Kind::rrb32 || h.flags))
+            throw std::runtime_error("quality nearest accepts only checked unwrapped RRB pairs");
         if(h.kind==codec_test::Kind::rrb32&&(!paired()||!stereo->rrb_decoder||h.flags||assembling.size()>codec_test::rrb::stereo_wire_cap-codec_test::header_size))
             throw std::runtime_error("RRB32 payload requires bounded paired opt-in");
         if(h.flags && !compression_enabled)throw std::runtime_error("compressed test payload not opted in");
@@ -361,7 +374,7 @@ private:
             snapshot_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-start).count();
         }
         events<<"{\"frame\":"<<h.frame<<",\"eye\":"<<unsigned(eye)<<",\"warp\":"<<h.warp
-              <<",\"effective_codec\":\"rrb32\",\"rrb_output\":\"staged-gpu\",\"rrb_workers\":0,\"configured_rrb_workers\":"<<stereo->rrb_decoder->workers()
+              <<",\"rgb_sampler_filter\":\""<<(rgb_filter==vk::Filter::eNearest?"NEAREST":"LINEAR")<<"\",\"effective_codec\":\"rrb32\",\"rrb_output\":\"staged-gpu\",\"rrb_workers\":0,\"configured_rrb_workers\":"<<stereo->rrb_decoder->workers()
               <<",\"rrb_generation\":"<<stereo->generation<<",\"rrb_block_rows\":32,\"stereo_envelope_cap\":262144,\"decoder_backend\":\"cpu-neon\",\"decoder_kernel\":\"direct-neon\""
               <<",\"compression_policy\":\"none\",\"compression_applied\":false,\"bytes\":"<<job.bytes.size()
               <<",\"decoded_payload_bytes\":"<<job.bytes.size()-codec_test::header_size<<",\"decompression_ms\":0"
@@ -372,6 +385,7 @@ private:
               <<",\"queue_dropped_so_far\":"<<dropped.load()<<",\"decode_upload_ms\":"<<std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-began).count();write_pair_stats();events<<"}\n";events.flush();
         if(auto target=scene.lock()){
             auto handle=std::make_shared<GpuHandle>(job.feedback,job.view,extent,std::move(lease));
+            handle->codec_test_sampler_bound=true;handle->codec_test_rgb_filter=rgb_filter;handle->codec_test_rgb_sampler=*rgb_sampler;
             auto ready=stereo->rrb_publication.arrive(eye,h.frame,std::make_shared<test_publish_eye>(test_publish_eye{handle,accumulator}));
             completion.arrived=true;completion.success=true;
             if(ready)completion.success=target->push_test_blit_pair({(*ready)[0]->accumulator,(*ready)[1]->accumulator},{(*ready)[0]->handle,(*ready)[1]->handle});
@@ -504,7 +518,7 @@ private:
                       <<"\",\"bytes\":"<<job.bytes.size()<<",\"compression_applied\":"<<((h.flags & codec_test::flag_lz4)?"true":"false")
                       <<",\"decoded_payload_bytes\":"<<body.size()<<",\"decompression_ms\":"<<decompress_ms<<",\"decode_gpu_ms\":"<<gpu_ms
                       <<",\"gpu_timing_valid\":"<<((h.kind==codec_test::Kind::vr444&&!cpu_direct)?"true":"false")
-                      <<",\"effective_codec\":\""<<(rrb_pair?"rrb32":h.kind==codec_test::Kind::vr444?"vr444":"legacy")
+                      <<",\"rgb_sampler_filter\":\""<<(rgb_filter==vk::Filter::eNearest?"NEAREST":"LINEAR")<<"\",\"effective_codec\":\""<<(rrb_pair?"rrb32":h.kind==codec_test::Kind::vr444?"vr444":"legacy")
                       <<"\",\"rrb_output\":\""<<(rrb_pair?"cpu":"not_used")
                       <<"\",\"rrb_workers\":"<<(rrb_pair?stereo->rrb_decoder->workers():0)
                       <<",\"configured_rrb_workers\":"<<(rrb_pair?stereo->rrb_decoder->workers():0)
@@ -524,6 +538,7 @@ private:
                 if(capture){const auto& captured_pixels=rrb_pair?rrb_pair->cpu.rgba[eye]:cpu_direct&&!cpu_mapped?cpu_pixels:pixels;std::ofstream(folder/(std::to_string(h.frame)+"-"+std::to_string(eye)+".rgba"),std::ios::binary).write(reinterpret_cast<const char*>(captured_pixels.data()),captured_pixels.size()*4);}
                 if(auto target=scene.lock()){
                     auto handle=std::make_shared<Handle>(job.feedback,job.view,extent,image,sampled_rgb_is_linear());
+            handle->codec_test_sampler_bound=true;handle->codec_test_rgb_filter=rgb_filter;handle->codec_test_rgb_sampler=*rgb_sampler;
                     if(rrb_pair){
                         auto ready=stereo->rrb_publication.arrive(eye,h.frame,std::make_shared<test_publish_eye>(test_publish_eye{handle,accumulator}));
                         completion.arrived=true;completion.success=true;

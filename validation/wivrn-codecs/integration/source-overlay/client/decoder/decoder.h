@@ -48,6 +48,12 @@ public:
 		uint64_t * semaphore_val = nullptr;
 		// Keep the sampled-value contract with the image across decoder changes.
 		bool sampled_rgb_is_linear = false;
+#ifdef WIVRN_CODEC_TESTS
+        // Actual immutable test-decoder sampler, kept with its image identity.
+        bool codec_test_sampler_bound = false;
+        vk::Filter codec_test_rgb_filter = vk::Filter::eLinear;
+        vk::Sampler codec_test_rgb_sampler = nullptr;
+#endif
 	};
 
 public:

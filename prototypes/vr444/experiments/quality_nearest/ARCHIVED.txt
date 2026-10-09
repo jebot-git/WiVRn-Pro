@@ -1,0 +1,37 @@
+Archived on user rescope; not selected for further WiVRn integration
+=================================================================
+
+The user moved future work to an independent codec research repository with a
+10-bit PQ / BT.2020 YUV4:4:4 pixel-perfect route. This RGB8 WiVRn candidate is
+historical unfinished work, not HDR qualification or a recommended integration.
+
+Implemented here only:
+- Missing/off quality sampler remains LINEAR. q1-nearest is explicit opt-in.
+- Client requires paired RRB, no outer compression and submitted capture.
+- Host independently requires enabled RRB-Q1, quantizer1, no wrapping, quality
+  capture and absolute source trace. The wire itself does not declare Q1 source;
+  host controls and future capture provenance would need to bind that contract.
+- Test decoder selects the immutable sampler before either decoder worker runs.
+  Both CPU and staged-GPU image handles retain the actual sampler handle/filter;
+  submitted metadata rejects disagreement with the bound sampler and emits its
+  true min/mag filter. Decode telemetry also records the actual filter.
+- No shader code changed. Decoder-reset path already resets sampler-dependent
+  pipelines after its consumer drain; no new lifetime mechanism was introduced.
+
+Fresh offline qualification:64 pure admission/file-reader ASan/UBSan checks and
+actual Android decoder+stream/host encoder settings translation units, ON/OFF,
+all pass. No native link, APK build, GPU/device execution or nearest-image
+quality measurement was performed. Native/root worktrees were not modified.
+
+Unfinished deliberately: acquisition harness controls, overlay manifest/patch
+reconciliation, independent peer review of this last native seam, and the
+separate sampler-aware renderer/auditor qualification. Existing RLP1 collector
+and submitted-image auditors remain LINEAR-only and reject NEAREST metadata.
+Do not reuse their qualification for this candidate or relabel nearest as linear.
+The root owns all future device execution; none is requested by this archive.
+
+Historical hypothesis only: recovered RGB8 central10 mismatches were all0→13
+channel changes, consistent with small linear-light contributions from adjacent
+high-contrast samples. Vulkan defines fractional filtering precision through
+subTexelPrecisionBits: https://docs.vulkan.org/spec/latest/chapters/textures.html .
+No actual-device precision-bit query or sampler attribution was performed here.
