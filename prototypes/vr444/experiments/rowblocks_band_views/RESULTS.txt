@@ -1,0 +1,55 @@
+Frozen immutable-band host observation, 2026-10-09
+=================================================
+
+ASan+UBSan and ThreadSanitizer each pass733 canonical stereo cases,576 direct
+scalar/vector RGB oracles,2000 differential corruptions and6256 rejects. The
+independent local-record tests reject all truncations and invalid shape/version/
+quantizer/tile-count/length/qmap/trailing data before output writes. No sanitizer
+diagnostics. Independent compositor-team review found no original-band membership,
+grammar, immutable lifetime, bounds, barrier or stereo-containment blocker.
+Android arm64 API29 binaries cross-compile only. Full26 x12 x5 smoke passes.
+
+Final26 profiles x12 arms x31 repetitions, with3 warmups:9672 measured stereo
+invocations exact in26.119408 seconds. Twelve actual capture pairs and fourteen
+duplicated-eye synthetic profiles. Both teams explicitly idle before launch;
+source/corpus/native+Android binary hashes unchanged. Host i7-12700, clang22.1.8,
+Linux7.2.9 with no affinity/frequency/thermal controls and uncontrolled desktop
+services. No headset, network, GPU or production operation occurred.
+
+Same-batch arithmetic means of four captured pair p50s per group, milliseconds.
+Copy is vector RGB with private source-band copy; View uses immutable record views;
+RGBA is the original fused RGBA+RGB-pack control. All use four server workers and
+the same four-worker RRB client. Totals retain matched samples, not summed marginal
+quantiles.
+
+RRB32                           Q1          Q8-a        Q8-b
+Copy server wall              0.305421    0.478652    0.424025
+RGBA server wall              0.281016    0.456415    0.405242
+View server wall              0.277869    0.439121    0.399325
+Copy server process CPU       0.874030    1.436470    1.238566
+View server process CPU       0.817761    1.385355    1.198172
+Copy server+client            0.610425    0.950859    0.839717
+RGBA server+client            0.581311    0.918485    0.818663
+View server+client            0.581285    0.906955    0.800931
+VR444 server+client           0.703930    1.085069    0.927810
+
+RRB32 View improves12/12 server p50,11/12 server p95,11/12 total p50 and9/12
+total p95 versus Copy. Relative to RGBA, it improves9/12 server p50/p95,8/12 total
+p50 and7/12 total p95. This is a small component result with mixed tails, not a
+universal performance guarantee. The baseline variation across earlier runs is
+why only controls from this matched batch establish these comparisons.
+
+RRB128 View versus Copy improves only5/12 server p50,6/12 server p95 and5/12 total
+p50/p95. Its total mean pair p50 is0.608672 /0.983611 /0.910328ms versus Copy
+0.607608 /0.984390 /0.879100. Removing copies is not a uniform improvement across
+block sizes. Published structured results retain every pair and sample.
+
+Canonical wire is unchanged; corpus totals across four pairs in each group:
+group       VR444       RRF-up       RRB32       RRB128
+Q1          98,239       55,655      66,332       58,298
+Q8-a       182,910      233,898     245,567      236,627
+Q8-b       135,653      184,585     194,380      186,904
+Extra Q8 transfer cost may outweigh small CPU savings. No original-framebuffer,
+target CPU, real transport, GPU, compositor, runtime or optical result follows.
+The corpus preserves prior decoded Q8 bytes, not lossless original pixels. No
+strict sub15/headset promotion; headset tests remain suspended.
