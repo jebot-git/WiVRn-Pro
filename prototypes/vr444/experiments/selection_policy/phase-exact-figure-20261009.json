@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "visual_review": true,
+  "review": "Exact minima/phase labels, fifteen-ms reference and proof/scope captions are legible without overlap; no curves are invented for pruned events.",
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/plot_phase_exact.py": "9a2d6c49f400d2727b13471fa9dc0682c20b0f7d34a098dbba21f0a04ce27490",
+    "prototypes/vr444/experiments/selection_policy/phase-exact-20261009.json": "38a139cbaf285683c8e8a4a1ee6326a576dc047345b80a5edb714d48761e1a87",
+    "prototypes/vr444/experiments/selection_policy/phase-exact-20261009.png": "15643a3e3ba1803062426a3475b029e46c92d3de429a2ce1521e22c849705fe4"
+  },
+  "measured_speedup": false,
+  "headset_operations": false
+}

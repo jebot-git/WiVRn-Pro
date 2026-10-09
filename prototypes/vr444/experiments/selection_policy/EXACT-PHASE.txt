@@ -1,0 +1,114 @@
+Exact receipt-floor selection bounds over every integer phase
+============================================================
+
+The earlier 25-point grid is now closed over all 11,111,112 integer-nanosecond
+shifts from 0 through 11,111,111 ns inclusive. Original receipts, runtime target
+sequence, warm membership, pre-warm identity history, sufficient cadence count
+and source/target constraints are fixed. Every participating eye is ready at its
+own receipt, an optimistic zero receive-to-publication delay.
+
+Model                         Exact minimum p95   Earliest minimizing phase
+encoded, one-horizon target       19.241095 ms              0 ns
+encoded, unrestricted target      14.852189 ms      4,387,188 ns
+distinct source, two horizons     15.924690 ms      5,488,282 ns
+distinct source, unrestricted     15.924690 ms      5,488,282 ns
+
+The encoded unrestricted optimum improves on the finite grid by 0.022604 ms;
+the distinct-source optimum improves by 0.011718 ms. The latter remains above
+15 ms even under this optimistic publication/ownership model. This is not a
+global hardware impossibility claim: earlier transport/source receipt, changed
+runtime feedback, phase outside the stated interval, different known supply or
+smaller count over shorter endpoints are outside the bound. The encoded result
+does not establish sub-15 ms on hardware or authorize a live selection policy.
+
+Proof structure
+---------------
+For each exact warm source population, a frame becomes eligible at a selection
+deadline when shift >= original_ready - original_selection. Target ceilings are
+computed once from original runtime targets; identity and target order remain
+fixed. These are the only phase-dependent eligibility changes. All readiness
+events within the interval, plus both endpoints and original grid points, are
+retained. Between consecutive events, every feasible path is unchanged and
+every age in that path increases by exactly the common phase increment. Its
+nearest-rank p95 therefore increases by the same increment; an event attains
+the interval minimum.
+
+Let F(s) be the exact minimum p95 at shift s. Increasing phase only expands the
+eligible path set, so F(s)-s is nonincreasing wherever feasible. Consequently,
+for any a <= s <= b, F(s) >= F(b) - (b-a). An exact upper endpoint optimum gives
+a lower bound on every earlier candidate in that interval. Endpoint
+infeasibility similarly excludes all earlier phases. The search subdivides
+only intervals whose bound can improve the incumbent; equal minima retain the
+earliest minimizing phase. Every candidate event is either evaluated or listed
+inside an explicit interval proof whose bound still holds against the final
+optimum. No interpolated grid assumption or measurement tolerance is used.
+
+                            Candidate phases   Evaluated   Proven/pruned
+encoded one-horizon                 209            28           181
+encoded unrestricted              1,909            50         1,859
+source two-horizon                1,776            36         1,740
+source unrestricted               1,909            36         1,873
+
+The four models cover 5,803 candidate phases using 150 exact evaluated optima.
+The remaining 5,653 have explicit proof coverage. Original 25-point grid minima
+are only hints: each reconstructed input must hash-match the prior population,
+and both adjacent strict thresholds around each claimed minimum are recomputed
+with the preserved exact solver and independently audited. All other optima use
+integer bisection with a full audited passing path and adjacent failing score.
+Every intermediate exact-count path across the 26-count frontier is audited,
+not only the selected 1,875-choice path.
+
+Scope inherited from receipt-floor and cardinality bounds
+--------------------------------------------------------
+The original warm span is 21.284347901 seconds. 1,875 choices suffice for 88 Hz
+over that full span; larger counts can delete their worst-age choices down to
+1,875 while preserving all modeled order/admission constraints and not worsening
+nearest-rank p95. This does not cover fewer choices with shorter endpoints.
+Actual pre-warm encoded/source identities cannot be reintroduced as novel.
+
+Every eye retains its own receipt floor; pair readiness is the maximum of
+participating-eye receipts, and age retains the minimum stereo-eye receipt.
+Unlimited known-frame ownership, earlier use of later-observed metadata and the
+fixed runtime target sequence remain optimistic. Original wait/render/fence
+admission floors are respected at phase zero and all shifts are nonnegative.
+Runtime rescheduling, actual submit acceptance, pose quality and optics are not
+simulated. Distinct application IDs do not establish distinct input epochs.
+No host/client clock subtraction or stage-percentile addition occurs.
+
+Validation and artifacts
+------------------------
+315 Python tests pass. The phase core is checked against exhaustive enumeration
+of every integer shift in 1,024 synthetic feasible-path populations, including
+infeasible prefixes and exact ties. Another 512 random target/readiness
+populations enumerate every edge change and confirm complete breakpoint
+coverage. Controls reject nonintegers including bools, duplicate/out-of-order
+events, nonmonotone oracle results and stale/wrong seed minima. Both C++ solvers
+retain their preserved exhaustive sanitizer receipts. Independent transport-team
+review found no blocker in the core proof or recorded-data wrapper; its exact
+seed-type hardening suggestion was implemented and tested.
+
+phase-exact-20261009.json retains every candidate phase, evaluated optimum,
+query audit, pruned interval and each model's complete winning certificate.
+phase-exact-validation-20261009.json binds sources/tests/binaries/controls.
+All 300 immutable acquisition files and all loaded implementation/build/seed
+hashes match before/after. The original failed summary is unchanged. There were
+no headset operations or production/native behavior changes.
+
+Reproduce from repo root with fresh --out paths:
+python3 prototypes/vr444/experiments/selection_policy/validate_phase_exact.py \
+  --encoded-solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+  --encoded-build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+  --source-solver /tmp/sub15-novelty-validated-20261009/novelty-probe \
+  --source-build-receipt prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json \
+  --out /tmp/phase-exact-validation.json
+python3 prototypes/vr444/experiments/selection_policy/phase_exact_run.py \
+  /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+  --encoded-solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+  --encoded-build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+  --source-solver /tmp/sub15-novelty-validated-20261009/novelty-probe \
+  --source-build-receipt prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json \
+  --seed prototypes/vr444/experiments/selection_policy/receipt-floor-20261009.json \
+  --out /tmp/phase-exact.json
+
+Optional --quiet-file pauses between solver calls while another team measures.
+RECEIPT-FLOOR.txt and QUANTILE-BOUND.txt retain the preceding finite-grid work.
