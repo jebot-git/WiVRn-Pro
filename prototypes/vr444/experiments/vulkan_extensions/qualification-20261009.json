@@ -1,0 +1,335 @@
+{
+  "schema": 1,
+  "created_utc": "2026-10-09T05:48:44.722673+00:00",
+  "headset_access": false,
+  "performance_claim": false,
+  "production_integration": false,
+  "local_raw_directory": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-vulkan-extensions",
+  "tests": {
+    "host_and_android_build": true,
+    "warnings_as_errors": true,
+    "ring_asan_ubsan": true,
+    "ring_steps": 100000,
+    "planner_tests": 5,
+    "planner_negative_gate_cases": 10,
+    "leak_detection": "disabled for ptrace"
+  },
+  "observed": [
+    {
+      "path": "validation/results/sub15-vulkan-extensions/ring-asan.json",
+      "sha256": "d18a21952c3047b8c1e5aaff4a1b0985c7f22461ceeb887dd0d3ac144450f58a",
+      "bytes": 165,
+      "result": {
+        "pass": true,
+        "sequences": 100,
+        "steps": 100000,
+        "admitted": 14279,
+        "pressure_drops": 26059,
+        "consumer_submissions": 5786,
+        "cancelled_before_submit": 1840,
+        "headset_used": false
+      }
+    },
+    {
+      "path": "validation/results/sub15-vulkan-extensions/host-capabilities.json",
+      "sha256": "772f55a541d4b2ff4ab57156229d89d1af44683cce0e500ef4350364f470f907",
+      "bytes": 1509,
+      "result": {
+        "schema": 1,
+        "physical_query_only": true,
+        "logical_device_created": false,
+        "scope": "host-only query; no headset access",
+        "devices": [
+          {
+            "index": 0,
+            "name": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+            "device_type": 2,
+            "api_version": 4211051,
+            "driver_version": 109060195,
+            "timeline": {
+              "advertised": true,
+              "queried": true,
+              "supported": true,
+              "enabled": false
+            },
+            "synchronization2": {
+              "advertised": true,
+              "queried": true,
+              "supported": true,
+              "enabled": false
+            },
+            "host_image_copy": {
+              "advertised": true,
+              "queried": true,
+              "supported": true,
+              "enabled": false
+            },
+            "image_format_list_advertised": true,
+            "max_timeline_difference": 18446744073709551615,
+            "host_copy_srgb_optimal": {
+              "queried": true,
+              "format": 43,
+              "usage": "HOST_TRANSFER|SAMPLED",
+              "vk_result": 0,
+              "general_destination": true,
+              "optimal_device_access": false,
+              "identical_memory_layout": false,
+              "identical_memory_type_requirements": false
+            }
+          },
+          {
+            "index": 1,
+            "name": "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+            "device_type": 1,
+            "api_version": 4211051,
+            "driver_version": 109060195,
+            "timeline": {
+              "advertised": true,
+              "queried": true,
+              "supported": true,
+              "enabled": false
+            },
+            "synchronization2": {
+              "advertised": true,
+              "queried": true,
+              "supported": true,
+              "enabled": false
+            },
+            "host_image_copy": {
+              "advertised": true,
+              "queried": true,
+              "supported": true,
+              "enabled": false
+            },
+            "image_format_list_advertised": true,
+            "max_timeline_difference": 18446744073709551615,
+            "host_copy_srgb_optimal": {
+              "queried": true,
+              "format": 43,
+              "usage": "HOST_TRANSFER|SAMPLED",
+              "vk_result": 0,
+              "general_destination": true,
+              "optimal_device_access": false,
+              "identical_memory_layout": false,
+              "identical_memory_type_requirements": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "path": "validation/results/sub15-vulkan-extensions/host-plan.json",
+      "sha256": "335dd946ac09370b192af7ae2f9b85f22d02f2909432b37b74ad6bccea567a8f",
+      "bytes": 2072,
+      "result": {
+        "schema": 1,
+        "historical_only": false,
+        "devices": [
+          {
+            "name": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+            "timeline_retirement": {
+              "status": "offline_candidate",
+              "reason": "advertised and queried supported; device feature still not enabled",
+              "production_enabled": false
+            },
+            "synchronization2_retirement": {
+              "status": "offline_candidate",
+              "reason": "advertised and queried supported; device feature still not enabled",
+              "production_enabled": false
+            },
+            "host_copy_srgb": {
+              "status": "needs_image_access_benchmark",
+              "reason": "query does not promise ordinary-image device access efficiency; no speed prediction",
+              "production_enabled": false
+            },
+            "image_format_list": {
+              "status": "requires_image_format_query",
+              "reason": "extension name alone does not validate mutable storage/SRGB views",
+              "production_enabled": false
+            }
+          },
+          {
+            "name": "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+            "timeline_retirement": {
+              "status": "offline_candidate",
+              "reason": "advertised and queried supported; device feature still not enabled",
+              "production_enabled": false
+            },
+            "synchronization2_retirement": {
+              "status": "offline_candidate",
+              "reason": "advertised and queried supported; device feature still not enabled",
+              "production_enabled": false
+            },
+            "host_copy_srgb": {
+              "status": "needs_image_access_benchmark",
+              "reason": "query does not promise ordinary-image device access efficiency; no speed prediction",
+              "production_enabled": false
+            },
+            "image_format_list": {
+              "status": "requires_image_format_query",
+              "reason": "extension name alone does not validate mutable storage/SRGB views",
+              "production_enabled": false
+            }
+          }
+        ],
+        "performance_claim": false,
+        "headset_access": false,
+        "production_enabled": false,
+        "input_sha256": "772f55a541d4b2ff4ab57156229d89d1af44683cce0e500ef4350364f470f907"
+      }
+    },
+    {
+      "path": "validation/results/sub15-vulkan-extensions/historical-headset-plan.json",
+      "sha256": "fd9a8130cfa831dcc4efa2c54545ee77f96fb9bba1e7f1fb5b736665c119a51d",
+      "bytes": 1050,
+      "result": {
+        "schema": 1,
+        "historical_only": true,
+        "devices": [
+          {
+            "name": "Adreno (TM) 650",
+            "timeline_retirement": {
+              "status": "blocked_unqueried",
+              "reason": "advertisement does not establish feature support",
+              "production_enabled": false
+            },
+            "synchronization2_retirement": {
+              "status": "blocked_unqueried",
+              "reason": "advertisement does not establish feature support",
+              "production_enabled": false
+            },
+            "host_copy_srgb": {
+              "status": "blocked_missing_extension",
+              "reason": "required extension route not advertised",
+              "production_enabled": false
+            },
+            "image_format_list": {
+              "status": "requires_image_format_query",
+              "reason": "extension name alone does not validate mutable storage/SRGB views",
+              "production_enabled": false
+            }
+          }
+        ],
+        "performance_claim": false,
+        "headset_access": false,
+        "production_enabled": false,
+        "input_sha256": "285694e479b788d27be563823ba8bc29882c67eb186bbada6f7996c69e52d16f"
+      }
+    },
+    {
+      "path": "validation/results/sub15-vulkan-extensions/timeline-final.json",
+      "sha256": "467702b8f524e9005937860135f31b9e8b2efa046a6ef6eaf2d0cbfa8b1891fc",
+      "bytes": 437,
+      "result": {
+        "schema": 1,
+        "pass": true,
+        "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        "timeline_enabled": true,
+        "synchronization2_enabled": false,
+        "slots": 3,
+        "offered_pairs": 512,
+        "decoded_pairs": 79,
+        "consumed_pairs": 62,
+        "verified_pairs": 62,
+        "pressure_drops": 433,
+        "unacquired_completed_drops": 17,
+        "slot_reuses": 76,
+        "headset_used": false,
+        "performance_claim": false,
+        "scope": "Private queue buffer identity/lifetime model; no images, codec, XR or presentation latency"
+      }
+    },
+    {
+      "path": "validation/results/sub15-vulkan-extensions/timeline-sync2-final.json",
+      "sha256": "494acfa528530834aa7b32571fa86a2a7ac55af61c43e64df9a756c30d1950d1",
+      "bytes": 435,
+      "result": {
+        "schema": 1,
+        "pass": true,
+        "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        "timeline_enabled": true,
+        "synchronization2_enabled": true,
+        "slots": 3,
+        "offered_pairs": 512,
+        "decoded_pairs": 72,
+        "consumed_pairs": 67,
+        "verified_pairs": 67,
+        "pressure_drops": 440,
+        "unacquired_completed_drops": 5,
+        "slot_reuses": 69,
+        "headset_used": false,
+        "performance_claim": false,
+        "scope": "Private queue buffer identity/lifetime model; no images, codec, XR or presentation latency"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/README.txt",
+      "sha256": "3388922582ca6ca59f40e19f2c00ed92477e0640e27c0fd99d6965984165dd53",
+      "bytes": 7703
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/build.sh",
+      "sha256": "2a7a18723de469d74228c6cd5963d26e64d77aa2c688122d629096a8abfd5386",
+      "bytes": 795
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/capabilities.cpp",
+      "sha256": "46f9a7ed0f3169a0f61cba8dd6263cefd7a0ef641b9097110e12f7fa3f12aa3e",
+      "bytes": 6898
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/planner.py",
+      "sha256": "2b957a37b05466f0cf349fe2d522609f5b1f18b72e4a66eb8fc762e3cd9e7185",
+      "bytes": 6807
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/retirement_ring.hpp",
+      "sha256": "d12602d22705bfba4e0a63c4ebb176f3e806b5e8d927bdc224d12c3b924bce6b",
+      "bytes": 4645
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/ring_test.cpp",
+      "sha256": "ec82a5f8a78fb35446c1fb7dfdbb9ab4a8e04bbb3b1b90dfb2aefc0d03a11123",
+      "bytes": 4087
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/test_planner.py",
+      "sha256": "1cfeff5d365b5b08ec850b835a71dcf8963901ba22ff1d78688956ef4215ad7b",
+      "bytes": 3926
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/timeline_probe.cpp",
+      "sha256": "a50a001f412c699b298c3195c32986f3f33d9998b895d3991430f96e925159e1",
+      "bytes": 15838
+    }
+  ],
+  "binaries": [
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/build/capabilities-android",
+      "sha256": "9ca16798721a8e5e031b244de78eeb73be103133b3a04b1046e7f6797dcb9156",
+      "bytes": 5573704
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/build/capabilities-host",
+      "sha256": "02bc8b30544e22394ae0bbf574fb12c629aeb224391df5b5ff62713240111e5d",
+      "bytes": 30032
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/build/ring-test",
+      "sha256": "60a427bbc43c205a15eb747f8b1d4714acafba5d9e1adecbb5df87063fc38171",
+      "bytes": 1878560
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/build/timeline_probe-android",
+      "sha256": "76a2e8d56cb7cb90c798f9375515962bee0a0acd3336acf45a97ea52bcd5647e",
+      "bytes": 5614640
+    },
+    {
+      "path": "prototypes/vr444/experiments/vulkan_extensions/build/timeline_probe-host",
+      "sha256": "6764488128d9c5a4b7e0d3107478cb8c22c2f880ec97a4a7ac29c9509a09400b",
+      "bytes": 40216
+    }
+  ]
+}
