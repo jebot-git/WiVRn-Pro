@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "repository": "jebot-git/WiVRn-Pro",
+  "branch_prefix": "research/sub15-20261009/",
+  "reference_branches": [
+    "feature/custom-codec"
+  ],
+  "workflow_branch": "research/sub15-20261009/research-workflow",
+  "started_at_utc": "2026-10-09T07:02:40.000Z",
+  "checkpoint_at_utc": "2026-10-09T11:32:40.000Z",
+  "timezone": "Europe/Prague",
+  "checkpoint_action": "Snapshot completed and unfinished experiments; shortlist reproducible candidates. This checkpoint does not stop other research or authorize promotion.",
+  "target": {
+    "target_id": "cpu-rgb444-sub15-v1",
+    "width_per_eye": 576,
+    "height_per_eye": 640,
+    "offered_hz": 90,
+    "receive_to_submit_p95_ms_strictly_below": 15,
+    "minimum_unique_stereo_submissions_hz": 88,
+    "metric_scope": "Complete-stereo earliest headset packet receipt to observation after successful xrEndFrame; excludes host processing and transfer before first receipt.",
+    "policy_commit": "01663069b2e92f1fc7aa0af421b74fb4f6d03250"
+  }
+}

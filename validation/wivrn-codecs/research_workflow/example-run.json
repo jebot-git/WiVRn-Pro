@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "status": "planned",
+  "evidence": "offline_correctness",
+  "execution": "offline",
+  "provenance": {
+    "candidate_commit": "01663069b2e92f1fc7aa0af421b74fb4f6d03250",
+    "baseline_commit": "01663069b2e92f1fc7aa0af421b74fb4f6d03250",
+    "harness_commit": "01663069b2e92f1fc7aa0af421b74fb4f6d03250",
+    "configuration_sha256": null,
+    "artifacts_sha256": {}
+  },
+  "candidate": {
+    "architecture": "Nonlearned baseline control; architecture selection pending",
+    "learned": false,
+    "model_sha256": null,
+    "uncertainty": "not_applicable"
+  },
+  "dataset": {
+    "sha256": null,
+    "splits": {
+      "train": [],
+      "validation": [],
+      "test": []
+    }
+  },
+  "bitstream": {
+    "identifier": "baseline-control",
+    "version": "planned-v1",
+    "quality_contract": "q8_exact"
+  },
+  "profile": {
+    "width_per_eye": 576,
+    "height_per_eye": 640,
+    "offered_hz": 90,
+    "gate_reference": "cpu-rgb444-sub15-v1"
+  },
+  "transport": {
+    "mode": "file",
+    "application_cap_bytes": null,
+    "framing": "Planned offline stereo envelope; actual adapter not yet selected"
+  },
+  "hardware": {
+    "server": null,
+    "headset": null,
+    "render_load": null
+  },
+  "identity": {
+    "unit": "stereo_pair",
+    "fields": [
+      "stereo_pair_id",
+      "source_frame_id",
+      "warp_id"
+    ],
+    "reject_partial": true
+  },
+  "observations": null,
+  "limitations": [
+    "Planning record only; repin the executed harness and collect artifacts before completion.",
+    "No neural model selected and no new codec, transport, or headset measurements."
+  ]
+}
