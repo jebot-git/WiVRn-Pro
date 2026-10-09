@@ -20,6 +20,9 @@
 #pragma once
 
 #include "wivrn_packets.h"
+#ifdef WIVRN_CODEC_TESTS
+#include "codec_pacer_tail.h"
+#endif
 
 #include <condition_variable>
 #include <cstdint>
@@ -48,6 +51,10 @@ public:
 private:
 #ifdef WIVRN_CODEC_TESTS
 	uint64_t codec_test_pacer_id = 0;
+	codec_test::pacer_tail::Trace codec_test_tail_trace;
+	uint64_t codec_test_tail_epoch = 0, codec_test_tail_compute_epoch = 0;
+	int64_t codec_test_tail_boundary = -1, codec_test_tail_newest = -1;
+	uint64_t codec_test_tail_batch = 0;
 #endif
 	mutable std::mutex mutex;
 	int64_t frame_duration_ns;

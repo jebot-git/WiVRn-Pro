@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "run": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-ready/baseline-ready",
+  "manifest_sha256": "be0d3cd9f1bc5233f87eb5b0425eb5339af470356a0fda0301de747da7bb1c1d",
+  "input_manifest": {
+    "summary.json": {
+      "bytes": 1093209,
+      "sha256": "3ae38967b174e90e581a839f5cfffc07ed890229ad7d72e671898fd6fc922823"
+    },
+    "client/codec-test-present.jsonl": {
+      "bytes": 2783748,
+      "sha256": "c4beba004b1207e923c6dfdfcb875413d8fdb148c2a7f185ca5eb1255879d8bb"
+    },
+    "host/source-trace.jsonl": {
+      "bytes": 8010062,
+      "sha256": "9baeb658d9b58174b71a1fa8598325301a496b4ffe1b67c5cf83dac1159fd405"
+    },
+    "host/pacer-trace.jsonl": {
+      "bytes": 1078605,
+      "sha256": "73f788239aefbb298fff39e768201407b63f9fddc14c34e830c2aa9aff55d018"
+    }
+  },
+  "warm_pairs": 1894,
+  "host_stage_ms": {
+    "wake_begin": {
+      "count": 1894,
+      "p50": 0.024854,
+      "p95": 0.126242,
+      "p99": 0.166119
+    },
+    "begin_delivery": {
+      "count": 1894,
+      "p50": 1.256838,
+      "p95": 2.020567,
+      "p99": 2.49438
+    },
+    "delivery_gpu_done": {
+      "count": 1894,
+      "p50": 0.235233,
+      "p95": 0.738531,
+      "p99": 0.91473
+    },
+    "gpu_done_latch": {
+      "count": 1894,
+      "p50": 0.020899,
+      "p95": 0.10538,
+      "p99": 10.434799
+    },
+    "latch_input": {
+      "count": 1894,
+      "p50": 0.009209,
+      "p95": 0.026107,
+      "p99": 0.030559
+    },
+    "wake_input": {
+      "count": 1894,
+      "p50": 1.661315,
+      "p95": 2.502074,
+      "p99": 13.922361
+    }
+  },
+  "warm_selected_pacer_budget_ms": {
+    "safe_decode_ns": {
+      "count": 1894,
+      "p50": 30.383644,
+      "p95": 33.268554,
+      "p99": 33.268554
+    },
+    "render_to_display_ns": {
+      "count": 1894,
+      "p50": 20.303116,
+      "p95": 22.652612,
+      "p99": 24.579396
+    },
+    "wake_to_present_ns": {
+      "count": 1894,
+      "p50": 0.126231,
+      "p95": 0.158301,
+      "p99": 0.165036
+    }
+  },
+  "pacer_first_last_warm": [
+    {
+      "frame": 274,
+      "safe_decode_ms": 33.268554,
+      "render_display_ms": 20.796743
+    },
+    {
+      "frame": 275,
+      "safe_decode_ms": 33.268554,
+      "render_display_ms": 20.808177
+    },
+    {
+      "frame": 276,
+      "safe_decode_ms": 33.268554,
+      "render_display_ms": 20.780076
+    },
+    {
+      "frame": 2177,
+      "safe_decode_ms": 30.2034,
+      "render_display_ms": 19.722794
+    },
+    {
+      "frame": 2178,
+      "safe_decode_ms": 30.2034,
+      "render_display_ms": 19.702125
+    },
+    {
+      "frame": 2179,
+      "safe_decode_ms": 30.2034,
+      "render_display_ms": 19.620616
+    }
+  ],
+  "scope": "Exact selected frame/target pacer joins and single app source joins; host-only stage subtractions. Warm membership uses client submit clock separately; percentiles not additive; no causal or promotion claim."
+}

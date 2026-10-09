@@ -44,6 +44,8 @@ pacer::pacer(uint64_t frame_duration) :
         // Allocate/open diagnostics before the worker member starts. A path
         // error must not unwind a jthread blocked on the compute condition.
         codec_test_pacer_id(codec_test::pacer_trace().enabled() ? codec_test::next_pacer_trace_id() : 0),
+        codec_test_tail_trace(std::getenv("WIVRN_CODEC_TEST_PACER_WINDOW_FRAMES"),
+                              std::getenv("WIVRN_CODEC_TEST_PACER_TAIL_TRACE"), codec_test_pacer_id != 0),
 #endif
         frame_duration_ns(frame_duration),
         client_margin_ms{
@@ -55,27 +57,61 @@ pacer::pacer(uint64_t frame_duration) :
         frame_times(5000),
         frame_times_compute(frame_times),
         worker([this](std::stop_token t) {
-	        std::vector<XrDuration> samples;
-	        while (not t.stop_requested())
-	        {
-		        samples.clear();
-		        {
-			        std::unique_lock lock(compute_mutex);
-			        compute_cv.wait(lock);
-			        for (const auto & time: frame_times_compute)
-			        {
-				        if (time.decoded > time.present)
-					        samples.push_back(time.decoded - time.present);
-			        }
-		        }
-		        if (samples.empty())
-			        continue;
-		        auto it = samples.begin() + (samples.size() * 995) / 1000;
-		        std::ranges::nth_element(samples, it);
-
-		        std::unique_lock lock(mutex);
-		        safe_present_to_decoded_ns = *it + client_margin_ms.val * U_TIME_1MS_IN_NS;
-	        }
+            std::vector<XrDuration> samples;
+#ifdef WIVRN_CODEC_TESTS
+            uint64_t consumed_batch = 0;
+#endif
+            while (not t.stop_requested())
+            {
+                samples.clear();
+#ifdef WIVRN_CODEC_TESTS
+                std::vector<frame_time> recent_bank;
+                uint64_t recent_epoch = 0, recent_batch = 0;
+                int64_t recent_boundary = -1;
+#endif
+                {
+                    std::unique_lock lock(compute_mutex);
+#ifdef WIVRN_CODEC_TESTS
+                    if (codec_test_tail_trace.window) {
+                        compute_cv.wait(lock,[&] { return t.stop_requested() || codec_test_tail_batch != consumed_batch; });
+                        if (t.stop_requested()) break;
+                    } else
+#endif
+                    compute_cv.wait(lock);
+#ifdef WIVRN_CODEC_TESTS
+                    if (codec_test_tail_trace.window) {
+                        recent_bank = frame_times_compute;
+                        consumed_batch = recent_batch = codec_test_tail_batch;
+                        recent_epoch = codec_test_tail_compute_epoch;
+                        recent_boundary = codec_test_tail_boundary;
+                    }
+#endif
+                    for (const auto & time: frame_times_compute)
+                    {
+                        if (time.decoded > time.present)
+                            samples.push_back(time.decoded - time.present);
+                    }
+                }
+                if (samples.empty()) continue;
+                auto it = samples.begin() + (samples.size() * 995) / 1000;
+                std::ranges::nth_element(samples, it);
+                std::unique_lock lock(mutex);
+#ifdef WIVRN_CODEC_TESTS
+                if (codec_test_tail_trace.window) {
+                    const int64_t ns = codec_test::pacer_tail::checked_margin_ns(client_margin_ms.val);
+                    const auto decision = codec_test::pacer_tail::choose(recent_bank,
+                        codec_test_tail_trace.window, recent_boundary, ns, safe_present_to_decoded_ns, codec_test_tail_newest);
+                    const bool stale = recent_epoch != codec_test_tail_epoch;
+                    codec_test_tail_trace.append({codec_test_pacer_id,recent_epoch,recent_batch,stale,decision});
+                    if (!stale && decision.valid) {
+                        safe_present_to_decoded_ns = decision.applied;
+                        codec_test_tail_newest = decision.newest;
+                    }
+                    continue;
+                }
+#endif
+                safe_present_to_decoded_ns = *it + client_margin_ms.val * U_TIME_1MS_IN_NS;
+            }
         })
 {
 	u_var_add_root(this, "Pacer", false);
@@ -85,8 +121,19 @@ pacer::pacer(uint64_t frame_duration) :
 pacer::~pacer()
 {
 	u_var_remove_root(this);
-	worker.request_stop();
-	compute_cv.notify_all();
+#ifdef WIVRN_CODEC_TESTS
+    if (codec_test_tail_trace.window) {
+        // Synchronize the stop predicate with wait's unlock-and-block step.
+        // Otherwise notify can be lost between its false predicate and wait.
+        std::lock_guard compute_lock(compute_mutex);
+        worker.request_stop();
+    } else {
+        worker.request_stop();
+    }
+#else
+    worker.request_stop();
+#endif
+    compute_cv.notify_all();
 }
 
 uint64_t pacer::get_frame_duration() const
@@ -180,6 +227,13 @@ void pacer::on_feedback(const wivrn::from_headset::feedback & feedback, const cl
 		{
 			std::unique_lock lock(compute_mutex);
 			std::swap(frame_times, frame_times_compute);
+#ifdef WIVRN_CODEC_TESTS
+            if (codec_test_tail_trace.window) {
+                codec_test_tail_compute_epoch = codec_test_tail_epoch;
+                ++codec_test_tail_batch;
+                codec_test_tail_boundary = frame_id - 1;
+            }
+#endif
 			compute_cv.notify_all();
 		}
 		// adjust phase
@@ -239,5 +293,18 @@ void pacer::reset()
 {
 	std::lock_guard lock(mutex);
 	std::ranges::fill(frame_times, frame_time{});
+#ifdef WIVRN_CODEC_TESTS
+    if (codec_test_tail_trace.window) {
+        // Same mutex -> compute_mutex order as feedback; worker releases its
+        // compute lock before taking mutex. Old copied snapshots cannot apply.
+        std::lock_guard compute_lock(compute_mutex);
+        ++codec_test_tail_epoch;
+        codec_test_tail_newest = -1;
+        ++codec_test_tail_batch;
+        codec_test_tail_compute_epoch = codec_test_tail_epoch;
+        codec_test_tail_boundary = frame_id - 1;
+        std::ranges::fill(frame_times_compute, frame_time{});
+    }
+#endif
 }
 } // namespace wivrn
