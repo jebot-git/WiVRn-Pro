@@ -1,0 +1,62 @@
+Warm cadence endpoint coverage, 2026-10-09
+
+This separate diagnostic does not change the native metric, latency policy,
+qualification status, or any original acquisition file. No headset operations
+were performed. The complete original five-run population and its 1,492
+manifest-bound files are verified before/after; exact manifest identities
+are pinned to the earlier handoff receipt commit 0296127389e997137e3cece46f4d295c151dc4c1.
+Original pass/fail labels are carried into the output. Run05 remains failed.
+
+The native cadence metric counts global first encoded-frame uses after
+warmup and divides count minus one by the interval between the first and
+last such use. The exact-phase bounds instead required enough frames for
+88 Hz over the full observed warm span. That latter count is sufficient,
+not necessary when a candidate's first/last-new-frame endpoints differ.
+
+The new analyzer independently reconstructs global first-use membership,
+including pre-warm history, and checks its count/span against native_metrics.
+It reports the observed prefix/suffix without a new frame, endpoint coverage,
+full-observation transition rate, observed gaps, and age of every presented
+warm stereo frame. Age uses the minimum stereo receipt in the same headset
+clock. The gap between warm cutoff and first observed warm submission is
+separate: absent captured rows are not labeled repeated-frame holds. With
+no new frames, prefix and suffix cover the same span and must not be added.
+Missing process tails, input novelty and optical latency remain unknown.
+
+Preserved evidence result:
+All five runs have zero observed warm prefix/suffix without new frames,
+endpoint coverage 1.0, and no repeated warm presentations. Therefore their
+native first-to-last-new-frame rate equals the full observed-span rate
+(up to floating point rounding):
+  01-cached           89.122881646 Hz
+  02-mapped           89.026708098 Hz
+  03-mapped           88.755244901 Hz
+  04-cached           88.400338462 Hz
+  05-closest-traced   89.220492393 Hz
+This result does not eliminate the endpoint limitation for counterfactual
+paths that deliberately omit some observed deadlines, and does not repair
+run05's original candidate-trace qualification failure.
+
+A deterministic synthetic regression includes a 10-second warm prefix
+holding a pre-warm frame, 901 new frames spanning 10 seconds at 90 Hz, and
+a 5-second held suffix. The unchanged standalone native latency-policy
+evaluator passes its first-use metrics, while the full observed rate is
+36 Hz, endpoint coverage is 0.4, and all-presentation p95 exceeds 1 second.
+This is an arithmetic scope demonstration, not an observed headset stall,
+production promotion, or a change to the required runtime policy.
+
+Validation:
+343 current Python tests pass with no skips. Seven focused coverage tests
+include all-new and no-new histories, absent versus held submissions,
+clock translation, mismatched stereo/reused metadata/regression rejection,
+and a coherently rewritten manifest rejected by pinned acquisition identity.
+All bound Python dependencies and both policy files are unchanged during
+validation. An independent transport-team source review found no blocker
+in the membership, same-clock arithmetic or full-span interpretation.
+
+Reproduction (fresh output paths required):
+  python3 prototypes/vr444/experiments/selection_policy/validate_cadence_coverage.py --out /tmp/cadence-validation.json
+  python3 prototypes/vr444/experiments/selection_policy/cadence_coverage.py /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z --out /tmp/cadence-coverage.json
+
+Artifacts are cadence-coverage-20261009.json and its separate source-bound
+cadence-coverage-validation-20261009.json. Both remain diagnostic-only.

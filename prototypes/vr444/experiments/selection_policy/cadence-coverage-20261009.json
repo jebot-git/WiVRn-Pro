@@ -1,0 +1,669 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "analysis_kind": "preserved_five_run_cadence_coverage",
+  "runs": [
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "warm_cadence_coverage_diagnostic",
+      "warmup_seconds": 2,
+      "warm_cutoff_xr_ns": 33465921216563,
+      "warm_presentations": 1879,
+      "warm_first_encoded_frames": 1879,
+      "warm_repeat_presentations": 0,
+      "first_warm_presentation_xr_ns": 33465925467283,
+      "last_warm_presentation_xr_ns": 33486997496882,
+      "full_observed_warm_span_ns": 21072029599,
+      "cutoff_to_first_warm_presentation_ns": 4250720,
+      "first_new_frame_xr_ns": 33465925467283,
+      "last_new_frame_xr_ns": 33486997496882,
+      "new_frame_endpoint_span_ns": 21072029599,
+      "observed_prefix_without_new_frame_ns": 0,
+      "observed_suffix_without_new_frame_ns": 0,
+      "endpoint_coverage_fraction": 1.0,
+      "original_first_to_last_new_frame_hz": 89.1228816463471,
+      "conservative_full_observation_transition_hz": 89.1228816463471,
+      "maximum_between_new_frames_ns": 24985576,
+      "maximum_observed_submission_gap_ns": 24985576,
+      "all_warm_presented_stereo_age_ms": {
+        "count": 1879,
+        "p50": 16.188491,
+        "p95": 21.968492,
+        "p99": 24.48693,
+        "max": 25.9237
+      },
+      "original_first_use_metrics": {
+        "status": "measured",
+        "window_start_xr_ns": 33465921216563,
+        "first_unique_submit_xr_ns": 33465925467283,
+        "last_unique_submit_xr_ns": 33486997496882,
+        "unique_pair_interval_s": 21.072029599,
+        "presentation_count": 1879,
+        "unique_stereo_pairs": 1879,
+        "repeat_presentations": 0,
+        "unique_stereo_submission_hz": 89.1228816463471,
+        "per_eye": {
+          "left": {
+            "receive_to_ready_ms": {
+              "count": 1879,
+              "p50": 2.162604,
+              "p95": 8.298074,
+              "p99": 10.176043,
+              "max": 16.936251
+            },
+            "ready_to_submit_ms": {
+              "count": 1879,
+              "p50": 13.416876,
+              "p95": 19.443022,
+              "p99": 22.522398,
+              "max": 24.095106
+            },
+            "receive_to_submit_ms": {
+              "count": 1879,
+              "p50": 16.188491,
+              "p95": 21.968492,
+              "p99": 24.48693,
+              "max": 25.9237
+            }
+          },
+          "right": {
+            "receive_to_ready_ms": {
+              "count": 1879,
+              "p50": 1.729479,
+              "p95": 3.021355,
+              "p99": 3.671355,
+              "max": 5.701824
+            },
+            "ready_to_submit_ms": {
+              "count": 1879,
+              "p50": 13.432189,
+              "p95": 19.451304,
+              "p99": 22.295262,
+              "max": 24.148648
+            },
+            "receive_to_submit_ms": {
+              "count": 1879,
+              "p50": 15.504429,
+              "p95": 20.792085,
+              "p99": 23.997034,
+              "max": 25.475159
+            }
+          }
+        },
+        "pooled": {
+          "receive_to_ready_ms": {
+            "count": 3758,
+            "p50": 1.926146,
+            "p95": 7.263491,
+            "p99": 9.301251,
+            "max": 16.936251
+          },
+          "ready_to_submit_ms": {
+            "count": 3758,
+            "p50": 13.426303,
+            "p95": 19.443022,
+            "p99": 22.346304,
+            "max": 24.148648
+          },
+          "receive_to_submit_ms": {
+            "count": 3758,
+            "p50": 15.859168,
+            "p95": 21.461929,
+            "p99": 24.262034,
+            "max": 25.9237
+          }
+        }
+      },
+      "native_metric_unchanged": true,
+      "latency_gate_changed": false,
+      "promotion_eligible": false,
+      "headset_operations": false,
+      "assumptions": [
+        "The original metric deliberately uses only global first encoded-frame submissions after warmup and the interval between their first and last timestamps.",
+        "The conservative comparison divides count minus one by the full span from first to last observed warm presentation; it is a diagnostic, not a replacement gate.",
+        "Prefix and suffix describe observed submissions only; missing process tails or intervals before the first captured row remain unknown.",
+        "The cutoff-to-first-warm-submission gap is reported separately; absence of captured submissions is not labeled a repeated-frame hold.",
+        "With no new warm frame, prefix and suffix both describe the same whole observation span and must not be summed.",
+        "All ages and intervals use the headset-local submission/receipt clocks. Encoded novelty is not source/input novelty and submit is not photon time."
+      ],
+      "run": "01-cached",
+      "original_run_status": "pass",
+      "original_result_overwritten": false,
+      "original_manifest_sha256": "e73b9d059f67b42863ad46ff81ceb458d8a3b88463aa9c96d0a64539491f750a",
+      "original_manifest_files_verified": 298
+    },
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "warm_cadence_coverage_diagnostic",
+      "warmup_seconds": 2,
+      "warm_cutoff_xr_ns": 33514921694621,
+      "warm_presentations": 1886,
+      "warm_first_encoded_frames": 1886,
+      "warm_repeat_presentations": 0,
+      "first_warm_presentation_xr_ns": 33514932563624,
+      "last_warm_presentation_xr_ns": 33536105984952,
+      "full_observed_warm_span_ns": 21173421328,
+      "cutoff_to_first_warm_presentation_ns": 10869003,
+      "first_new_frame_xr_ns": 33514932563624,
+      "last_new_frame_xr_ns": 33536105984952,
+      "new_frame_endpoint_span_ns": 21173421328,
+      "observed_prefix_without_new_frame_ns": 0,
+      "observed_suffix_without_new_frame_ns": 0,
+      "endpoint_coverage_fraction": 1.0,
+      "original_first_to_last_new_frame_hz": 89.02670809781942,
+      "conservative_full_observation_transition_hz": 89.02670809781942,
+      "maximum_between_new_frames_ns": 60521986,
+      "maximum_observed_submission_gap_ns": 60521986,
+      "all_warm_presented_stereo_age_ms": {
+        "count": 1886,
+        "p50": 16.826043,
+        "p95": 20.515887,
+        "p99": 21.946929,
+        "max": 24.519482
+      },
+      "original_first_use_metrics": {
+        "status": "measured",
+        "window_start_xr_ns": 33514921694621,
+        "first_unique_submit_xr_ns": 33514932563624,
+        "last_unique_submit_xr_ns": 33536105984952,
+        "unique_pair_interval_s": 21.173421328,
+        "presentation_count": 1886,
+        "unique_stereo_pairs": 1886,
+        "repeat_presentations": 0,
+        "unique_stereo_submission_hz": 89.02670809781942,
+        "per_eye": {
+          "left": {
+            "receive_to_ready_ms": {
+              "count": 1886,
+              "p50": 1.401302,
+              "p95": 7.119375,
+              "p99": 8.889324,
+              "max": 12.173543
+            },
+            "ready_to_submit_ms": {
+              "count": 1886,
+              "p50": 15.240626,
+              "p95": 19.126357,
+              "p99": 20.41995,
+              "max": 23.147763
+            },
+            "receive_to_submit_ms": {
+              "count": 1886,
+              "p50": 16.826043,
+              "p95": 20.515887,
+              "p99": 21.946929,
+              "max": 24.519482
+            }
+          },
+          "right": {
+            "receive_to_ready_ms": {
+              "count": 1886,
+              "p50": 1.081823,
+              "p95": 2.195677,
+              "p99": 3.104427,
+              "max": 7.561095
+            },
+            "ready_to_submit_ms": {
+              "count": 1886,
+              "p50": 15.264117,
+              "p95": 19.091617,
+              "p99": 20.471148,
+              "max": 23.118336
+            },
+            "receive_to_submit_ms": {
+              "count": 1886,
+              "p50": 16.275835,
+              "p95": 20.116877,
+              "p99": 21.653491,
+              "max": 24.19844
+            }
+          }
+        },
+        "pooled": {
+          "receive_to_ready_ms": {
+            "count": 3772,
+            "p50": 1.192448,
+            "p95": 5.078021,
+            "p99": 8.13974,
+            "max": 12.173543
+          },
+          "ready_to_submit_ms": {
+            "count": 3772,
+            "p50": 15.259377,
+            "p95": 19.11396,
+            "p99": 20.453127,
+            "max": 23.147763
+          },
+          "receive_to_submit_ms": {
+            "count": 3772,
+            "p50": 16.53948,
+            "p95": 20.333804,
+            "p99": 21.77896,
+            "max": 24.519482
+          }
+        }
+      },
+      "native_metric_unchanged": true,
+      "latency_gate_changed": false,
+      "promotion_eligible": false,
+      "headset_operations": false,
+      "assumptions": [
+        "The original metric deliberately uses only global first encoded-frame submissions after warmup and the interval between their first and last timestamps.",
+        "The conservative comparison divides count minus one by the full span from first to last observed warm presentation; it is a diagnostic, not a replacement gate.",
+        "Prefix and suffix describe observed submissions only; missing process tails or intervals before the first captured row remain unknown.",
+        "The cutoff-to-first-warm-submission gap is reported separately; absence of captured submissions is not labeled a repeated-frame hold.",
+        "With no new warm frame, prefix and suffix both describe the same whole observation span and must not be summed.",
+        "All ages and intervals use the headset-local submission/receipt clocks. Encoded novelty is not source/input novelty and submit is not photon time."
+      ],
+      "run": "02-mapped",
+      "original_run_status": "pass",
+      "original_result_overwritten": false,
+      "original_manifest_sha256": "0ab8828fb4ff5e8d7a26ea0b1dfbd1ded12dfb43acbbf344993249b8eb75ff99",
+      "original_manifest_files_verified": 298
+    },
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "warm_cadence_coverage_diagnostic",
+      "warmup_seconds": 2,
+      "warm_cutoff_xr_ns": 33563474441802,
+      "warm_presentations": 1899,
+      "warm_first_encoded_frames": 1899,
+      "warm_repeat_presentations": 0,
+      "first_warm_presentation_xr_ns": 33563480343095,
+      "last_warm_presentation_xr_ns": 33584864994809,
+      "full_observed_warm_span_ns": 21384651714,
+      "cutoff_to_first_warm_presentation_ns": 5901293,
+      "first_new_frame_xr_ns": 33563480343095,
+      "last_new_frame_xr_ns": 33584864994809,
+      "new_frame_endpoint_span_ns": 21384651714,
+      "observed_prefix_without_new_frame_ns": 0,
+      "observed_suffix_without_new_frame_ns": 0,
+      "endpoint_coverage_fraction": 1.0,
+      "original_first_to_last_new_frame_hz": 88.75524490106268,
+      "conservative_full_observation_transition_hz": 88.7552449010627,
+      "maximum_between_new_frames_ns": 60739538,
+      "maximum_observed_submission_gap_ns": 60739538,
+      "all_warm_presented_stereo_age_ms": {
+        "count": 1899,
+        "p50": 16.492762,
+        "p95": 22.353492,
+        "p99": 24.413076,
+        "max": 25.849274
+      },
+      "original_first_use_metrics": {
+        "status": "measured",
+        "window_start_xr_ns": 33563474441802,
+        "first_unique_submit_xr_ns": 33563480343095,
+        "last_unique_submit_xr_ns": 33584864994809,
+        "unique_pair_interval_s": 21.384651714,
+        "presentation_count": 1899,
+        "unique_stereo_pairs": 1899,
+        "repeat_presentations": 0,
+        "unique_stereo_submission_hz": 88.75524490106268,
+        "per_eye": {
+          "left": {
+            "receive_to_ready_ms": {
+              "count": 1899,
+              "p50": 1.658699,
+              "p95": 7.486563,
+              "p99": 9.209167,
+              "max": 16.429793
+            },
+            "ready_to_submit_ms": {
+              "count": 1899,
+              "p50": 14.355887,
+              "p95": 20.287137,
+              "p99": 23.168439,
+              "max": 24.849586
+            },
+            "receive_to_submit_ms": {
+              "count": 1899,
+              "p50": 16.492762,
+              "p95": 22.353492,
+              "p99": 24.413076,
+              "max": 25.849274
+            }
+          },
+          "right": {
+            "receive_to_ready_ms": {
+              "count": 1899,
+              "p50": 1.241979,
+              "p95": 2.328281,
+              "p99": 2.864792,
+              "max": 5.992917
+            },
+            "ready_to_submit_ms": {
+              "count": 1899,
+              "p50": 14.412554,
+              "p95": 20.282658,
+              "p99": 22.984533,
+              "max": 24.878284
+            },
+            "receive_to_submit_ms": {
+              "count": 1899,
+              "p50": 15.935939,
+              "p95": 21.552606,
+              "p99": 24.040731,
+              "max": 25.656878
+            }
+          }
+        },
+        "pooled": {
+          "receive_to_ready_ms": {
+            "count": 3798,
+            "p50": 1.443333,
+            "p95": 4.057187,
+            "p99": 8.499324,
+            "max": 16.429793
+          },
+          "ready_to_submit_ms": {
+            "count": 3798,
+            "p50": 14.381303,
+            "p95": 20.282658,
+            "p99": 23.076773,
+            "max": 24.878284
+          },
+          "receive_to_submit_ms": {
+            "count": 3798,
+            "p50": 16.219689,
+            "p95": 21.965054,
+            "p99": 24.272138,
+            "max": 25.849274
+          }
+        }
+      },
+      "native_metric_unchanged": true,
+      "latency_gate_changed": false,
+      "promotion_eligible": false,
+      "headset_operations": false,
+      "assumptions": [
+        "The original metric deliberately uses only global first encoded-frame submissions after warmup and the interval between their first and last timestamps.",
+        "The conservative comparison divides count minus one by the full span from first to last observed warm presentation; it is a diagnostic, not a replacement gate.",
+        "Prefix and suffix describe observed submissions only; missing process tails or intervals before the first captured row remain unknown.",
+        "The cutoff-to-first-warm-submission gap is reported separately; absence of captured submissions is not labeled a repeated-frame hold.",
+        "With no new warm frame, prefix and suffix both describe the same whole observation span and must not be summed.",
+        "All ages and intervals use the headset-local submission/receipt clocks. Encoded novelty is not source/input novelty and submit is not photon time."
+      ],
+      "run": "03-mapped",
+      "original_run_status": "pass",
+      "original_result_overwritten": false,
+      "original_manifest_sha256": "bb2d24476ad40aaf66b530d3565c0307564d8bbbb6d92b989e80a12806bf4bae",
+      "original_manifest_files_verified": 298
+    },
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "warm_cadence_coverage_diagnostic",
+      "warmup_seconds": 2,
+      "warm_cutoff_xr_ns": 33611999189500,
+      "warm_presentations": 1898,
+      "warm_first_encoded_frames": 1898,
+      "warm_repeat_presentations": 0,
+      "first_warm_presentation_xr_ns": 33612007884492,
+      "last_warm_presentation_xr_ns": 33633467078348,
+      "full_observed_warm_span_ns": 21459193856,
+      "cutoff_to_first_warm_presentation_ns": 8694992,
+      "first_new_frame_xr_ns": 33612007884492,
+      "last_new_frame_xr_ns": 33633467078348,
+      "new_frame_endpoint_span_ns": 21459193856,
+      "observed_prefix_without_new_frame_ns": 0,
+      "observed_suffix_without_new_frame_ns": 0,
+      "endpoint_coverage_fraction": 1.0,
+      "original_first_to_last_new_frame_hz": 88.4003384623695,
+      "conservative_full_observation_transition_hz": 88.4003384623695,
+      "maximum_between_new_frames_ns": 43223806,
+      "maximum_observed_submission_gap_ns": 43223806,
+      "all_warm_presented_stereo_age_ms": {
+        "count": 1898,
+        "p50": 17.298543,
+        "p95": 26.085992,
+        "p99": 36.69792,
+        "max": 42.266098
+      },
+      "original_first_use_metrics": {
+        "status": "measured",
+        "window_start_xr_ns": 33611999189500,
+        "first_unique_submit_xr_ns": 33612007884492,
+        "last_unique_submit_xr_ns": 33633467078348,
+        "unique_pair_interval_s": 21.459193856,
+        "presentation_count": 1898,
+        "unique_stereo_pairs": 1898,
+        "repeat_presentations": 0,
+        "unique_stereo_submission_hz": 88.4003384623695,
+        "per_eye": {
+          "left": {
+            "receive_to_ready_ms": {
+              "count": 1898,
+              "p50": 1.934532,
+              "p95": 8.132397,
+              "p99": 9.632292,
+              "max": 15.321251
+            },
+            "ready_to_submit_ms": {
+              "count": 1898,
+              "p50": 15.169325,
+              "p95": 23.21969,
+              "p99": 34.338076,
+              "max": 40.410472
+            },
+            "receive_to_submit_ms": {
+              "count": 1898,
+              "p50": 17.298543,
+              "p95": 26.085992,
+              "p99": 36.69792,
+              "max": 42.266098
+            }
+          },
+          "right": {
+            "receive_to_ready_ms": {
+              "count": 1898,
+              "p50": 1.487916,
+              "p95": 2.716771,
+              "p99": 3.566251,
+              "max": 4.65599
+            },
+            "ready_to_submit_ms": {
+              "count": 1898,
+              "p50": 15.214741,
+              "p95": 23.191773,
+              "p99": 34.355628,
+              "max": 40.46865
+            },
+            "receive_to_submit_ms": {
+              "count": 1898,
+              "p50": 16.670679,
+              "p95": 24.855627,
+              "p99": 35.986723,
+              "max": 41.913598
+            }
+          }
+        },
+        "pooled": {
+          "receive_to_ready_ms": {
+            "count": 3796,
+            "p50": 1.712865,
+            "p95": 6.965417,
+            "p99": 8.953335,
+            "max": 15.321251
+          },
+          "ready_to_submit_ms": {
+            "count": 3796,
+            "p50": 15.192449,
+            "p95": 23.191773,
+            "p99": 34.338076,
+            "max": 40.46865
+          },
+          "receive_to_submit_ms": {
+            "count": 3796,
+            "p50": 17.011199,
+            "p95": 25.258596,
+            "p99": 36.421462,
+            "max": 42.266098
+          }
+        }
+      },
+      "native_metric_unchanged": true,
+      "latency_gate_changed": false,
+      "promotion_eligible": false,
+      "headset_operations": false,
+      "assumptions": [
+        "The original metric deliberately uses only global first encoded-frame submissions after warmup and the interval between their first and last timestamps.",
+        "The conservative comparison divides count minus one by the full span from first to last observed warm presentation; it is a diagnostic, not a replacement gate.",
+        "Prefix and suffix describe observed submissions only; missing process tails or intervals before the first captured row remain unknown.",
+        "The cutoff-to-first-warm-submission gap is reported separately; absence of captured submissions is not labeled a repeated-frame hold.",
+        "With no new warm frame, prefix and suffix both describe the same whole observation span and must not be summed.",
+        "All ages and intervals use the headset-local submission/receipt clocks. Encoded novelty is not source/input novelty and submit is not photon time."
+      ],
+      "run": "04-cached",
+      "original_run_status": "pass",
+      "original_result_overwritten": false,
+      "original_manifest_sha256": "26da311a0b022761359515878cece849f28f4aecceaef8fe73a7283e8fecf15f",
+      "original_manifest_files_verified": 298
+    },
+    {
+      "schema": 1,
+      "status": "pass",
+      "analysis_kind": "warm_cadence_coverage_diagnostic",
+      "warmup_seconds": 2,
+      "warm_cutoff_xr_ns": 33660688991434,
+      "warm_presentations": 1900,
+      "warm_first_encoded_frames": 1900,
+      "warm_repeat_presentations": 0,
+      "first_warm_presentation_xr_ns": 33660693628613,
+      "last_warm_presentation_xr_ns": 33681977976514,
+      "full_observed_warm_span_ns": 21284347901,
+      "cutoff_to_first_warm_presentation_ns": 4637179,
+      "first_new_frame_xr_ns": 33660693628613,
+      "last_new_frame_xr_ns": 33681977976514,
+      "new_frame_endpoint_span_ns": 21284347901,
+      "observed_prefix_without_new_frame_ns": 0,
+      "observed_suffix_without_new_frame_ns": 0,
+      "endpoint_coverage_fraction": 1.0,
+      "original_first_to_last_new_frame_hz": 89.22049239341645,
+      "conservative_full_observation_transition_hz": 89.22049239341645,
+      "maximum_between_new_frames_ns": 33421409,
+      "maximum_observed_submission_gap_ns": 33421409,
+      "all_warm_presented_stereo_age_ms": {
+        "count": 1900,
+        "p50": 18.075523,
+        "p95": 26.927659,
+        "p99": 29.827295,
+        "max": 31.151097
+      },
+      "original_first_use_metrics": {
+        "status": "measured",
+        "window_start_xr_ns": 33660688991434,
+        "first_unique_submit_xr_ns": 33660693628613,
+        "last_unique_submit_xr_ns": 33681977976514,
+        "unique_pair_interval_s": 21.284347901,
+        "presentation_count": 1900,
+        "unique_stereo_pairs": 1900,
+        "repeat_presentations": 0,
+        "unique_stereo_submission_hz": 89.22049239341645,
+        "per_eye": {
+          "left": {
+            "receive_to_ready_ms": {
+              "count": 1900,
+              "p50": 1.604167,
+              "p95": 7.741355,
+              "p99": 9.566043,
+              "max": 18.298439
+            },
+            "ready_to_submit_ms": {
+              "count": 1900,
+              "p50": 16.101669,
+              "p95": 24.332034,
+              "p99": 28.079534,
+              "max": 30.030784
+            },
+            "receive_to_submit_ms": {
+              "count": 1900,
+              "p50": 18.075523,
+              "p95": 26.927659,
+              "p99": 29.827295,
+              "max": 31.151097
+            }
+          },
+          "right": {
+            "receive_to_ready_ms": {
+              "count": 1900,
+              "p50": 1.312864,
+              "p95": 2.637396,
+              "p99": 3.330782,
+              "max": 4.657917
+            },
+            "ready_to_submit_ms": {
+              "count": 1900,
+              "p50": 16.11448,
+              "p95": 24.335783,
+              "p99": 28.064899,
+              "max": 30.047607
+            },
+            "receive_to_submit_ms": {
+              "count": 1900,
+              "p50": 17.448179,
+              "p95": 26.317242,
+              "p99": 29.729951,
+              "max": 31.058597
+            }
+          }
+        },
+        "pooled": {
+          "receive_to_ready_ms": {
+            "count": 3800,
+            "p50": 1.440313,
+            "p95": 6.246199,
+            "p99": 8.849428,
+            "max": 18.298439
+          },
+          "ready_to_submit_ms": {
+            "count": 3800,
+            "p50": 16.108439,
+            "p95": 24.335783,
+            "p99": 28.079534,
+            "max": 30.047607
+          },
+          "receive_to_submit_ms": {
+            "count": 3800,
+            "p50": 17.768231,
+            "p95": 26.673336,
+            "p99": 29.821774,
+            "max": 31.151097
+          }
+        }
+      },
+      "native_metric_unchanged": true,
+      "latency_gate_changed": false,
+      "promotion_eligible": false,
+      "headset_operations": false,
+      "assumptions": [
+        "The original metric deliberately uses only global first encoded-frame submissions after warmup and the interval between their first and last timestamps.",
+        "The conservative comparison divides count minus one by the full span from first to last observed warm presentation; it is a diagnostic, not a replacement gate.",
+        "Prefix and suffix describe observed submissions only; missing process tails or intervals before the first captured row remain unknown.",
+        "The cutoff-to-first-warm-submission gap is reported separately; absence of captured submissions is not labeled a repeated-frame hold.",
+        "With no new warm frame, prefix and suffix both describe the same whole observation span and must not be summed.",
+        "All ages and intervals use the headset-local submission/receipt clocks. Encoded novelty is not source/input novelty and submit is not photon time."
+      ],
+      "run": "05-closest-traced",
+      "original_run_status": "fail",
+      "original_result_overwritten": false,
+      "original_manifest_sha256": "38502bec943be9ad1c778a4775327dd4dbb0a32940b3fcc7946607a26b031371",
+      "original_manifest_files_verified": 300
+    }
+  ],
+  "original_root": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z",
+  "original_manifest_files_verified": 1492,
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/cadence_coverage.py": "cd61d4030869db5c35fcc6de28c5a809f938c75edc032adc3024a54c0b2fc5e0",
+    "validation/wivrn-codecs/integration/native_metrics.py": "0075fd06c5fcc1045785e104ed74a03db0fbd3130d3edc11a9cc10abd99f5825"
+  },
+  "original_manifest_baseline_receipt_commit": "0296127389e997137e3cece46f4d295c151dc4c1",
+  "original_files_written": false,
+  "latency_gate_evaluated": false,
+  "latency_gate_changed": false,
+  "headset_operations": false,
+  "promotion_eligible": false
+}
