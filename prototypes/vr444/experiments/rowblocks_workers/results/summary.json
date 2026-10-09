@@ -1,0 +1,520 @@
+{
+  "schema": 1,
+  "backend": "x86-ssse3-pack-expand+sse2-row",
+  "groups": {
+    "paired-a": {
+      "cases": 4,
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "stereo_wire_bytes": 182910,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.19027275,
+            "client_decode_wall_ms": 0.8992147500000001,
+            "client_process_cpu_ms": 0.88461375,
+            "server_plus_client_wall_ms": 1.0979245
+          }
+        },
+        {
+          "profile": "rrf_up_serial",
+          "stereo_wire_bytes": 233898,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.5168225,
+            "client_decode_wall_ms": 0.725657,
+            "client_process_cpu_ms": 0.71389775,
+            "server_plus_client_wall_ms": 2.256262
+          }
+        },
+        {
+          "profile": "rrb32_serial",
+          "stereo_wire_bytes": 245567,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.2506089999999999,
+            "client_decode_wall_ms": 0.74127125,
+            "client_process_cpu_ms": 0.72789775,
+            "server_plus_client_wall_ms": 1.990526
+          }
+        },
+        {
+          "profile": "rrb32_workers2",
+          "stereo_wire_bytes": 245567,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.23427375,
+            "client_decode_wall_ms": 0.60905,
+            "client_process_cpu_ms": 0.84761625,
+            "server_plus_client_wall_ms": 1.8474645
+          }
+        },
+        {
+          "profile": "rrb32_workers4",
+          "stereo_wire_bytes": 245567,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.23848175,
+            "client_decode_wall_ms": 0.4706355,
+            "client_process_cpu_ms": 0.98716425,
+            "server_plus_client_wall_ms": 1.71491525
+          }
+        },
+        {
+          "profile": "rrb128_serial",
+          "stereo_wire_bytes": 236627,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.32951425,
+            "client_decode_wall_ms": 0.71651,
+            "client_process_cpu_ms": 0.7003155,
+            "server_plus_client_wall_ms": 2.0408995
+          }
+        },
+        {
+          "profile": "rrb128_workers2",
+          "stereo_wire_bytes": 236627,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.3226084999999999,
+            "client_decode_wall_ms": 0.5948175,
+            "client_process_cpu_ms": 0.815149,
+            "server_plus_client_wall_ms": 1.91955425
+          }
+        },
+        {
+          "profile": "rrb128_workers4",
+          "stereo_wire_bytes": 236627,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.32150125,
+            "client_decode_wall_ms": 0.47384125,
+            "client_process_cpu_ms": 0.93594225,
+            "server_plus_client_wall_ms": 1.8105630000000001
+          }
+        }
+      ]
+    },
+    "paired-b": {
+      "cases": 4,
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "stereo_wire_bytes": 135653,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.16332049999999998,
+            "client_decode_wall_ms": 0.74961525,
+            "client_process_cpu_ms": 0.74152525,
+            "server_plus_client_wall_ms": 0.92370375
+          }
+        },
+        {
+          "profile": "rrf_up_serial",
+          "stereo_wire_bytes": 184585,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.3010915,
+            "client_decode_wall_ms": 0.6421675,
+            "client_process_cpu_ms": 0.63122475,
+            "server_plus_client_wall_ms": 1.9537440000000001
+          }
+        },
+        {
+          "profile": "rrb32_serial",
+          "stereo_wire_bytes": 194380,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.04483175,
+            "client_decode_wall_ms": 0.68682625,
+            "client_process_cpu_ms": 0.6808655,
+            "server_plus_client_wall_ms": 1.7338995
+          }
+        },
+        {
+          "profile": "rrb32_workers2",
+          "stereo_wire_bytes": 194380,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.039851,
+            "client_decode_wall_ms": 0.5737730000000001,
+            "client_process_cpu_ms": 0.816669,
+            "server_plus_client_wall_ms": 1.62148625
+          }
+        },
+        {
+          "profile": "rrb32_workers4",
+          "stereo_wire_bytes": 194380,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.03654475,
+            "client_decode_wall_ms": 0.433112,
+            "client_process_cpu_ms": 0.95966675,
+            "server_plus_client_wall_ms": 1.4827029999999999
+          }
+        },
+        {
+          "profile": "rrb128_serial",
+          "stereo_wire_bytes": 186904,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.12377175,
+            "client_decode_wall_ms": 0.65799725,
+            "client_process_cpu_ms": 0.650419,
+            "server_plus_client_wall_ms": 1.7856265
+          }
+        },
+        {
+          "profile": "rrb128_workers2",
+          "stereo_wire_bytes": 186904,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.10496625,
+            "client_decode_wall_ms": 0.5530845,
+            "client_process_cpu_ms": 0.7805775,
+            "server_plus_client_wall_ms": 1.67284275
+          }
+        },
+        {
+          "profile": "rrb128_workers4",
+          "stereo_wire_bytes": 186904,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.1152615,
+            "client_decode_wall_ms": 0.4346005,
+            "client_process_cpu_ms": 0.909867,
+            "server_plus_client_wall_ms": 1.56417525
+          }
+        }
+      ]
+    },
+    "lossless": {
+      "cases": 4,
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "stereo_wire_bytes": 98239,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.13789525,
+            "client_decode_wall_ms": 0.5472565,
+            "client_process_cpu_ms": 0.54023025,
+            "server_plus_client_wall_ms": 0.6893327499999999
+          }
+        },
+        {
+          "profile": "rrf_up_serial",
+          "stereo_wire_bytes": 55655,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.8630082499999999,
+            "client_decode_wall_ms": 0.526917,
+            "client_process_cpu_ms": 0.520423,
+            "server_plus_client_wall_ms": 1.38749425
+          }
+        },
+        {
+          "profile": "rrb32_serial",
+          "stereo_wire_bytes": 66332,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.67714025,
+            "client_decode_wall_ms": 0.57484325,
+            "client_process_cpu_ms": 0.56699625,
+            "server_plus_client_wall_ms": 1.26429025
+          }
+        },
+        {
+          "profile": "rrb32_workers2",
+          "stereo_wire_bytes": 66332,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.672849,
+            "client_decode_wall_ms": 0.45790725,
+            "client_process_cpu_ms": 0.7040992500000001,
+            "server_plus_client_wall_ms": 1.131175
+          }
+        },
+        {
+          "profile": "rrb32_workers4",
+          "stereo_wire_bytes": 66332,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.678939,
+            "client_decode_wall_ms": 0.321041,
+            "client_process_cpu_ms": 0.844598,
+            "server_plus_client_wall_ms": 1.0222115
+          }
+        },
+        {
+          "profile": "rrb128_serial",
+          "stereo_wire_bytes": 58298,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.69905025,
+            "client_decode_wall_ms": 0.5475975,
+            "client_process_cpu_ms": 0.5410775,
+            "server_plus_client_wall_ms": 1.25053175
+          }
+        },
+        {
+          "profile": "rrb128_workers2",
+          "stereo_wire_bytes": 58298,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.682652,
+            "client_decode_wall_ms": 0.460907,
+            "client_process_cpu_ms": 0.68036075,
+            "server_plus_client_wall_ms": 1.1514095
+          }
+        },
+        {
+          "profile": "rrb128_workers4",
+          "stereo_wire_bytes": 58298,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.693833,
+            "client_decode_wall_ms": 0.34042625,
+            "client_process_cpu_ms": 0.816341,
+            "server_plus_client_wall_ms": 1.0450895
+          }
+        }
+      ]
+    },
+    "synthetic-q1": {
+      "cases": 7,
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "stereo_wire_bytes": 3703312,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 1.5892178571428572,
+            "client_decode_wall_ms": 4.268959714285715,
+            "client_process_cpu_ms": 4.259030285714286,
+            "server_plus_client_wall_ms": 5.853526857142857
+          }
+        },
+        {
+          "profile": "rrf_up_serial",
+          "stereo_wire_bytes": 2347260,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 4.766043,
+            "client_decode_wall_ms": 1.0945247142857144,
+            "client_process_cpu_ms": 1.090914,
+            "server_plus_client_wall_ms": 5.871965142857143
+          }
+        },
+        {
+          "profile": "rrb32_serial",
+          "stereo_wire_bytes": 2414792,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 4.681222,
+            "client_decode_wall_ms": 1.1135007142857143,
+            "client_process_cpu_ms": 1.108212,
+            "server_plus_client_wall_ms": 5.793775
+          }
+        },
+        {
+          "profile": "rrb32_workers2",
+          "stereo_wire_bytes": 2414792,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 4.6629691428571425,
+            "client_decode_wall_ms": 1.0200297142857142,
+            "client_process_cpu_ms": 1.2225782857142857,
+            "server_plus_client_wall_ms": 5.6866515714285715
+          }
+        },
+        {
+          "profile": "rrb32_workers4",
+          "stereo_wire_bytes": 2414792,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 4.659602285714286,
+            "client_decode_wall_ms": 0.9167190000000001,
+            "client_process_cpu_ms": 1.3351678571428571,
+            "server_plus_client_wall_ms": 5.575550142857143
+          }
+        },
+        {
+          "profile": "rrb128_serial",
+          "stereo_wire_bytes": 2362500,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 4.679899571428572,
+            "client_decode_wall_ms": 1.080844857142857,
+            "client_process_cpu_ms": 1.0778547142857142,
+            "server_plus_client_wall_ms": 5.774807714285714
+          }
+        },
+        {
+          "profile": "rrb128_workers2",
+          "stereo_wire_bytes": 2362500,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 4.686601571428572,
+            "client_decode_wall_ms": 1.0112999999999999,
+            "client_process_cpu_ms": 1.1878507142857142,
+            "server_plus_client_wall_ms": 5.694611142857143
+          }
+        },
+        {
+          "profile": "rrb128_workers4",
+          "stereo_wire_bytes": 2362500,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 4.661464285714286,
+            "client_decode_wall_ms": 0.9090427142857144,
+            "client_process_cpu_ms": 1.2811674285714285,
+            "server_plus_client_wall_ms": 5.582547285714286
+          }
+        }
+      ]
+    },
+    "synthetic-q8": {
+      "cases": 7,
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "stereo_wire_bytes": 2228440,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.9816827142857143,
+            "client_decode_wall_ms": 2.8154535714285713,
+            "client_process_cpu_ms": 2.802453142857143,
+            "server_plus_client_wall_ms": 3.800310714285714
+          }
+        },
+        {
+          "profile": "rrf_up_serial",
+          "stereo_wire_bytes": 2672502,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 3.8335964285714286,
+            "client_decode_wall_ms": 1.27401,
+            "client_process_cpu_ms": 1.2644994285714286,
+            "server_plus_client_wall_ms": 5.1047904285714285
+          }
+        },
+        {
+          "profile": "rrb32_serial",
+          "stereo_wire_bytes": 2719900,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 3.6519201428571426,
+            "client_decode_wall_ms": 1.2616127142857143,
+            "client_process_cpu_ms": 1.2541222857142857,
+            "server_plus_client_wall_ms": 4.915793857142857
+          }
+        },
+        {
+          "profile": "rrb32_workers2",
+          "stereo_wire_bytes": 2719900,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 3.6304912857142857,
+            "client_decode_wall_ms": 1.1514257142857143,
+            "client_process_cpu_ms": 1.3596871428571429,
+            "server_plus_client_wall_ms": 4.796680142857143
+          }
+        },
+        {
+          "profile": "rrb32_workers4",
+          "stereo_wire_bytes": 2719900,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 3.6199002857142855,
+            "client_decode_wall_ms": 1.0577944285714285,
+            "client_process_cpu_ms": 1.4826574285714287,
+            "server_plus_client_wall_ms": 4.6854382857142856
+          }
+        },
+        {
+          "profile": "rrb128_serial",
+          "stereo_wire_bytes": 2684614,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 3.7231832857142857,
+            "client_decode_wall_ms": 1.2446257142857142,
+            "client_process_cpu_ms": 1.2306864285714285,
+            "server_plus_client_wall_ms": 4.969238714285715
+          }
+        },
+        {
+          "profile": "rrb128_workers2",
+          "stereo_wire_bytes": 2684614,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 3.709634142857143,
+            "client_decode_wall_ms": 1.1533827142857143,
+            "client_process_cpu_ms": 1.3418288571428572,
+            "server_plus_client_wall_ms": 4.872161714285714
+          }
+        },
+        {
+          "profile": "rrb128_workers4",
+          "stereo_wire_bytes": 2684614,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 3.700018857142857,
+            "client_decode_wall_ms": 1.0459985714285716,
+            "client_process_cpu_ms": 1.4511271428571428,
+            "server_plus_client_wall_ms": 4.746022
+          }
+        }
+      ]
+    },
+    "all": {
+      "cases": 26,
+      "profiles": [
+        {
+          "profile": "vr444_serial",
+          "stereo_wire_bytes": 6348554,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 0.7677791538461538,
+            "client_decode_wall_ms": 2.2452015,
+            "client_process_cpu_ms": 2.234456192307692,
+            "server_plus_client_wall_ms": 3.0161810384615384
+          }
+        },
+        {
+          "profile": "rrf_up_serial",
+          "stereo_wire_bytes": 5493900,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 2.8815832692307692,
+            "client_decode_wall_ms": 0.9291811153846155,
+            "client_process_cpu_ms": 0.9211567692307692,
+            "server_plus_client_wall_ms": 3.816434230769231
+          }
+        },
+        {
+          "profile": "rrb32_serial",
+          "stereo_wire_bytes": 5640971,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 2.700858423076923,
+            "client_decode_wall_ms": 0.9475983461538462,
+            "client_process_cpu_ms": 0.9399760769230769,
+            "server_plus_client_wall_ms": 3.650840192307692
+          }
+        },
+        {
+          "profile": "rrb32_workers2",
+          "stereo_wire_bytes": 5640971,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 2.6862353076923076,
+            "client_decode_wall_ms": 0.8370426538461538,
+            "client_process_cpu_ms": 1.059592153846154,
+            "server_plus_client_wall_ms": 3.5301471153846156
+          }
+        },
+        {
+          "profile": "rrb32_workers4",
+          "stereo_wire_bytes": 5640971,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 2.683553076923077,
+            "client_decode_wall_ms": 0.7200287692307692,
+            "client_process_cpu_ms": 1.1880958846153846,
+            "server_plus_client_wall_ms": 3.4117783846153844
+          }
+        },
+        {
+          "profile": "rrb128_serial",
+          "stereo_wire_bytes": 5528943,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 2.747343269230769,
+            "client_decode_wall_ms": 0.9217966538461538,
+            "client_process_cpu_ms": 0.9125783076923077,
+            "server_plus_client_wall_ms": 3.6737136923076923
+          }
+        },
+        {
+          "profile": "rrb128_workers2",
+          "stereo_wire_bytes": 5528943,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 2.739021423076923,
+            "client_decode_wall_ms": 0.8303082692307692,
+            "client_process_cpu_ms": 1.031234846153846,
+            "server_plus_client_wall_ms": 3.5747167692307693
+          }
+        },
+        {
+          "profile": "rrb128_workers4",
+          "stereo_wire_bytes": 5528943,
+          "mean_pair_p50_ms": {
+            "server_transcode_ms": 2.732798653846154,
+            "client_decode_wall_ms": 0.7184908076923077,
+            "client_process_cpu_ms": 1.1451793461538462,
+            "server_plus_client_wall_ms": 3.460742153846154
+          }
+        }
+      ]
+    }
+  },
+  "actual_captured_pairs": 12,
+  "synthetic_duplicated_eye_profiles": 14,
+  "statistic": "means of per-stereo-profile medians; no pooled percentile or headset prediction",
+  "limitation": "single x86 host without frequency/affinity/thermal control; worker startup separate; process CPU sums all worker use; no GPU/upload/network/headset measurement"
+}

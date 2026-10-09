@@ -1,0 +1,1 @@
+{"pass":true,"stereo_roundtrips":217,"rejections":4273,"corruption_cases":4000,"worker_counts":[1,2,4],"max_jobs":512,"generation_stress_batches":1000,"maximum_pixels_per_eye":4194304,"previous_separate_lease_retained":true}
