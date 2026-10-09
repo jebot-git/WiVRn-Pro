@@ -1,0 +1,29 @@
+{
+  "created_utc": "2026-10-09T06:28:45.419869+00:00",
+  "git_base": "3075ff7c72e53ab83a77bd56e6fef2a50708b654",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "cpu_model": "12th Gen Intel(R) Core(TM) i7-12700",
+  "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+  "headset_accessed": false,
+  "android_runtime_tested": false,
+  "network_scope": "owned ephemeral127.0.0.1 UDP sockets only",
+  "source_sha256": {
+    "prototypes/vr444/experiments/udp_offload/README.txt": "4f5a54b00587a3b6061f9925241d180c46fa3df550464916739381fe1e967187",
+    "prototypes/vr444/experiments/udp_offload/bench.cpp": "01b468cdcc58e6ff1e69aeb6a3202d9d2a68536d73edc6c66247a439717767de",
+    "prototypes/vr444/experiments/udp_offload/build-android.sh": "9d5df9e0b2da68c0a5e06b741e7ee6a77b62872a8f89ff45fafac53e1862acda",
+    "prototypes/vr444/experiments/udp_offload/build.sh": "c6f7c4f6328129fcd5468c7301024924ad8e3e8fa0de925938c7c05e90bdf9d3",
+    "prototypes/vr444/experiments/udp_offload/offload.hpp": "36ac69563201b3e16a42750f38d52d50f22b8eda5238c6e365e36144b729de7a",
+    "prototypes/vr444/experiments/udp_offload/summarize.py": "9745090885d36e1f8cea993dfb11a2a0247cd9e8310d008b586193fb22f51786",
+    "prototypes/vr444/experiments/udp_offload/test.cpp": "6d8190e17226c332b2fbdd5499a955bff47f0f790bbe02fc06d836cea7a51bc3",
+    "prototypes/vr444/experiments/udp_batch/probe.cpp": "b3ba1c2c077fed3d0b8c5cfedbfd0d2ddb2cb7c6029c88c884d4fc68ab714ab9"
+  },
+  "binary_sha256": {
+    "test": "968acbeda3558f63fad7ec7aebf1f778ca97116957899e4809ba7191128f6dfe",
+    "probe": "0a81911e63f6f0a68ae93c9098639aeeb7e2c2e61bd3974d04fcf35b92d0b092",
+    "probe-android": "9e16449d6f03a25fd6bb45aaed0e09bdbaa0d6eb90c2afda7fbd7c54f0981113"
+  },
+  "bench_sha256": "c807cb79c0b27e3066a630faf187b790c232c86a809cfa2c51c2e2d24ec32c99",
+  "command": "/tmp/wivrn-udp-offload-build/probe 31",
+  "coordinated_window": "GPU and compositor teams explicitly held builds/tests before measurement; ordinary desktop and services continued",
+  "limitations": "single serialized host loopback; no affinity/frequency/thermal control; no physical network/NIC/WiFi offload, headset runtime, transport integration or optical measurement"
+}
