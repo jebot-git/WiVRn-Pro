@@ -1,0 +1,10 @@
+Saved-payload audit adapter:
+ python3 integration/rrb_payload_audit.py CAPTURE_DIR AUDIT.json \
+   --reference PINNED_SCALAR_BINARY --reference-sha256 SHA256 --source q1|vr444
+ Root must bind the chosen binary to rrb_reference.cpp/dependencies in its build
+ receipt. The adapter executes no device/network commands, reconstructs exact
+ hashed saved payloads sequentially, validates envelope identity/CRC and actual
+ admitted pair cap, and compares scalar output with source/reference/client bytes.
+ It has a120-second total oracle execution budget and <=128 savedeye payloads.
+ Use its status only with run-local capture/provenance qualification; it does not
+ authenticate acquisition or establish final-render/display quality by itself.
