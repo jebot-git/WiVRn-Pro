@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "test_count": 14,
+  "source_sha256": {
+    "prototypes/vr444/experiments/submitted_image_replay/capture.py": "67f96bfa2ad0e78aba8b94124f8eaaa1e0b488930a99067e6e303a7c0602ba33",
+    "prototypes/vr444/experiments/submitted_image_replay/test_capture.py": "330e34f4393cc61b179444d5089757142bfe6febd1cd9504c5fd6d8916f51991",
+    "prototypes/vr444/experiments/submitted_image_replay/README.txt": "4806d676f1cecc26e11d66d56299e0f24073ad2a597b6a75ec9a20454d11fa1a"
+  },
+  "sources_unchanged": true,
+  "argv": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "-v",
+    "test_capture"
+  ],
+  "returncode": 0,
+  "elapsed_s": 1.5526448260061443,
+  "stdout": "",
+  "stderr": "test_adapter_rejects_cross_build_shader_and_headset_splices (test_capture.ReplayCapture.test_adapter_rejects_cross_build_shader_and_headset_splices) ... ok\ntest_audit_rejects_unbound_source_parser_and_controls (test_capture.ReplayCapture.test_audit_rejects_unbound_source_parser_and_controls) ... ok\ntest_audit_rejects_validly_rehashed_adapter_identity_splice (test_capture.ReplayCapture.test_audit_rejects_validly_rehashed_adapter_identity_splice) ... ok\ntest_campaign_bridge_rejects_rebound_wrong_evidence (test_capture.ReplayCapture.test_campaign_bridge_rejects_rebound_wrong_evidence) ... ok\ntest_complete_synthetic_acquisition (test_capture.ReplayCapture.test_complete_synthetic_acquisition) ... ok\ntest_failed_missing_reordered_timeout_commands (test_capture.ReplayCapture.test_failed_missing_reordered_timeout_commands) ... ok\ntest_forged_uploaded_shader_cannot_bypass_native_join (test_capture.ReplayCapture.test_forged_uploaded_shader_cannot_bypass_native_join) ... ok\ntest_full_output_audit_preserves_legacy_and_physical_identities (test_capture.ReplayCapture.test_full_output_audit_preserves_legacy_and_physical_identities) ... ok\ntest_legacy_endpoint_requires_physical_campaign_bridge (test_capture.ReplayCapture.test_legacy_endpoint_requires_physical_campaign_bridge) ... ok\ntest_output_hash_path_and_decoding_controls (test_capture.ReplayCapture.test_output_hash_path_and_decoding_controls) ... ok\ntest_plan_rejects_native_job_grammar_and_adapter_identity (test_capture.ReplayCapture.test_plan_rejects_native_job_grammar_and_adapter_identity) ... ok\ntest_replace_restore_raw_capture_uses_hashed_snapshot (test_capture.ReplayCapture.test_replace_restore_raw_capture_uses_hashed_snapshot) ... ok\ntest_result_scope_hardware_and_boolean_types (test_capture.ReplayCapture.test_result_scope_hardware_and_boolean_types) ... ok\ntest_unbound_extra_symlink_and_changed_snapshot (test_capture.ReplayCapture.test_unbound_extra_symlink_and_changed_snapshot) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 1.483s\n\nOK\n",
+  "actual_legacy_campaign": {
+    "adapter_sha256": "666b1dab2d16a185b6124ba840d1709620bbc0d7782efe65fbeef404f0edfd50",
+    "campaign_sha256": "23080ed7fd52b19b2a43650acb7d8992081604cf08559e58af9819d0437cc199",
+    "plan_sha256": "78551b7c68d3e0f0db258f9b4e61009294155bf9ed2a822fb5f66aef55efce6e",
+    "bridge_control_sha256": {
+      "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality/campaign.json": "23080ed7fd52b19b2a43650acb7d8992081604cf08559e58af9819d0437cc199",
+      "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality-plan.json": "78551b7c68d3e0f0db258f9b4e61009294155bf9ed2a822fb5f66aef55efce6e",
+      "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality/preflight/serial.stdout": "c1bc05a54512f062e20d07657dea4d33cf7571c32f9fd60803beea95626c57d6",
+      "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality/preflight/serial.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality/rrb4-q1-chroma-grid/hashes.json": "d781bc11e345ed2253e69fd24015824554e64dae47fcc3a18ddce6201eed4c0e",
+      "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality/rrb4-q1-chroma-grid/provenance.json": "003b8aed30971b833d800f1f0fbcc31a47e86d268f509d5d03efc74183c1aaae",
+      "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality/rrb4-q1-chroma-grid/summary.json": "03d83d01888e8870ef65e1e9f654d6018c319288b4fb1ea5f3aeed6e2aabd8b9"
+    },
+    "physical_serial": "230YC01D8W000E",
+    "legacy_recorded_endpoint": "192.168.1.105:5555",
+    "cpu_only_job_preparation_passed": true
+  },
+  "gpu_execution": false,
+  "headset_execution": false,
+  "quality_qualified": false,
+  "scope": "Fresh identity bridge tests and existing native capture identity joins; no new headset or graphics execution"
+}

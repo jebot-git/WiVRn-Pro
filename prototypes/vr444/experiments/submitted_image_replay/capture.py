@@ -5,6 +5,7 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[3]
 QUALIFIED='508c290be9c3a02d28a5162fbad1a1d8674ebfe1'
 RUNNER_SHA='e495081a5bdbbef3aa94cff0082b700516740dca711d10d3ec9dedb143e4c64a'
+CAMPAIGN_RUNNER_SHA='b2cf6a837b482ebe676290f8199589a2ef94263049afac462ea60525da4972f9'
 EXP='prototypes/vr444/experiments/submitted_image_replay/'
 MAX_IMAGE=16*1024*1024
 
@@ -55,14 +56,53 @@ def renderer(receipt_path,expected_sha):
         need(decoded==code,'embedded shader bytes differ from selected binary');shaders[name]=code
     return shaders,bindings
 
-def adapter_contract(adapter,shaders,native_sha,serial):
+def campaign_identity(adapter,serial,adb_target,bridge):
+    """Keep a legacy recorded endpoint distinct from a verified physical serial."""
+    recorded=adapter['candidate_capture_audit']['headset_serial_recorded']
+    if bridge is None:
+        need(recorded==serial,'native/replay headset identity splice');return {}
+    need(set(bridge)=={'campaign','plan'},'campaign bridge population');bindings={}
+    def item(path,sha,limit=16*1024*1024,allow_empty=False):
+        path=Path(path).resolve();raw=read(path,limit,sha,allow_empty);bindings[str(path)]=digest(raw);return raw
+    cpath=Path(bridge['campaign']['path']).resolve();campaign=strict(item(cpath,bridge['campaign']['sha256']))
+    plan=strict(item(bridge['plan']['path'],bridge['plan']['sha256']))
+    need(campaign['status']=='complete'and campaign['headset_used']is True and campaign['runner_sha256']==CAMPAIGN_RUNNER_SHA,'native campaign completion/runner')
+    need(campaign['plan_sha256']==bridge['plan']['sha256']and plan['build_receipt_sha256']==adapter['build_receipt_sha256'],'campaign plan/build join')
+    need(recorded==adb_target==plan['adb_target_last_observed']and plan['expected_physical_serial']==serial,'native recorded endpoint/physical identity')
+    need(campaign['analysis_sources_unchanged']is True and campaign['analysis_source_sha256_before']==campaign['analysis_source_sha256_after'],'campaign analysis source change')
+    need(all(campaign[k]is True for k in('final_config_matches_initial','own_reverse_absent','dedicated_app_stopped','production_package_unchanged'))and campaign['final_check_errors']==[],'campaign cleanup')
+    serials=[c for c in campaign['commands']if c['label']=='serial'];need(len(serials)==1,'unique native serial command');command=serials[0]
+    need(command['argv']==['adb','-s',adb_target,'shell','getprop','ro.serialno']and type(command['returncode'])is int and command['returncode']==0 and command.get('host_timeout',False)is False,'native serial command identity')
+    stdout=item(cpath.parent/'preflight/serial.stdout',command['stdout_sha256'],4096)
+    stderr=item(cpath.parent/'preflight/serial.stderr',command['stderr_sha256'],4096,True)
+    need(stdout.decode().strip()==serial and stderr==b'','native physical serial result')
+    need([r['name']for r in campaign['runs']]==[r['name']for r in plan['runs']],'native campaign run population')
+    matched=[]
+    for run,planned in zip(campaign['runs'],plan['runs']):
+        need(re.fullmatch('[A-Za-z0-9_-]{1,120}',run['name'])is not None,'bounded native run name')
+        expected=[v.replace('{fresh_output_root}',str(cpath.parent))for v in planned['argv']]
+        need(run['argv']==expected and type(run['returncode'])is int and run['returncode']==0 and run['evidence_status']=='pass','native run command/result')
+        need(expected.count('--out')==1 and expected.count('--serial')==1 and expected[expected.index('--serial')+1]==adb_target,'native run endpoint')
+        root=Path(expected[expected.index('--out')+1]);need(root==cpath.parent/run['name'],'native run directory')
+        raw=read(root/'hashes.json',16*1024*1024)
+        if digest(raw)==adapter['run_hashes_sha256']:
+            item(root/'hashes.json',digest(raw));hashes=strict(raw)
+            for name,record in adapter['run_inputs'].items():need(type(record)is dict and hashes.get(name)==record['sha256'],'adapter/campaign manifest population')
+            provenance=strict(item(root/'provenance.json',hashes['provenance.json']))
+            need(provenance['headset_serial']==adb_target and provenance['harness_sha256']==plan['harness_sha256']==campaign['analysis_source_sha256_before']['validation/wivrn-codecs/integration/native_compare.py'],'native endpoint/harness provenance')
+            need(adapter['candidate_capture_audit']['run_hashes_sha256']==digest(raw),'capture/adapter manifest join')
+            item(root/'summary.json',run['summary_sha256']);need(hashes['summary.json']==run['summary_sha256'],'native summary manifest join');matched.append(run['name'])
+    need(len(matched)==1,'unique adapter native campaign run');return bindings
+
+def adapter_contract(adapter,shaders,native_sha,serial,adb_target=None,bridge=None):
     need(adapter['build_receipt_sha256']==native_sha,'adapter/native build splice')
-    need(adapter['candidate_capture_audit']['headset_serial_recorded']==serial,'native/replay headset identity splice')
+    bindings=campaign_identity(adapter,serial,adb_target,bridge)
     need(set(adapter['renderer_shaders'])==set(shaders),'adapter shader population')
     for name,code in shaders.items():
         item=adapter['renderer_shaders'][name]
         need(item['sha256']==digest(code) and item['literal_equivalence_recomputed'] is True
              and type(item['actual_bytes'])is int and item['actual_bytes']==len(code),'adapter shader byte join')
+    return bindings
 
 def expected_runs(device=0):
     return [
@@ -77,7 +117,7 @@ def expected_runs(device=0):
         dict(name='omission-right-hash',argv=['sha256sum','{remote}/omitted-eye-1.raw'],timeout_s=30),
         dict(name='omission-right-bytes',argv=['base64','{remote}/omitted-eye-1.raw'],timeout_s=30)]
 
-def prepare(job_receipt,job_receipt_sha,native_receipt,native_sha,bundle,adb_target,serial,device=0):
+def prepare(job_receipt,job_receipt_sha,native_receipt,native_sha,bundle,adb_target,serial,device=0,bridge=None):
     u32(device,0,15);need(type(adb_target)is str and re.fullmatch('[A-Za-z0-9_.:-]{1,120}',adb_target),'ADB target');need(type(serial)is str and re.fullmatch('[A-Za-z0-9_-]{1,120}',serial),'device serial')
     adapter_raw=pinned(job_receipt,job_receipt_sha,16*1024*1024);adapter=strict(adapter_raw)
     need(adapter['status']=='pass','job adapter did not pass');desc=adapter['job'];need(desc['format']=='RLP1' and type(desc['version'])is int and desc['version']==1,'job format/version');path=Path(desc['path']);path=path if path.is_absolute()else Path(job_receipt).parent/path
@@ -86,7 +126,7 @@ def prepare(job_receipt,job_receipt_sha,native_receipt,native_sha,bundle,adb_tar
     need(all(type(adapter['output'].get(k))is int for k in('width','height','vk_format'))and adapter['output']==dict(width=w,height=h,vk_format=fmt),'job output adapter join')
     qualified=historical();binary={suffix:next((name,sha)for name,sha in qualified['binary_sha256'].items()if Path(name).name==suffix)for suffix in('replay','replay-android')}
     host=read(binary['replay'][0],64*1024*1024,binary['replay'][1]);android=read(binary['replay-android'][0],64*1024*1024,binary['replay-android'][1]);need(host[:4]==android[:4]==b'\x7fELF','qualified ELF bytes')
-    shaders,bindings=renderer(native_receipt,native_sha);adapter_contract(adapter,shaders,native_sha,serial);bindings[str(Path(job_receipt).resolve())]=digest(adapter_raw);bindings[str(path.resolve())]=digest(job)
+    shaders,bindings=renderer(native_receipt,native_sha);bindings.update(adapter_contract(adapter,shaders,native_sha,serial,adb_target,bridge));bindings[str(Path(job_receipt).resolve())]=digest(adapter_raw);bindings[str(path.resolve())]=digest(job)
     with tempfile.TemporaryDirectory(prefix='sub15-replay-admission-')as temp:
         temp=Path(temp);exe=temp/'host';exe.write_bytes(host);exe.chmod(0o500);inp=temp/'job';inp.write_bytes(job)
         run=subprocess.run([str(exe),str(inp),'--cpu-only'],capture_output=True,timeout=10)
@@ -96,8 +136,9 @@ def prepare(job_receipt,job_receipt_sha,native_receipt,native_sha,bundle,adb_tar
     for name,data,executable in [('replay',android,True),('reprojection.vert.spv',shaders['reprojection.vert'],False),('reprojection.frag.spv',shaders['reprojection.frag'],False),('job.rlp',job,False)]:
         out=bundle/name;out.write_bytes(data);out.chmod(0o500 if executable else 0o400)
         files.append(dict(local=str(out),remote=name,sha256=digest(data),**({'executable':True}if executable else{})))
-    for name,sha in bindings.items():read(name,40*1024*1024,sha)
+    for name,sha in bindings.items():read(name,40*1024*1024,sha,allow_empty=True)
     plan=dict(schema=1,adb_target=adb_target,expected_serial=serial,files=files,runs=expected_runs(device),replay=dict(qualified_commit=QUALIFIED,device_index=device,output=dict(width=w,height=h,vk_format=fmt),job_sha256=digest(job),source_adapter_sha256=digest(adapter_raw),native_build_receipt_sha256=native_sha,control_sha256=bindings,host_parser_sha256=binary['replay'][1],planner_sha256=digest(Path(__file__).read_bytes()),quality_qualified=False,scope='Pinned private graphics replay acquisition; source adapter and native capture comparison remain independent gates'))
+    if bridge is not None:plan['replay']['native_identity_bridge']=bridge
     (bundle/'plan.json').write_text(json.dumps(plan,indent=2)+'\n');return plan
 
 def audit(directory,plan_path,runner,output):
@@ -151,7 +192,7 @@ def audit(directory,plan_path,runner,output):
     for eye,label in enumerate(('left','right')):need(digest(eyes[eye])==hashline(label+'-hash',f'render-eye-{eye}.raw'),'output bytes/hash')
     need(hashline('omission-left-hash','omitted-eye-0.raw')==digest(eyes[0]),'omission changed left image')
     need(digest(omitted)==hashline('omission-right-hash','omitted-eye-1.raw')and omitted==bytes([0x5a])*size and omitted!=eyes[1],'right omission control did not distinguish image')
-    for name,sha in rp['control_sha256'].items():read(name,40*1024*1024,sha)
+    for name,sha in rp['control_sha256'].items():read(name,40*1024*1024,sha,allow_empty=True)
     def control_path(sha):
         paths=[name for name,value in rp['control_sha256'].items()if value==sha];need(len(paths)==1,'unique control receipt binding');return Path(paths[0])
     shader_receipt=control_path(rp['native_build_receipt_sha256']);shaders,bindings=renderer(shader_receipt,rp['native_build_receipt_sha256'])
@@ -159,7 +200,7 @@ def audit(directory,plan_path,runner,output):
     need([plan['files'][i]['sha256']for i in(1,2)]==[digest(shaders[name])for name in('reprojection.vert','reprojection.frag')],'deployed native shader join')
     adapter_path=control_path(rp['source_adapter_sha256']);adapter=strict(read(adapter_path,16*1024*1024,rp['source_adapter_sha256']))
     need(adapter['status']=='pass'and adapter['job']['format']=='RLP1'and type(adapter['job']['version'])is int and adapter['job']['version']==1 and all(type(adapter['output'].get(k))is int for k in('width','height','vk_format'))and adapter['output']==shape,'source adapter result join')
-    adapter_contract(adapter,shaders,rp['native_build_receipt_sha256'],plan['expected_serial'])
+    bindings.update(adapter_contract(adapter,shaders,rp['native_build_receipt_sha256'],plan['expected_serial'],plan['adb_target'],rp.get('native_identity_bridge')))
     job_path=Path(adapter['job']['path']);job_path=job_path if job_path.is_absolute()else adapter_path.parent/job_path
     job=read(job_path,40*1024*1024,adapter['job']['sha256']);need(type(adapter['job']['bytes'])is int and len(job)==adapter['job']['bytes'] and rp['job_sha256']==plan['files'][3]['sha256']==digest(job),'job input join')
     need(set(rp['control_sha256'])==set(bindings)|{str(adapter_path),str(job_path.resolve())},'complete control binding population')
@@ -172,13 +213,18 @@ def audit(directory,plan_path,runner,output):
     for eye,data in enumerate(eyes):
         raw=output/f'eye-{eye}.raw';raw.write_bytes(data);outfiles.append(dict(path=str(raw),sha256=digest(data),bytes=len(data),channel_order='RGBA'if fmt==43 else'BGRA'))
     result=dict(schema=1,status='pass',actual_headset_used=True,device=identities[0],qualified_commit=QUALIFIED,plan_sha256=digest(plan_raw),capture_sha256=inventory,output=shape,eyes=outfiles,omission_control_verified=True,command_count=len(commands),raw_format_preserved=True,source_adapter_sha256=rp['source_adapter_sha256'],native_build_receipt_sha256=rp['native_build_receipt_sha256'],quality_qualified=False,native_capture_comparison_performed=False,scope='Bound standalone actual-device rendering and exact retained bytes; source/capture-quality comparison is a separate gate',auditor_sha256=digest(Path(__file__).read_bytes()))
+    result.update(headset_physical_serial=plan['expected_serial'],native_recorded_identity=adapter['candidate_capture_audit']['headset_serial_recorded'],native_identity_method='pinned_campaign_serial_bridge'if rp.get('native_identity_bridge')else'direct_recorded_physical_serial')
     (output/'audit.json').write_text(json.dumps(result,indent=2)+'\n');return result
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);s=p.add_subparsers(dest='mode',required=True)
     make=s.add_parser('prepare');make.add_argument('--job-receipt',type=Path,required=True);make.add_argument('--job-receipt-sha256',required=True);make.add_argument('--native-receipt',type=Path,required=True);make.add_argument('--native-receipt-sha256',required=True);make.add_argument('--bundle',type=Path,required=True);make.add_argument('--adb-target',required=True);make.add_argument('--serial',required=True);make.add_argument('--device',type=int,default=0)
+    make.add_argument('--native-campaign',type=Path);make.add_argument('--native-campaign-sha256');make.add_argument('--native-plan',type=Path);make.add_argument('--native-plan-sha256')
     check=s.add_parser('audit');check.add_argument('directory',type=Path);check.add_argument('--plan',type=Path,required=True);check.add_argument('--runner',type=Path,required=True);check.add_argument('--output',type=Path,required=True)
     a=p.parse_args()
-    if a.mode=='prepare':result=prepare(a.job_receipt,a.job_receipt_sha256,a.native_receipt,a.native_receipt_sha256,a.bundle,a.adb_target,a.serial,a.device);print(str(a.bundle/'plan.json'))
+    if a.mode=='prepare':
+        args=(a.native_campaign,a.native_campaign_sha256,a.native_plan,a.native_plan_sha256);need(all(v is None for v in args)or all(v is not None for v in args),'complete native identity bridge arguments')
+        bridge=None if a.native_campaign is None else dict(campaign=dict(path=str(a.native_campaign.resolve()),sha256=a.native_campaign_sha256),plan=dict(path=str(a.native_plan.resolve()),sha256=a.native_plan_sha256))
+        result=prepare(a.job_receipt,a.job_receipt_sha256,a.native_receipt,a.native_receipt_sha256,a.bundle,a.adb_target,a.serial,a.device,bridge);print(str(a.bundle/'plan.json'))
     else:result=audit(a.directory,a.plan,a.runner,a.output);print(json.dumps({k:result[k]for k in('status','actual_headset_used','command_count','quality_qualified')}))
 if __name__=='__main__':main()
