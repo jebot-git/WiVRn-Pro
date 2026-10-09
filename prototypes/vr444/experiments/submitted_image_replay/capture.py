@@ -74,7 +74,14 @@ def campaign_identity(adapter,serial,adb_target,bridge):
         path=Path(path).resolve();raw=read(path,limit,sha,allow_empty);bindings[str(path)]=digest(raw);return raw
     cpath=Path(bridge['campaign']['path']).resolve();campaign=strict(item(cpath,bridge['campaign']['sha256']))
     plan=strict(item(bridge['plan']['path'],bridge['plan']['sha256']))
-    need(campaign['status']=='complete'and campaign['headset_used']is True and campaign['runner_sha256'] in CAMPAIGN_RUNNERS,'native campaign completion/runner')
+    stopped=campaign['status']=='stopped'
+    need(campaign['status']in('complete','stopped')and campaign['headset_used']is True and campaign['runner_sha256'] in CAMPAIGN_RUNNERS,'native campaign completion/runner')
+    if stopped:
+        # A later failed arm cannot erase an earlier complete acquisition. Bind
+        # the actual stopped prefix and failure; never qualify the failed arm
+        # or claim that this campaign supplied a complete research suite.
+        need(campaign['runner_sha256']==CAMPAIGN_RUNNER_V3_SHA,'stopped campaign requires reviewed v3 runner')
+        need(len(campaign['runs'])>=2 and campaign.get('error')=='stop on evidence or cleanup failure: '+campaign['runs'][-1]['name'],'stopped campaign failure identity')
     need(campaign['plan_sha256']==bridge['plan']['sha256']and plan['build_receipt_sha256']==adapter['build_receipt_sha256'],'campaign plan/build join')
     need(recorded==adb_target==plan['adb_target_last_observed']and plan['expected_physical_serial']==serial,'native recorded endpoint/physical identity')
     need(campaign['analysis_sources_unchanged']is True and campaign['analysis_source_sha256_before']==campaign['analysis_source_sha256_after'],'campaign analysis source change')
@@ -84,22 +91,39 @@ def campaign_identity(adapter,serial,adb_target,bridge):
     stdout=item(cpath.parent/'preflight/serial.stdout',command['stdout_sha256'],4096)
     stderr=item(cpath.parent/'preflight/serial.stderr',command['stderr_sha256'],4096,True)
     need(stdout.decode().strip()==serial and stderr==b'','native physical serial result')
-    need([r['name']for r in campaign['runs']]==[r['name']for r in plan['runs']],'native campaign run population')
+    population=[r['name']for r in campaign['runs']];planned_population=[r['name']for r in plan['runs']]
+    need(len(set(population))==len(population),'duplicate native run')
+    need(population==(planned_population[:len(population)]if stopped else planned_population)
+         and len(population)<=len(planned_population),'native campaign run population')
     matched=[]
     for run,planned in zip(campaign['runs'],plan['runs']):
         need(re.fullmatch('[A-Za-z0-9_-]{1,120}',run['name'])is not None,'bounded native run name')
         expected=[v.replace('{fresh_output_root}',str(cpath.parent))for v in planned['argv']]
-        need(run['argv']==expected and type(run['returncode'])is int and run['returncode']==0 and run['evidence_status']=='pass','native run command/result')
+        failed_tail=stopped and run is campaign['runs'][-1]
+        need(run['argv']==expected and type(run['returncode'])is int,'native run command/result')
+        if failed_tail:
+            need(run['returncode']!=0 or run['evidence_status']!='pass'
+                 or run.get('cleanup',{}).get('restored')is not True
+                 or bool(run.get('cleanup',{}).get('cleanup_errors'))
+                 or run.get('config_readback_matches_initial')is not True,'stopped campaign lacks failing tail')
+        else:
+            need(run['returncode']==0 and run['evidence_status']=='pass','native run command/result')
+            if stopped:
+                need(run.get('cleanup',{}).get('restored')is True
+                     and run.get('cleanup',{}).get('cleanup_errors')==[]
+                     and run.get('config_readback_matches_initial')is True,'selected prefix run cleanup')
         need(expected.count('--out')==1 and expected.count('--serial')==1 and expected[expected.index('--serial')+1]==adb_target,'native run endpoint')
         root=Path(expected[expected.index('--out')+1]);need(root==cpath.parent/run['name'],'native run directory')
         raw=read(root/'hashes.json',16*1024*1024)
         if digest(raw)==adapter['run_hashes_sha256']:
+            need(not failed_tail,'failed campaign arm cannot supply a replay reference')
             item(root/'hashes.json',digest(raw));hashes=strict(raw)
             for name,record in adapter['run_inputs'].items():need(type(record)is dict and hashes.get(name)==record['sha256'],'adapter/campaign manifest population')
             provenance=strict(item(root/'provenance.json',hashes['provenance.json']))
             need(provenance['headset_serial']==adb_target and provenance['harness_sha256']==plan['harness_sha256']==campaign['analysis_source_sha256_before']['validation/wivrn-codecs/integration/native_compare.py'],'native endpoint/harness provenance')
             need(adapter['candidate_capture_audit']['run_hashes_sha256']==digest(raw),'capture/adapter manifest join')
-            item(root/'summary.json',run['summary_sha256']);need(hashes['summary.json']==run['summary_sha256'],'native summary manifest join');matched.append(run['name'])
+            summary=strict(item(root/'summary.json',run['summary_sha256']))
+            need(hashes['summary.json']==run['summary_sha256']and summary.get('status')=='pass','native summary manifest join/status');matched.append(run['name'])
     need(len(matched)==1,'unique adapter native campaign run');return bindings
 
 def adapter_contract(adapter,shaders,native_sha,serial,adb_target=None,bridge=None):

@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "utc": "2026-10-09T16:43:28.722184+00:00",
+  "campaign": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v3-build/native-quality1152-suite-retry/campaign.json",
+  "campaign_sha256": "cc14cf2a9aef12cb4d4b31746bc3dfd319ab302c74798576eed6c37f10550699",
+  "status": "stopped",
+  "completed_runs": [
+    {
+      "name": "rrb4-q1-chroma-grid-r1",
+      "status": "pass"
+    },
+    {
+      "name": "rrb4-q1-rgb-ramp-r1",
+      "status": "fail"
+    }
+  ],
+  "observation_verbatim": "First attempt shown visible grind with red interlacing, second run produced no visible image.",
+  "interpretation": "Grid visible with red interlacing; subsequent RGB-ramp had no visible image. Not an HDR test.",
+  "quality_target_met": false,
+  "headset_required": false,
+  "superseded_by": "standalone codec repository: sub5ms delivery and HDR10 PQ BT2020 YUV444 research in separate branches",
+  "restoration": {
+    "final_config_matches_initial": true,
+    "own_reverse_absent": true,
+    "dedicated_app_stopped": true,
+    "production_package_unchanged": true,
+    "analysis_sources_unchanged": true,
+    "final_check_errors": []
+  }
+}

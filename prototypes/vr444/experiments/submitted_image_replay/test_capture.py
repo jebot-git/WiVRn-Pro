@@ -155,6 +155,34 @@ class ReplayCapture(unittest.TestCase):
                 c['runner_sha256']=runner
                 put(root/'campaign.json',c);bridge['campaign']['sha256']=sha((root/'campaign.json').read_bytes())
                 self.assertEqual(len(capture.campaign_identity(adapter,serial,target,bridge)),7)
+    def test_stopped_campaign_preserves_only_complete_successful_prefix_arms(self):
+        for mode in range(11):
+            with self.subTest(mode=mode),tempfile.TemporaryDirectory()as t:
+                root=Path(t)/'campaign';adapter,serial,target,bridge,c=bridge_fixture(root)
+                plan=json.loads((root/'plan.json').read_bytes())
+                failed=copy.deepcopy(c['runs'][0]);failed.update(name='failed',returncode=2,evidence_status='fail')
+                failed['argv']=[v.replace('/native','/failed')for v in failed['argv']]
+                failed_dir=root/'failed';failed_dir.mkdir();put(failed_dir/'hashes.json',{'summary.json':'f'*64})
+                c['runs'][0].update(cleanup=dict(restored=True,cleanup_errors=[]),config_readback_matches_initial=True)
+                c.update(status='stopped',runner_sha256=capture.CAMPAIGN_RUNNER_V3_SHA,error='stop on evidence or cleanup failure: failed')
+                c['runs'].append(failed)
+                for name in ('failed','unstarted'):
+                    plan['runs'].append(dict(name=name,argv=[v.replace('/native','/'+name)for v in plan['runs'][0]['argv']]))
+                if mode==1:adapter['run_hashes_sha256']=sha((failed_dir/'hashes.json').read_bytes())
+                if mode==2:c['error']='unrelated preflight failure'
+                if mode==3:plan['runs'][0],plan['runs'][1]=plan['runs'][1],plan['runs'][0]
+                if mode==4:failed.update(returncode=0,evidence_status='pass',cleanup=dict(restored=True,cleanup_errors=[]),config_readback_matches_initial=True)
+                if mode==5:c['runs'][0]['cleanup']['restored']=False
+                if mode==6:c['final_config_matches_initial']=False
+                if mode==7:c['runs'][0]['returncode']=None
+                if mode==8:c['runner_sha256']=capture.CAMPAIGN_RUNNER_SHA
+                if mode==9:(root/'native/summary.json').write_text('{"status":"fail"}')
+                if mode==10:failed.update(returncode=0,evidence_status='pass',cleanup=dict(restored=True),config_readback_matches_initial=True)
+                put(root/'plan.json',plan);bridge['plan']['sha256']=sha((root/'plan.json').read_bytes());c['plan_sha256']=bridge['plan']['sha256']
+                put(root/'campaign.json',c);bridge['campaign']['sha256']=sha((root/'campaign.json').read_bytes())
+                if mode==0:self.assertEqual(len(capture.campaign_identity(adapter,serial,target,bridge)),7)
+                else:
+                    with self.assertRaises(ValueError):capture.campaign_identity(adapter,serial,target,bridge)
     def test_full_output_audit_preserves_legacy_and_physical_identities(self):
         with tempfile.TemporaryDirectory()as t:
             root=Path(t);directory,plan,r=self.fixture(root);adapter_path=root/'adapter.json';adapter=json.loads(adapter_path.read_bytes())
