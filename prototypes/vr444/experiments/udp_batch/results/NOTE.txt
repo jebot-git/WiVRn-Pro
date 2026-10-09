@@ -1,0 +1,26 @@
+Host loopback result, 2026-10-09
+
+48 profiles (24 matched cases), three warmups and31 repetitions, all exact.
+The GPU team held compilation/execution and compositor team reported no CPU
+measurement work for the short coordinated interval. Known root fuzzer PID had
+already exited. Ordinary desktop/production background processes continued.
+CPU frequency/affinity, thermal state and kernel scheduling were not controlled.
+
+Representative1,200-byte record results, whole loopback iteration p50:
+records     burst       sendmsg/recvmsg      sendmmsg/recvmmsg
+ 35           1           0.060692ms            0.062174ms
+ 35          16           0.061626ms            0.054476ms
+228           1           0.395193ms            0.405993ms
+228          16           0.408359ms            0.361495ms
+228          32           0.407996ms            0.356531ms
+
+For228 records at burst32, batch syscalls fell to8 sends+8 receives per iteration,
+from228+228 individual calls. The observed whole-loopback median fell by0.051465ms
+(12.6%), far less than the syscall-count ratio. Single-record batches were slightly
+slower in these host rows. There were no natural EAGAIN/poll events in the measured
+run. Forced partial syscall handling was validated separately in self-test.
+
+This modest host API result does not close a6ms headset gap, replace congestion
+control or predict USB/WiFi behavior. It remains a useful optional datagram CPU
+path to examine only after complete-stereo/deadline/quality gates are preserved.
+Android API29 arm64 was cross-compiled only, never deployed or run.
