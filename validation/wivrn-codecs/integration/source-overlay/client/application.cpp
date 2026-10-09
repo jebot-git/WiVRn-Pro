@@ -1655,8 +1655,21 @@ void application::setup_jni()
 
 void application::cleanup()
 {
-	// Remove all scenes before destroying the allocator
+	// Remove all scenes before destroying the allocator.
+#ifdef WIVRN_CODEC_TESTS
+	// The render loop has exited before cleanup. Keep every scene alive while
+	// its workers and GPU consumers retire; never join under scene_stack_lock.
+	decltype(scene_stack) retired_scenes;
+	{
+		std::unique_lock lock{scene_stack_lock};
+		retired_scenes.swap(scene_stack);
+	}
+	for (auto & retired : retired_scenes)
+		if (retired) retired->prepare_exit();
+	retired_scenes.clear();
+#else
 	scene_stack.clear();
+#endif
 	spatial.reset(); // Anchor/scene spaces must be released before the XR session.
 
 	// Empty the meta objects while the OpenXR instance still exists
@@ -1830,9 +1843,24 @@ std::shared_ptr<scene> application::current_scene()
 
 void application::pop_scene()
 {
+#ifdef WIVRN_CODEC_TESTS
+	// A decoder callback may hold scene.lock(). Retain the owner reference until
+	// its exit hook has joined those workers and drained their consumers.
+	std::shared_ptr<scene> retired;
+	{
+		std::unique_lock lock{instance().scene_stack_lock};
+		if (!instance().scene_stack.empty())
+		{
+			retired = std::move(instance().scene_stack.back());
+			instance().scene_stack.pop_back();
+		}
+	}
+	if (retired) retired->prepare_exit();
+#else
 	std::unique_lock _{instance().scene_stack_lock};
 	if (!instance().scene_stack.empty())
 		instance().scene_stack.pop_back();
+#endif
 }
 
 void application::push_scene(std::shared_ptr<scene> s)

@@ -1,0 +1,57 @@
+{
+  "status": "pass",
+  "sources_sha256": {
+    "validation/wivrn-codecs/integration/source-overlay/client/application.cpp": "7a3d5d76b44e967af92b7aae5b39aa1113e874be499888a21c80186ed1c6e58b",
+    "validation/wivrn-codecs/integration/source-overlay/client/scene.h": "58f4ebf2f2d036dac8300929d455b078447eb129561245e7ab88847f1542206c",
+    "prototypes/vr444/experiments/native_owner_quiesce/ownership_test.cpp": "9f71019acc7021afc6264545f4a0863efbf1ea2eb5c219527fbe6e41cf02d2cd",
+    "prototypes/vr444/experiments/native_owner_quiesce/validate.py": "69097dd620d4e257191b092f10903f8ce5a13904708647bb1cb0e3d121fb7f04"
+  },
+  "checks": [
+    {
+      "sanitizer": "address,undefined",
+      "argv": [
+        "clang++",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-pthread",
+        "-DWIVRN_CODEC_TESTS=1",
+        "-fsanitize=address,undefined",
+        "/tmp/sub15-owner-retirement-1v88yhp1/test.cpp",
+        "-o",
+        "/tmp/sub15-owner-retirement-1v88yhp1/test-address-undefined"
+      ],
+      "binary_sha256": "2a55eda7d44d4b075966a37d69532445d8d6c03904f172c1c6ff7e28f2e8d523",
+      "stdout": "owner_retirement: 105 scenes, callback references joined, stack unlocked, device alive\n",
+      "stderr": "",
+      "returncode": 0
+    },
+    {
+      "sanitizer": "thread",
+      "argv": [
+        "clang++",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-pthread",
+        "-DWIVRN_CODEC_TESTS=1",
+        "-fsanitize=thread",
+        "/tmp/sub15-owner-retirement-1v88yhp1/test.cpp",
+        "-o",
+        "/tmp/sub15-owner-retirement-1v88yhp1/test-thread"
+      ],
+      "binary_sha256": "cb88cc6315ac460431e7a0c0eeb85c03b7488885d0bc841dd28cfee9be8a6d4b",
+      "stdout": "owner_retirement: 105 scenes, callback references joined, stack unlocked, device alive\n",
+      "stderr": "",
+      "returncode": 0
+    },
+    {
+      "name": "historical no-hook negative control",
+      "returncode": -6,
+      "stderr": "negative: /tmp/sub15-owner-retirement-1v88yhp1/test.cpp:72: int main(): Assertion `prepared==i+1 && destroyed==i+1 && app.scene_stack.empty()' failed.\n"
+    }
+  ],
+  "native_application_executed": false,
+  "gpu_executed": false,
+  "scope": "Actual app method bodies with modeled scene callbacks; separate native TU syntax and integration required"
+}
