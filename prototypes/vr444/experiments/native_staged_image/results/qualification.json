@@ -1,0 +1,347 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "source_sha256": {
+    "prototypes/vr444/experiments/native_staged_image/test.cpp": "a8b2c3c0a7f03eca5b555fdf3b33bb544e194050d2fb35b97f5986602fa65f5e",
+    "prototypes/vr444/experiments/native_staged_image/sample.comp": "f92981905902a21986dc8597e0b80eb06fbd4259a3de30051dcf864fa3efef57",
+    "prototypes/vr444/experiments/native_staged_image/build.sh": "d79fd1afa852774ace53ddd3408c66939f4569cb79aae9a7687953ffdccfbceb",
+    "prototypes/vr444/experiments/native_staged_image/qualify.py": "4868ce08d4a4f12b4711d10152522546445d5acbc2ae958b895ed3dc02bc76a2",
+    "prototypes/vr444/experiments/native_staged_image/README.txt": "26e99a48f820187a2cc0ef03081a62e2fb54999d58f8717615b001f20dd0550a",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.comp": "57e94096ba0e7f25e0dc21524800f6d489e1751d01768e8001079886668fd327",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.cpp": "fc09d9443333d00d55aff4ff0e7a25d0ad4bf621691618b466e299a67e413cb7",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.h": "262b5ce4720bd0c9ebfc52eff01a6784e6467d49c25e8ee1728c7ea006b3003e",
+    "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp": "ae715d75f80abc3d76dd9ba1c73b8d78228a60c2c2e316ff38eda3792b6cfd8e",
+    "prototypes/vr444/experiments/direct_image_gpu/host_copy.hpp": "b45c592543bdb386bccc4173d8b6d732d93a5ebf8287504cd10756285779afe5",
+    "prototypes/vr444/experiments/rowblocks_gpu/decode.comp": "562364be82fcf3c6bd352d3478aff749bc6ad4703c8cd7d48a5cc720a19ef918",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706"
+  },
+  "binary_sha256": {
+    "/tmp/sub15-native-staged-image-qualified/shaders/buffer.spv": "b408089ce94765a38c30f2e98f2f6881c209646da10353ceef30ea22ead867ca",
+    "/tmp/sub15-native-staged-image-qualified/shaders/sample.spv": "ac1ecc27bc18c9bac1bb44aa81f6b6008a2cb527d62ae5ee7b564feb314538aa",
+    "/tmp/sub15-native-staged-image-qualified/shaders/staged.spv": "c6bf3b7816d69ee6556292076a0898ce9f2b96feadc4008350339dc452340948",
+    "/tmp/sub15-native-staged-image-qualified/shaders/uint.spv": "076230140137e8b10b6a6f085b028b021f9d419b742906cefdfd41cd7d3ef416",
+    "/tmp/sub15-native-staged-image-qualified/shaders/unorm.spv": "2ec428dab6a4dc25188ee57b42464c511b5c2d99fcfd563916ac188c60c3b087",
+    "/tmp/sub15-native-staged-image-qualified/staged-image-test": "3c5a171e9bd086048d84d728b0be0620f8e1dc862a4bbe59aee6b3809ad2099f",
+    "/tmp/sub15-native-staged-image-qualified/staged-image-test-android": "98bf648a3f17d6973cf401f4f71790537a3cd08f9a5c90330c9b072189b3cbc8",
+    "/tmp/sub15-native-staged-image-qualified/staged-image-test-asan": "9d6352b9dc2d8a5520fa8e76708399205459faa77d22dbd2c03e84570eecf144"
+  },
+  "commands": [
+    {
+      "label": "build",
+      "argv": [
+        "bash",
+        "/home/blux/spatial-bridge/.worktrees/sub15-native-staged-image/prototypes/vr444/experiments/native_staged_image/build.sh",
+        "/tmp/sub15-native-staged-image-qualified"
+      ],
+      "timeout_s": 180,
+      "elapsed_s": 8.484640100999968,
+      "returncode": 0,
+      "host_timeout": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "cpu-asan",
+      "argv": [
+        "/tmp/sub15-native-staged-image-qualified/staged-image-test-asan",
+        "--cpu-only"
+      ],
+      "timeout_s": 30,
+      "elapsed_s": 0.022485866997158155,
+      "returncode": 0,
+      "host_timeout": false,
+      "stdout_sha256": "2e8de2db4025dedca1f55bb078f638263aca24d335e758c4ab621762d90923e6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "gpu",
+      "argv": [
+        "/tmp/sub15-native-staged-image-qualified/staged-image-test",
+        "/tmp/sub15-native-staged-image-qualified/shaders",
+        "--device",
+        "0",
+        "--full"
+      ],
+      "timeout_s": 120,
+      "elapsed_s": 0.7057625800080132,
+      "returncode": 0,
+      "host_timeout": false,
+      "stdout_sha256": "3e4e1193d18a098425017bf5ec7bad3287584f359cc712d8f5317a2fec6d4b59",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "gpu-asan",
+      "argv": [
+        "/tmp/sub15-native-staged-image-qualified/staged-image-test-asan",
+        "/tmp/sub15-native-staged-image-qualified/shaders",
+        "--device",
+        "0",
+        "--full"
+      ],
+      "timeout_s": 120,
+      "elapsed_s": 1.2004103520011995,
+      "returncode": 0,
+      "host_timeout": false,
+      "stdout_sha256": "3e4e1193d18a098425017bf5ec7bad3287584f359cc712d8f5317a2fec6d4b59",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "tools": {
+    "clang++": {
+      "path": "/usr/bin/clang++",
+      "sha256": "4ea85504401d9f5c05109d6cb05778b241aa8d56fde1da2e5bc7ba46cffd44f5",
+      "version": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang++.cfg"
+    },
+    "glslc": {
+      "path": "/usr/bin/glslc",
+      "sha256": "85365a1f6e439c17cb9d71045d8306c018782359a466ae65c1806be4f7f0cd87",
+      "version": "shaderc v2026.1 2026-01-23spirv-tools v2026.1 2026-02-03glslang 301b4ede53d59b68bf55f95bb26412d9233c8187\nTarget: SPIR-V 1.0"
+    },
+    "android-clang++": {
+      "path": "/home/blux/Android/Sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++",
+      "sha256": "c80e4e88c8861b8e47d3a04a4831d89282ac47c3d930a8e6628466ee31e5ca48",
+      "version": "Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349)\nTarget: aarch64-unknown-linux-android29\nThread model: posix\nInstalledDir: /home/blux/Android/Sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin"
+    },
+    "spirv-val": {
+      "path": "/home/blux/Android/Sdk/ndk/29.0.14206865/shader-tools/linux-x86_64/spirv-val",
+      "sha256": "b9535e36cfe55b2d9e9c096f4c85ed81f1a7962388d39005d733f3cce958e0ad",
+      "version": "SPIRV-Tools v2022.4 ndk-r28b\nTargets:\n  SPIR-V 1.0\n  SPIR-V 1.1\n  SPIR-V 1.2\n  SPIR-V 1.3\n  SPIR-V 1.4\n  SPIR-V 1.5\n  SPIR-V 1.6\n  SPIR-V 1.2 (under OpenCL 2.2 Full Profile semantics)\n  SPIR-V 1.0 (under Vulkan 1.0 semantics)\n  SPIR-V 1.3 (under Vulkan 1.1 semantics)\n SPIR-V 1.4 (under Vulkan 1.1 semantics)\n SPIR-V 1.5 (under Vulkan 1.2 semantics)\n SPIR-V 1.6 (under Vulkan 1.3 semantics)"
+    }
+  },
+  "sources_unchanged": true,
+  "binaries_unchanged": true,
+  "observations": [
+    {
+      "label": "gpu",
+      "cases": [
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 1,
+          "height": 1,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 1,
+          "height": 129,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 17,
+          "height": 33,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 129,
+          "height": 65,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 4095,
+          "height": 3,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 4096,
+          "height": 1,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 1,
+          "height": 4096,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 576,
+          "height": 640,
+          "unorm_storage_srgb_linear_supported": true
+        }
+      ],
+      "result": {
+        "pass": true,
+        "checks": 826,
+        "gpu_used": true,
+        "headset_used": false,
+        "performance_claim": false,
+        "native_renderer_executed": false
+      }
+    },
+    {
+      "label": "gpu-asan",
+      "cases": [
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 1,
+          "height": 1,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 1,
+          "height": 129,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 17,
+          "height": 33,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 129,
+          "height": 65,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 4095,
+          "height": 3,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 4096,
+          "height": 1,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 1,
+          "height": 4096,
+          "unorm_storage_srgb_linear_supported": true
+        },
+        {
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "device_type": 2,
+          "vendor_id": 32902,
+          "device_id": 22176,
+          "driver": 109060195,
+          "api_version": 4211051,
+          "queue_family": 0,
+          "width": 576,
+          "height": 640,
+          "unorm_storage_srgb_linear_supported": true
+        }
+      ],
+      "result": {
+        "pass": true,
+        "checks": 826,
+        "gpu_used": true,
+        "headset_used": false,
+        "performance_claim": false,
+        "native_renderer_executed": false
+      }
+    }
+  ],
+  "cpu": {
+    "pass": true,
+    "checks": 66,
+    "gpu_used": false,
+    "headset_used": false,
+    "performance_claim": false,
+    "native_renderer_executed": false
+  },
+  "android_build_only": true,
+  "headset_used": false,
+  "native_renderer_executed": false,
+  "performance_claim": false,
+  "full_goal_qualified": false,
+  "scope": "Private borrowed-device staged image and first-consumer correctness; renderer integration and device runs pending"
+}
