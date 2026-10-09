@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "native_probe_commit": "9ec0b0d1d7eaf3cdb54709acfa1d2bcec9d163fb",
+  "native_source_and_binaries_changed_after_measurement": false,
+  "python_audit_tests": 12,
+  "campaign_reaudit_status": "audited",
+  "main_pairs": 960,
+  "smoke_pairs": 10,
+  "total_exact_pairs": 970,
+  "captured_files": 145,
+  "command_entries": 67,
+  "pinned_source_bindings": 10,
+  "current_matching_source_bindings": 9,
+  "documented_snapshot_differences": [
+    {
+      "path": "prototypes/vr444/experiments/wireless_pair_probe/README.txt",
+      "pinned_sha256": "60a3da31179cc515974d097acf3635290f76cd63b9c07b3614b38c25da9aebf0",
+      "current_sha256": "c92882ca8f542b137816b784821a7dc0485059dbfa0f3703e171d6e12af46c48",
+      "scope": "Post-campaign documentation; measured native implementation unchanged."
+    }
+  ],
+  "peer_review": "Independent GPU-team read-only review found no remaining blocker after exact qualified executable joins, mandatory command/argument populations, timeouts, paths and endpoint-address joins were added. Cadence source-preparation and physical-wire limitations retained.",
+  "source_artifact_sha256": {
+    "prototypes/vr444/experiments/wireless_pair_probe/audit_campaign.py": "4363951882b604aea986570edc2641ab43821847ac46664507d874a8e3714bb6",
+    "prototypes/vr444/experiments/wireless_pair_probe/audit_network.py": "073c92bf1cf31dde547799c14502877a119ea11f7cc5a4baadc5f0ee9d073bad",
+    "prototypes/vr444/experiments/wireless_pair_probe/audit_worker.py": "235db8b391d1e6927a5c08c9f502584578e5f79c9d42af74fbaf87aa5de06af1",
+    "prototypes/vr444/experiments/wireless_pair_probe/test_audits.py": "06fb514f9644bbd282a18c4a1f243cc9e2747621fecf03ccfc7b1f71e78d521c",
+    "prototypes/vr444/experiments/wireless_pair_probe/test_campaign_audit.py": "f67d24d487591dc429b7762dddf1ec501db303e5d2443943165f74cbe43a0268",
+    "prototypes/vr444/experiments/wireless_pair_probe/README.txt": "c92882ca8f542b137816b784821a7dc0485059dbfa0f3703e171d6e12af46c48",
+    "prototypes/vr444/experiments/wireless_pair_probe/RESULTS.txt": "b6e2e22a4efbc94c2f7cb5a30f6c6c1a4d090854319828f3e0dd6352376c6a92",
+    "prototypes/vr444/experiments/wireless_pair_probe/SELECTION.txt": "43f28936f2e9641886055ae98c2c517293d9b12aca3f5602a8cbf9bda0d6af35",
+    "prototypes/vr444/experiments/wireless_pair_probe/results/final-audit-tests.txt": "6682873a82ae4a57cf5ad5f2a4edeebd1271fcabe409de551de38cf61b274fbf",
+    "prototypes/vr444/experiments/wireless_pair_probe/results/quest-wireless-audit.json": "e02e04885702f84a7f1bff7be4ef8187ebad8fa98d332f872bf88a1ad993cd4e",
+    "prototypes/vr444/experiments/wireless_pair_probe/results/worker-target-audit.json": "1dd3886df98a23470e3b76a95ec12e028534c06a9bdadbdadcfac4919feb82ed"
+  },
+  "root_owns_raw_acquisition": true,
+  "network_executed_by_auditor": false,
+  "promotion_eligible": false
+}

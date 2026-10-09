@@ -1,0 +1,110 @@
+Actual Quest CPU and Ethernet-to-WiFi branch selection, 2026-10-09
+================================================================
+
+Decision: develop RRB32 four-worker target decoding with the pinned band-view
+server candidate; keep VR444/TCP as required controls and retain the two-worker
+CPU alternative. The finite wireless comparison does not justify replacing TCP
+with UDP, or selecting a parity/offload branch. This is further-development
+selection, not a production change or strict sub15 qualification.
+
+Target CPU evidence
+-------------------
+Probe source260a1a2244b2381270398b65a1d3d2d282867508. Actual Quest ARM64 NEON
+execution on physical serial230YC01D8W000E passed217 stereo roundtrips,4273
+rejections and4000 corruptions. Three predetermined actual576x640 stereo pairs,
+three warmups then31 samples for each of8 arms:744 measured exact invocations.
+The source-bound worker audit checks the complete collection receipt, device
+input hashes, exact source identities/canonical wire sizes and all quantiles.
+
+Client-only p50 / p95 milliseconds:
+Pair             VR444 serial       RRB32 workers2      RRB32 workers4
+Q1 lossless1080   1.327 /2.096        .864 /1.574          .780 /1.063
+Q8 paired-a1350   1.830 /2.361       1.119 /1.930         1.018 /1.496
+Q8 paired-b1350   1.745 /2.517       1.213 /1.913          .987 /1.529
+
+Four-worker process CPU p50 is1.921/2.213/2.243ms versus VR444
+1.171/1.644/1.565ms. Multiplying that demand by90Hz gives17.3/19.9/20.2% of
+one core, versus10.5/14.8/14.1%; this is an extrapolation, not measured utilization,
+thermal headroom or sustainable native cadence. Two workers cost less aggregate
+CPU but are slower in these observations. Original renderer encoding, upload,
+GPU readiness and compositor/runtime contention are absent from this CPU clock.
+
+All selected complete pairs fit256KiB. RRB32 bytes are15,347 vs22,859 atQ1,
+47,543 vs33,390 atQ8-a and45,079 vs31,055 atQ8-b. Thus the Q8 CPU benefit is
+accompanied by42.4--45.2% extra canonical bytes; do not choose it globally from
+CPU time alone. These codecs preserve existing decoded Q8 bytes, not original
+pre-quantization information. Three fixed captures do not represent game footage.
+Host server transcode remains a separate domain at a55dff163e3defa5d5be2e600b8d9a7829a8f7a1;
+on-device experimental server timing is not a desktop-server estimate.
+
+Physical-path diagnostic evidence
+---------------------------------
+Native probe source9ec0b0d1d7eaf3cdb54709acfa1d2bcec9d163fb. Root-owned collection
+ran13:33:03--13:33:40UTC. Captured reciprocal routes establish host192.168.1.106
+viaenp113s0 and Quest192.168.1.105 viawlan0. Payloads traveled on the dedicated
+explicit-peer TCP/UDP sockets, not ADB forwarding. ADB launched and collected the
+finite receiver. The native Android grammar test again passed261 records and6179
+rejections. Both executable hashes match the pinned offline qualification.
+
+Two5-pair smoke arms plus eight main arms ran with distinct owned ports and matched
+128-bit tokens/content within each TCP/UDP repetition. All20 endpoint processes
+exited0 with empty endpoint stderr. Main populations are960/960 complete exact
+pairs, plus10/10 smoke pairs; all970 receiver completions have corresponding sender
+ACKs. No missing unique application records, rejected/stale records or duplicate
+application records were observed. This does not prove zero radio loss or zero
+TCP/WiFi retransmission: those lower layers are not captured.
+
+Main results, milliseconds; every row includes all requested pairs:
+Arm            Pairs  RTTp50  RTTp95   Receiver assemblyp95  Receiver completionHz
+32KiB20 TCP1      60   7.477   8.643             1.133                19.957
+32KiB20 UDP1      60   7.812   9.126              .906                19.917
+32KiB20 UDP2      60   7.709   9.462              .955                19.925
+32KiB20 TCP2      60   7.502   9.466             1.179                19.964
+96KiB90 TCP1     180   7.584  10.399             4.430                86.704
+96KiB90 UDP1     180   7.468  10.057             3.936                86.270
+96KiB90 UDP2     180   7.363  10.062             3.976                86.512
+96KiB90 TCP2     180   7.623   9.904             4.193                86.861
+
+High-profile UDP RTTp95 improves the first repeat by0.342ms and regresses the
+second by0.158ms. Low-load differences are also mixed. With only two sequential
+order-balanced repetitions on this path, no compelling repeated tail advantage
+supports changing the default transport. Receiver assembly is lower for UDP here,
+but its start is a complete datagram receipt whereas TCP starts at the first
+record-prefix byte; neither interval is the native frame-receipt gate.
+
+Pacing limitation: sender sleeps until its next period BEFORE generating the
+next synthetic pair/record list. Preparation therefore adds to the nominal
+11.11ms start interval, even when network RTT is shorter. The observed86Hz high
+cadence must not be attributed solely to wireless service or stop-and-wait.
+It neither proves nor disproves physical90Hz capacity. Preparation-before-sleep
+is a separate future control; measured source/binaries are preserved here.
+This also uses one outstanding pair and100ms expiry, unlike a pipelined native
+stream. Nominal offered profiles are5.572 and75.001Mbps using IPv4+UDP reference
+accounting, not instantaneous shaping or observed TCP/WiFi on-wire bitrate.
+
+Accounting, checks and scope
+----------------------------
+The campaign auditor independently regenerated every completed left/right source
+hash, joined every complete ACK, and checked per-arm socket byte/record totals.
+All970 pairs together sent81,832,620 actual application socket bytes including
+both directions and framing. UDP arms alone count41,853,480bytes with28 assumed
+IPv4/UDP bytes per datagram. TCP physical wire bytes, segmentation/ACKs/retries,
+WiFi/MAC overhead and all optical/runtime timing remain unmeasured.
+
+All67 command entries and their logs,145 captured files,10 pinned implementation
+source bindings (nine current matches plus the explicit README follow-up), exact
+executable joins, planned/executed argument lists, timeout
+bounds, port readiness and cleanup observations are checked. The source-bound
+receipt and raw inputs are unchanged before/after independent audit. No owned
+receiver port remains and the temporary device directory was removed/verified.
+The new auditor rejects omitted control commands even if their sidecar files
+remain, and cannot attach a different binary to the pinned9ec qualification.
+Raw artifacts remain in the root live-selection branch; this branch retains the
+hash-bound structured summary and read-only reproducible auditors.
+
+Keep these clocks separate: host server transcode, Quest private CPU decode,
+sender RTT, receiver assembly, GPU image readiness/consumer and native
+receipt-to-post-xrEndFrame. No cross-clock subtraction or sum of their marginal
+quantiles is a sub15 claim. FEC, batching/GSO/GRO, authenticated negotiation,
+complete native stereo ownership and sustained target-load testing remain open.
+Exact branch shortlist and common caps are inSELECTION.txt.
