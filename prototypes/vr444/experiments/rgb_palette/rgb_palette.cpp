@@ -88,9 +88,14 @@ Parsed preflight(std::span<const uint8_t> wire) {
 void expand(std::span<const uint8_t> wire,const Parsed& parsed,std::span<uint32_t> output) {
     for(auto& t:parsed.tiles) {
         auto p=wire.subspan(t.at,t.bytes); unsigned n=t.w*t.h;
+        if(t.mode==1) {
+            const uint32_t color=rgb(p,0);
+            for(unsigned y=0;y<t.h;++y)
+                std::fill_n(output.begin()+size_t(t.y+y)*parsed.header.w+t.x,t.w,color);
+            continue;
+        }
         std::array<uint32_t,256> pixels;
         if(t.mode==0)for(unsigned i=0;i<n;++i)pixels[i]=rgb(p,3*i);
-        else if(t.mode==1)std::fill_n(pixels.begin(),n,rgb(p,0));
         else if(t.mode>=2 && t.mode<=4) {
             std::array<uint32_t,16> palette{}; unsigned colors=p[0],bits=1u<<(t.mode-2);
             for(unsigned i=0;i<colors;++i)palette[i]=rgb(p,1+3*i);
@@ -119,6 +124,11 @@ Bytes encode(std::span<const uint32_t> rgba,uint32_t w,uint32_t h,Stats* stats) 
         unsigned tw=std::min(tile_edge,w-x),th=std::min(tile_edge,h-y),n=tw*th;
         std::array<uint32_t,256> pixels; unsigned pos=0;
         for(unsigned ty=0;ty<th;++ty)for(unsigned tx=0;tx<tw;++tx)pixels[pos++]=rgba[size_t(y+ty)*w+x+tx];
+        // A constant tile needs neither candidate buffers nor palette/run scans.
+        if(std::all_of(pixels.begin()+1,pixels.begin()+n,[&](uint32_t v){return v==pixels[0];})) {
+            put16(wire,3);wire.push_back(1);wire.push_back(0);putrgb(wire,pixels[0]);++s.constant;
+            continue;
+        }
         Bytes best;best.reserve(3*n);for(unsigned i=0;i<n;++i)putrgb(best,pixels[i]);
         uint8_t mode=0; std::array<uint32_t,16> palette{};std::array<uint8_t,256> indexes{};unsigned colors=0;
         for(unsigned i=0;i<n;++i) {
