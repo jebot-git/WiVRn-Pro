@@ -1,0 +1,1609 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "metric": "First successful coherent stereo submission minus earliest eye receipt; first-use population after2s warmup; nearest-rank quantiles",
+  "same_recorded_build_all_arms": true,
+  "build_identity": {
+    "server_sha256": "2c65ec65a035b663d725e1e3dbf559e23217cf2a5e1865bc4bb6bb811497f33b",
+    "installed_apk_sha256": "1439efe540e42d26104dbc0b72e2ce50a8cb296786b390873dfaaa839d2f610f",
+    "runtime_manifest_sha256": "1866560cf512397c9b72797424b4f62d11b9e66d7e705394a43da37a80c2be45"
+  },
+  "runs": [
+    {
+      "name": "rrb4-tail-0-1",
+      "window_frames": 0,
+      "status": "pass",
+      "unique_pairs": 1898,
+      "hz": 89.6184467404348,
+      "warm_seconds": 21.167517057,
+      "stereo_stages_ms": {
+        "receive_to_submit": {
+          "count": 1898,
+          "p50": 21.419378,
+          "p95": 25.5412,
+          "p99": 27.200419,
+          "max": 29.687607
+        },
+        "receive_to_both_ready": {
+          "count": 1898,
+          "p50": 3.244427,
+          "p95": 10.355106,
+          "p99": 11.903595,
+          "max": 16.425418
+        },
+        "both_ready_to_selection": {
+          "count": 1898,
+          "p50": 15.36219,
+          "p95": 20.15047,
+          "p99": 22.624013,
+          "max": 24.752503
+        },
+        "selection_to_end_frame": {
+          "count": 1898,
+          "p50": 1.461302,
+          "p95": 1.916875,
+          "p99": 2.397136,
+          "max": 2.979324
+        },
+        "end_frame_to_recorded_submit": {
+          "count": 1898,
+          "p50": 0.034844,
+          "p95": 0.07375,
+          "p99": 0.118385,
+          "max": 0.947344
+        },
+        "fence_wait": {
+          "count": 1898,
+          "p50": 0.009687,
+          "p95": 0.01276,
+          "p99": 0.01724,
+          "max": 0.063646
+        },
+        "selection_work": {
+          "count": 1898,
+          "p50": 0.02125,
+          "p95": 0.027083,
+          "p99": 0.041146,
+          "max": 0.176979
+        }
+      },
+      "focus": {
+        "pid": 4007,
+        "observed_events": [
+          [
+            11119921484680,
+            "IDLE"
+          ],
+          [
+            11120176194758,
+            "READY"
+          ],
+          [
+            11120746087471,
+            "SYNCHRONIZED"
+          ],
+          [
+            11120749488096,
+            "VISIBLE"
+          ],
+          [
+            11120752344971,
+            "FOCUSED"
+          ]
+        ],
+        "warm_focused": true
+      },
+      "predicted_period_ns": {
+        "min": 11110188,
+        "max": 11111930,
+        "distinct": 578
+      },
+      "selected_host_budget_and_phase_ms": {
+        "wake_to_present_ns": {
+          "p50": 0.123356,
+          "p95": 0.140905,
+          "p99": 0.143617,
+          "count": 1898,
+          "min": 0.108941,
+          "max": 0.144978
+        },
+        "safe_decode_ns": {
+          "p50": 36.85916,
+          "p95": 38.20288,
+          "p99": 38.20288,
+          "count": 1898,
+          "min": 32.653784,
+          "max": 38.20288
+        },
+        "render_to_display_ns": {
+          "p50": 19.4909025,
+          "p95": 21.41221285,
+          "p99": 23.976989,
+          "count": 1898,
+          "min": 19.005994,
+          "max": 24.486958
+        },
+        "prediction_to_accepted_input_ns": {
+          "p50": 10.6570935,
+          "p95": 11.359210699999998,
+          "p99": 12.1016663,
+          "count": 1898,
+          "min": 7.44321,
+          "max": 15.821283
+        },
+        "accepted_input_minus_desired_present_ns": {
+          "p50": 1.440557,
+          "p95": 2.311020649999999,
+          "p99": 2.95834339,
+          "count": 1898,
+          "min": -2.725544,
+          "max": 3.024838
+        },
+        "display_target_minus_accepted_input_ns": {
+          "p50": 54.4568855,
+          "p95": 57.86753295,
+          "p99": 59.30565033,
+          "count": 1898,
+          "min": 48.801181,
+          "max": 60.517934
+        }
+      },
+      "first_warm_safe_decode_ms": 37.099268,
+      "last_warm_safe_decode_ms": 34.286096,
+      "tail": {
+        "status": "off"
+      },
+      "halves": [
+        {
+          "count": 949,
+          "receive_to_submit_ms": {
+            "count": 949,
+            "p50": 23.487451,
+            "p95": 26.184898,
+            "p99": 27.550784,
+            "max": 29.687607
+          },
+          "safe_decode_budget_ms": {
+            "count": 949,
+            "p50": 37.099268,
+            "p95": 38.20288,
+            "p99": 38.20288,
+            "max": 38.20288
+          }
+        },
+        {
+          "count": 949,
+          "receive_to_submit_ms": {
+            "count": 949,
+            "p50": 19.390627,
+            "p95": 24.559326,
+            "p99": 25.433649,
+            "max": 27.500211
+          },
+          "safe_decode_budget_ms": {
+            "count": 949,
+            "p50": 35.040344,
+            "p95": 36.85916,
+            "p99": 36.85916,
+            "max": 36.85916
+          }
+        }
+      ],
+      "old_latency_gate_status": "fail",
+      "strict_sub15_status": "fail",
+      "promotion_status": "blocked_experimental_path",
+      "quality_status": {
+        "status": "not_measured"
+      }
+    },
+    {
+      "name": "rrb4-tail-900-2",
+      "window_frames": 900,
+      "status": "pass",
+      "unique_pairs": 1889,
+      "hz": 89.66235747975645,
+      "warm_seconds": 21.056774025,
+      "stereo_stages_ms": {
+        "receive_to_submit": {
+          "count": 1889,
+          "p50": 20.637867,
+          "p95": 23.539586,
+          "p99": 24.360679,
+          "max": 25.909169
+        },
+        "receive_to_both_ready": {
+          "count": 1889,
+          "p50": 3.164844,
+          "p95": 9.88448,
+          "p99": 12.367241,
+          "max": 18.835888
+        },
+        "both_ready_to_selection": {
+          "count": 1889,
+          "p50": 15.090262,
+          "p95": 18.561095,
+          "p99": 19.366408,
+          "max": 21.216252
+        },
+        "selection_to_end_frame": {
+          "count": 1889,
+          "p50": 1.460313,
+          "p95": 1.847292,
+          "p99": 2.160365,
+          "max": 3.820678
+        },
+        "end_frame_to_recorded_submit": {
+          "count": 1889,
+          "p50": 0.03375,
+          "p95": 0.069636,
+          "p99": 0.10875,
+          "max": 0.299219
+        },
+        "fence_wait": {
+          "count": 1889,
+          "p50": 0.00974,
+          "p95": 0.012916,
+          "p99": 0.016355,
+          "max": 0.044479
+        },
+        "selection_work": {
+          "count": 1889,
+          "p50": 0.020678,
+          "p95": 0.026458,
+          "p99": 0.045729,
+          "max": 0.136719
+        }
+      },
+      "focus": {
+        "pid": 4565,
+        "observed_events": [
+          [
+            11186401295313,
+            "IDLE"
+          ],
+          [
+            11186657429974,
+            "READY"
+          ],
+          [
+            11187227587948,
+            "SYNCHRONIZED"
+          ],
+          [
+            11187230511333,
+            "VISIBLE"
+          ],
+          [
+            11187233359563,
+            "FOCUSED"
+          ]
+        ],
+        "warm_focused": true
+      },
+      "predicted_period_ns": {
+        "min": 11110387,
+        "max": 11111869,
+        "distinct": 587
+      },
+      "selected_host_budget_and_phase_ms": {
+        "wake_to_present_ns": {
+          "p50": 0.134509,
+          "p95": 0.143841,
+          "p99": 0.145661,
+          "count": 1889,
+          "min": 0.125845,
+          "max": 0.149234
+        },
+        "safe_decode_ns": {
+          "p50": 33.95622,
+          "p95": 35.115664,
+          "p99": 35.115664,
+          "count": 1889,
+          "min": 30.895441,
+          "max": 35.115664
+        },
+        "render_to_display_ns": {
+          "p50": 19.07344,
+          "p95": 20.415553199999998,
+          "p99": 21.060265,
+          "count": 1889,
+          "min": 18.619233,
+          "max": 21.30495
+        },
+        "prediction_to_accepted_input_ns": {
+          "p50": 10.764617,
+          "p95": 11.390241,
+          "p99": 11.802469480000001,
+          "count": 1889,
+          "min": 8.16979,
+          "max": 12.668097
+        },
+        "accepted_input_minus_desired_present_ns": {
+          "p50": 1.450215,
+          "p95": 2.0417096,
+          "p99": 2.5842339199999986,
+          "count": 1889,
+          "min": 0.170193,
+          "max": 3.013752
+        },
+        "display_target_minus_accepted_input_ns": {
+          "p50": 51.722857,
+          "p95": 53.2324628,
+          "p99": 54.10440932,
+          "count": 1889,
+          "min": 47.525967,
+          "max": 54.941728
+        }
+      },
+      "first_warm_safe_decode_ms": 34.146419,
+      "last_warm_safe_decode_ms": 30.895441,
+      "tail": {
+        "status": "pass",
+        "updates": 21,
+        "counts": {
+          "recent": 18,
+          "fallback": 3,
+          "slew": 5
+        },
+        "existing_run_manifest_verified": true,
+        "first_update": {
+          "type": "update",
+          "sequence": 1,
+          "pacer_id": 1,
+          "epoch": 0,
+          "batch": 1,
+          "stale_epoch": false,
+          "boundary_frame": 104,
+          "newest_feedback_frame": 100,
+          "oldest_recent_frame": 96,
+          "previous_newest_frame": -1,
+          "legacy_count": 5,
+          "recent_count": 5,
+          "legacy_tail_ns": 24597019,
+          "recent_tail_ns": 24597019,
+          "margin_ns": 1000000,
+          "previous_budget_ns": 0,
+          "applied_budget_ns": 25597019,
+          "valid": true,
+          "recent_used": false,
+          "slew_limited": false,
+          "decrease_blocked": false
+        },
+        "last_update": {
+          "type": "update",
+          "sequence": 21,
+          "pacer_id": 1,
+          "epoch": 0,
+          "batch": 21,
+          "stale_epoch": false,
+          "boundary_frame": 2104,
+          "newest_feedback_frame": 2100,
+          "oldest_recent_frame": 1201,
+          "previous_newest_frame": 2000,
+          "legacy_count": 1009,
+          "recent_count": 503,
+          "legacy_tail_ns": 30902882,
+          "recent_tail_ns": 29895441,
+          "margin_ns": 1000000,
+          "previous_budget_ns": 31723700,
+          "applied_budget_ns": 30895441,
+          "valid": true,
+          "recent_used": true,
+          "slew_limited": false,
+          "decrease_blocked": false
+        },
+        "applied_minus_same_bank_legacy_budget_ms": {
+          "count": 21,
+          "p50": 0.0,
+          "p95": 0.735758,
+          "p99": 0.930374,
+          "max": 0.930374
+        },
+        "minimum_applied_minus_same_bank_legacy_budget_ms": -1.689121,
+        "updates_below_same_bank_legacy": 7,
+        "updates_above_same_bank_legacy": 4,
+        "final_applied_minus_same_bank_legacy_budget_ms": -1.007441,
+        "decreases_blocked": 0,
+        "epochs": [
+          0
+        ],
+        "per_update": [
+          {
+            "boundary_frame": 104,
+            "newest_feedback_frame": 100,
+            "legacy_count": 5,
+            "recent_count": 5,
+            "legacy_tail_ns": 24597019,
+            "recent_tail_ns": 24597019,
+            "applied_budget_ns": 25597019,
+            "recent_used": false,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 204,
+            "newest_feedback_frame": 200,
+            "legacy_count": 92,
+            "recent_count": 92,
+            "legacy_tail_ns": 33146419,
+            "recent_tail_ns": 33146419,
+            "applied_budget_ns": 34146419,
+            "recent_used": false,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 304,
+            "newest_feedback_frame": 300,
+            "legacy_count": 103,
+            "recent_count": 103,
+            "legacy_tail_ns": 33025846,
+            "recent_tail_ns": 33025846,
+            "applied_budget_ns": 34025846,
+            "recent_used": false,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 404,
+            "newest_feedback_frame": 400,
+            "legacy_count": 192,
+            "recent_count": 192,
+            "legacy_tail_ns": 34115664,
+            "recent_tail_ns": 34115664,
+            "applied_budget_ns": 35115664,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 504,
+            "newest_feedback_frame": 500,
+            "legacy_count": 204,
+            "recent_count": 204,
+            "legacy_tail_ns": 33956220,
+            "recent_tail_ns": 33956220,
+            "applied_budget_ns": 34956220,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 604,
+            "newest_feedback_frame": 600,
+            "legacy_count": 293,
+            "recent_count": 293,
+            "legacy_tail_ns": 33146419,
+            "recent_tail_ns": 33146419,
+            "applied_budget_ns": 34146419,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 704,
+            "newest_feedback_frame": 700,
+            "legacy_count": 304,
+            "recent_count": 304,
+            "legacy_tail_ns": 34021401,
+            "recent_tail_ns": 34021401,
+            "applied_budget_ns": 35021401,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 804,
+            "newest_feedback_frame": 800,
+            "legacy_count": 394,
+            "recent_count": 394,
+            "legacy_tail_ns": 33146419,
+            "recent_tail_ns": 33146419,
+            "applied_budget_ns": 34146419,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 904,
+            "newest_feedback_frame": 900,
+            "legacy_count": 405,
+            "recent_count": 405,
+            "legacy_tail_ns": 33956220,
+            "recent_tail_ns": 33956220,
+            "applied_budget_ns": 34956220,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1004,
+            "newest_feedback_frame": 1000,
+            "legacy_count": 495,
+            "recent_count": 494,
+            "legacy_tail_ns": 32220462,
+            "recent_tail_ns": 32220462,
+            "applied_budget_ns": 33956220,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1104,
+            "newest_feedback_frame": 1100,
+            "legacy_count": 505,
+            "recent_count": 499,
+            "legacy_tail_ns": 33956220,
+            "recent_tail_ns": 33956220,
+            "applied_budget_ns": 34956220,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1204,
+            "newest_feedback_frame": 1200,
+            "legacy_count": 596,
+            "recent_count": 503,
+            "legacy_tail_ns": 32220462,
+            "recent_tail_ns": 30629326,
+            "applied_budget_ns": 33956220,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1304,
+            "newest_feedback_frame": 1300,
+            "legacy_count": 605,
+            "recent_count": 501,
+            "legacy_tail_ns": 33025846,
+            "recent_tail_ns": 33956220,
+            "applied_budget_ns": 34956220,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1404,
+            "newest_feedback_frame": 1400,
+            "legacy_count": 696,
+            "recent_count": 503,
+            "legacy_tail_ns": 32220462,
+            "recent_tail_ns": 30408573,
+            "applied_budget_ns": 33956220,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1504,
+            "newest_feedback_frame": 1500,
+            "legacy_count": 706,
+            "recent_count": 501,
+            "legacy_tail_ns": 33025846,
+            "recent_tail_ns": 30902882,
+            "applied_budget_ns": 32956220,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1604,
+            "newest_feedback_frame": 1600,
+            "legacy_count": 797,
+            "recent_count": 503,
+            "legacy_tail_ns": 32220462,
+            "recent_tail_ns": 30723700,
+            "applied_budget_ns": 31956220,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1704,
+            "newest_feedback_frame": 1700,
+            "legacy_count": 807,
+            "recent_count": 502,
+            "legacy_tail_ns": 32287260,
+            "recent_tail_ns": 30598139,
+            "applied_budget_ns": 31598139,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1804,
+            "newest_feedback_frame": 1800,
+            "legacy_count": 898,
+            "recent_count": 503,
+            "legacy_tail_ns": 31138480,
+            "recent_tail_ns": 30723700,
+            "applied_budget_ns": 31723700,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1904,
+            "newest_feedback_frame": 1900,
+            "legacy_count": 908,
+            "recent_count": 502,
+            "legacy_tail_ns": 32287260,
+            "recent_tail_ns": 30598139,
+            "applied_budget_ns": 31598139,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 2004,
+            "newest_feedback_frame": 2000,
+            "legacy_count": 998,
+            "recent_count": 502,
+            "legacy_tail_ns": 31138480,
+            "recent_tail_ns": 30723700,
+            "applied_budget_ns": 31723700,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 2104,
+            "newest_feedback_frame": 2100,
+            "legacy_count": 1009,
+            "recent_count": 503,
+            "legacy_tail_ns": 30902882,
+            "recent_tail_ns": 29895441,
+            "applied_budget_ns": 30895441,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          }
+        ]
+      },
+      "halves": [
+        {
+          "count": 945,
+          "receive_to_submit_ms": {
+            "count": 945,
+            "p50": 21.095262,
+            "p95": 23.912086,
+            "p99": 24.594482,
+            "max": 25.909169
+          },
+          "safe_decode_budget_ms": {
+            "count": 945,
+            "p50": 34.95622,
+            "p95": 35.115664,
+            "p99": 35.115664,
+            "max": 35.115664
+          }
+        },
+        {
+          "count": 944,
+          "receive_to_submit_ms": {
+            "count": 944,
+            "p50": 20.101148,
+            "p95": 22.770523,
+            "p99": 23.839846,
+            "max": 24.378753
+          },
+          "safe_decode_budget_ms": {
+            "count": 944,
+            "p50": 31.95622,
+            "p95": 34.95622,
+            "p99": 34.95622,
+            "max": 34.95622
+          }
+        }
+      ],
+      "old_latency_gate_status": "fail",
+      "strict_sub15_status": "fail",
+      "promotion_status": "blocked_experimental_path",
+      "quality_status": {
+        "status": "not_measured"
+      }
+    },
+    {
+      "name": "rrb4-tail-900-3",
+      "window_frames": 900,
+      "status": "pass",
+      "unique_pairs": 1897,
+      "hz": 88.86203065466094,
+      "warm_seconds": 21.336446917,
+      "stereo_stages_ms": {
+        "receive_to_submit": {
+          "count": 1897,
+          "p50": 18.516929,
+          "p95": 21.309169,
+          "p99": 23.481513,
+          "max": 34.787139
+        },
+        "receive_to_both_ready": {
+          "count": 1897,
+          "p50": 2.886563,
+          "p95": 9.745365,
+          "p99": 11.889376,
+          "max": 17.653439
+        },
+        "both_ready_to_selection": {
+          "count": 1897,
+          "p50": 13.108543,
+          "p95": 17.022189,
+          "p99": 18.728595,
+          "max": 30.566982
+        },
+        "selection_to_end_frame": {
+          "count": 1897,
+          "p50": 1.404844,
+          "p95": 1.802969,
+          "p99": 2.179428,
+          "max": 2.861094
+        },
+        "end_frame_to_recorded_submit": {
+          "count": 1897,
+          "p50": 0.032396,
+          "p95": 0.056198,
+          "p99": 0.080364,
+          "max": 0.143281
+        },
+        "fence_wait": {
+          "count": 1897,
+          "p50": 0.009479,
+          "p95": 0.014896,
+          "p99": 0.025937,
+          "max": 0.287136
+        },
+        "selection_work": {
+          "count": 1897,
+          "p50": 0.02052,
+          "p95": 0.032813,
+          "p99": 0.050365,
+          "max": 0.115781
+        }
+      },
+      "focus": {
+        "pid": 5096,
+        "observed_events": [
+          [
+            11246354659671,
+            "IDLE"
+          ],
+          [
+            11246611242145,
+            "READY"
+          ],
+          [
+            11247095630682,
+            "SYNCHRONIZED"
+          ],
+          [
+            11247098719693,
+            "VISIBLE"
+          ],
+          [
+            11247101473027,
+            "FOCUSED"
+          ]
+        ],
+        "warm_focused": true
+      },
+      "predicted_period_ns": {
+        "min": 11110710,
+        "max": 11111534,
+        "distinct": 547
+      },
+      "selected_host_budget_and_phase_ms": {
+        "wake_to_present_ns": {
+          "p50": 0.122498,
+          "p95": 0.130505,
+          "p99": 0.15695911999999998,
+          "count": 1897,
+          "min": 0.10542,
+          "max": 0.164827
+        },
+        "safe_decode_ns": {
+          "p50": 31.939426,
+          "p95": 33.766751,
+          "p99": 33.766751,
+          "count": 1897,
+          "min": 23.749434,
+          "max": 33.766751
+        },
+        "render_to_display_ns": {
+          "p50": 19.109307,
+          "p95": 20.4064872,
+          "p99": 31.93892219999999,
+          "count": 1897,
+          "min": 18.558935,
+          "max": 39.258169
+        },
+        "prediction_to_accepted_input_ns": {
+          "p50": 10.671638,
+          "p95": 11.435428400000001,
+          "p99": 12.06461596,
+          "count": 1897,
+          "min": 7.966808,
+          "max": 13.471213
+        },
+        "accepted_input_minus_desired_present_ns": {
+          "p50": 1.45075,
+          "p95": 2.572687399999999,
+          "p99": 2.9595594,
+          "count": 1897,
+          "min": -0.261861,
+          "max": 3.021876
+        },
+        "display_target_minus_accepted_input_ns": {
+          "p50": 49.682097,
+          "p95": 51.920247,
+          "p99": 61.787881199999966,
+          "count": 1897,
+          "min": 44.931919,
+          "max": 72.227131
+        }
+      },
+      "first_warm_safe_decode_ms": 23.749434,
+      "last_warm_safe_decode_ms": 31.009517,
+      "tail": {
+        "status": "pass",
+        "updates": 20,
+        "counts": {
+          "recent": 18,
+          "fallback": 2,
+          "slew": 5
+        },
+        "existing_run_manifest_verified": true,
+        "first_update": {
+          "type": "update",
+          "sequence": 1,
+          "pacer_id": 1,
+          "epoch": 0,
+          "batch": 1,
+          "stale_epoch": false,
+          "boundary_frame": 103,
+          "newest_feedback_frame": 100,
+          "oldest_recent_frame": 95,
+          "previous_newest_frame": -1,
+          "legacy_count": 6,
+          "recent_count": 6,
+          "legacy_tail_ns": 22749434,
+          "recent_tail_ns": 22749434,
+          "margin_ns": 1000000,
+          "previous_budget_ns": 0,
+          "applied_budget_ns": 23749434,
+          "valid": true,
+          "recent_used": false,
+          "slew_limited": false,
+          "decrease_blocked": false
+        },
+        "last_update": {
+          "type": "update",
+          "sequence": 20,
+          "pacer_id": 1,
+          "epoch": 0,
+          "batch": 20,
+          "stale_epoch": false,
+          "boundary_frame": 2103,
+          "newest_feedback_frame": 2100,
+          "oldest_recent_frame": 1201,
+          "previous_newest_frame": 2000,
+          "legacy_count": 1076,
+          "recent_count": 500,
+          "legacy_tail_ns": 30009517,
+          "recent_tail_ns": 30009517,
+          "margin_ns": 1000000,
+          "previous_budget_ns": 31627229,
+          "applied_budget_ns": 31009517,
+          "valid": true,
+          "recent_used": true,
+          "slew_limited": false,
+          "decrease_blocked": false
+        },
+        "applied_minus_same_bank_legacy_budget_ms": {
+          "count": 20,
+          "p50": 0.0,
+          "p95": 0.82198,
+          "p99": 1.374457,
+          "max": 1.374457
+        },
+        "minimum_applied_minus_same_bank_legacy_budget_ms": -0.852586,
+        "updates_below_same_bank_legacy": 6,
+        "updates_above_same_bank_legacy": 6,
+        "final_applied_minus_same_bank_legacy_budget_ms": 0.0,
+        "decreases_blocked": 0,
+        "epochs": [
+          0
+        ],
+        "per_update": [
+          {
+            "boundary_frame": 103,
+            "newest_feedback_frame": 100,
+            "legacy_count": 6,
+            "recent_count": 6,
+            "legacy_tail_ns": 22749434,
+            "recent_tail_ns": 22749434,
+            "applied_budget_ns": 23749434,
+            "recent_used": false,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 303,
+            "newest_feedback_frame": 300,
+            "legacy_count": 172,
+            "recent_count": 172,
+            "legacy_tail_ns": 32766751,
+            "recent_tail_ns": 32766751,
+            "applied_budget_ns": 33766751,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 404,
+            "newest_feedback_frame": 400,
+            "legacy_count": 103,
+            "recent_count": 103,
+            "legacy_tail_ns": 32491903,
+            "recent_tail_ns": 32491903,
+            "applied_budget_ns": 33491903,
+            "recent_used": false,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 504,
+            "newest_feedback_frame": 500,
+            "legacy_count": 273,
+            "recent_count": 273,
+            "legacy_tail_ns": 30117446,
+            "recent_tail_ns": 30117446,
+            "applied_budget_ns": 32491903,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 604,
+            "newest_feedback_frame": 600,
+            "legacy_count": 203,
+            "recent_count": 203,
+            "legacy_tail_ns": 31939426,
+            "recent_tail_ns": 31939426,
+            "applied_budget_ns": 32939426,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 704,
+            "newest_feedback_frame": 700,
+            "legacy_count": 373,
+            "recent_count": 373,
+            "legacy_tail_ns": 30117446,
+            "recent_tail_ns": 30117446,
+            "applied_budget_ns": 31939426,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 804,
+            "newest_feedback_frame": 800,
+            "legacy_count": 304,
+            "recent_count": 304,
+            "legacy_tail_ns": 31939426,
+            "recent_tail_ns": 31939426,
+            "applied_budget_ns": 32939426,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 904,
+            "newest_feedback_frame": 900,
+            "legacy_count": 474,
+            "recent_count": 474,
+            "legacy_tail_ns": 30117446,
+            "recent_tail_ns": 30117446,
+            "applied_budget_ns": 31939426,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1004,
+            "newest_feedback_frame": 1000,
+            "legacy_count": 403,
+            "recent_count": 397,
+            "legacy_tail_ns": 31169615,
+            "recent_tail_ns": 31939426,
+            "applied_budget_ns": 32939426,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1104,
+            "newest_feedback_frame": 1100,
+            "legacy_count": 575,
+            "recent_count": 485,
+            "legacy_tail_ns": 30117446,
+            "recent_tail_ns": 30117446,
+            "applied_budget_ns": 31939426,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1204,
+            "newest_feedback_frame": 1200,
+            "legacy_count": 503,
+            "recent_count": 496,
+            "legacy_tail_ns": 31169615,
+            "recent_tail_ns": 31169615,
+            "applied_budget_ns": 32169615,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1304,
+            "newest_feedback_frame": 1300,
+            "legacy_count": 676,
+            "recent_count": 503,
+            "legacy_tail_ns": 29676500,
+            "recent_tail_ns": 29186383,
+            "applied_budget_ns": 31169615,
+            "recent_used": true,
+            "slew_limited": true,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1404,
+            "newest_feedback_frame": 1400,
+            "legacy_count": 603,
+            "recent_count": 499,
+            "legacy_tail_ns": 30870732,
+            "recent_tail_ns": 30824097,
+            "applied_budget_ns": 31824097,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1504,
+            "newest_feedback_frame": 1500,
+            "legacy_count": 777,
+            "recent_count": 503,
+            "legacy_tail_ns": 30117446,
+            "recent_tail_ns": 30009517,
+            "applied_budget_ns": 31009517,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1604,
+            "newest_feedback_frame": 1600,
+            "legacy_count": 704,
+            "recent_count": 500,
+            "legacy_tail_ns": 30870732,
+            "recent_tail_ns": 30543056,
+            "applied_budget_ns": 31543056,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1704,
+            "newest_feedback_frame": 1700,
+            "legacy_count": 877,
+            "recent_count": 503,
+            "legacy_tail_ns": 30009517,
+            "recent_tail_ns": 30009517,
+            "applied_budget_ns": 31009517,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1804,
+            "newest_feedback_frame": 1800,
+            "legacy_count": 803,
+            "recent_count": 498,
+            "legacy_tail_ns": 30824097,
+            "recent_tail_ns": 29971511,
+            "applied_budget_ns": 30971511,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 1903,
+            "newest_feedback_frame": 1900,
+            "legacy_count": 977,
+            "recent_count": 502,
+            "legacy_tail_ns": 30009517,
+            "recent_tail_ns": 29971511,
+            "applied_budget_ns": 30971511,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 2004,
+            "newest_feedback_frame": 2000,
+            "legacy_count": 904,
+            "recent_count": 500,
+            "legacy_tail_ns": 30870732,
+            "recent_tail_ns": 30627229,
+            "applied_budget_ns": 31627229,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          },
+          {
+            "boundary_frame": 2103,
+            "newest_feedback_frame": 2100,
+            "legacy_count": 1076,
+            "recent_count": 500,
+            "legacy_tail_ns": 30009517,
+            "recent_tail_ns": 30009517,
+            "applied_budget_ns": 31009517,
+            "recent_used": true,
+            "slew_limited": false,
+            "decrease_blocked": false
+          }
+        ]
+      },
+      "halves": [
+        {
+          "count": 943,
+          "receive_to_submit_ms": {
+            "count": 943,
+            "p50": 18.966564,
+            "p95": 21.842138,
+            "p99": 26.260003,
+            "max": 34.787139
+          },
+          "safe_decode_budget_ms": {
+            "count": 943,
+            "p50": 32.939426,
+            "p95": 33.766751,
+            "p99": 33.766751,
+            "max": 33.766751
+          }
+        },
+        {
+          "count": 954,
+          "receive_to_submit_ms": {
+            "count": 954,
+            "p50": 18.073231,
+            "p95": 20.805471,
+            "p99": 21.582294,
+            "max": 23.14995
+          },
+          "safe_decode_budget_ms": {
+            "count": 954,
+            "p50": 31.009517,
+            "p95": 32.169615,
+            "p99": 32.169615,
+            "max": 32.169615
+          }
+        }
+      ],
+      "old_latency_gate_status": "fail",
+      "strict_sub15_status": "fail",
+      "promotion_status": "blocked_experimental_path",
+      "quality_status": {
+        "status": "not_measured"
+      }
+    },
+    {
+      "name": "rrb4-tail-0-4",
+      "window_frames": 0,
+      "status": "pass",
+      "unique_pairs": 1910,
+      "hz": 89.53270390580556,
+      "warm_seconds": 21.321817802,
+      "stereo_stages_ms": {
+        "receive_to_submit": {
+          "count": 1910,
+          "p50": 18.178283,
+          "p95": 24.01719,
+          "p99": 25.659429,
+          "max": 27.565628
+        },
+        "receive_to_both_ready": {
+          "count": 1910,
+          "p50": 3.21224,
+          "p95": 9.716251,
+          "p99": 11.208804,
+          "max": 15.974428
+        },
+        "both_ready_to_selection": {
+          "count": 1910,
+          "p50": 12.446512,
+          "p95": 19.048596,
+          "p99": 20.187554,
+          "max": 23.054273
+        },
+        "selection_to_end_frame": {
+          "count": 1910,
+          "p50": 1.434948,
+          "p95": 1.850208,
+          "p99": 2.140521,
+          "max": 2.684219
+        },
+        "end_frame_to_recorded_submit": {
+          "count": 1910,
+          "p50": 0.031406,
+          "p95": 0.055625,
+          "p99": 0.077396,
+          "max": 0.125625
+        },
+        "fence_wait": {
+          "count": 1910,
+          "p50": 0.00974,
+          "p95": 0.015521,
+          "p99": 0.022656,
+          "max": 0.070052
+        },
+        "selection_work": {
+          "count": 1910,
+          "p50": 0.021041,
+          "p95": 0.034687,
+          "p99": 0.053229,
+          "max": 0.225365
+        }
+      },
+      "focus": {
+        "pid": 5665,
+        "observed_events": [
+          [
+            11305655570579,
+            "IDLE"
+          ],
+          [
+            11305912050812,
+            "READY"
+          ],
+          [
+            11306401836070,
+            "SYNCHRONIZED"
+          ],
+          [
+            11306404930601,
+            "VISIBLE"
+          ],
+          [
+            11306407851070,
+            "FOCUSED"
+          ]
+        ],
+        "warm_focused": true
+      },
+      "predicted_period_ns": {
+        "min": 11110398,
+        "max": 11111819,
+        "distinct": 562
+      },
+      "selected_host_budget_and_phase_ms": {
+        "wake_to_present_ns": {
+          "p50": 0.14101,
+          "p95": 0.165005,
+          "p99": 0.16592,
+          "count": 1910,
+          "min": 0.125513,
+          "max": 0.167972
+        },
+        "safe_decode_ns": {
+          "p50": 31.45208,
+          "p95": 36.839368,
+          "p99": 36.839368,
+          "count": 1910,
+          "min": 30.263636,
+          "max": 36.839368
+        },
+        "render_to_display_ns": {
+          "p50": 19.4289045,
+          "p95": 20.4858764,
+          "p99": 20.703898690000003,
+          "count": 1910,
+          "min": 18.931583,
+          "max": 20.938843
+        },
+        "prediction_to_accepted_input_ns": {
+          "p50": 10.6734285,
+          "p95": 11.4037609,
+          "p99": 11.81392229,
+          "count": 1910,
+          "min": 6.437572,
+          "max": 17.222584
+        },
+        "accepted_input_minus_desired_present_ns": {
+          "p50": 1.4444785,
+          "p95": 2.09443995,
+          "p99": 2.918313,
+          "count": 1910,
+          "min": -4.839048,
+          "max": 3.050068
+        },
+        "display_target_minus_accepted_input_ns": {
+          "p50": 49.8097135,
+          "p95": 54.97865585,
+          "p99": 55.958729840000004,
+          "count": 1910,
+          "min": 46.85526,
+          "max": 56.465346
+        }
+      },
+      "first_warm_safe_decode_ms": 36.839368,
+      "last_warm_safe_decode_ms": 31.45208,
+      "tail": {
+        "status": "off"
+      },
+      "halves": [
+        {
+          "count": 956,
+          "receive_to_submit_ms": {
+            "count": 956,
+            "p50": 18.60844,
+            "p95": 24.640107,
+            "p99": 26.121096,
+            "max": 27.565628
+          },
+          "safe_decode_budget_ms": {
+            "count": 956,
+            "p50": 31.410858,
+            "p95": 36.839368,
+            "p99": 36.839368,
+            "max": 36.839368
+          }
+        },
+        {
+          "count": 954,
+          "receive_to_submit_ms": {
+            "count": 954,
+            "p50": 17.850418,
+            "p95": 20.9562,
+            "p99": 21.753752,
+            "max": 22.548804
+          },
+          "safe_decode_budget_ms": {
+            "count": 954,
+            "p50": 31.45208,
+            "p95": 34.231284,
+            "p99": 34.231284,
+            "max": 34.231284
+          }
+        }
+      ],
+      "old_latency_gate_status": "fail",
+      "strict_sub15_status": "fail",
+      "promotion_status": "blocked_experimental_path",
+      "quality_status": {
+        "status": "not_measured"
+      }
+    }
+  ],
+  "campaign_postconditions": {
+    "status": "complete",
+    "final_config_matches_initial": true,
+    "own_reverse_absent": true,
+    "dedicated_app_stopped": true,
+    "production_package_unchanged": true,
+    "analysis_sources_unchanged": true,
+    "final_check_errors": []
+  },
+  "raw_feedback_quantiles_recomputed": false,
+  "causal_speedup_established": false,
+  "overhead_measured": false,
+  "latency_qualified": false,
+  "quality_qualified": false,
+  "promotion_eligible": false,
+  "scope": "Recorded summary gates bound to final run manifests; presentation metrics and exact warm host source/pacer joins independently recomputed; enabled tail audit replayed with manifest. No host/client clock subtraction; no additive stage quantiles. Raw feedback samples and worker runtime costs are not recorded. Four runs are exploratory, not randomized or independent qualification.",
+  "input_artifacts": {
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/wivrn-codecs/integration/native_metrics.py": {
+      "sha256": "0075fd06c5fcc1045785e104ed74a03db0fbd3130d3edc11a9cc10abd99f5825",
+      "bytes": 10948
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/prototypes/vr444/experiments/pacer_timing/join_source.py": {
+      "sha256": "efb62c56134eda148180052338e83ea185f61161df7983bde3af6a9749d94b5e",
+      "bytes": 4817
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/wivrn-codecs/integration/pacer_tail.py": {
+      "sha256": "375a2e2eb2edee89d142604b5396ae1c6718d0e24fbe6644aab8a05e668fb416",
+      "bytes": 6778
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/prototypes/vr444/experiments/pacer_timing/analyze.py": {
+      "sha256": "52e988abb06fa88c9d44486d566d8cb69c4ecba8db56a1f677e70a3911bda5e1",
+      "bytes": 7355
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/prototypes/vr444/experiments/compositor_freshness/analyze.py": {
+      "sha256": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10",
+      "bytes": 13394
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/prototypes/vr444/experiments/pacer_recent_tail/analyze.py": {
+      "sha256": "d1ad28720846b7e74d134b878545d3c48579e5d55b8de3a043335aa06d760a94",
+      "bytes": 4562
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.cpp": {
+      "sha256": "48e2a42c72f113dd25edbf84e81045556bd7fcb590535a5a351ae1e57a1d2434",
+      "bytes": 11004
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.h": {
+      "sha256": "a9076b5e0ab5247c52d43366e4920f1d868b1e150100d5360bb8b3b2eb502be1",
+      "bytes": 2836
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_trace.h": {
+      "sha256": "93f1e8b963ba4bdbf7bdcaa674a6fcbee3e1eb4dea3bb7001cba7f9ff802e638",
+      "bytes": 4064
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_tail.h": {
+      "sha256": "7e8de43fdbb4d0ced732e6300aad5e707f9fde23e5d557a7cc7bab3c864487c4",
+      "bytes": 8087
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/campaign.json": {
+      "sha256": "68de9632adce4237692117e773c9c71e6f82ced115edcd1b137bd1544b9e1ce2",
+      "bytes": 38420
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/hashes.json": {
+      "sha256": "15182b8b9fb663780046bfbf97d127d0673db6d03fc836610b4269cae0e91ca8",
+      "bytes": 30387
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/summary.json": {
+      "sha256": "4d070fe3e35de0a6d4acbd73add7f55110abc26584441d30b48664a2204464c1",
+      "bytes": 1182192
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/provenance.json": {
+      "sha256": "91cbf4865a820cff812264265cc012032cc1801454dc4a059afe4b8f56ff5bc7",
+      "bytes": 8814
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/cleanup.json": {
+      "sha256": "a55382c41040e0572e2220ad9b0deb1ccf387a815ba96f61a0db399b90c39255",
+      "bytes": 326
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/client/codec-test-present.jsonl": {
+      "sha256": "9fefa00f732a9d1807c99cbd6f4f85feb38e73419d148da695b8b0a0d3c33628",
+      "bytes": 2811315
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/host/pacer-trace.jsonl": {
+      "sha256": "a6d7148aba628b23620bea8efab70513b1d9cf3ce1e1a802c1462e7af9346bfa",
+      "bytes": 1079015
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/host/source-trace.jsonl": {
+      "sha256": "13d86a40bfde10700638ff46e684fa5c8974fc47eb5ca7a3bf1182a541fd56e7",
+      "bytes": 8016148
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/app-pid.txt": {
+      "sha256": "36cd8edc95eccc7ca329cbe58b572d52957d97abcc25a1aca02757b9688c3ec4",
+      "bytes": 5
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/wivrn-live-logcat.txt": {
+      "sha256": "4dd024410b28505aae2a100b459f41dfd438619d99c4a61e58c8e4206a8c706a",
+      "bytes": 77143
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/hashes.json": {
+      "sha256": "5f0545253bf581fc5cd0e22243215a02fe4dd5d3c3346ec9d05461d5aa5b555b",
+      "bytes": 30482
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/summary.json": {
+      "sha256": "958a02845ea3b40b96ee619ea395bb1db9869034ad8359079e4e00e52ff1f33a",
+      "bytes": 1180114
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/provenance.json": {
+      "sha256": "3dfd38741829e2aaf5c114ab894c4c0942fc98028f8d9622b4180b66493f3f6e",
+      "bytes": 8928
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/cleanup.json": {
+      "sha256": "a55382c41040e0572e2220ad9b0deb1ccf387a815ba96f61a0db399b90c39255",
+      "bytes": 326
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/client/codec-test-present.jsonl": {
+      "sha256": "75c65e25a1c3784cfaf27322a96fb19f73e0f953e15b6696c8aff412ed493064",
+      "bytes": 2800424
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/host/pacer-trace.jsonl": {
+      "sha256": "f108fff8d1ab1bc5126235fee2bd890bdc1109815a993d0e765143f1e9e2d5ff",
+      "bytes": 1075728
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/host/source-trace.jsonl": {
+      "sha256": "164ce8ffe372fe031b0ff88f608ae4abefce77053a8cecc9c71b46821f500f43",
+      "bytes": 7983337
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/app-pid.txt": {
+      "sha256": "aef3eb2a15f97b5b1fb309bbc7f3afe604f8f0c56c13adae1bc8c26ec9949647",
+      "bytes": 5
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/wivrn-live-logcat.txt": {
+      "sha256": "018c99706ec9bca9b3b7178eaf6d1dc0b3631992b2f6d2d2391ff855c7fe7fc6",
+      "bytes": 77143
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/host/pacer-tail.jsonl": {
+      "sha256": "17a1ff3d887c6284cfcf8f7a66d32bbce4b2e597ce3c212b89f23bb7447cb96c",
+      "bytes": 9435
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/hashes.json": {
+      "sha256": "4c097141971936a5aa47146403ed0d02ec30e07de09b60b00d3feae40a93b4e1",
+      "bytes": 30482
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/summary.json": {
+      "sha256": "99394c1d7b3d1ae6f587193071155c69c03ea32012d41c78fdf01eb3942309cb",
+      "bytes": 1183779
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/provenance.json": {
+      "sha256": "2b62d7ec36f3555c1e8f8948f813acd70a11dd05716430e48ba391ae978eb0a4",
+      "bytes": 8928
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/cleanup.json": {
+      "sha256": "a55382c41040e0572e2220ad9b0deb1ccf387a815ba96f61a0db399b90c39255",
+      "bytes": 326
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/client/codec-test-present.jsonl": {
+      "sha256": "02df0d751a60172f814b15ee6f252047438dc79c7b6abe290387ca96db921f9f",
+      "bytes": 2799098
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/host/pacer-trace.jsonl": {
+      "sha256": "1afd00c6456dfc6dab1d6937999b6895ab4c98e28cecd82e778028cb885c7561",
+      "bytes": 1085583
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/host/source-trace.jsonl": {
+      "sha256": "b9f191b932edf62edad3a589638b5b12480481596c2160237f34c12442926db2",
+      "bytes": 8067810
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/app-pid.txt": {
+      "sha256": "fd2992a8a825dda7d90bc753cdbb23cba777a492f86bc1ceff19aa4fd7a3f41f",
+      "bytes": 5
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/wivrn-live-logcat.txt": {
+      "sha256": "1f3274d7635f005b572031271030a31de69985a7235d5af5d8cb2f548ed142d6",
+      "bytes": 76869
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/host/pacer-tail.jsonl": {
+      "sha256": "0e9f8b7c50545c0b365c71d9e7083d73e196eb04a91a1f44b0783e9f1f16ac4e",
+      "bytes": 9001
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/hashes.json": {
+      "sha256": "e3c80b80551f1ca49127566268ea9b4a23ddcac6b476cc650eb391009dfe7584",
+      "bytes": 30387
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/summary.json": {
+      "sha256": "539c5656e219c4c8300858334fbbf82aef20084a9a79feff4588d2e3b0809ca0",
+      "bytes": 1189820
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/provenance.json": {
+      "sha256": "16fe15ddc5064bd4cc7d9b046c6373be1c8be5414fc036537464be41203adf72",
+      "bytes": 8814
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/cleanup.json": {
+      "sha256": "a55382c41040e0572e2220ad9b0deb1ccf387a815ba96f61a0db399b90c39255",
+      "bytes": 326
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/client/codec-test-present.jsonl": {
+      "sha256": "5b81c8fd68c86aa8ab93c6018d725c7349ef7873ea0699de235decb97dc4bb3b",
+      "bytes": 2834406
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/host/pacer-trace.jsonl": {
+      "sha256": "84d2f0c031eec7cd14e2705d4f0984460011b5f65fee943ab08359cda165ef5d",
+      "bytes": 1085586
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/host/source-trace.jsonl": {
+      "sha256": "b061bd2423b7b22ef3e29b3408f600704e6426d2d8a671c860536c7c4fac9bc8",
+      "bytes": 8069194
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/app-pid.txt": {
+      "sha256": "2bd5cd8eb036b1f88700d77dd3530434c70bb5db8c66c9387596add93ac8507d",
+      "bytes": 5
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/wivrn-live-logcat.txt": {
+      "sha256": "6e39170afee6714c7d9c169b8996cb66f3fe3941663d9ba7a75d599e983e9d6f",
+      "bytes": 76869
+    }
+  },
+  "audit_script_sha256": "62c835af3de13e344a33c9f148e7e300cb2c4793ffc277372f70751f7ecfb744",
+  "all_read_inputs_unchanged_after_analysis": true
+}
