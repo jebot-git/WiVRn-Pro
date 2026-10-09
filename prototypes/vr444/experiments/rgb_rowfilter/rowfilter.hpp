@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "wpc.hpp"
+#include "simd.hpp"
 
 // RRF1 is an independent exact RGB24 frame format, not PNG or production VR444.
 namespace rowfilter {
@@ -18,21 +19,21 @@ inline bool alias(View input,const Bytes&buffer){
 inline bool alias(View input,const Workspace&w){return alias(input,w.rgb)||alias(input,w.filtered)||alias(input,w.compressed)||alias(input,w.alternate)||alias(input,w.wire);}
 inline View bytes(std::span<const uint32_t> rgba){return {reinterpret_cast<const uint8_t*>(rgba.data()),rgba.size_bytes()};}
 inline void put32(Bytes&b,size_t at,uint32_t v){for(unsigned i=0;i<4;++i)b[at+i]=uint8_t(v>>(8*i));}
-inline void predict(View rgb,size_t stride,Bytes&filtered){
+inline void predict(View rgb,size_t stride,Bytes&filtered,bool simd=true){
     need(stride>0&&stride<=rgb.size()&&rgb.size()%stride==0);filtered.resize(rgb.size());
     std::copy_n(rgb.data(),stride,filtered.data());
-    for(size_t at=stride;at<rgb.size();++at)filtered[at]=uint8_t(rgb[at]-rgb[at-stride]);
+    detail::subtract(rgb.subspan(stride),rgb.first(rgb.size()-stride),std::span(filtered).subspan(stride),simd);
 }
-inline void restore(Bytes&rgb,size_t stride){
+inline void restore(Bytes&rgb,size_t stride,bool simd=true){
     need(stride>0&&stride<=rgb.size()&&rgb.size()%stride==0);
     for(size_t row=stride;row<rgb.size();row+=stride)
-        for(size_t x=0;x<stride;++x)rgb[row+x]=uint8_t(rgb[row+x]+rgb[row-stride+x]);
+        detail::add_row(std::span(rgb).subspan(row,stride),View(rgb).subspan(row-stride,stride),simd);
 }
-inline View encode(std::span<const uint32_t>rgba,uint32_t width,uint32_t height,Policy policy,Workspace&w){
+inline View encode(std::span<const uint32_t>rgba,uint32_t width,uint32_t height,Policy policy,Workspace&w,bool simd=true){
     size_t count=pixels(width,height);need(rgba.size()==count&&!alias(bytes(rgba),w));
     need(policy==Policy::plain||policy==Policy::up||policy==Policy::adaptive);
     w.rgb.resize(count*3);
-    for(size_t i=0;i<count;++i){uint32_t p=rgba[i];need((p>>24)==255);w.rgb[3*i]=uint8_t(p);w.rgb[3*i+1]=uint8_t(p>>8);w.rgb[3*i+2]=uint8_t(p>>16);}
+    detail::pack(rgba,w.rgb,simd);
     size_t bound=size_t(LZ4_compressBound(int(w.rgb.size())));w.compressed.resize(bound);
     View chosen=w.rgb;unsigned mode=0;
     auto attempt=[&](View input,Bytes&storage,unsigned candidate){
@@ -40,7 +41,7 @@ inline View encode(std::span<const uint32_t>rgba,uint32_t width,uint32_t height,
         need(n>0);if(size_t(n)+64<=w.rgb.size()&&size_t(n)<chosen.size()){chosen=View(storage).first(size_t(n));mode=candidate;}
     };
     if(policy!=Policy::up)attempt(w.rgb,w.compressed,1);
-    if(policy!=Policy::plain){predict(w.rgb,size_t(width)*3,w.filtered);attempt(w.filtered,policy==Policy::up?w.compressed:w.alternate,2);}
+    if(policy!=Policy::plain){predict(w.rgb,size_t(width)*3,w.filtered,simd);attempt(w.filtered,policy==Policy::up?w.compressed:w.alternate,2);}
     w.wire.assign(header_bytes,0);w.wire[0]='R';w.wire[1]='R';w.wire[2]='F';w.wire[3]='1';w.wire[4]=1;w.wire[5]=uint8_t(mode);
     put32(w.wire,8,width);put32(w.wire,12,height);put32(w.wire,16,uint32_t(chosen.size()));put32(w.wire,20,uint32_t(w.rgb.size()));
     put32(w.wire,24,wpc::crc(chosen));put32(w.wire,28,wpc::crc(View(w.wire).first(28)));
@@ -91,11 +92,11 @@ inline Shape unpack_rgb(View wire,Workspace&w){
 }
 // Complete input CRC/length validation and bounded LZ4 reconstruction happen
 // before any caller-owned RGBA output is written. Input must stay immutable.
-inline Shape decode_into(View wire,std::span<uint32_t>output,Workspace&w){
+inline Shape decode_into(View wire,std::span<uint32_t>output,Workspace&w,bool simd=true){
     need(output.size()<=max_pixels&&!wpc::overlaps(wire,bytes(output))&&!alias(bytes(output),w));
     try{auto s=unpack_rgb(wire,w);need(output.size()==s.raw_bytes/3);
-        if(s.mode==2)restore(w.rgb,size_t(s.width)*3);
-        for(size_t i=0;i<output.size();++i)output[i]=uint32_t(w.rgb[3*i])|(uint32_t(w.rgb[3*i+1])<<8)|(uint32_t(w.rgb[3*i+2])<<16)|0xff000000u;
+        if(s.mode==2)restore(w.rgb,size_t(s.width)*3,simd);
+        detail::expand(w.rgb,output,simd);
         return s;
     }catch(...){w.rgb.clear();throw;}
 }

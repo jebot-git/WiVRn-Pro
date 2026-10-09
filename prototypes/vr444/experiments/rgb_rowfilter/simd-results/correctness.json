@@ -1,0 +1,18 @@
+{
+  "pass_result": true,
+  "sanitizers": [
+    "address",
+    "undefined"
+  ],
+  "roundtrips": 271,
+  "rejections": 8422,
+  "mutations": 10000,
+  "simd_boundary_cases": 65,
+  "maximum_pixels": 4194304,
+  "independent_manual_lz4_goldens": 4,
+  "scalar_simd_canonical_wire_equal": true,
+  "backend": "x86-ssse3-pack-expand+sse2-row",
+  "arm64_neon_compiled": true,
+  "arm64_neon_runtime_tested": false,
+  "read_only_peer_review": "Compositor team reviewed vector tails, opaque alpha, row dependencies, strict grammar and immutable residual lifetime; no blocker in validated paths"
+}
