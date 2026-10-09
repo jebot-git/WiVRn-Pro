@@ -127,4 +127,22 @@ class PacerTail(unittest.TestCase):
                 self.assertEqual(m.evaluate(root,900)['status'],'fail')
 
 
-if __name__=='__main__':unittest.main()
+
+
+class RollingHarness(unittest.TestCase):
+    def test_explicit_bank_admission_and_environment(self):
+        for value in (None,True,0,'ROLLING','rolling ','unknown'):
+            with self.subTest(value=value),self.assertRaises(ValueError):m.validate(settings(pacer_feedback_bank=value))
+        with self.assertRaises(ValueError):m.validate(settings(pacer_window_frames=0,pacer_feedback_bank='rolling'))
+        self.assertEqual(m.configure(settings(pacer_feedback_bank='rolling'),'/tmp/new')['WIVRN_CODEC_TEST_PACER_BANK_MODE'],'rolling')
+        self.assertNotIn('WIVRN_CODEC_TEST_PACER_BANK_MODE',m.configure(settings(),'/tmp/new'))
+    def test_actual_sidecar_mode_must_match_recorded_activation(self):
+        for requested,recorded,okay in [('rolling','rolling',True),('alternating','rolling',False),('rolling','alternating',False)]:
+            with self.subTest(requested=requested,recorded=recorded),tempfile.TemporaryDirectory()as tmp:
+                root=Path(tmp);write(root,f.rolling_fixture()if recorded=='rolling'else f.fixture())
+                path=root/'provenance.json';v=json.loads(path.read_bytes());v['pacer_feedback_bank']=requested;path.write_text(json.dumps(v))
+                r=m.evaluate(root,900,requested);self.assertEqual(r['status'],'pass'if okay else'fail',r)
+                if okay:self.assertEqual(r['feedback_bank'],'rolling')
+                self.assertEqual(m.evaluate(root,900,'rolling' if requested=='alternating' else 'alternating')['status'],'fail')
+
+if __name__ == '__main__':unittest.main()

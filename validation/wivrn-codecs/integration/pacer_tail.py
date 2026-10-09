@@ -56,9 +56,17 @@ def window(value):
     return value
 
 
+def bank(args):
+    value = getattr(args, 'pacer_feedback_bank', 'alternating')
+    need(type(value) is str and value in ('alternating', 'rolling'), 'invalid pacer feedback bank')
+    return value
+
+
 def validate(args, source=None):
     """Return reviewed native paths; optional exact source preflight is offline."""
     enabled = window(getattr(args, 'pacer_window_frames', 0))
+    mode = bank(args)
+    need(enabled or mode == 'alternating', 'rolling feedback requires enabled pacer window')
     if not enabled:
         return ()
     need(getattr(args, 'mode', None) in ('custom-vr444', 'custom-rrb32')
@@ -79,11 +87,14 @@ def configure(args, output):
     enabled = window(getattr(args, 'pacer_window_frames', 0))
     if not enabled:
         return {}
-    return {'WIVRN_CODEC_TEST_PACER_WINDOW_FRAMES': str(enabled),
-            'WIVRN_CODEC_TEST_PACER_TAIL_TRACE': str(Path(output).absolute() / TRACE)}
+    env = {'WIVRN_CODEC_TEST_PACER_WINDOW_FRAMES': str(enabled),
+           'WIVRN_CODEC_TEST_PACER_TAIL_TRACE': str(Path(output).absolute() / TRACE)}
+    if bank(args) == 'rolling':
+        env['WIVRN_CODEC_TEST_PACER_BANK_MODE'] = 'rolling'
+    return env
 
 
-def evaluate(output, enabled_window):
+def evaluate(output, enabled_window, requested_bank='alternating'):
     """Analyze one immutable bounded read; return fail instead of raising.
 
     hashes.json is created after immediate harness evaluation. If already present
@@ -103,6 +114,8 @@ def evaluate(output, enabled_window):
         return raw
     try:
         enabled = window(enabled_window)
+        expected_bank = bank(Namespace(pacer_feedback_bank=requested_bank))
+        need(enabled or expected_bank == 'alternating', 'rolling feedback requires enabled pacer window')
         path = output / TRACE
         if not enabled:
             need(not path.exists() and not path.is_symlink(), 'pacer tail evidence present while disabled')
@@ -111,6 +124,7 @@ def evaluate(output, enabled_window):
         need(type(provenance) is dict, 'provenance object required')
         need(window(provenance.get('pacer_window_frames')) == enabled, 'pacer tail request/provenance mismatch')
         validate(Namespace(**provenance))
+        need(bank(Namespace(**provenance)) == expected_bank, 'pacer feedback bank request/provenance mismatch')
         recorded = provenance.get('source_helper_sha256')
         need(type(recorded) is dict, 'pacer tail source provenance missing')
         source_hashes = {}
@@ -140,6 +154,7 @@ def evaluate(output, enabled_window):
         rows = [strict(line) for line in raw.splitlines()]
         report = namespace['evaluate'](rows)
         need(report.get('window_frames') == enabled, 'pacer tail header/request mismatch')
+        need(report.get('feedback_bank') == expected_bank, 'pacer feedback bank/header mismatch')
         result.update(report)
         result['analyzer_sources_sha256'] = {
             str(ANALYZER.relative_to(ROOT)): digest(analyzer_raw),

@@ -69,5 +69,19 @@ int main() {
     CHECK(text.find("\"records\":4096,\"dropped\":4,\"complete\":true")!=std::string::npos);
     bool threw=false;try{Trace exists("900",path.c_str(),true);}catch(const std::runtime_error&){threw=true;}CHECK(threw);
     std::filesystem::remove(path);
+    CHECK(!parse_rolling(nullptr));CHECK(!parse_rolling(""));CHECK(!parse_rolling("alternating"));CHECK(parse_rolling("rolling"));
+    for (auto mode:{"Rolling","rolling ","true","0","alternating ","unknown"}) {
+        bool rejected=false;try{(void)parse_rolling(mode);}catch(const std::runtime_error&){rejected=true;}CHECK(rejected);
+    }
+    {bool rejected=false;try{Trace invalid("0",nullptr,false,"rolling");}catch(const std::runtime_error&){rejected=true;}CHECK(rejected);}
+    {Trace rolling("900",path.c_str(),true,"rolling");CHECK(rolling.rolling);
+     rolling.produce_snapshot(7);rolling.consume_snapshot(2,true);rolling.consume_snapshot(5,false);
+     auto one=choose(std::vector<Sample>{{0,1,101}},900,0,0,0);
+     rolling.append({1,0,5,false,one,10,20,30});}
+    std::ifstream rolling_file(path);std::string rolling_text((std::istreambuf_iterator<char>(rolling_file)),{});
+    CHECK(rolling_text.find("\"schema\":2,\"feedback_bank\":\"rolling\"")!=std::string::npos);
+    CHECK(rolling_text.find("\"consumed_snapshots\":2,\"coalesced_snapshots\":3,\"empty_snapshots\":1")!=std::string::npos);
+    CHECK(rolling_text.find("\"last_consumed_batch\":5,\"unconsumed_snapshots\":2")!=std::string::npos);
+    std::filesystem::remove(path);
     std::cout<<"pacer recent tail checks="<<checks<<" randomized=2000\n";
 }
