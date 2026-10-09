@@ -147,7 +147,7 @@ def record(run,manifest_sha,oracle,oracle_sha,build_receipt,build_sha):
             if re.fullmatch(r'client/codec-test/quality/capture-[1-8]-eye-[01]\.json',name):geometry.append(mapping(inputs.json(name)))
     inputs.verify()
     result=dict(schema=1,status='pass',scope='Independent native CPU RRB byte/invariant audit; preserves failed run gates',run=str(inputs.root),run_manifest_sha256=manifest_sha,build_receipt_sha256=build_sha,
-        source=source,output='cpu',workers=4,encoded_stereo_pairs=len(encoded_pairs),decoded_stereo_pairs=len(pairs),partial_private_pairs=partial,presentations=len(present),
+        source=source,output='cpu',workers=4,encoded_stereo_pairs=len(encoded_pairs),decoded_stereo_pairs=len(paired),private_pair_count=len(pairs),partial_private_pairs=partial,presentations=len(present),
         maximum_encoded_stereo_envelope_bytes=max(sum(r['payload_bytes'] for r in eyes.values()) for eyes in encoded_pairs.values()),rejected_eye_records=len(rejected),
         shared_pair_decode_ms=quantiles(paired),pair_decode_counting='One stereo measurement, repeated identically per eye; never sum eyes',
         decoder_terminal_summaries=terminal,

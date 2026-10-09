@@ -10,6 +10,7 @@
   "workers": 4,
   "encoded_stereo_pairs": 4047,
   "decoded_stereo_pairs": 4047,
+  "private_pair_count": 4047,
   "partial_private_pairs": [],
   "presentations": 3977,
   "maximum_encoded_stereo_envelope_bytes": 35168,
@@ -3166,7 +3167,7 @@
     }
   },
   "sources_sha256": {
-    "prototypes/vr444/experiments/native_rrb_evidence/record.py": "a2959cb8c7f373ccb8e9d10e764914dcf99d474ce63987b5b434c1bb4a516722",
+    "prototypes/vr444/experiments/native_rrb_evidence/record.py": "a1c06023e7fca13bfcb4b0a37767e5de5577dff1dee95a04e29f8ec2573c8a25",
     "validation/wivrn-codecs/integration/rrb_payload_audit.py": "4a258f36a260fce65b13eec431b4259b6c707af26b53810b7149df20cc1ac5ea",
     "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
     "prototypes/vr444/experiments/quality_stimuli/audit.py": "b0002c71801a2d43014be27f897de2eb4c5cc7f309cb047323d7baa98ffca7e2"

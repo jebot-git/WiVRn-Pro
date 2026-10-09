@@ -36,9 +36,9 @@
     }
   ],
   "artifact_sha256": {
-    "record.py": "a2959cb8c7f373ccb8e9d10e764914dcf99d474ce63987b5b434c1bb4a516722",
+    "record.py": "a1c06023e7fca13bfcb4b0a37767e5de5577dff1dee95a04e29f8ec2573c8a25",
     "test_record.py": "2b0b8d6974b3f1db36acf8ab41f01bd597b765f58f0632a300db66c9306b4665",
-    "q1-local-chroma-grid.json": "0c29688b6cb0f075f920645bf2172f91ad1b95acabae051ea3e3bbd552cb3f4e",
+    "q1-local-chroma-grid.json": "76987bad0b88aa384db2b6e1afc8bc883ac59596c2a7a9421951ec2c6916a7e5",
     "submitted-local-replay-1.json": "26191a98f7bd8808f395cdf7f6b9c10c5fde1923ed7dca7933edf6eb40568f02",
     "LOCAL-RESULTS.txt": "c455231669c4cb49b86247fe15aa33b3521aa1376b6a47139dd4d9a864ced82a",
     "local-visual-observation.json": "a27f11cbe6fbdf5a37fed84ccfb81feaae47ff26093d5281bc88004fa93d91b1",
