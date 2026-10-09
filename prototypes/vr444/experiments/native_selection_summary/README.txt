@@ -70,3 +70,7 @@ different inputs. HEVC reference elementary streams are Main/yuvj420p, so they
 do not establish RGB444 quality equivalence. Transport is TCP over ADB reverse
 over wireless ADB. Thirty-second captures, trace observer costs, phase drift,
 sampled correctness and no photon measurement limit the conclusions.
+
+Validation: four focused regression tests and the full ten-run replay pass.
+Independent read-only GPU-team review found no population/provenance blocker;
+one prose rounding discrepancy was fixed by deriving it from the same metrics.

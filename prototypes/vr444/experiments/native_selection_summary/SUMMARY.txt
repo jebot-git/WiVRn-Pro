@@ -34,7 +34,7 @@ Warm selected-eye output-stage medians (CPU decode / staging copy / decode_uploa
 03-mapped     0.612 / 0.000 / 1.138
 04-cached     0.776 / 0.222 / 1.557
 
-Closest bracket: ready->selection median rises from 11.245 to 25.777 ms, while receipt->ready falls from 2.431 to 1.888 ms and selection->submit stays near 1.46 ms.
+Closest bracket: ready->selection median rises from 11.245 to 25.777 ms, while receipt->ready falls from 2.431 to 1.887 ms and selection->submit stays near 1.46 ms.
 This localizes the observed age change after publication; it does not establish cause or removability. Target/readiness phase and selected-source-history details are retained in JSON.
 The first bounded run has 124 warm presentations outside the 90 Hz band plus same-PID focus loss/recovery. Original evidence pass is preserved, but fixed-90 ranking excludes that run.
 

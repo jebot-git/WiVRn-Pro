@@ -1951,9 +1951,9 @@
       "sha256": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10"
     },
     "repo/prototypes/vr444/experiments/native_selection_summary/summarize.py": {
-      "bytes": 25925,
+      "bytes": 26190,
       "path": "prototypes/vr444/experiments/native_selection_summary/summarize.py",
-      "sha256": "2096205fa1719f52f8c5a65f10d2da17593903ffeaaa33a5a81efd2d0b7cd256"
+      "sha256": "c83f84684dea6aa336ea4f1023128b8c20694a1619431e8b45f60807397f72d0"
     },
     "repo/validation/wivrn-codecs/adapter_template.py": {
       "bytes": 1460,
