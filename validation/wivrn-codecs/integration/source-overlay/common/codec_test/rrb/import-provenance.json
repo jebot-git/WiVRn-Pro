@@ -1,0 +1,62 @@
+{
+  "rowfilter.hpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp",
+    "original_sha256": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "changes": "include paths only"
+  },
+  "simd.hpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp",
+    "original_sha256": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "changes": "include paths only"
+  },
+  "rowblocks.hpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp",
+    "original_sha256": "ea35ce11cd12a690db5ec7187bc20689a56288a25c01fd1229056e67d38f9dbe",
+    "changes": "include paths only"
+  },
+  "workers.hpp": {
+    "commit": "260a1a2244b2381270398b65a1d3d2d282867508",
+    "path": "prototypes/vr444/experiments/rowblocks_workers/workers.hpp",
+    "original_sha256": "6ff6370e89929d03bcd7dc10b81c967363430c532422096cbac5216b34ef9903",
+    "changes": "include paths only"
+  },
+  "wpc.hpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/native_lz4/wpc.hpp",
+    "original_sha256": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "changes": "include paths only"
+  },
+  "encoder_base.hpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/encoder.hpp",
+    "original_sha256": "824c7aabe67be6cab2987ae5a50385492ad06f3e20e78504af3e474a18295b9f",
+    "changes": "include paths only"
+  },
+  "band_encoder.hpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/rowblocks_band_views/encoder.hpp",
+    "original_sha256": "874c81ad3a8c537a9eeb798fdfa8b489e67f3537f86498d80f8cb454e390ac25",
+    "changes": "include paths only"
+  },
+  "encode_rgb.hpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/rowblocks_band_views/encode_rgb.hpp",
+    "original_sha256": "d657bb79fc9bdc5123a537cc60fecf376deb95349766e579c02291c9327b0526",
+    "changes": "include paths only"
+  },
+  "direct_rgb.hpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/rowblocks_band_views/direct_rgb.hpp",
+    "original_sha256": "0960968378c13e53a80cf20f0dbe077cdc7b051a77252f7ea36a0befc530187c",
+    "changes": "include paths only"
+  },
+  "direct_rgb.cpp": {
+    "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "path": "prototypes/vr444/experiments/rowblocks_band_views/direct_rgb.cpp",
+    "original_sha256": "645370bc8100b48f76465284f7392638761af22b3420b4fd1767cf4662622916",
+    "changes": "include paths only"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "scope": "offline component correctness, no native linking or headset execution",
+  "validations": {
+    "native_pair": "60 exact CPU/residual pair invocations across2/4 workers, odd shapes, repeated leases;12 band transcodes match canonical RGB encoder; malformed peer/cap/identity/orphan stop/publication controls",
+    "host_asan_ubsan": "pass; native component, wire test, exactcap/asymmetric/overcap/missing/failed/mixedmode batch controls",
+    "android_api29_arm64": "component test crosscompiled only; not executed"
+  },
+  "source_sha256": {
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/rowblocks.hpp": "e6a1c2c9e21f2145168cae1a805ae47e2a5bfd6a8c04396ecec7631eb55a236d",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/workers.hpp": "45aa59251617793c914ea14613bb79e0803811ba98d3faee19ddb435611368d1",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/wpc.hpp": "6a5e96c8bae24f9fa39947ec014f2a86c68b43dc3e6c1885df316ae52ff85763",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/encoder_base.hpp": "4cb6722c87ff3c0f6e085f183eaccbb08f3fb55fc0a87028fa7ca03dae5a9a72",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/band_encoder.hpp": "b31405afb1f9a5c58880cde589993cf9e3e74e2e286d1f9ea901b9c6914cabb5",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/encode_rgb.hpp": "e6c0ee4672883d58d28232ea9db2b2f90116b88613f3744e1d02f3a95253ac09",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/direct_rgb.hpp": "c1b78a5e96522a1aa9225e210112407b96ac9d67198e5c9b6429b50e99d33556",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/direct_rgb.cpp": "645370bc8100b48f76465284f7392638761af22b3420b4fd1767cf4662622916",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/import-provenance.json": "109d7ee7081242d1e02f2d79453660c237809a984e7d4d446dfa75a800ecc7d8",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/native.h": "e4ca7a5e6f18a249b3efe670a7e9dcb355c5ac4d44c181d5562d93bf97d09c38",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/rrb/README.txt": "8aadb8c65ef90ff51e7818661d15b1031c367e1049480e859a43a409a12bb1e8",
+    "validation/wivrn-codecs/integration/rrb_native_test.cpp": "e2420cb430a01922657bc6b5b254eb8adeb7a62f15ed2d9b70ff28a427136b0d",
+    "validation/wivrn-codecs/integration/rrb_batch_test.cpp": "fe29ce4ba1988dad8c7bf652dc9417bafe522a5b87a38dff4c1152ecda0973ff",
+    "validation/wivrn-codecs/integration/wire_test.cpp": "3081b4a7e72cc2a2bfbfb7ea5ea656edad2af36f423a4b21da8681db146f4242",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/wire.h": "94befc99ef640615c75420836955ce089c4b3be7a5cf4545d210cc6b55bd472a"
+  },
+  "binary_sha256": {
+    "/tmp/sub15-native-rrb32-tests/native-test-android": "7beeb719ff8180f6a1a926cc97ad8a928ae1eeb240e5ccdcb59396aceb91d6a1",
+    "/tmp/sub15-native-rrb32-tests/batch-test": "1b292739358711c3445e2854242998d7943347b2f693b2f2422bc102634485d1",
+    "/tmp/sub15-native-rrb32-tests/wire-test": "76fb5e24e2ad8e81711ce11d378d33f17c0fa8ff23cb55d6495e74b3217308e6",
+    "/tmp/sub15-native-rrb32-tests/result.txt": "b639c0ac0856fe474ff67727f537313d4d7549380c68d97ee8d1a30eb385c125",
+    "/tmp/sub15-native-rrb32-tests/native-test-san": "f38dc97989ddba53865beb82c9d62e6e3aef8efc502bc5e0be88fc0ce526f0bc",
+    "/tmp/sub15-native-rrb32-tests/lz4.o": "ec36ddbc7dd561e21a356cd1978bc93b3a2e35ec5836982e3bda074cb361f541",
+    "/tmp/sub15-native-rrb32-tests/native-test": "6e26f9ab36f89b6160be149e8d035f8100ce0bd492b1e7dd31d65c6ad3e02619"
+  },
+  "limitations": [
+    "Native decoder callsite awaits atomic stream hook and final root native build.",
+    "CRC is integrity checking, not authentication.",
+    "No performance measurements or device operations."
+  ]
+}

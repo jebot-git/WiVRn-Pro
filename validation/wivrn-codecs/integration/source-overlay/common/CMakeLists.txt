@@ -15,8 +15,8 @@ add_library(wivrn-common-base STATIC EXCLUDE_FROM_ALL
 add_dependencies(wivrn-common-base wivrn-version)
 
 if(WIVRN_CODEC_TESTS)
-    add_library(wivrn-test-codec STATIC codec_test/vr444/codec.cpp codec_test/vr444/vulkan_runner.cpp codec_test/vr444/direct.cpp codec_test/compression/vendor/lz4.c)
-    set_source_files_properties(codec_test/vr444/direct.cpp PROPERTIES COMPILE_OPTIONS "-O3")
+    add_library(wivrn-test-codec STATIC codec_test/vr444/codec.cpp codec_test/vr444/vulkan_runner.cpp codec_test/vr444/direct.cpp codec_test/rrb/direct_rgb.cpp codec_test/compression/vendor/lz4.c)
+    set_source_files_properties(codec_test/vr444/direct.cpp codec_test/rrb/direct_rgb.cpp PROPERTIES COMPILE_OPTIONS "-O3")
     target_compile_options(wivrn-test-codec PRIVATE -Wno-error -O2)
     target_link_libraries(wivrn-test-codec PUBLIC Vulkan::Vulkan)
     target_include_directories(wivrn-test-codec PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
