@@ -1,0 +1,113 @@
+Exact optimistic p95 bounds over the finite positive-phase grid
+=============================================================
+
+Status: host-only offline mathematical model. No headset operations, native
+behavior changes, performance promotion or release-gate evaluation. This branch
+builds on 7876b29 and reuses both preserved validated exact C++ solvers unchanged.
+
+Results
+-------
+For 1,875 choices over the fixed warm window, 8ms hypothetical per-eye publication
+advance, and the 25 tested phases from 0 through 11.111111ms:
+
+  Selection identity / target ceiling       Best tested phase   Minimum p95
+  Encoded IDs / one bounded-newest horizon      0ms             19.241095ms
+  Encoded IDs / no ceiling                     +4ms             14.874793ms
+  Distinct source sets / two horizons          +5.5ms           15.936408ms
+  Distinct source sets / no ceiling            +5.5ms           15.936408ms
+
+These values ARE exact minimum nearest-rank p95 within each declared finite
+model. They are not merely the p95 of a certificate optimized for the count below
+15ms. The distinct-source two-horizon and unbounded quantile curves coincide at
+all 25 phases in this acquisition. A rendered figure is included, with discrete
+sample points and explicit finite-grid/ownership limitations.
+
+The discontinuities matter. In the encoded/unbounded model the minimum p95 drops
+from 19.470626ms at +3.5ms phase to 14.874793ms at +4ms phase. In the distinct-source
+model it drops from 20.531824ms at +5ms phase to 15.936408ms at +5.5ms. Fixed-order
+count constraints and eligibility changes can force different paths; subtracting
+a stage median from end-to-end age would not predict these changes. This does not
+establish the causes or removability of actual scheduling delay.
+
+Why one count and the largest declared publication advance suffice here
+---------------------------------------------------------------------
+The 21.284347901-second warm span makes 1,875 unique choices sufficient for the
+88Hz cadence reference; the audited certificates also calculate actual endpoint
+cadence. Counts 1,875 through 1,900 were the preceding model's allowed range.
+Any path with a larger count can delete its worst-age choices down to 1,875,
+preserving strict frame/source/deadline order, nonregressing targets, readiness
+and warm-prefix constraints. Removing the largest ages cannot worsen nearest-rank
+p95. The retained count still suffices for 88Hz over the original full span.
+Therefore the minimum p95 at 1,875 also gives the minimum over that allowed count
+range. This does not cover lower counts using a shorter endpoint interval.
+
+Increasing the hypothetical publication advance only reduces the ready timestamp
+(clipped at each eye's actual receipt); it does not change receipt age, target or
+identity. The 8ms advance has an eligibility superset of the earlier 0/1/2/4ms
+advances, so its optimum cannot be worse. Eight milliseconds remains a declared
+hypothesis, not a measured removable decode cost or proof of instantaneous decode.
+
+Exact integer search and certificates
+-------------------------------------
+At fixed count K, the unchanged solver maximizes the number of ages strictly less
+than integer threshold T. Nearest-rank p95 requires ceil(95*K/100) such ages. The
+first passing T therefore gives the exact attainable quantile q95=T-1ns.
+
+minimum_p95 starts from an independently audited certificate at 15ms. Its actual
+p95 supplies a feasible upper bound; bisection then finds the first passing
+integer threshold. Every queried solver frontier is independently audited for
+counts, ordering, original receipt/readiness, target ceilings and, where used,
+actual source-generation identities and warm-up exclusion. All queried optimum
+scores must be monotone in T. The final chosen path has p95 exactly T-1, while the
+adjacent threshold T-1 has too few fresh choices. Threshold zero is analytically
+failing because every admitted age is nonnegative. Both boundary scores and all
+intermediate certificate hashes are retained. Best-phase full certificates are
+kept; other cells retain exact hashes and query boundaries for reproduction.
+
+The fixed hypothetical population is also hashed per cell. No interpolation or
+continuous-phase optimality is claimed. Original runtime targets stay fixed under
+selection/submission shifts. Unlimited retention and earlier use of later-observed
+metadata remain optimistic assumptions; actual handle ownership, runtime feedback,
+projection quality and upper admission are unqualified. Source identities do not
+measure simulation/input epochs. No host/client clock subtraction is performed.
+
+Validation and provenance
+-------------------------
+quantile-bound-validation-20261009.json records 299 passing Python tests, including
+512 exhaustive path populations comparing bisection against direct quantiles,
+512 worst-age deletion populations, exact zero/15ms boundaries and malformed
+query/negative-age rejection. It binds the preserved original 1,024-population
+cardinality ASan/UBSan receipt and the new 4,096-population source-novelty receipt,
+which also includes 4,096 exact original-solver score/path comparisons when all
+source groups are unique. No solver code was changed for this experiment.
+
+Independent transport-team review found no blocker in strict threshold semantics,
+upper/lower boundaries, count reduction, publication-advance dominance or scope.
+The final artifact binds both binary/build receipts, all loaded analysis sources
+and the original acquisition. All 300 original manifest entries were checked both
+before and after the analysis. Original failed run05 summary remains immutable.
+The optional quiet-file only pauses deterministic analysis between audited solver
+calls to allow another team's timing window; it does not alter a model input.
+
+Reproduce (fresh output paths; the two existing validated binaries are shown):
+
+  python3 prototypes/vr444/experiments/selection_policy/validate_quantile_bound.py \
+    --encoded-solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+    --encoded-build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+    --source-solver /tmp/sub15-novelty-validated-20261009/novelty-probe \
+    --source-build-receipt prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json \
+    --out /tmp/quantile-validation-new.json
+
+  python3 prototypes/vr444/experiments/selection_policy/quantile_bound.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --encoded-solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+    --encoded-build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+    --source-solver /tmp/sub15-novelty-validated-20261009/novelty-probe \
+    --source-build-receipt prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json \
+    --out /tmp/quantile-bound-new.json
+
+  python3 prototypes/vr444/experiments/selection_policy/plot_quantile_bound.py \
+    /tmp/quantile-bound-new.json /tmp/quantile-bound-new.png
+
+CARDINALITY.txt and SOURCE-NOVELTY.txt document rebuilding matching solver receipts.
+Figure metadata separately binds plot source, sealed data and the reviewed PNG.

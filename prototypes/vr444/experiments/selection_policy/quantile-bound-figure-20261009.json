@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "visual_review": true,
+  "review": "Finite phase grid, exact minimum p95 labels, target/source constraints and conditional model limitations are legible.",
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/plot_quantile_bound.py": "22a69ca3bf7419c7921d4e96628f55841cb7f14f4daa77fafeacaf4bc946d355",
+    "prototypes/vr444/experiments/selection_policy/quantile-bound-20261009.json": "88ce75313c3290a81ec62ea01d489d88dc5edb65152d09b345eadfecd32edc32",
+    "prototypes/vr444/experiments/selection_policy/quantile-bound-20261009.png": "cf9ac569eeadc361b4cda92ba292c8599b3bf7689243ab63e91cf08d6399680f"
+  },
+  "measured_speedup": false,
+  "headset_operations": false
+}
