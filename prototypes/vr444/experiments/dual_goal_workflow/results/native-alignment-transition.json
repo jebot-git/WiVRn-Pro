@@ -1,0 +1,10 @@
+{
+  "common/codec_test/submitted_capture.h": {
+    "before_sha256": "272ac6020f77cdc2b47881996fe4e3618fc5a231168bfc43fffd3b440b455de7",
+    "after_sha256": "4692215595884cc932629b1c52898ff491e7a2f662fdb88e16b1763695b9dd72"
+  },
+  "client/decoder/staged_rowblocks_image.cpp": {
+    "before_sha256": "f1eb2e56e99e525fb9b2670d0b6a0593c18e2c4794bd340b6664693edc47d033",
+    "after_sha256": "6239a7d334607b1502eeedc4b891f3137e2c5d06e0b34efe661b51e3d1396bc0"
+  }
+}

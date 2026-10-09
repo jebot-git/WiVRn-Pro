@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_utc": "2026-10-09T14:09:17.187259+00:00",
+  "updated_utc": "2026-10-09T14:47:02.784939+00:00",
   "base_commit": "8e4d7a862591b3a5d2d9fc888da967fde0cb9165",
   "qualification_operator": "OR",
   "central_foveal_radius_degrees": 10,
@@ -10,25 +10,25 @@
       "agent": "root",
       "role": "integration and qualification",
       "branch": "research/sub15-20261009/dual-goal-integration",
-      "stage": "build setup and exact foveal comparator"
+      "stage": "93-file native union linked; sealing first live campaign"
     },
     {
       "agent": "identify_sub15",
       "role": "compositor and publication",
       "branch": "research/sub15-20261009/native-publication-integration",
-      "stage": "diagnostics pushed; atomic pair publication in progress"
+      "stage": "publication, owner quiesce and submitted capture pushed; independent capture auditor in progress"
     },
     {
       "agent": "transport_compression",
       "role": "codec and admission",
       "branch": "research/sub15-20261009/native-rrb32-integration",
-      "stage": "checked components pushed; native callsites in progress"
+      "stage": "native RRB CPU/GPU and scalar payload auditor pushed; source fixture app in progress"
     },
     {
       "agent": "gpu_pipeline",
       "role": "GPU images and independent review",
       "branch": "research/sub15-20261009/native-staged-image-integration",
-      "stage": "host image helper checks passed; peer review in progress"
+      "stage": "Adreno image correctness and owner hooks pushed; independent submitted-image replay in progress"
     }
   ],
   "device_owner": "root",
@@ -41,5 +41,5 @@
     "root reconcile overlay and fresh dedicated native build",
     "root interleaved latency plus fixed-center quality acquisitions"
   ],
-  "known_quality_gap": "Existing native captures stop before sampled texture/final XR swapchain; no fullquality target pass yet."
+  "known_quality_gap": "Actual submitted capture and independent render replay now implemented/in progress; no matched native source-to-submission quality result yet."
 }

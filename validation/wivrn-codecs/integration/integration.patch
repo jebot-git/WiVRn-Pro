@@ -274,15 +274,15 @@ index 0000000..422f3ef
 +}
 diff --git a/client/decoder/staged_rowblocks_image.cpp b/client/decoder/staged_rowblocks_image.cpp
 new file mode 100644
-index 0000000..5d59dc8
+index 0000000..cbe9857
 --- /dev/null
 +++ b/client/decoder/staged_rowblocks_image.cpp
 @@ -0,0 +1,311 @@
 +// SPDX-License-Identifier: GPL-3.0-or-later
 +#include "staged_rowblocks_image.h"
-+#include <exception>
 +#include <array>
 +#include <cstring>
++#include <exception>
 +#include <limits>
 +#include <stdexcept>
 +#include <string>
