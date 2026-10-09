@@ -104,6 +104,32 @@ def main():
             embedded_path=str(literal.relative_to(source)), embedded_sha256=sha(literal), literal_equivalent=True)
     for path in (cache, cache.parent/'client/wivrn_shaders.cpp', source/'cmake/CompileGLSL.cmake'):
         hashes[str(path.relative_to(source))] = sha(path)
+    # The source-to-foveation auditor consumes the host shader actually embedded
+    # in this build, independently of the Android submitted-image shader pair.
+    host_cache = source/'build/codec-server/CMakeCache.txt'
+    host_cache_text = host_cache.read_text()
+    host_opt = re.findall(r'^WIVRN_OPTIMIZE_SHADERS:BOOL=(ON|OFF)$', host_cache_text, re.M)
+    if len(host_opt) != 1:
+        raise ValueError('host shader optimization selection missing')
+    host_literal = source/'build/codec-server/server/foveation_rgb.spv'
+    host_selected = host_literal.with_name(host_literal.name+('-opt' if host_opt[0] == 'ON' else '-nopt'))
+    literal_text = host_literal.read_text()
+    if not re.fullmatch(r'(?:\s*0x[0-9A-Fa-f]{1,8}\s*,)+\s*', literal_text):
+        raise ValueError('invalid embedded host shader literal')
+    host_decoded = b''.join(struct.pack('<I', int(word, 16)) for word in re.findall(r'0x[0-9A-Fa-f]+', literal_text))
+    if host_decoded != host_selected.read_bytes() or host_decoded[:4] != b'\x03\x02\x23\x07':
+        raise ValueError('embedded host shader differs from selected SPIR-V')
+    for path in (host_cache, host_literal, host_selected, host_literal.parent/'wivrn-server_shaders.cpp'):
+        hashes[str(path.relative_to(source))] = sha(path)
+    host_shader = dict(path=str(host_selected.relative_to(source)), sha256=sha(host_selected),
+        embedded_path=str(host_literal.relative_to(source)), embedded_sha256=sha(host_literal), literal_equivalent=True)
+    monado_roots = re.findall(r'^FETCHCONTENT_SOURCE_DIR_MONADO:PATH=(.+)$', host_cache_text, re.M)
+    if len(monado_roots) != 1 or not Path(monado_roots[0]).is_absolute():
+        raise ValueError('explicit external Monado source path required')
+    monado_root = Path(monado_roots[0]).resolve()
+    monado_view_name = 'src/xrt/compositor/util/comp_swapchain.c'
+    monado_view_path = monado_root/monado_view_name
+    monado_view_hash = sha(monado_view_path)
     for name, expected in hashes.items():
         if sha(source/name) != expected:
             raise ValueError('file changed while sealing build: '+name)
@@ -113,7 +139,11 @@ def main():
         sha256=dict(sorted(hashes.items())), absent_tracked_files=sorted(absent), symlinks=symlinks,
         overlay_files_verified=len(manifest), overlay_manifest_sha256=sha(INTEGRATION/'overlay-manifest.json'),
         renderer_shaders=shaders, build_results=results, production_package='org.meumeu.wivrn',
-        external_artifacts_sha256={'/usr/bin/hello_xr': sha(Path('/usr/bin/hello_xr'))},
+        foveation_shaders={'foveation_rgb.comp': host_shader},
+        monado_source_view_contract=dict(source=str(monado_root), files={monado_view_name: monado_view_hash},
+            scope='Pinned external Monado source used by isolated host build; native libraries separately bound'),
+        external_artifacts_sha256={'/usr/bin/hello_xr': sha(Path('/usr/bin/hello_xr')),
+                                  str(monado_view_path): monado_view_hash},
         dedicated_package='org.meumeu.wivrn.codectest', installed=False,
         apk_output=dict(gradle_path=str(gradle_apk.relative_to(source)), canonical_path=artifacts[2],
                         sha256=sha(gradle_apk), metadata_path=str(apk_metadata.relative_to(source))),

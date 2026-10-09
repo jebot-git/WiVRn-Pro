@@ -150,13 +150,16 @@ class NativeComparisonGates(unittest.TestCase):
         from argparse import Namespace
         args = Namespace(mode='custom-vr444', seconds=30, port=9767, fps_divider=1,
                          bitrate=20_000_000, q=8, compression='lz4', source_trace=False)
-        with patch.dict(compare.os.environ, {'WIVRN_CODEC_SOURCE_TRACE': '/unrelated', 'WIVRN_CODEC_PACER_TRACE': '/hidden'}):
+        with patch.dict(compare.os.environ, {'WIVRN_CODEC_SOURCE_TRACE': '/unrelated', 'WIVRN_CODEC_PACER_TRACE': '/hidden',
+                                            'WIVRN_CODEC_SOURCE_MAPPING_TRACE': '/unrelated-mapping'}):
             _,_,env = compare.build_configuration(args, Path('/runtime'), Path('/source'), Path('/result'))
             self.assertNotIn('WIVRN_CODEC_SOURCE_TRACE',env)
             self.assertNotIn('WIVRN_CODEC_PACER_TRACE',env)
+            self.assertNotIn('WIVRN_CODEC_SOURCE_MAPPING_TRACE',env)
             args.source_trace=True
             _,_,env = compare.build_configuration(args, Path('/runtime'), Path('/source'), Path('/result'))
             self.assertEqual(env['WIVRN_CODEC_SOURCE_TRACE'], '/result/host/source-trace.jsonl')
+            self.assertNotIn('WIVRN_CODEC_SOURCE_MAPPING_TRACE',env)
 
     def test_pacer_diagnostics_require_explicit_combined_controls_and_source_preflight(self):
         from argparse import Namespace
