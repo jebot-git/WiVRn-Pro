@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "created_utc": "2026-10-09T06:34:14.474779+00:00",
+  "scope": "offline exact output-memory arms; copy counts and dependencies, no speedup",
+  "headset_used": false,
+  "performance_claim": false,
+  "promotion_blocked": true,
+  "local_raw_directory": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-palette-output-memory",
+  "runs": [
+    {
+      "path": "validation/results/sub15-palette-output-memory/arc-full.json",
+      "sha256": "1340fed02cfa43f1677658705b811299787c6e1a6373a69c299deeeb5a4d174f",
+      "bytes": 300839,
+      "correctness_pass": true,
+      "case_count": 190,
+      "measured_stereo_arm_iterations": 570,
+      "devices": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)"
+      ],
+      "software": false,
+      "maximum_scan_blocks": 64,
+      "output_modes": [
+        "compact_copy",
+        "full_copy",
+        "mapped_coherent"
+      ],
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false
+    },
+    {
+      "path": "validation/results/sub15-palette-output-memory/uhd-small.json",
+      "sha256": "7eb119947e5c3af13da3d9c534b079a7d7c8bf46bfd755e7508cf28071d6ca8b",
+      "bytes": 210366,
+      "correctness_pass": true,
+      "case_count": 134,
+      "measured_stereo_arm_iterations": 402,
+      "devices": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)"
+      ],
+      "software": false,
+      "maximum_scan_blocks": 2,
+      "output_modes": [
+        "compact_copy",
+        "full_copy",
+        "mapped_coherent"
+      ],
+      "performance_claim": false,
+      "promotion_blocked": true,
+      "headset_used": false
+    }
+  ],
+  "original_encoder_regression": {
+    "path": "validation/results/sub15-palette-output-memory/original-encoder-regression.json",
+    "sha256": "f9d0d2a37b94d00fc0574b446d6f3f64e82ca3f92d7c0feb525dac3ecec85942",
+    "bytes": 117189,
+    "correctness_pass": true,
+    "case_count": 186,
+    "measured_stereo_iterations": 186,
+    "devices": [
+      "Intel(R) Arc(tm) A770 Graphics (DG2)"
+    ],
+    "software": false,
+    "maximum_scan_blocks": 64,
+    "performance_claim": false,
+    "promotion_blocked": true,
+    "headset_used": false
+  },
+  "cpu_asan_ubsan": {
+    "cpu_fixture_pass": true,
+    "fixture_count": 190,
+    "canonical_modes": 6,
+    "canonical_tie_cases": 4,
+    "vulkan_initialized": false,
+    "headset_used": false
+  },
+  "leak_detection": "disabled: environment executes under ptrace",
+  "builds": {
+    "host": true,
+    "android_api29_arm64": true,
+    "original_encoder_host": true,
+    "original_encoder_android": true,
+    "warnings_as_errors": true
+  },
+  "python_tests": {
+    "count": 4,
+    "rejected_mutations": 16,
+    "passed": true
+  },
+  "sources": [
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/README.txt",
+      "sha256": "0c1697dc1192c2c0a2da5687d0fb0b4e34990beb2a3cf6b7deeec31dce6753f6",
+      "bytes": 7044
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/audit.py",
+      "sha256": "d9c1850bb7d8a4ae2dd5240ebfb437d86483a4c3a7b6c65bf9254980eeb3ce2f",
+      "bytes": 4991
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/build.sh",
+      "sha256": "3b1358fa81dcff7c79ff8610b5c0ce84bfa18fadb681fe5bda0b5902f73cd9d7",
+      "bytes": 1131
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/probe.cpp",
+      "sha256": "e3755e0a9ee6db8fbe94354cd21726c75cea199f8ca42bec4a7b3dcaf4a2afa6",
+      "bytes": 6876
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/test_audit.py",
+      "sha256": "b013b8685a60dde8d079dfcec6156490ff08065dfb443f83e58edc62d09e10b5",
+      "bytes": 3210
+    }
+  ],
+  "shared_sources": [
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/encoder.hpp",
+      "sha256": "09db894d945985259e1bcba4bd1f0e0e83f5ddf388f17358b022382537d9502d",
+      "bytes": 14638
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/fixtures.hpp",
+      "sha256": "18acddec25972122c4b83b139e0c7316388b1dcb13bf2316cba489baa86f63be",
+      "bytes": 2867
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/probe.cpp",
+      "sha256": "1ecb833b1b0e11e3579ae82e81764982d3978880f299346a4055fa917037ce0c",
+      "bytes": 5306
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/encode.comp",
+      "sha256": "f0b86c19578308cdcfb7e0d909edd64178aa258f398cf8ea61777c1c71c3851d",
+      "bytes": 2766
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/scan.comp",
+      "sha256": "793440766ffb30808dd4347542d88b43ad03e6bf1c185db9175e487fb509b295",
+      "bytes": 929
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/compact.comp",
+      "sha256": "9810b9c61375bf693609edc95907f0a0e6c7a8a5d2925a06bb025a2148abcb35",
+      "bytes": 1311
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/admission_test.cpp",
+      "sha256": "be74c3560a2ef2e7b7c6879651968c2acdab9b60e5715b5c36c80e6ba354c9a0",
+      "bytes": 2513
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp",
+      "sha256": "47fb6b5c601e78c4c1b0ac85b7f0056072deb4a7fb9d9bb96e8cdf67547496a0",
+      "bytes": 29394
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.cpp",
+      "sha256": "9235f3dd3aa3eec1f8ff343e3e7507519a1c831c1af0c05ab03888f36f6eb80a",
+      "bytes": 9452
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.hpp",
+      "sha256": "d74b1b524ec5664b489a8d5c827ce753c526984ca422bfef4497e889fda1ff10",
+      "bytes": 1718
+    },
+    {
+      "path": "prototypes/vr444/experiments/native_lz4/wpc.hpp",
+      "sha256": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+      "bytes": 5435
+    },
+    {
+      "path": "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp",
+      "sha256": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+      "bytes": 10900
+    },
+    {
+      "path": "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp",
+      "sha256": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+      "bytes": 935
+    },
+    {
+      "path": "prototypes/vr444/experiments/rgb_palette/fixtures/manifest.json",
+      "sha256": "0072489466e2edd827201506e6bad40aa44ca718dc958ff5c33bc8922323c0c4",
+      "bytes": 2047
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu/fixtures/manifest.json",
+      "sha256": "dcf949bde96e19e289fdeda730098910d82c7d9572b7f5c1d39d5810e2ebb5a5",
+      "bytes": 1194
+    }
+  ],
+  "captured_manifest": {
+    "path": "/tmp/sub15-rgb-palette-gpu-corpus-manifest.json",
+    "sha256": "f3e7ffc5ef06407fcc83ba93d7b1298aa6837e227a5ab18182fd64888a9c0787",
+    "bytes": 6456
+  },
+  "binaries": [
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/build/palette-output-android",
+      "sha256": "e687c568292e894dee80a6c2f79d9b906f31d6ee0476a77822dc777e079bc8cd",
+      "bytes": 6878032
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/build/palette-output-asan",
+      "sha256": "64743a76905f37776622f9579a5aa2a8d8e180c2e92e0b550bb0bc8a277e58dd",
+      "bytes": 3338768
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/build/palette-output-host",
+      "sha256": "d077fc43eb3d3726f2df4990f9c96df0a9cd17cadc392184dd6f27ca51b30084",
+      "bytes": 141576
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/palette-encode-host",
+      "sha256": "4243cf0c414ed0008d25fa1492e819cffc09c1fcb4023687e097c8ba48c9e8a2",
+      "bytes": 137048
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_gpu_encode/build/palette-encode-android",
+      "sha256": "a5308c65f82511a4c735183c448cbb84f84a453e8c0aab356bfc8685dba9a39b",
+      "bytes": 6872320
+    }
+  ],
+  "shader_modules": [
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/build/shaders/compact.spv",
+      "sha256": "b1c44740ba3c4f504ef0cda4740e8576d78757dd74568f13e23c8a4fe3ab1106",
+      "bytes": 3300,
+      "spirv_val": true,
+      "exact_predecessor_shader": true
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/build/shaders/encode.spv",
+      "sha256": "23babf51175ae1c38020df4e11c4ea2a26d0ddb51618e96304ebdb5eb64d1348",
+      "bytes": 14004,
+      "spirv_val": true,
+      "exact_predecessor_shader": true
+    },
+    {
+      "path": "prototypes/vr444/experiments/palette_output_memory/build/shaders/scan.spv",
+      "sha256": "ec029a18e8703307552d4933f57030c4a77f676056a0e130bca0549dd7bd0f63",
+      "bytes": 3216,
+      "spirv_val": true,
+      "exact_predecessor_shader": true
+    }
+  ],
+  "predecessor_commit": "145310492b351e1d17e9cdfbb8ac34129e097096",
+  "cost_scope": "Mapped zero vkCmdCopyBuffer readback is not zero bus traffic; full-capacity clear retained. Compact copy includes length wait, rounded body copy and second fence; device timestamp span includes CPU dependency."
+}
