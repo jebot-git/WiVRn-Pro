@@ -1,0 +1,61 @@
+Frozen component frontier, 2026-10-09
+====================================
+
+17 targeted tests and24 inherited VXF tests pass. The targeted suite independently
+checks framing formulas, both-eye tiny frames, exact integer-ns service, all FEC
+widths, lost-source recovery order, ticket expiry, IPv6 overhead, all crossover sign
+classes, finite threshold inequalities, measured component matching, over-cap
+rejection, malformed controls and evidence/source hashes. A cache-key regression
+test rejects bool/float parameters even after equivalent integer inputs were cached.
+An independent compositor-team review found no arithmetic or completion-order
+blocker for the two declared scenarios; the ticket origin is explicit.
+
+11,648 modeled rows:9,016 complete,1,288 incomplete,1,344 over unchanged transport
+cap. These are scenario/corpus counts, not reliability estimates. There are2,016
+captured-case crossover records; source loss without FEC has no fabricated
+completion, quantile or crossover. All twelve captured pairs fit each codec arm;
+over-cap rows come from synthetic profiles. No network has been measured.
+
+Selected clean IPv4/UDP, no-FEC observations for RRB32 fused4 versus VR444+optional
+WPC1. Values are candidate-minus-baseline arithmetic means of four fixed pair
+quantiles, milliseconds; lower is better. Each parenthesis is the number of four
+captured pairs that improve, not a confidence level.
+
+group    Mbps    full p50 delta   full p95 delta   first-record p95 delta
+Q1        100   -0.818995 (4)    -0.701313 (4)      -0.915599
+Q1        300   -0.366689 (4)    -0.249006 (4)      -0.463293
+Q1       1000   -0.208381 (4)    -0.090699 (3)      -0.304985
+Q1      10000   -0.147325 (4)    -0.029643 (2)      -0.243930
+Q8-a      100   +1.187270 (0)    +1.229710 (0)      +0.925126
+Q8-a      300   +0.298083 (0)    +0.340524 (0)      +0.035940
+Q8-a     1000   -0.013132 (2)    +0.029308 (2)      -0.275276
+Q8-a    10000   -0.133162 (4)    -0.090721 (4)      -0.395305
+Q8-b      100   +1.142241 (0)    +1.124044 (0)      +0.861738
+Q8-b      300   +0.309294 (0)    +0.291097 (0)      +0.028791
+Q8-b     1000   +0.017763 (2)    -0.000434 (2)      -0.262740
+Q8-b    10000   -0.094675 (4)    -0.112871 (3)      -0.375177
+
+Smaller Q1 packets mask some observed CPU p95 regressions at lower modeled rates;
+those tails reappear at higher rates. In ideal continuous clean IPv4/no-FEC full
+service, lossless/1260 improves p95 only below433.422Mbps; lossless/1080 below
+2105.417Mbps. Its p50 improves at every ideal rate because both components improve.
+These rates express this fixed model and observed host sample, not connection
+requirements established by a real system.
+
+Q8 RRB32 fused4 full-horizon p50 ideal crossover rates span597.609..3665.544Mbps
+over eight pairs. paired-b/1170 is p95-dominated at every ideal rate because both
+its measured CPU p95 and serialized bytes are larger. Other Q8 p95 crossovers vary
+widely (373.848..3390.496Mbps). Thus no single median group average establishes a
+tail win for each content pair. Stripe4/8/16 and source-erasure records remain in
+the structured result; recovery/parity overhead is included, not assumed free.
+
+The first-record horizon can improve while the full horizon remains worse,
+because source transcode precedes first receipt. Neither includes compositor or
+xrEndFrame and neither evaluates the live strict sub15 contract. The hypothetical
+100ms ticket begins at wire start after source encoding; full-horizon transcode
+does not consume it. This is not an end-to-end100ms deadline assertion.
+
+The complete result table and near-boundary integer-rate checks are preserved in
+results/frontier.json with source/evidence hashes. These are deterministic models
+fed by31 host samples per pair, with no statistical or live-network confidence
+claim, no executable adaptive policy and no production/headset promotion.

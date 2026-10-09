@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "created_utc": "2026-10-09T09:27:25.932656+00:00",
+  "measurement_base": "355b3b1",
+  "vxf_dependency": "726d7c39 (cherry-picked as03a8d722)",
+  "targeted_tests": 17,
+  "inherited_vxf_tests": 24,
+  "rows": 11648,
+  "crossovers": 2016,
+  "source_and_input_sha256": {
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/results/benchmark.json": "f379e601a86df118317241598a744b419c9cd5ceda362be8900704b0a06d5cf4",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/results/measurement-provenance.json": "6211bd648621ee6bea753722f90b3df60f843a3556e706d98b3f346957ccc3af",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/encoder.hpp": "4c77202fa6d579e2cc65be05bc0e36866440a1ff3c11ae0777ed25d68088babe",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/bench.cpp": "96ff925f4848c0d50d43afb155bc666cc5492612b8d8578821d4c4c4b1593024",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/test.cpp": "31ba79082534ec83ce8a0f54777dd66faabe1605893d588cd3289eaa47b2e1aa",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/build.sh": "5e22d323a636b5e1cf208aaf0603bd6a4ca4bd57aa85b49e00c5f93bbc9f58f4",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/build-android.sh": "75d6022216a0efff99a72c2f930852b5c01ba7ea64b33fc72bef3286375157ee",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/measure.py": "ed69e79fc509f3182c141690d33026e4383da26a470b520038eada70df1c10a3",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/summarize.py": "9236ea413dae4011363dffcd679d463094ab20538f4fcddb143cccaf58b35256",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/encoder.hpp": "824c7aabe67be6cab2987ae5a50385492ad06f3e20e78504af3e474a18295b9f",
+    "prototypes/vr444/experiments/rowblocks_workers/workers.hpp": "6ff6370e89929d03bcd7dc10b81c967363430c532422096cbac5216b34ef9903",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "ea35ce11cd12a690db5ec7187bc20689a56288a25c01fd1229056e67d38f9dbe",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/latency_decode/direct.cpp": "796017f83b4a2159b3adb65876f14ce9b2ffeaef348d7907be0cc784d9621905",
+    "prototypes/vr444/experiments/latency_decode/direct.hpp": "7577105236e1787ba627ef467411bb591748b79d96537b3fe0392689e32ad8bd",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+    "prototypes/vr444/experiments/latency_wire_frontier/frontier.py": "4b59701be89dae21e954b2cb8fb948448e8091adbc8ddf18f96dc827fc9cc131",
+    "prototypes/vr444/experiments/datagram_xor/transport.py": "6947a8a16ff5072c79f10b5de9ddce4ddbaefff8e3fe6d8005414ba46cbe0555",
+    "prototypes/vr444/experiments/datagram_v2/transport.py": "884cedd7b9883d70cba06677e0b452ab16c549278ae6f8b4c03853d8c1404b94"
+  },
+  "local_sha256": {
+    "frontier.py": "4b59701be89dae21e954b2cb8fb948448e8091adbc8ddf18f96dc827fc9cc131",
+    "test_frontier.py": "607283f175d21da4138284e1048c456bd3608e81b8aa301f51dcfc6da27f5bb8",
+    "README.txt": "61aeeec1c1a22bc75e8047a035f1b2a74f0c12980f70c1b1c14fc41fd7f45401",
+    "RESULTS.txt": "f9a1f68aa7112b6955cebb52f2960facedacd89da59ecfd1b4010f321df287b0"
+  },
+  "result_sha256": {
+    "frontier.json": "4cc2eafc2a55a8cd96b12fba9270f02910e4663b56b324dc635a135d7fcece5f",
+    "tests.txt": "f79b381d0d05745bfbf31d7c8210bddce1a3a9cf41162b481aa435f5ae40a44a",
+    "vxf-tests.txt": "cdbcce9df8828024dcf71e1adc03a4d828bc21cc1f4284ec12dab4b91422554e"
+  },
+  "independent_review": "Compositor team read-only reviewed deterministic quantile shifts, completion prefixes, units and origin; no blocker.",
+  "network_measured": false,
+  "headset_accessed": false,
+  "promotion_eligible": false
+}
