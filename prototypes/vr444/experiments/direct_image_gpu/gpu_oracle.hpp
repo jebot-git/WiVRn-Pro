@@ -23,6 +23,16 @@ using Clock = std::chrono::steady_clock;
 constexpr unsigned modes = 3;
 constexpr const char* names[modes] = {"buffer_copy", "image_unorm", "image_uint"};
 inline void require(bool ok, const std::string& message) { if (!ok) throw std::runtime_error(message); }
+// Successful literal checks need no temporary heap-allocated error string.
+// This preserves every oracle check and exception text; it only reduces probe
+// instrumentation overhead, especially under ASan. Dynamic messages retain the
+// existing overload above.
+template<size_t N> inline void require(bool ok,const char (&message)[N]) { if(!ok) throw std::runtime_error(message); }
+inline unsigned memory_index(const VkPhysicalDeviceMemoryProperties& memory,uint32_t bits,VkMemoryPropertyFlags required) {
+    require(memory.memoryTypeCount<=VK_MAX_MEMORY_TYPES,"memory type count bound");
+    for(unsigned i=0;i<memory.memoryTypeCount;++i)if((bits&(1u<<i))&&(memory.memoryTypes[i].propertyFlags&required)==required)return i;
+    throw std::runtime_error("required memory type unavailable");
+}
 inline void check(VkResult result) { require(result == VK_SUCCESS, "Vulkan result " + std::to_string(result)); }
 inline double elapsed(Clock::time_point start) { return std::chrono::duration<double,std::milli>(Clock::now()-start).count(); }
 inline std::string quote(const std::string& value) {
@@ -104,7 +114,7 @@ struct Session {
     VkQueue queue{}; VkCommandBuffer command{}; unsigned family{},timestamp_bits{},submissions=0; bool failed=false,use_format_list=false,use_host_copy=false,host_image_available=false;
     host_copy::Support host;
     std::array<std::array<VkDescriptorSet,2>,modes> decode_sets{},sample_sets{};
-    Session(unsigned w,unsigned h,const std::filesystem::path& shaders,unsigned selected,bool software,bool format_list,unsigned index_words=1,bool host_copy=false)
+    Session(unsigned w,unsigned h,const std::filesystem::path& shaders,unsigned selected,bool software,bool format_list,unsigned index_words=1,bool host_copy=false,bool cached_input=false)
         :width(w),height(h),tiles(((w+15)/16)*((h+15)/16)),use_format_list(format_list),use_host_copy(host_copy) {
         require(w&&h&&w<=4096&&h<=4096&&uint64_t(w)*h<=8388608,"dimensions");
         require(index_words>=1&&index_words<=16,"index stride bound");
@@ -145,7 +155,7 @@ struct Session {
         check(vkCreateDevice(physical,&di,nullptr,&o.device)); vkGetDeviceQueue(o.device,family,0,&queue);
         if(use_host_copy)host.load(o.device);
         for(unsigned eye=0;eye<2;++eye) {
-            make_buffer(o.inputs[eye][0],VkDeviceSize(tiles)*vr444::SLOT_WORDS*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT|VK_BUFFER_USAGE_TRANSFER_SRC_BIT,true);
+            make_buffer(o.inputs[eye][0],VkDeviceSize(tiles)*vr444::SLOT_WORDS*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT|VK_BUFFER_USAGE_TRANSFER_SRC_BIT,true,cached_input);
             make_buffer(o.inputs[eye][1],VkDeviceSize(tiles)*index_words*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,true);
             make_buffer(o.inputs[eye][2],VkDeviceSize(tiles)*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,true);
             make_buffer(o.output[eye],VkDeviceSize(w)*h*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT|VK_BUFFER_USAGE_TRANSFER_SRC_BIT|VK_BUFFER_USAGE_TRANSFER_DST_BIT,false);
@@ -185,16 +195,18 @@ struct Session {
         check(vkCreateQueryPool(o.device,&qp,nullptr,&o.queries));
     }
     unsigned memory_type(uint32_t bits,VkMemoryPropertyFlags required) {
-        for(unsigned i=0;i<memory.memoryTypeCount;++i) if((bits&(1u<<i))&&(memory.memoryTypes[i].propertyFlags&required)==required) return i;
-        throw std::runtime_error("required memory type unavailable");
+        return memory_index(memory,bits,required);
     }
-    void make_buffer(Buffer& b,VkDeviceSize bytes,VkBufferUsageFlags usage,bool host) {
+    void make_buffer(Buffer& b,VkDeviceSize bytes,VkBufferUsageFlags usage,bool host,bool cached=false) {
+        require(!cached||host,"cached input requires host mapping");
         require(!(usage&VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)||bytes<=properties.limits.maxStorageBufferRange,"storage buffer size");
         b.bytes=bytes;
         VkBufferCreateInfo bi{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO}; bi.size=bytes; bi.usage=usage;
         check(vkCreateBuffer(o.device,&bi,nullptr,&b.handle));
         VkMemoryRequirements req{}; vkGetBufferMemoryRequirements(o.device,b.handle,&req);
-        b.type=memory_type(req.memoryTypeBits,host?VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT:VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        VkMemoryPropertyFlags required=host?VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT:VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        if(cached)required|=VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+        b.type=memory_type(req.memoryTypeBits,required);
         b.flags=memory.memoryTypes[b.type].propertyFlags;
         VkMemoryAllocateInfo ai{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; ai.allocationSize=req.size; ai.memoryTypeIndex=b.type;
         check(vkAllocateMemory(o.device,&ai,nullptr,&b.memory)); check(vkBindBufferMemory(o.device,b.handle,b.memory,0));

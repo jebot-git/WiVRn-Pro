@@ -11,8 +11,8 @@ struct ImagePath {
     bool cpu;
     unsigned mode;
     std::array<std::vector<uint32_t>,2> decoded;
-    ImagePath(unsigned width,unsigned height,const std::filesystem::path& shaders,bool on_cpu,unsigned selected)
-        :session(width,height,shaders/"rrb/shaders",selected,false,false,8),cpu(on_cpu),mode(cpu?0:1) {
+    ImagePath(unsigned width,unsigned height,const std::filesystem::path& shaders,bool on_cpu,unsigned selected,bool cached_input=false)
+        :session(width,height,shaders/"rrb/shaders",selected,false,false,8,false,cached_input),cpu(on_cpu),mode(cpu?0:1) {
         require(session.properties.deviceType==VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU||session.properties.deviceType==VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,"hardware GPU required");
         if(cpu)for(auto& pixels:decoded)pixels.resize(size_t(width)*height);
     }

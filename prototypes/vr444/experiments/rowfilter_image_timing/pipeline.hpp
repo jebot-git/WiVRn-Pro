@@ -15,8 +15,8 @@ struct ImagePath {
     bool cpu,host_copy;
     std::array<rowfilter::Workspace,2> workspace;
     std::array<std::vector<uint32_t>,2> decoded;
-    ImagePath(unsigned width,unsigned height,const std::filesystem::path& shaders,unsigned cols,unsigned output,bool cpu_decode,unsigned selected=0,bool host_upload=false)
-        :session(width,height,shaders/("shaders-"+std::to_string(cols)),selected,false,false,1,host_upload),columns(cols),mode(output),cpu(cpu_decode),host_copy(host_upload) {
+    ImagePath(unsigned width,unsigned height,const std::filesystem::path& shaders,unsigned cols,unsigned output,bool cpu_decode,unsigned selected=0,bool host_upload=false,bool cached_input=false)
+        :session(width,height,shaders/("shaders-"+std::to_string(cols)),selected,false,false,1,host_upload,cached_input),columns(cols),mode(output),cpu(cpu_decode),host_copy(host_upload) {
         require(cols==1||cols==4||cols==16,"column layout");
         require((cpu&&mode==0)||(!cpu&&(mode==1||mode==2)),"pipeline output arm");
         require(!host_copy||cpu,"host copy takes checked CPU RGBA");

@@ -1,0 +1,614 @@
+{
+  "schema": 1,
+  "experiment": "mapped-input-decode",
+  "headset_used": false,
+  "qualification_pass": true,
+  "promotion_blocked": true,
+  "qualification": [
+    {
+      "name": "arc-final",
+      "pass_": true,
+      "profiles": 170,
+      "arms": 9,
+      "warmups": 1,
+      "repetitions": 1,
+      "valid_invocations": 3060,
+      "late_decoder_failures_withheld": 400,
+      "malformed_or_wrong_shape_preflight_rejections": 3060,
+      "actual_input_memory": {
+        "rrf_staged_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrf_direct_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrf_staged_cached": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrf_direct_cached": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrb32_staged_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrb32_direct_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrb32_staged_cached": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrb32_direct_cached": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrf_cpu_reference": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        }
+      },
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "raw_sha256": "65801c0316fc752e4d4b42f2798a12156a07c3aca506c9bee5b7de6c752280e8",
+      "audit_sha256": "001576a1a617c135e4088f40322e7fd046ab09140cdc748e78da18fb8913e557",
+      "stderr_bytes": 0,
+      "performance_evidence": false
+    },
+    {
+      "name": "uhd-final",
+      "pass_": true,
+      "profiles": 26,
+      "arms": 9,
+      "warmups": 3,
+      "repetitions": 1,
+      "valid_invocations": 936,
+      "late_decoder_failures_withheld": 92,
+      "malformed_or_wrong_shape_preflight_rejections": 468,
+      "actual_input_memory": {
+        "rrf_staged_cached": {
+          "types": [
+            2,
+            2
+          ],
+          "flags": [
+            15,
+            15
+          ]
+        },
+        "rrf_direct_cached": {
+          "types": [
+            2,
+            2
+          ],
+          "flags": [
+            15,
+            15
+          ]
+        },
+        "rrb32_staged_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            7,
+            7
+          ]
+        },
+        "rrb32_direct_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            7,
+            7
+          ]
+        },
+        "rrb32_staged_cached": {
+          "types": [
+            2,
+            2
+          ],
+          "flags": [
+            15,
+            15
+          ]
+        },
+        "rrb32_direct_cached": {
+          "types": [
+            2,
+            2
+          ],
+          "flags": [
+            15,
+            15
+          ]
+        },
+        "rrf_cpu_reference": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            7,
+            7
+          ]
+        },
+        "rrf_staged_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            7,
+            7
+          ]
+        },
+        "rrf_direct_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            7,
+            7
+          ]
+        }
+      },
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "raw_sha256": "d61a0c3172c7302d83ca24f716545db27b1dac86fbc6e0afb0950cc732abc8e6",
+      "audit_sha256": "dd37bc056725cecf4a7f88ae167a4a0f964302cc9d8249a325331ece63527a7f",
+      "stderr_bytes": 0,
+      "performance_evidence": false
+    },
+    {
+      "name": "asan-final",
+      "pass_": true,
+      "profiles": 26,
+      "arms": 9,
+      "warmups": 3,
+      "repetitions": 1,
+      "valid_invocations": 936,
+      "late_decoder_failures_withheld": 92,
+      "malformed_or_wrong_shape_preflight_rejections": 468,
+      "actual_input_memory": {
+        "rrf_staged_cached": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrf_direct_cached": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrb32_staged_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrb32_direct_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrb32_staged_cached": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrb32_direct_cached": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrf_cpu_reference": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrf_staged_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        },
+        "rrf_direct_default": {
+          "types": [
+            1,
+            1
+          ],
+          "flags": [
+            14,
+            14
+          ]
+        }
+      },
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "raw_sha256": "0929cf7de2e630feddeaba3361017bce64932d9952abcb5c44731bc85b5a25b0",
+      "audit_sha256": "abd49d62d35f40816e77da2e5ea241628268ac49913311be65b416e89481ffdf",
+      "stderr_bytes": 0,
+      "performance_evidence": false
+    }
+  ],
+  "cpu_asan_ubsan": {
+    "result": {
+      "pass": true,
+      "cases": 838,
+      "reuse_rounds": 2,
+      "rejections": 8382,
+      "late_partial_decode_withheld": true,
+      "vulkan_initialized": false,
+      "headset_used": false
+    },
+    "raw_sha256": "d2461fe7889ed393ea6fb691ccfd0d927ac56bd82ea63fe6f345bb759b631c4a",
+    "stderr_bytes": 0
+  },
+  "source_sha256": {
+    "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp": "ae715d75f80abc3d76dd9ba1c73b8d78228a60c2c2e316ff38eda3792b6cfd8e",
+    "prototypes/vr444/experiments/direct_image_gpu/host_copy.hpp": "b45c592543bdb386bccc4173d8b6d732d93a5ebf8287504cd10756285779afe5",
+    "prototypes/vr444/experiments/direct_image_gpu/sample.comp": "b146b902a79640cdd887061a9475217aa156a763ee04bbfa521e20be2f32938c",
+    "prototypes/vr444/experiments/mapped_input_decode/engine.hpp": "6de9c84e89d4845411724e8c249d451441fa1c2f7b058c10512a9e039a0811b2",
+    "prototypes/vr444/experiments/mapped_input_decode/pair.hpp": "8c12e512d8a382261e751b1def7a9bc54707f4750ef310698396a3c94626bed4",
+    "prototypes/vr444/experiments/mapped_input_decode/pipeline.hpp": "2c9c012e9466854c4d4bce890444606d15dd55dee6d122e32365692a687b1c53",
+    "prototypes/vr444/experiments/mapped_input_decode/probe.cpp": "f4289b2cb73ebdf6afeafd4613fc6bb5115863bade8ae20819933ec058654700",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "311f1e8f0880e401f61823d0461dfa60931db7abbc7b6b707f1ed45f9773d6e5",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/rowblocks_gpu/decode.comp": "562364be82fcf3c6bd352d3478aff749bc6ad4703c8cd7d48a5cc720a19ef918",
+    "prototypes/vr444/experiments/rowblocks_gpu/fixtures.hpp": "aa184e09104059e1904e26661ba625630ebf32afbb3bfcccba4171cd703e6117",
+    "prototypes/vr444/experiments/rowblocks_image_timing/fixtures.hpp": "05b8603b392ea512fa33b328191586237647444ef337c6e15facdd4edf258bbf",
+    "prototypes/vr444/experiments/rowblocks_image_timing/pipeline.hpp": "0fffdf46c5f5bc28387c4674afea99696b5fa42df4d65192717983ed826259ae",
+    "prototypes/vr444/experiments/rowfilter_gpu/decode.comp": "2a019063b41a630d4f447e62e8bd9af91c6aacad76142003c701bf5a5db9c9b6",
+    "prototypes/vr444/experiments/rowfilter_gpu/fixtures.hpp": "2869b89c5d69606ffe3dd9462f67c4ae1b2b3b6009806e3744ec02a5d8f38263",
+    "prototypes/vr444/experiments/rowfilter_image_timing/pipeline.hpp": "95f786d1cf937d93a7327c1efd0883a2a6f32c084241bbf638866f9f0b70d373",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706"
+  },
+  "shader_sha256": {
+    "rrb/shaders/buffer.spv": {
+      "sha256": "b408089ce94765a38c30f2e98f2f6881c209646da10353ceef30ea22ead867ca",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrb/shaders/sample.spv": {
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrb/shaders/uint.spv": {
+      "sha256": "076230140137e8b10b6a6f085b028b021f9d419b742906cefdfd41cd7d3ef416",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrb/shaders/unorm.spv": {
+      "sha256": "2ec428dab6a4dc25188ee57b42464c511b5c2d99fcfd563916ac188c60c3b087",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrf/shaders-4/buffer.spv": {
+      "sha256": "1ef691b6e9291826cadfabe86ddb99725fa6787b5e4e9b7d97d88cb410ee95c0",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrf/shaders-4/sample.spv": {
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrf/shaders-4/uint.spv": {
+      "sha256": "f42443cf8ba2ce3cabd16a061d8c8a0f2252cc209d95309397683ba030ac700b",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrf/shaders-4/unorm.spv": {
+      "sha256": "f963502ec2f189a50dcdcbad1f1abe92f28f301e8155eb3ecc77a1febf5c54e6",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    }
+  },
+  "binaries": {
+    "capabilities-android": {
+      "sha256": "7cabbaf4006eca59918c0cd2859094a4c92d1b8771c8de59c24b2014867b3492",
+      "bytes": 5566800,
+      "android_compile_only": true
+    },
+    "capabilities-host": {
+      "sha256": "3b6ca28b4750d72ea56c5975973e96da614a441b31a6e378d97d0da3e92cf423",
+      "bytes": 24360,
+      "android_compile_only": false
+    },
+    "mapped-input-android": {
+      "sha256": "c87b7dcd342e186c2e4ee55d95e5dcf02820cbecb26599c0efcb678eb81aebc3",
+      "bytes": 7007968,
+      "android_compile_only": true
+    },
+    "mapped-input-asan": {
+      "sha256": "80c6207112ab1a74d820b370ff485bf33c113d049ba3a708e2b0ba02f8baa1a3",
+      "bytes": 5193088,
+      "android_compile_only": false
+    },
+    "mapped-input-host": {
+      "sha256": "0c7b18a1373e6c2475b7915a8690294393158cece9ce6e6906799875a063da19",
+      "bytes": 308824,
+      "android_compile_only": false
+    },
+    "pair-test-android": {
+      "sha256": "a093467e802cb0840ff2e891e57153ef3beebd5a82a90fbb4d2f4a764c120c4e",
+      "bytes": 6892992,
+      "android_compile_only": true
+    },
+    "pair-test-asan": {
+      "sha256": "48bf53d38d11e30b3caee2117acee1baececc7385e771677137fdc46abe29b1f",
+      "bytes": 3983440,
+      "android_compile_only": false
+    },
+    "pair-test-host": {
+      "sha256": "e63bb592ae6626a33fc9cff5daa07b6bb53a5a04e112639d395db0401fa41e0f",
+      "bytes": 206280,
+      "android_compile_only": false
+    }
+  },
+  "manifests": {
+    "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f",
+    "prototypes/vr444/experiments/rgb_rowblocks/results/corpus-hashes.json": "c732fffe2a24894c487b11e5552098cd9531d6c29e5f52a63ae2865445af99b4"
+  },
+  "audit_tests": {
+    "unit_tests": 6,
+    "rejection_mutations": 65,
+    "pass_": true
+  },
+  "memory_gate_negative_controls": 5,
+  "external_host_inventory": {
+    "report": {
+      "schema": 1,
+      "physical_query_only": true,
+      "logical_device_created": false,
+      "headset_used": false,
+      "devices": [
+        {
+          "index": 0,
+          "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+          "type": 2,
+          "driver": 109060195,
+          "memory_types": [
+            {
+              "index": 0,
+              "flags": 1,
+              "heap": 0
+            },
+            {
+              "index": 1,
+              "flags": 14,
+              "heap": 1
+            },
+            {
+              "index": 2,
+              "flags": 7,
+              "heap": 0
+            },
+            {
+              "index": 3,
+              "flags": 1,
+              "heap": 0
+            },
+            {
+              "index": 4,
+              "flags": 14,
+              "heap": 1
+            },
+            {
+              "index": 5,
+              "flags": 7,
+              "heap": 0
+            }
+          ],
+          "external_host_advertised": true,
+          "external_host_queried": true,
+          "host_pointer_alignment": 4096,
+          "host_buffer_usage": 33,
+          "external_features": 4,
+          "compatible_handles": 128,
+          "buffer_memory_type_compatibility_not_queried": true,
+          "host_pointer_import_not_attempted": true
+        },
+        {
+          "index": 1,
+          "device": "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+          "type": 1,
+          "driver": 109060195,
+          "memory_types": [
+            {
+              "index": 0,
+              "flags": 1,
+              "heap": 0
+            },
+            {
+              "index": 1,
+              "flags": 7,
+              "heap": 0
+            },
+            {
+              "index": 2,
+              "flags": 15,
+              "heap": 0
+            },
+            {
+              "index": 3,
+              "flags": 33,
+              "heap": 0
+            },
+            {
+              "index": 4,
+              "flags": 1,
+              "heap": 0
+            },
+            {
+              "index": 5,
+              "flags": 7,
+              "heap": 0
+            },
+            {
+              "index": 6,
+              "flags": 15,
+              "heap": 0
+            }
+          ],
+          "external_host_advertised": true,
+          "external_host_queried": true,
+          "host_pointer_alignment": 4096,
+          "host_buffer_usage": 33,
+          "external_features": 4,
+          "compatible_handles": 128,
+          "buffer_memory_type_compatibility_not_queried": true,
+          "host_pointer_import_not_attempted": true
+        }
+      ]
+    },
+    "sha256": "356f787977c9326682467888b2273dbe6f2a5986151344743b137e39ad1f5bfc",
+    "pointer_import_attempted": false
+  },
+  "independent_review": {
+    "agent": "identify_sub15",
+    "scope": "Pair preflight, alias bounds, one-shot readiness, late failure, recovery, synchronization and actual byte accounting; read-only",
+    "blockers": 0,
+    "post_review_fix": "Temporary Pair index destruction moved before outer clock; all native/sanitizer GPU qualification repeated afterward."
+  },
+  "limitations": [
+    "Host private images only; no headset, XR, network or optical measurement.",
+    "Correctness jobs may overlap; their clock fields are not comparative performance evidence.",
+    "ASan/UBSan uses detect_leaks=0 under ptrace; no diagnostics. No Vulkan validation layer available.",
+    "Successful literal require checks avoid temporary string allocation, preserving error text and every byte/color oracle check; compare only within the new interleaved batch.",
+    "Raw host-pointer import capability is an inventory, not an imported pointer or tested headset feature."
+  ]
+}
