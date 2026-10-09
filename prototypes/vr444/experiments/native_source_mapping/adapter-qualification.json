@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Offline independent source-map adapter and control qualification",
+  "source_sha256": {
+    "validation/wivrn-codecs/integration/source_mapping.py": "ca7a542b328d3a546fa12fcf39e78c2869240515f5c057e3fb97fbd68912c785",
+    "validation/wivrn-codecs/integration/source_mapping_control.py": "52a4da25a69f372f9f313ebafeeca6365b8b8dac4539a090f9a971d38c400818",
+    "validation/wivrn-codecs/tests/test_source_mapping.py": "55ff64a5f52fa80adc1ab2b1a425c0b017951d1fcd5bc7e7bc80dfc4cfcc6755",
+    "validation/wivrn-codecs/integration/quality_application.py": "98932f2395a10d7f166ef7af8bb92621983349dabf8d2427b106b53d336dbe22",
+    "validation/wivrn-codecs/integration/submitted_capture.py": "5f0b744cd46e81b48aace942db3cb9460f47ec166cc445c59a5586613912cd97",
+    "validation/wivrn-codecs/integration/submitted_reference_job.py": "bf2d242bad3c8c79cee69098b7a52622433a03886e08309d5e50f126b09f14ca",
+    "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
+    "prototypes/vr444/experiments/quality_stimuli/audit.py": "d8fcd4920529c78c5d37fe0ddf2db34e3a1a38225fda4575db0ef1c853d8b78e",
+    "prototypes/vr444/experiments/compositor_freshness/analyze.py": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10"
+  },
+  "python_test_groups": 11,
+  "existing_quality_application_groups": 8,
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_source_mapping.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_quality_application.py"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "artifact_sha256": {
+    "python.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "python.stderr": "b046982b725e23fa19cde6fab38193e2a10b6daf021565bce6d57f9ce69981cb",
+    "quality-helper.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "quality-helper.stderr": "133449d6f429f0588126e0403937f271f33f90517460d5c4b39d69c2eeda0f25",
+    "README.txt": "f762bb337c4b93854febcfa9e3eb7b05affdc046e197eaa78b2eead331d8ece4"
+  },
+  "upstream_submitted_context_mocked_in_formal_adapter_unit_test": true,
+  "actual_native_provenance_field_names_tested": true,
+  "native_recorder_qualification": "native-qualification.json",
+  "fixture_clock_qualification": "../quality_stimuli/source-clock-qualification.json",
+  "peer_review": "GPU team read-only: no remaining material producer/lifetime/clock/source-byte/control blocker; no reviewer execution",
+  "device_exercised": false,
+  "gpu_exercised": false,
+  "actual_v3_mapping_capture_available": false,
+  "quality_qualified": false,
+  "latency_qualified": false
+}

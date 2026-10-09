@@ -34,3 +34,74 @@ foveation.cpp syntax with WIVRN_CODEC_TESTS ON and OFF. No GPU/OpenXR/device
 execution. Native source/build/asset integration and final acquisition belong
 to the root coordinator. The independent comparison adapter and tests follow
 as a separate commit; this component alone is not a source or quality pass.
+
+Harness and independent audit
+-----------------------------
+source_mapping_control.validate(args, source=None) performs offline admission.
+Required opt-in args: source_mapping=True, mode=custom-rrb32, rrb_source=q1,
+q=1, compression=none, source_trace=True, quality_capture=True, and the already
+validated explicit LOCAL quality_application_plan plus its SHA. Four additional
+fields are required only when enabled:
+  source_mapping_build_receipt
+  source_mapping_build_receipt_sha256
+  source_mapping_app_build_receipt
+  source_mapping_app_build_receipt_sha256
+validate returns the five native source paths for native provenance binding.
+The source argument verifies the actual native files against the reviewed
+current overlay. Receipt bytes/source hashes are checked before live work.
+
+configure(args, env, output) scrubs inherited mapping activation, sets the
+absolute sidecar path plus explicit QUALITY_CAPTURE=1 and FRAME_STRIDE=1, and
+returns provenance additions. Other existing Q1/app/source gates remain root's
+responsibility. Fixed frame stride1 is not a new user CLI field.
+evaluate(args, output) runs before final summary/hashes: checks bound receipt
+and native binary/source provenance, complete sidecar/clock/source-latch joins
+and sampled encoded stereo coverage, then returns hashes of the actual reads.
+Its status is provisional acquisition admission; it never claims a final run
+manifest, original-source comparison, quality or latency qualification.
+
+After final hashes.json and summary.json are sealed, run:
+  python3 validation/wivrn-codecs/integration/source_mapping.py \
+    --run-root RUN --run-sha SHA_OF_RUN_HASHES_JSON \
+    --build-receipt NATIVE_RECEIPT --build-sha NATIVE_RECEIPT_SHA \
+    --application-build-receipt APP_BUILD_RECEIPT \
+    --application-build-sha APP_BUILD_RECEIPT_SHA --out NEW_REPORT_JSON
+Optional --build-root selects an archived native artifact root. The separate
+external Monado source path in its pinned receipt must remain available.
+Native receipt foveation_shaders.foveation_rgb.comp binds raw SPIR-V and the
+embedded literal; the auditor recomputes equivalence. monado_source_view_contract
+and external_artifacts_sha256 bind actual comp_swapchain.c view creation.
+
+Formal source mapping replays the existing submitted-capture and original app
+source/readback auditors, binds actual plan/snapshot/argv/build provenance, then
+matches the runtime-converted target to unique delivered+predicted app identity,
+its compositor latch and actual mapping frame/warp. App sequence is explicitly
+not Monado app_frame_id. Source FOV, released image index, full positive source
+rectangle, both image shapes and sample/array/mip/face counts are checked.
+All successful sampled encoded stereo eyes and host source files must appear;
+whole stereo envelopes remain capped at262144bytes.
+
+It independently expands compact ratios and checks every actual UBO edge.
+The central10-degree mask uses original application projection rays and includes
+all texel footprints touching that cone. Only actual consumed1x1 footprints can
+qualify exact original source codes; constant/repeated patterns cannot hide
+averaging. RGB is compared at0code tolerance, alpha separately. A one-encoded-
+cell halo reports nearby nonunit footprints but does not certify native raster
+interpolation. No SRGB round-trip is assumed exact: actual post-foveation bytes
+must match the independently generated original app texels.
+
+protected_source_stage_exact is a finite source-stage result. Full quality,
+latency, displayed pixels and downstream filter/raster equivalence remain false.
+The existing scalar codec and submitted-reference audits remain separate. This
+adapter does not reinterpret old VIEW/schema1/2 captures as clock-joined LOCAL.
+Audits trust the explicit pinned upstream acquisition/build receipts; they do
+not authenticate a hostile host or reconstruct a build/runtime environment.
+
+Adapter qualification:11 Python test groups, including a complete new formal
+path with separately mocked upstream submitted context; rehashed semantic
+mutations (source/frame/warp/target/FOV/image/receipt/missing-eye), one-code RGB
+error, independent alpha error, reversed Y, cached mapping, malformed bounds,
+constant-source averaging, actual native provenance names, and preflight
+negative controls. Eight existing quality_application tests pass unchanged.
+GPU peer review found no remaining material blocker; no live source-map receipt
+or original-source-stage success exists until the coordinator runs v3.
