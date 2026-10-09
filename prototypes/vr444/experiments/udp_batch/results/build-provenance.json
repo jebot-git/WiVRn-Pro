@@ -1,0 +1,27 @@
+{
+  "created_utc": "2026-10-09T05:53:42.565340+00:00",
+  "git_base": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+  "android_compiler": "Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349)",
+  "android_runtime_tested": false,
+  "headset_accessed": false,
+  "network_scope": "owned ephemeral127.0.0.1 UDP sockets only",
+  "performance_status": "not yet measured; waiting for coordinated CPU slot",
+  "source_sha256": {
+    "prototypes/vr444/experiments/udp_batch/README.txt": "1d49c2902b9322b027c097d02e559f9422625d2c1fa3e0ecb67609747b1c09ad",
+    "prototypes/vr444/experiments/udp_batch/build-android.sh": "c4765d49ac17bfbf88029d311f0fdb47d5bbe84b25a95570ba27a3345a215ff6",
+    "prototypes/vr444/experiments/udp_batch/build.sh": "d1af1cbd4f5a7d4eb1398931bf46391f65d0f72cb78277073ce77db415c6d8de",
+    "prototypes/vr444/experiments/udp_batch/probe.cpp": "3050afc399e9a277683125815f94149ed4b09037e7c49c8f5c6838931028fef6"
+  },
+  "binary_sha256": {
+    "probe": "9c9807b6693791de48f98cfbe06d4cb89802abb3a54871b44be1fe009ccff1a0",
+    "probe-android": "435fd8e0ae706065226c2bf171ecd6e7430d6c1c567106de3001cdea5bcb6860",
+    "test": "78b282f2a727e61262bbc62e777e71939bf0b8347d609af86ec2ed54eed9afbd"
+  },
+  "commands": [
+    "bash prototypes/vr444/experiments/udp_batch/build.sh /tmp/wivrn-udp-batch-build",
+    "/tmp/wivrn-udp-batch-build/test self-test",
+    "bash prototypes/vr444/experiments/udp_batch/build-android.sh /tmp/wivrn-udp-batch-build"
+  ]
+}
