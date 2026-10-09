@@ -1,0 +1,1503 @@
+{
+  "schema": 1,
+  "kind": "pinned_transport_research_catalog",
+  "approaches": [
+    {
+      "id": "rgb-palette",
+      "branch": "research/sub15-20261009/rgb-palette",
+      "commit": "a686dfe3b5cd9e2b6f81f90cf2d5a87e8bda6106",
+      "directory": "prototypes/vr444/experiments/rgb_palette",
+      "directory_files": [
+        "prototypes/vr444/experiments/rgb_palette/README.txt",
+        "prototypes/vr444/experiments/rgb_palette/bench.cpp",
+        "prototypes/vr444/experiments/rgb_palette/build.sh",
+        "prototypes/vr444/experiments/rgb_palette/export.cpp",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/constant.rgba",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/constant.rpt",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/manifest.json",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/palette16.rgba",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/palette16.rpt",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/palette2.rgba",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/palette2.rpt",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/palette4.rgba",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/palette4.rpt",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/raw.rgba",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/raw.rpt",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/runs.rgba",
+        "prototypes/vr444/experiments/rgb_palette/fixtures/runs.rpt",
+        "prototypes/vr444/experiments/rgb_palette/golden.py",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/NOTE.txt",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/bench.json",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/provenance.json",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/summary.json",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/tests.json",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009/bench.json",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009/provenance.json",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009/summary.json",
+        "prototypes/vr444/experiments/rgb_palette/results/host-20261009/tests.json",
+        "prototypes/vr444/experiments/rgb_palette/rgb_palette.cpp",
+        "prototypes/vr444/experiments/rgb_palette/rgb_palette.hpp",
+        "prototypes/vr444/experiments/rgb_palette/summarize.py",
+        "prototypes/vr444/experiments/rgb_palette/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/README.txt",
+          "sha256": "99317221f390244c909fd33bf9b638eaa53cbe68cae95432e185d026f7226960",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/fixtures/manifest.json",
+          "sha256": "0072489466e2edd827201506e6bad40aa44ca718dc958ff5c33bc8922323c0c4",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/NOTE.txt",
+          "sha256": "c4f097f09b9969d19f64e2704763c9b0fd8fb91792961908cc79e0ae33404165",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/bench.json",
+          "sha256": "0597532b4ee0c7e29020064884b94229577d5b7400032d518250a047bee3285f",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/provenance.json",
+          "sha256": "02c9bfa6234306195f84d2d9fa6c9ac9cecd59a30eea457ff327ca16749f9367",
+          "bindings": 12,
+          "recorded_snapshot_differences": [
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/README.txt",
+              "recorded_sha256": "15af0f4da58a0aafcc91b4bb3d047083c47bb282a4ad3065b04758af74bd9040",
+              "pinned_sha256": "99317221f390244c909fd33bf9b638eaa53cbe68cae95432e185d026f7226960"
+            },
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/build.sh",
+              "recorded_sha256": "b7b1b7cf988dafd00380fa49c552db1b0e25ddd7d19e11c4961dc6739317c876",
+              "pinned_sha256": "5479d46a53ff938593b052973f9b36959803c44d0d454b43a4fdab12d25be957"
+            },
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.cpp",
+              "recorded_sha256": "0f3e145baeb37dd78af90dbbff387677df9560e24b5b0911097a24a5986da3c9",
+              "pinned_sha256": "9235f3dd3aa3eec1f8ff343e3e7507519a1c831c1af0c05ab03888f36f6eb80a"
+            },
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.hpp",
+              "recorded_sha256": "5facc3dc6bf84fd4b8841114170b79ecd5836c24b26a3d1490ee5f3eff35b9bd",
+              "pinned_sha256": "d74b1b524ec5664b489a8d5c827ce753c526984ca422bfef4497e889fda1ff10"
+            },
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/test.cpp",
+              "recorded_sha256": "7ffd31dbeb10a84ee52891c5a4cef7b915b7369d5913951bd5710944864fe56e",
+              "pinned_sha256": "5b82711e9fdb822aa76bf121637511c3912c17717e41a6d40fc4e42d5dd4b2df"
+            }
+          ]
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/summary.json",
+          "sha256": "7bf30e7bb39105d072f766a406790297b9041fbf63a2fcf9ea81e1465b1682ab",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009-constant-fastpath/tests.json",
+          "sha256": "35bfcbaa83f4a7b2bbbc78b5c46b5abd9d99ebf417456f0aa7d12be359af79f0",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009/bench.json",
+          "sha256": "bd6649eb46c8e37940397868d8a207117f836972ecf46c2f2752339d0d8caaf8",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009/provenance.json",
+          "sha256": "bd9fc6e9794f92b811010373f98689e3e4c5b8e6c041298bbebb19a55b9fb031",
+          "bindings": 12,
+          "recorded_snapshot_differences": [
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/README.txt",
+              "recorded_sha256": "15af0f4da58a0aafcc91b4bb3d047083c47bb282a4ad3065b04758af74bd9040",
+              "pinned_sha256": "99317221f390244c909fd33bf9b638eaa53cbe68cae95432e185d026f7226960"
+            },
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/build.sh",
+              "recorded_sha256": "b7b1b7cf988dafd00380fa49c552db1b0e25ddd7d19e11c4961dc6739317c876",
+              "pinned_sha256": "5479d46a53ff938593b052973f9b36959803c44d0d454b43a4fdab12d25be957"
+            },
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.cpp",
+              "recorded_sha256": "34c7a14f57f3a863e247bcee6ee8377dffa0e5a251746e3a9fa3484cd47a5884",
+              "pinned_sha256": "9235f3dd3aa3eec1f8ff343e3e7507519a1c831c1af0c05ab03888f36f6eb80a"
+            },
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/rgb_palette.hpp",
+              "recorded_sha256": "5facc3dc6bf84fd4b8841114170b79ecd5836c24b26a3d1490ee5f3eff35b9bd",
+              "pinned_sha256": "d74b1b524ec5664b489a8d5c827ce753c526984ca422bfef4497e889fda1ff10"
+            },
+            {
+              "location": "/source_hashes",
+              "path": "prototypes/vr444/experiments/rgb_palette/test.cpp",
+              "recorded_sha256": "7ffd31dbeb10a84ee52891c5a4cef7b915b7369d5913951bd5710944864fe56e",
+              "pinned_sha256": "5b82711e9fdb822aa76bf121637511c3912c17717e41a6d40fc4e42d5dd4b2df"
+            }
+          ]
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009/summary.json",
+          "sha256": "4f507e73bb02e0214cff5245b10683982aaba6bf13266f2d2413809645940cdc",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_palette/results/host-20261009/tests.json",
+          "sha256": "35bfcbaa83f4a7b2bbbc78b5c46b5abd9d99ebf417456f0aa7d12be359af79f0",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "datagram-xor",
+      "branch": "research/sub15-20261009/datagram-xor",
+      "commit": "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df",
+      "directory": "prototypes/vr444/experiments/datagram_xor",
+      "directory_files": [
+        "prototypes/vr444/experiments/datagram_xor/README.txt",
+        "prototypes/vr444/experiments/datagram_xor/matrix.py",
+        "prototypes/vr444/experiments/datagram_xor/results/matrix.json",
+        "prototypes/vr444/experiments/datagram_xor/results/provenance.json",
+        "prototypes/vr444/experiments/datagram_xor/results/tests.txt",
+        "prototypes/vr444/experiments/datagram_xor/test_transport.py",
+        "prototypes/vr444/experiments/datagram_xor/transport.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/datagram_xor/README.txt",
+          "sha256": "e1df3a2016df6061a19478c67fcb2035fcc3a6b3c6b9cf25e56314eb743f0cfc",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/datagram_xor/results/matrix.json",
+          "sha256": "e3b980480726e8611acc6c39b95c284aa22e71e2d8663716304e2da654dd401b",
+          "bindings": 1008,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/datagram_xor/results/provenance.json",
+          "sha256": "1e3149d4aeb25e1b2d08dd3419f07413b543fb16c53b8f82f561ff7c4f77a038",
+          "bindings": 5,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/datagram_xor/results/tests.txt",
+          "sha256": "465e5eb44b281370579a7749bbe457fb7073ff976b42a4db3c737d71ce70191f",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "udp-batch",
+      "branch": "research/sub15-20261009/udp-batch",
+      "commit": "3075ff7c72e53ab83a77bd56e6fef2a50708b654",
+      "directory": "prototypes/vr444/experiments/udp_batch",
+      "directory_files": [
+        "prototypes/vr444/experiments/udp_batch/README.txt",
+        "prototypes/vr444/experiments/udp_batch/build-android.sh",
+        "prototypes/vr444/experiments/udp_batch/build.sh",
+        "prototypes/vr444/experiments/udp_batch/probe.cpp",
+        "prototypes/vr444/experiments/udp_batch/results/NOTE.txt",
+        "prototypes/vr444/experiments/udp_batch/results/bench.json",
+        "prototypes/vr444/experiments/udp_batch/results/build-provenance.json",
+        "prototypes/vr444/experiments/udp_batch/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/udp_batch/results/summary.json",
+        "prototypes/vr444/experiments/udp_batch/results/tests.json",
+        "prototypes/vr444/experiments/udp_batch/summarize.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/udp_batch/README.txt",
+          "sha256": "1d49c2902b9322b027c097d02e559f9422625d2c1fa3e0ecb67609747b1c09ad",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_batch/results/NOTE.txt",
+          "sha256": "e0d277109b8d06b590e39eb8646aa6453cd9638f3b1faad1063c3513484423fb",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_batch/results/bench.json",
+          "sha256": "d4d108f8ea8de8f299ec844ac241778fd24330b0961378309cfd34a6e1fa1e3b",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_batch/results/build-provenance.json",
+          "sha256": "0e61e6b37280ececadcc8a09c5cc542b514e6d3ff36d7963ee860dc01fd9df3e",
+          "bindings": 4,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_batch/results/measurement-provenance.json",
+          "sha256": "de0ae671a474f5528e652ff5a26e1b08a1a02a34e8e598f4a55d4125827db59c",
+          "bindings": 5,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_batch/results/summary.json",
+          "sha256": "431cd8fdcd54fa7c81b6efc6d78bc8a4c06e83c57693fb2911403b804c8f9997",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_batch/results/tests.json",
+          "sha256": "42d7e21565164db20cbd629e47d6c00556f2e05ece9b825fb3bb8d2dac2f34e2",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "transport-queue",
+      "branch": "research/sub15-20261009/transport-queue",
+      "commit": "512f3b893da4901a84fa06c2a6fd323f35f12389",
+      "directory": "prototypes/vr444/experiments/transport_queue",
+      "directory_files": [
+        "prototypes/vr444/experiments/transport_queue/README.txt",
+        "prototypes/vr444/experiments/transport_queue/replay.py",
+        "prototypes/vr444/experiments/transport_queue/results/matrix.json",
+        "prototypes/vr444/experiments/transport_queue/results/provenance.json",
+        "prototypes/vr444/experiments/transport_queue/results/tests.txt",
+        "prototypes/vr444/experiments/transport_queue/test_replay.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/transport_queue/README.txt",
+          "sha256": "de783ed4e0ce3b0f192142d4b3330df7aac9d2e9670dfc69aa1fb8c460cbec78",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/transport_queue/results/matrix.json",
+          "sha256": "b919eb95e0f15739896556bf1ce8806a1bf24af89794c793dcfc7311a86dcb30",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/transport_queue/results/provenance.json",
+          "sha256": "103dd4ce9e9ab0d7bdef41712b604e1ecd95b1c4203bc5b49a61ac8c31321be8",
+          "bindings": 5,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/transport_queue/results/tests.txt",
+          "sha256": "0ee03797abba76c4de69d5ff9ab30e54d9df8e77e741e4a2afb2547df500505a",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "static-dictionary",
+      "branch": "research/sub15-20261009/static-dictionary",
+      "commit": "5eb6ac1470dc1c1a7caeecd0e7877d44eb8a6440",
+      "directory": "prototypes/vr444/experiments/static_dictionary",
+      "directory_files": [
+        "prototypes/vr444/experiments/static_dictionary/README.txt",
+        "prototypes/vr444/experiments/static_dictionary/bench.cpp",
+        "prototypes/vr444/experiments/static_dictionary/build.sh",
+        "prototypes/vr444/experiments/static_dictionary/dictionary.hpp",
+        "prototypes/vr444/experiments/static_dictionary/prepare.py",
+        "prototypes/vr444/experiments/static_dictionary/results/benchmark.json",
+        "prototypes/vr444/experiments/static_dictionary/results/correctness.json",
+        "prototypes/vr444/experiments/static_dictionary/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/static_dictionary/results/split.json",
+        "prototypes/vr444/experiments/static_dictionary/results/summary.json",
+        "prototypes/vr444/experiments/static_dictionary/summarize.py",
+        "prototypes/vr444/experiments/static_dictionary/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/static_dictionary/README.txt",
+          "sha256": "e321b025215f532412e65ab067130197ca57e07b9ec55dc1754d4578258d1c95",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/static_dictionary/results/benchmark.json",
+          "sha256": "efd21e18d0c38a852c9b0f4de298001b293f83ac4523a415a7ad53cd68727894",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/static_dictionary/results/correctness.json",
+          "sha256": "6e01def9433e3d14a0212d9d299a58feffb8077fd43dad57987e25ecaf3a014b",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/static_dictionary/results/measurement-provenance.json",
+          "sha256": "68e3d29517ccc641f46604172d3a87cc702a65f01f015154816ae014e49b1e58",
+          "bindings": 7,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/static_dictionary/results/split.json",
+          "sha256": "1074711c02e8cd4519e212ee2114a233edfdade7ff2d0667c87627530fbdf958",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/static_dictionary/results/summary.json",
+          "sha256": "3cefb02fe8274cce1b8c5de34c9dc7370717c84ea018e32b6a77588726691e61",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "udp-offload",
+      "branch": "research/sub15-20261009/udp-offload",
+      "commit": "74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f",
+      "directory": "prototypes/vr444/experiments/udp_offload",
+      "directory_files": [
+        "prototypes/vr444/experiments/udp_offload/README.txt",
+        "prototypes/vr444/experiments/udp_offload/bench.cpp",
+        "prototypes/vr444/experiments/udp_offload/build-android.sh",
+        "prototypes/vr444/experiments/udp_offload/build.sh",
+        "prototypes/vr444/experiments/udp_offload/offload.hpp",
+        "prototypes/vr444/experiments/udp_offload/results/benchmark.json",
+        "prototypes/vr444/experiments/udp_offload/results/correctness.json",
+        "prototypes/vr444/experiments/udp_offload/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/udp_offload/results/summary.json",
+        "prototypes/vr444/experiments/udp_offload/summarize.py",
+        "prototypes/vr444/experiments/udp_offload/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/udp_offload/README.txt",
+          "sha256": "4f5a54b00587a3b6061f9925241d180c46fa3df550464916739381fe1e967187",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_offload/results/benchmark.json",
+          "sha256": "c807cb79c0b27e3066a630faf187b790c232c86a809cfa2c51c2e2d24ec32c99",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_offload/results/correctness.json",
+          "sha256": "1e93b9ded012b6f58c46fb22f15b64be6187b88df79f647ce89eb22316f001d0",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_offload/results/measurement-provenance.json",
+          "sha256": "b57649fa746fc579601b9b3f95a547399bb4b83cfde4cdf3fadaef3312862876",
+          "bindings": 8,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/udp_offload/results/summary.json",
+          "sha256": "fd5e3953b3f74161833cfd8889ef5e16b537ec27d81024fc332b6427e9c20b5b",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rgb-rowfilter",
+      "branch": "research/sub15-20261009/rgb-rowfilter",
+      "commit": "2773a29a179cbab87bbeb31c4a7303eb565a77fa",
+      "directory": "prototypes/vr444/experiments/rgb_rowfilter",
+      "directory_files": [
+        "prototypes/vr444/experiments/rgb_rowfilter/README.txt",
+        "prototypes/vr444/experiments/rgb_rowfilter/bench.cpp",
+        "prototypes/vr444/experiments/rgb_rowfilter/build.sh",
+        "prototypes/vr444/experiments/rgb_rowfilter/export.cpp",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/manifest.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/plain-four.rgba",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/plain-four.rrf",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/raw-odd.rgba",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/raw-odd.rrf",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/raw-one.rgba",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/raw-one.rrf",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/up-four.rgba",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/up-four.rrf",
+        "prototypes/vr444/experiments/rgb_rowfilter/golden.py",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/benchmark.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/correctness.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/summary.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp",
+        "prototypes/vr444/experiments/rgb_rowfilter/summarize.py",
+        "prototypes/vr444/experiments/rgb_rowfilter/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/README.txt",
+          "sha256": "fa55b18cee59c43c7a19f401e929f147009b9febab4d673c4963d844019c602b",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/fixtures/manifest.json",
+          "sha256": "4a2fcba372a7cc2d902c2cd7490f5483a8ef96f2059626e2bc93d6f88ca8b2f8",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/benchmark.json",
+          "sha256": "d144d8e58425f45be4a0b5d2260ac0a40df5315bc6e9cbe5bed24896b6fb068e",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json",
+          "sha256": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f",
+          "bindings": 38,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/correctness.json",
+          "sha256": "a36ecec07bb575f8740cb8695288e044f41f52981a0c1ba06b72704278f4ae67",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/measurement-provenance.json",
+          "sha256": "803c34896fde9ba491cb632ce2b30a0d1ccb0165979415fdbdbcc6e26e177bf7",
+          "bindings": 8,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/summary.json",
+          "sha256": "f065afd57ec1ec58b835fadca6b4c46688b073070e9b761cee144c06fff4d114",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rgb-rowfilter-simd",
+      "branch": "research/sub15-20261009/rgb-rowfilter-simd",
+      "commit": "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8",
+      "directory": "prototypes/vr444/experiments/rgb_rowfilter",
+      "directory_files": [
+        "prototypes/vr444/experiments/rgb_rowfilter/README.txt",
+        "prototypes/vr444/experiments/rgb_rowfilter/SIMD.txt",
+        "prototypes/vr444/experiments/rgb_rowfilter/bench.cpp",
+        "prototypes/vr444/experiments/rgb_rowfilter/build-android.sh",
+        "prototypes/vr444/experiments/rgb_rowfilter/build.sh",
+        "prototypes/vr444/experiments/rgb_rowfilter/export.cpp",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/manifest.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/plain-four.rgba",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/plain-four.rrf",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/raw-odd.rgba",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/raw-odd.rrf",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/raw-one.rgba",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/raw-one.rrf",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/up-four.rgba",
+        "prototypes/vr444/experiments/rgb_rowfilter/fixtures/up-four.rrf",
+        "prototypes/vr444/experiments/rgb_rowfilter/golden.py",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/benchmark.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/correctness.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/results/summary.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp",
+        "prototypes/vr444/experiments/rgb_rowfilter/simd-results/benchmark.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/simd-results/correctness.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/simd-results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/simd-results/summary.json",
+        "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp",
+        "prototypes/vr444/experiments/rgb_rowfilter/summarize.py",
+        "prototypes/vr444/experiments/rgb_rowfilter/summarize_simd.py",
+        "prototypes/vr444/experiments/rgb_rowfilter/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/README.txt",
+          "sha256": "fa55b18cee59c43c7a19f401e929f147009b9febab4d673c4963d844019c602b",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/SIMD.txt",
+          "sha256": "36ab13c7985e68f2c3536446610ef3b3723007abcf048034ba444411db742d86",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/fixtures/manifest.json",
+          "sha256": "4a2fcba372a7cc2d902c2cd7490f5483a8ef96f2059626e2bc93d6f88ca8b2f8",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/benchmark.json",
+          "sha256": "d144d8e58425f45be4a0b5d2260ac0a40df5315bc6e9cbe5bed24896b6fb068e",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json",
+          "sha256": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f",
+          "bindings": 38,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/correctness.json",
+          "sha256": "a36ecec07bb575f8740cb8695288e044f41f52981a0c1ba06b72704278f4ae67",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/measurement-provenance.json",
+          "sha256": "803c34896fde9ba491cb632ce2b30a0d1ccb0165979415fdbdbcc6e26e177bf7",
+          "bindings": 8,
+          "recorded_snapshot_differences": [
+            {
+              "location": "/source_sha256",
+              "path": "prototypes/vr444/experiments/rgb_rowfilter/bench.cpp",
+              "recorded_sha256": "c543acdc923002cc294789926c7873084de6723149a6adf5f7d1bae16727f63e",
+              "pinned_sha256": "88b8956de6e0893be8d3110a20c7aad3d6f51b9fba9879e79abd6522e0ee79ab"
+            },
+            {
+              "location": "/source_sha256",
+              "path": "prototypes/vr444/experiments/rgb_rowfilter/build.sh",
+              "recorded_sha256": "999583e26ceff6cfdeb0255209852ae65ec5572ef43b4936fdbba06e0c317660",
+              "pinned_sha256": "bde4cb58dcadd88d97bfc36f2169fbcf8ad73db4e2988c309068f0059a715b01"
+            },
+            {
+              "location": "/source_sha256",
+              "path": "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp",
+              "recorded_sha256": "070d602e98db68c6eae88b3bcbd54f49e6decb265f130188f9d2a28e2ce7be4c",
+              "pinned_sha256": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2"
+            },
+            {
+              "location": "/source_sha256",
+              "path": "prototypes/vr444/experiments/rgb_rowfilter/test.cpp",
+              "recorded_sha256": "67c043172e0537e2739f5b6d3bad9b8b2233db12a7c0fd60381bda5b503b1fc1",
+              "pinned_sha256": "0ad621fd08eac90121fc1ca6cd6ca29bee265292e67a4cd09d28dc8b1f1312f7"
+            }
+          ]
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/results/summary.json",
+          "sha256": "f065afd57ec1ec58b835fadca6b4c46688b073070e9b761cee144c06fff4d114",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/simd-results/benchmark.json",
+          "sha256": "b35227ad23563d0f6b1389901f127292388767f2f97810ed4e8aae9b88715ad1",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/simd-results/correctness.json",
+          "sha256": "7e93579e03e07eb7967da71cb029553f4d7ffc6b33659658b9f61073ac66195d",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/simd-results/measurement-provenance.json",
+          "sha256": "21bd2fee0116dc5fac5d836b8df0a8da9d81bafa99c0885ce0f98757ac294d8e",
+          "bindings": 12,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowfilter/simd-results/summary.json",
+          "sha256": "b6c29260a0667f7fcad409bed16e90efd983aeff291aa24428b7f5c983fe789c",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "xor-interleave",
+      "branch": "research/sub15-20261009/xor-interleave",
+      "commit": "db48e2acf6ea936854b5e72e3db90a49ff87c0e4",
+      "directory": "prototypes/vr444/experiments/xor_interleave",
+      "directory_files": [
+        "prototypes/vr444/experiments/xor_interleave/README.txt",
+        "prototypes/vr444/experiments/xor_interleave/matrix.py",
+        "prototypes/vr444/experiments/xor_interleave/results/model.json",
+        "prototypes/vr444/experiments/xor_interleave/results/provenance.json",
+        "prototypes/vr444/experiments/xor_interleave/results/tests.txt",
+        "prototypes/vr444/experiments/xor_interleave/summarize.py",
+        "prototypes/vr444/experiments/xor_interleave/test_transport.py",
+        "prototypes/vr444/experiments/xor_interleave/transport.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/xor_interleave/README.txt",
+          "sha256": "8c77ba8bd15e488607d88eaabdcb0cfbb672c80922b7ad2c1e24a52dd7e69016",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/xor_interleave/results/model.json",
+          "sha256": "e9eff0968df717c3ef01310a6fe04c80c794d9ed08d676af6c1a8887f0491383",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/xor_interleave/results/provenance.json",
+          "sha256": "8ec3b89a674f484bd4ebf396bc04df9c3605b0879ea3e59e5843052242068cce",
+          "bindings": 5,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/xor_interleave/results/tests.txt",
+          "sha256": "fd099e45f76ad432f25c5db64318e93bcdb631e3d0af2ea0a6ac886f626dd419",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rgb-rowblocks",
+      "branch": "research/sub15-20261009/rgb-rowblocks",
+      "commit": "52b355f71135096b68bc5fde413940996c748f07",
+      "directory": "prototypes/vr444/experiments/rgb_rowblocks",
+      "directory_files": [
+        "prototypes/vr444/experiments/rgb_rowblocks/README.txt",
+        "prototypes/vr444/experiments/rgb_rowblocks/bench.cpp",
+        "prototypes/vr444/experiments/rgb_rowblocks/build-android.sh",
+        "prototypes/vr444/experiments/rgb_rowblocks/build.sh",
+        "prototypes/vr444/experiments/rgb_rowblocks/export.cpp",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/manifest.json",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/plain-tail.rgba",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/plain-tail.rrb",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/raw-odd.rgba",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/raw-odd.rrb",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/raw-up-reset.rgba",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/raw-up-reset.rrb",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/up-tail-reset.rgba",
+        "prototypes/vr444/experiments/rgb_rowblocks/fixtures/up-tail-reset.rrb",
+        "prototypes/vr444/experiments/rgb_rowblocks/golden.py",
+        "prototypes/vr444/experiments/rgb_rowblocks/results/benchmark.json",
+        "prototypes/vr444/experiments/rgb_rowblocks/results/corpus-hashes.json",
+        "prototypes/vr444/experiments/rgb_rowblocks/results/correctness.json",
+        "prototypes/vr444/experiments/rgb_rowblocks/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rgb_rowblocks/results/summary.json",
+        "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp",
+        "prototypes/vr444/experiments/rgb_rowblocks/summarize.py",
+        "prototypes/vr444/experiments/rgb_rowblocks/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowblocks/README.txt",
+          "sha256": "17ddd6efbfb3c96abba781b1683524b30d6d9b9212aa6e9f3fee92689d683d95",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowblocks/fixtures/manifest.json",
+          "sha256": "d264fd91c99d9b16fbaee510a4bcf072b6b296b024c35fa6fa64bf216dacd6e5",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowblocks/results/benchmark.json",
+          "sha256": "e5c0470a778da46d73019a9a0699119d63888096c7dc2a8df1b3c9ddd8e8ffb3",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowblocks/results/corpus-hashes.json",
+          "sha256": "c732fffe2a24894c487b11e5552098cd9531d6c29e5f52a63ae2865445af99b4",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowblocks/results/correctness.json",
+          "sha256": "861d24ec584103507ab9a2f132b922c40f8cb6daa0195ecde091bd7ec3ff5b0c",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowblocks/results/measurement-provenance.json",
+          "sha256": "1fa0dba3cc5b68307106da46e558e0e1550727a11822b8642996ed7303b54606",
+          "bindings": 11,
+          "recorded_snapshot_differences": [
+            {
+              "location": "/source_sha256",
+              "path": "prototypes/vr444/experiments/rgb_rowblocks/README.txt",
+              "recorded_sha256": "031daa2bab3b089f1403fbbcaa7dab66b55224439c2c4bc9ac16057c23b2b7c7",
+              "pinned_sha256": "17ddd6efbfb3c96abba781b1683524b30d6d9b9212aa6e9f3fee92689d683d95"
+            },
+            {
+              "location": "/source_sha256",
+              "path": "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp",
+              "recorded_sha256": "311f1e8f0880e401f61823d0461dfa60931db7abbc7b6b707f1ed45f9773d6e5",
+              "pinned_sha256": "ea35ce11cd12a690db5ec7187bc20689a56288a25c01fd1229056e67d38f9dbe"
+            }
+          ]
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_rowblocks/results/summary.json",
+          "sha256": "2c419958016f322635af2e2f322c0fa3cd5ce7c1bd600d3497feacd3fcdd0775",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rowblocks-workers",
+      "branch": "research/sub15-20261009/rowblocks-workers",
+      "commit": "260a1a2244b2381270398b65a1d3d2d282867508",
+      "directory": "prototypes/vr444/experiments/rowblocks_workers",
+      "directory_files": [
+        "prototypes/vr444/experiments/rowblocks_workers/README.txt",
+        "prototypes/vr444/experiments/rowblocks_workers/bench.cpp",
+        "prototypes/vr444/experiments/rowblocks_workers/build-android.sh",
+        "prototypes/vr444/experiments/rowblocks_workers/build.sh",
+        "prototypes/vr444/experiments/rowblocks_workers/results/asan-ubsan.json",
+        "prototypes/vr444/experiments/rowblocks_workers/results/benchmark.json",
+        "prototypes/vr444/experiments/rowblocks_workers/results/independent-goldens.json",
+        "prototypes/vr444/experiments/rowblocks_workers/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rowblocks_workers/results/summary.json",
+        "prototypes/vr444/experiments/rowblocks_workers/results/tsan.txt",
+        "prototypes/vr444/experiments/rowblocks_workers/summarize.py",
+        "prototypes/vr444/experiments/rowblocks_workers/test.cpp",
+        "prototypes/vr444/experiments/rowblocks_workers/workers.hpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_workers/README.txt",
+          "sha256": "d5bf9c37ef0df7c78200f25011b92fcb5dd3db8fbf371c7765384857c5df52ad",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_workers/results/asan-ubsan.json",
+          "sha256": "9e0b79abf96568abb80f90342e55d5764828b40cc4fb32777615546c9f805cad",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_workers/results/benchmark.json",
+          "sha256": "84d49986c379a988b17dfd92023807595572328c6b2ca3e43e2cee9d43811fda",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_workers/results/independent-goldens.json",
+          "sha256": "d264fd91c99d9b16fbaee510a4bcf072b6b296b024c35fa6fa64bf216dacd6e5",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_workers/results/measurement-provenance.json",
+          "sha256": "241cb227fa4d8eca134664eb49ac8b4927586f1d36ce323cf1857259f8cb7493",
+          "bindings": 10,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_workers/results/summary.json",
+          "sha256": "a124ed6c62e5d7a3e4567731f80e00812f728375daf5651db074e89ee2c8103d",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_workers/results/tsan.txt",
+          "sha256": "9e0b79abf96568abb80f90342e55d5764828b40cc4fb32777615546c9f805cad",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rgb-channelplanes",
+      "branch": "research/sub15-20261009/rgb-channelplanes",
+      "commit": "afb5b5923aaa17ffbd1e92d40c1e60a17c1dde34",
+      "directory": "prototypes/vr444/experiments/rgb_channelplanes",
+      "directory_files": [
+        "prototypes/vr444/experiments/rgb_channelplanes/README.txt",
+        "prototypes/vr444/experiments/rgb_channelplanes/bench.cpp",
+        "prototypes/vr444/experiments/rgb_channelplanes/build-android.sh",
+        "prototypes/vr444/experiments/rgb_channelplanes/build.sh",
+        "prototypes/vr444/experiments/rgb_channelplanes/channelplanes.hpp",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/green-interleaved.rcp",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/green-interleaved.rgba",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/green-planes-plain.rcp",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/green-planes-plain.rgba",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/green-planes-up.rcp",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/green-planes-up.rgba",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/manifest.json",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/planes-plain.rcp",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/planes-plain.rgba",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/raw-odd.rcp",
+        "prototypes/vr444/experiments/rgb_channelplanes/fixtures/raw-odd.rgba",
+        "prototypes/vr444/experiments/rgb_channelplanes/golden.py",
+        "prototypes/vr444/experiments/rgb_channelplanes/results/benchmark.json",
+        "prototypes/vr444/experiments/rgb_channelplanes/results/correctness.json",
+        "prototypes/vr444/experiments/rgb_channelplanes/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rgb_channelplanes/results/summary.json",
+        "prototypes/vr444/experiments/rgb_channelplanes/summarize.py",
+        "prototypes/vr444/experiments/rgb_channelplanes/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rgb_channelplanes/README.txt",
+          "sha256": "d0a87c8256c1a5973b5bc20c1b8dacf28a45083cf3ac8dd68fac5a5db9deb71a",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_channelplanes/fixtures/manifest.json",
+          "sha256": "331e094707bfb5d5fb0cc0a679c4b4c72d087f8bbb69d1bef8092d90e044ce99",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_channelplanes/results/benchmark.json",
+          "sha256": "8fd6bebe539b60475ff13727d948f50d808e027c4940bd6a920d0b4f98573e85",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_channelplanes/results/correctness.json",
+          "sha256": "fed5bf39064fa39e3a3edc64df8919b8f3c48bdc05531f2e36d4efd28014f456",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_channelplanes/results/measurement-provenance.json",
+          "sha256": "474becffef36668f00fe6cc0d7a7955b81d1de07a5aa6ee679e3e2f6911713ca",
+          "bindings": 10,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rgb_channelplanes/results/summary.json",
+          "sha256": "631c29011b36790183aecc99f3f76e4e688f6778345ec77db33c9fec1651aa53",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "codec-transport-budget",
+      "branch": "research/sub15-20261009/codec-transport-budget",
+      "commit": "87236b3339ff0253ebc283810012a24e14043599",
+      "directory": "prototypes/vr444/experiments/codec_transport_budget",
+      "directory_files": [
+        "prototypes/vr444/experiments/codec_transport_budget/README.txt",
+        "prototypes/vr444/experiments/codec_transport_budget/compact.py",
+        "prototypes/vr444/experiments/codec_transport_budget/model.py",
+        "prototypes/vr444/experiments/codec_transport_budget/results/codec_transport_budget-tests.txt",
+        "prototypes/vr444/experiments/codec_transport_budget/results/datagram_xor-tests.txt",
+        "prototypes/vr444/experiments/codec_transport_budget/results/matrix.json",
+        "prototypes/vr444/experiments/codec_transport_budget/results/receipt.json",
+        "prototypes/vr444/experiments/codec_transport_budget/test_model.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/codec_transport_budget/README.txt",
+          "sha256": "33e5f1a27e1ceb532cd571ea62454796246c314ee2853281a1beb042f8829b98",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/codec_transport_budget/results/codec_transport_budget-tests.txt",
+          "sha256": "9c3b19efb0191d5efbeec3a892fe737ac64c5d130495747e792d49b230378395",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/codec_transport_budget/results/datagram_xor-tests.txt",
+          "sha256": "4d6054ce78061435821a6e184b5779f3579f2c00151fc713e969f6ee6d9f5014",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/codec_transport_budget/results/matrix.json",
+          "sha256": "8f1da4daab1d84aa5e9a7aeaefd5c0e3ee44edf9065898e010eaa49f1eb37350",
+          "bindings": 5,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/codec_transport_budget/results/receipt.json",
+          "sha256": "719e85ac755e02b39faa685302d5f4d5d0584c4d158179cdd5c50f9013edcb72",
+          "bindings": 10,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "codec-udp-interop",
+      "branch": "research/sub15-20261009/codec-udp-interop",
+      "commit": "f1fe2e43924de5202de6bcffc0710639714003df",
+      "directory": "prototypes/vr444/experiments/codec_udp_interop",
+      "directory_files": [
+        "prototypes/vr444/experiments/codec_udp_interop/README.txt",
+        "prototypes/vr444/experiments/codec_udp_interop/build-android.sh",
+        "prototypes/vr444/experiments/codec_udp_interop/build.py",
+        "prototypes/vr444/experiments/codec_udp_interop/build.sh",
+        "prototypes/vr444/experiments/codec_udp_interop/decode.cpp",
+        "prototypes/vr444/experiments/codec_udp_interop/qualify.py",
+        "prototypes/vr444/experiments/codec_udp_interop/relay.cpp",
+        "prototypes/vr444/experiments/codec_udp_interop/results/build-receipt.json",
+        "prototypes/vr444/experiments/codec_udp_interop/results/qualification.json",
+        "prototypes/vr444/experiments/codec_udp_interop/results/receipt.json",
+        "prototypes/vr444/experiments/codec_udp_interop/test_interop.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/codec_udp_interop/README.txt",
+          "sha256": "f72a292709a56bf9a5810dbc4ab97ede9668518ccb02999d6f72ed5c8d757263",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/codec_udp_interop/results/build-receipt.json",
+          "sha256": "18610a565f1a5424296e05138c2483b404fd7a10d2a2d567bfc76d344a1a5c0a",
+          "bindings": 14,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/codec_udp_interop/results/qualification.json",
+          "sha256": "8cb640243128f03a6ed5af46029790c55117fa385f26e3e076155763784d7f66",
+          "bindings": 248,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/codec_udp_interop/results/receipt.json",
+          "sha256": "c370f6ad1e7a81c9b10df7b05e9107bed889f2ff70ea17d5116667502450dd49",
+          "bindings": 22,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rowblocks-encoder-workers",
+      "branch": "research/sub15-20261009/rowblocks-encoder-workers",
+      "commit": "b8371b8be079ef81a1f32ce0804014ebed2d17e5",
+      "directory": "prototypes/vr444/experiments/rowblocks_encoder_workers",
+      "directory_files": [
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/README.txt",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/RESULTS.txt",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/bench.cpp",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/build-android.sh",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/build.sh",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/encoder.hpp",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/measure.py",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/results/asan.json",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/results/benchmark.json",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/results/qualification.json",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/results/summary.json",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/results/tsan.json",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/summarize.py",
+        "prototypes/vr444/experiments/rowblocks_encoder_workers/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/README.txt",
+          "sha256": "dbd25c8b9c8bc46bcb4f1e95de4ab6b54e3625aa39bc0aa55c86769097083caa",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/RESULTS.txt",
+          "sha256": "fc18835d6d28e1381dba6ae3f508c2ca9cd0892bb14bd977c0c6a0fc71a4ba26",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/results/asan.json",
+          "sha256": "e02bc7d65209b463760e289bb80295edbf2a9f42ab323efee187cbc118960f07",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/results/benchmark.json",
+          "sha256": "71e28585380f4d33936e646ebfd1f411453192c11e21ed95b437abd5bb289039",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/results/measurement-provenance.json",
+          "sha256": "3d9c549b439aea19e66d9d9ac19ec0706f5cef96db3c86ca68720b32e1bc9a56",
+          "bindings": 18,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/results/qualification.json",
+          "sha256": "8483fba2bc37db59fe79376e1d9eb4179be0c797f960a55c43cb7285bfa308e0",
+          "bindings": 25,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/results/summary.json",
+          "sha256": "8f2ca769282e610f8c22dfe28618f13c6c5ae36abe79562c4728b578458ee805",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_encoder_workers/results/tsan.json",
+          "sha256": "e02bc7d65209b463760e289bb80295edbf2a9f42ab323efee187cbc118960f07",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rowblocks-fused-encoder",
+      "branch": "research/sub15-20261009/rowblocks-fused-encoder",
+      "commit": "355b3b131556dccbe68284187759699b2daebb4a",
+      "directory": "prototypes/vr444/experiments/rowblocks_fused_encoder",
+      "directory_files": [
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/README.txt",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/RESULTS.txt",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/bench.cpp",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/build-android.sh",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/build.sh",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/encoder.hpp",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/measure.py",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/results/asan.json",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/results/benchmark.json",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/results/qualification.json",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/results/summary.json",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/results/tsan.json",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/summarize.py",
+        "prototypes/vr444/experiments/rowblocks_fused_encoder/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_fused_encoder/README.txt",
+          "sha256": "19e49fb8a1ba5eb2160925787c78d284468e4dfdd8c07b16f5122727a3e518b2",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_fused_encoder/RESULTS.txt",
+          "sha256": "eaedb62eb764db0cd10538fd5dd8e523535540e25856c46f6ec6a8048872ad73",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_fused_encoder/results/asan.json",
+          "sha256": "ca64d910eb345ced4983b25bdd81768536c27ab94880db37c9e478e6a1a48527",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_fused_encoder/results/benchmark.json",
+          "sha256": "f379e601a86df118317241598a744b419c9cd5ceda362be8900704b0a06d5cf4",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_fused_encoder/results/measurement-provenance.json",
+          "sha256": "6211bd648621ee6bea753722f90b3df60f843a3556e706d98b3f346957ccc3af",
+          "bindings": 19,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_fused_encoder/results/qualification.json",
+          "sha256": "cd82cc99f4f9cac9ce5ddf8b77e4293d40bee423aa3cd1dedc623d4b732f4cfa",
+          "bindings": 26,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_fused_encoder/results/summary.json",
+          "sha256": "9aaa0b9a8fd73c58cc73b76595ce7b6f1ae1f3a779588e54a763913624187766",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_fused_encoder/results/tsan.json",
+          "sha256": "a132b0571f6f7e6de6fc9a053efd85fb185a506b03604c521e3f4ef7a587120f",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "latency-wire-frontier",
+      "branch": "research/sub15-20261009/latency-wire-frontier",
+      "commit": "4ca8993cd9f604a4450546ba0b1fd4422c523f9a",
+      "directory": "prototypes/vr444/experiments/latency_wire_frontier",
+      "directory_files": [
+        "prototypes/vr444/experiments/latency_wire_frontier/README.txt",
+        "prototypes/vr444/experiments/latency_wire_frontier/RESULTS.txt",
+        "prototypes/vr444/experiments/latency_wire_frontier/frontier.py",
+        "prototypes/vr444/experiments/latency_wire_frontier/results/frontier.json",
+        "prototypes/vr444/experiments/latency_wire_frontier/results/qualification.json",
+        "prototypes/vr444/experiments/latency_wire_frontier/results/tests.txt",
+        "prototypes/vr444/experiments/latency_wire_frontier/results/vxf-tests.txt",
+        "prototypes/vr444/experiments/latency_wire_frontier/test_frontier.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/latency_wire_frontier/README.txt",
+          "sha256": "61aeeec1c1a22bc75e8047a035f1b2a74f0c12980f70c1b1c14fc41fd7f45401",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/latency_wire_frontier/RESULTS.txt",
+          "sha256": "f9a1f68aa7112b6955cebb52f2960facedacd89da59ecfd1b4010f321df287b0",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/latency_wire_frontier/results/frontier.json",
+          "sha256": "4cc2eafc2a55a8cd96b12fba9270f02910e4663b56b324dc635a135d7fcece5f",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/latency_wire_frontier/results/qualification.json",
+          "sha256": "46db5c6ee0f86eb183ba24b607fe2fe783f82df6b88a836c5fa07eec5d8efd8d",
+          "bindings": 31,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/latency_wire_frontier/results/tests.txt",
+          "sha256": "f79b381d0d05745bfbf31d7c8210bddce1a3a9cf41162b481aa435f5ae40a44a",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/latency_wire_frontier/results/vxf-tests.txt",
+          "sha256": "cdbcce9df8828024dcf71e1adc03a4d828bc21cc1f4284ec12dab4b91422554e",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rowblocks-rgb-encoder",
+      "branch": "research/sub15-20261009/rowblocks-rgb-encoder",
+      "commit": "2066d45396b7bb93be8d6584c6bdcc1491c0f1f5",
+      "directory": "prototypes/vr444/experiments/rowblocks_rgb_encoder",
+      "directory_files": [
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/README.txt",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/RESULTS.txt",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/bench.cpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/build-android.sh",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/build.sh",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/direct_rgb.cpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/direct_rgb.hpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/encode_rgb.hpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/encoder.hpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/measure.py",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/asan.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/benchmark.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/qualification.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/summary.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/tsan.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/summarize.py",
+        "prototypes/vr444/experiments/rowblocks_rgb_encoder/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_encoder/README.txt",
+          "sha256": "2008cd5e306b0b1c2bb497a33aea4dd290774f34a5b09eba30382decc2287ab2",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_encoder/RESULTS.txt",
+          "sha256": "c90c066a72140762f9c8098d585d40e5dccd4a36df498c9d26aacfe00fb40563",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/asan.json",
+          "sha256": "341845732bc2bb32de80a052e566295ad0e75036eed82e873b63660045607de2",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/benchmark.json",
+          "sha256": "4c4d99acdacae4dd101e7a05651accfff3abb90ca3ff4f33a65f504a8798362b",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/measurement-provenance.json",
+          "sha256": "603e5571e2fa29385666b0bbeabca95225597b34c4e077e5f59a89f4ea260fab",
+          "bindings": 23,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/qualification.json",
+          "sha256": "b754f33b521e227f42e0800cbee69ee187ed4b9f29c3da01598731717b68c5db",
+          "bindings": 30,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/summary.json",
+          "sha256": "e18cd964d9e81a3870bfdb7b37aa0abb22630019d123f22c82135eeceb34ccb9",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_encoder/results/tsan.json",
+          "sha256": "341845732bc2bb32de80a052e566295ad0e75036eed82e873b63660045607de2",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rowblocks-rgb-vector",
+      "branch": "research/sub15-20261009/rowblocks-rgb-vector",
+      "commit": "a0ee674309a7b479eb0fb79dbed86a515807c638",
+      "directory": "prototypes/vr444/experiments/rowblocks_rgb_vector",
+      "directory_files": [
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/README.txt",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/RESULTS.txt",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/bench.cpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/build-android.sh",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/build.sh",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/direct_rgb.cpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/direct_rgb.hpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/encode_rgb.hpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/encoder.hpp",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/measure.py",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/results/asan.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/results/benchmark.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/results/qualification.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/results/summary.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/results/tsan.json",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/summarize.py",
+        "prototypes/vr444/experiments/rowblocks_rgb_vector/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_vector/README.txt",
+          "sha256": "c2833d1601221aafcef5bcfc3e375b436c578f6239168bd2392e24d21ca53328",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_vector/RESULTS.txt",
+          "sha256": "0d044f141907b550f1240f11881c6342e5d16403047a2d5118f3124371075a3c",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_vector/results/asan.json",
+          "sha256": "dff5e4c9f15df699f771be482eed85f844e2f76e9d17672fb67ac471d873b046",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_vector/results/benchmark.json",
+          "sha256": "2f23ddd4f2ad1bf909910fba7c4ce4d130c4e9723083f807823bb37d03664ff7",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_vector/results/measurement-provenance.json",
+          "sha256": "609432c783284b2444f9f12b39b6b18a9fb264bd10fb2947f4cf6ed36cf3c897",
+          "bindings": 27,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_vector/results/qualification.json",
+          "sha256": "92d3e94bee7beb6c976309ca85bd0f13cc458e43f5cbdc498acd355bccaa58e3",
+          "bindings": 34,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_vector/results/summary.json",
+          "sha256": "ff7cce7f4bf52ecafd6d682b77a505815de4a6d7ca143c26662935a296b67f2b",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_rgb_vector/results/tsan.json",
+          "sha256": "3d688e7d73bbffe9a696329bfbd0e3e27bfa5da2daa62e924666b761e2f193d1",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rowblocks-band-views",
+      "branch": "research/sub15-20261009/rowblocks-band-views",
+      "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+      "directory": "prototypes/vr444/experiments/rowblocks_band_views",
+      "directory_files": [
+        "prototypes/vr444/experiments/rowblocks_band_views/README.txt",
+        "prototypes/vr444/experiments/rowblocks_band_views/RESULTS.txt",
+        "prototypes/vr444/experiments/rowblocks_band_views/bench.cpp",
+        "prototypes/vr444/experiments/rowblocks_band_views/build-android.sh",
+        "prototypes/vr444/experiments/rowblocks_band_views/build.sh",
+        "prototypes/vr444/experiments/rowblocks_band_views/direct_rgb.cpp",
+        "prototypes/vr444/experiments/rowblocks_band_views/direct_rgb.hpp",
+        "prototypes/vr444/experiments/rowblocks_band_views/encode_rgb.hpp",
+        "prototypes/vr444/experiments/rowblocks_band_views/encoder.hpp",
+        "prototypes/vr444/experiments/rowblocks_band_views/measure.py",
+        "prototypes/vr444/experiments/rowblocks_band_views/results/asan.json",
+        "prototypes/vr444/experiments/rowblocks_band_views/results/benchmark.json",
+        "prototypes/vr444/experiments/rowblocks_band_views/results/measurement-provenance.json",
+        "prototypes/vr444/experiments/rowblocks_band_views/results/qualification.json",
+        "prototypes/vr444/experiments/rowblocks_band_views/results/summary.json",
+        "prototypes/vr444/experiments/rowblocks_band_views/results/tsan.json",
+        "prototypes/vr444/experiments/rowblocks_band_views/summarize.py",
+        "prototypes/vr444/experiments/rowblocks_band_views/test.cpp"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_band_views/README.txt",
+          "sha256": "fc7e3b61703085397e8254dc2b96fd6bc9d3d82f32f4054b9772bea6aabef380",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_band_views/RESULTS.txt",
+          "sha256": "55ec1a6b878364651ea4e2af3d4a13ea95291246805c7d758bf0635149c9e4e1",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_band_views/results/asan.json",
+          "sha256": "887eb6b3e00bd641429d46008a3d64fa7fd60c15be24f569f5bd684ec4dc8cb2",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_band_views/results/benchmark.json",
+          "sha256": "a378286ab4edfa5796c92c3074ed93f5445615a30779d38d2c41acc7bc1593d7",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_band_views/results/measurement-provenance.json",
+          "sha256": "2673fea8a2f816ec74b4df68787660a0dbb0e4c6e7ac70403e2c3281f2e09c1a",
+          "bindings": 31,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_band_views/results/qualification.json",
+          "sha256": "aff89d0e721f37bbc8d58a86818edcda04118e2ba4492878498d5565996544af",
+          "bindings": 38,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_band_views/results/summary.json",
+          "sha256": "7470ec117cdfdb78525ef1d0ea035a3c501abb53201b2e4deedf7ff781e1b681",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_band_views/results/tsan.json",
+          "sha256": "887eb6b3e00bd641429d46008a3d64fa7fd60c15be24f569f5bd684ec4dc8cb2",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rowblock-stream",
+      "branch": "research/sub15-20261009/rowblock-stream",
+      "commit": "7f097f3da85bfbb008d3632ffe8592e6934ffd11",
+      "directory": "prototypes/vr444/experiments/rowblock_stream",
+      "directory_files": [
+        "prototypes/vr444/experiments/rowblock_stream/README.txt",
+        "prototypes/vr444/experiments/rowblock_stream/RESULTS.txt",
+        "prototypes/vr444/experiments/rowblock_stream/build-receipt.json",
+        "prototypes/vr444/experiments/rowblock_stream/build.py",
+        "prototypes/vr444/experiments/rowblock_stream/native.cpp",
+        "prototypes/vr444/experiments/rowblock_stream/qualification.json",
+        "prototypes/vr444/experiments/rowblock_stream/qualify.py",
+        "prototypes/vr444/experiments/rowblock_stream/test_transport.py",
+        "prototypes/vr444/experiments/rowblock_stream/transport.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblock_stream/README.txt",
+          "sha256": "b511fd51e2cf1dfecc91914ef66d3f93351709dba3f117eb684a0cfcdc802d80",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblock_stream/RESULTS.txt",
+          "sha256": "eb7070b95a76404840358ef52073c130afa73fc0eaaafc5a61093101c11748d4",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblock_stream/build-receipt.json",
+          "sha256": "148e55ddc7c52f8786592a236e6d190e592485b629883b4d243e16cbc96b9994",
+          "bindings": 11,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblock_stream/qualification.json",
+          "sha256": "736fdea1a8056f3592fe2e591f02f09ebf15dd3c1a47acc6ae7fa6f53a733886",
+          "bindings": 246,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    },
+    {
+      "id": "rowblock-stream-fec",
+      "branch": "research/sub15-20261009/rowblock-stream-fec",
+      "commit": "8e5d1d50b77b9857817890f1c7466e90f0db38e1",
+      "directory": "prototypes/vr444/experiments/rowblock_stream_fec",
+      "directory_files": [
+        "prototypes/vr444/experiments/rowblock_stream_fec/README.txt",
+        "prototypes/vr444/experiments/rowblock_stream_fec/RESULTS.txt",
+        "prototypes/vr444/experiments/rowblock_stream_fec/qualification.json",
+        "prototypes/vr444/experiments/rowblock_stream_fec/qualify.py",
+        "prototypes/vr444/experiments/rowblock_stream_fec/test_transport.py",
+        "prototypes/vr444/experiments/rowblock_stream_fec/transport.py"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblock_stream_fec/README.txt",
+          "sha256": "062fc58a7b6cbf9c2f40c225511222b67934f1735590c620359152c833f121e9",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblock_stream_fec/RESULTS.txt",
+          "sha256": "e492b5de7d7c4f9d5b6fd9b603ca4217a603d5f3ff99a55d6dc3efedd1ca0ccc",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblock_stream_fec/qualification.json",
+          "sha256": "f848d609631190c28b68b2dccee4c6ad54a15cea81faf143774d4749ea62425b",
+          "bindings": 248,
+          "recorded_snapshot_differences": []
+        }
+      ]
+    }
+  ],
+  "headset_testing_suspended": true,
+  "promotion_eligible": false
+}

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "created_utc": "2026-10-09T10:32:22.132932+00:00",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "-v",
+    "test_catalog.py"
+  ],
+  "tests_observed_pass": 12,
+  "source_sha256": {
+    "catalog.py": "74d7015a774f1d4f9d4ced22858750928982b31e10e3494705133b0487f07565",
+    "run.py": "3d1f2622d7555b7449dcaea5136788c596e10e19cea1b6bc2e81daba55419b34",
+    "test_catalog.py": "ccc41aa412d99a496117df5cf47248fbe149444b2526546f16494308efdc7326"
+  },
+  "scope": "Observed 12 targeted adversarial unit tests; complete pinned-suite execution is recorded separately in fresh-suite.json.",
+  "headset_operations": false,
+  "promotion_eligible": false
+}

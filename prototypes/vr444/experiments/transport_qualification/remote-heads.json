@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "checked_utc": "2026-10-09T10:31:54.934336+00:00",
+  "remote": "origin",
+  "remote_url": "https://github.com/jebot-git/WiVRn-Pro.git",
+  "branch_count": 22,
+  "heads": {
+    "refs/heads/research/sub15-20261009/codec-transport-budget": "87236b3339ff0253ebc283810012a24e14043599",
+    "refs/heads/research/sub15-20261009/codec-udp-interop": "f1fe2e43924de5202de6bcffc0710639714003df",
+    "refs/heads/research/sub15-20261009/datagram-xor": "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df",
+    "refs/heads/research/sub15-20261009/latency-wire-frontier": "4ca8993cd9f604a4450546ba0b1fd4422c523f9a",
+    "refs/heads/research/sub15-20261009/rgb-channelplanes": "afb5b5923aaa17ffbd1e92d40c1e60a17c1dde34",
+    "refs/heads/research/sub15-20261009/rgb-palette": "a686dfe3b5cd9e2b6f81f90cf2d5a87e8bda6106",
+    "refs/heads/research/sub15-20261009/rgb-rowblocks": "52b355f71135096b68bc5fde413940996c748f07",
+    "refs/heads/research/sub15-20261009/rgb-rowfilter": "2773a29a179cbab87bbeb31c4a7303eb565a77fa",
+    "refs/heads/research/sub15-20261009/rgb-rowfilter-simd": "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8",
+    "refs/heads/research/sub15-20261009/rowblock-stream": "7f097f3da85bfbb008d3632ffe8592e6934ffd11",
+    "refs/heads/research/sub15-20261009/rowblock-stream-fec": "8e5d1d50b77b9857817890f1c7466e90f0db38e1",
+    "refs/heads/research/sub15-20261009/rowblocks-band-views": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
+    "refs/heads/research/sub15-20261009/rowblocks-encoder-workers": "b8371b8be079ef81a1f32ce0804014ebed2d17e5",
+    "refs/heads/research/sub15-20261009/rowblocks-fused-encoder": "355b3b131556dccbe68284187759699b2daebb4a",
+    "refs/heads/research/sub15-20261009/rowblocks-rgb-encoder": "2066d45396b7bb93be8d6584c6bdcc1491c0f1f5",
+    "refs/heads/research/sub15-20261009/rowblocks-rgb-vector": "a0ee674309a7b479eb0fb79dbed86a515807c638",
+    "refs/heads/research/sub15-20261009/rowblocks-workers": "260a1a2244b2381270398b65a1d3d2d282867508",
+    "refs/heads/research/sub15-20261009/static-dictionary": "5eb6ac1470dc1c1a7caeecd0e7877d44eb8a6440",
+    "refs/heads/research/sub15-20261009/transport-queue": "512f3b893da4901a84fa06c2a6fd323f35f12389",
+    "refs/heads/research/sub15-20261009/udp-batch": "3075ff7c72e53ab83a77bd56e6fef2a50708b654",
+    "refs/heads/research/sub15-20261009/udp-offload": "74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f",
+    "refs/heads/research/sub15-20261009/xor-interleave": "db48e2acf6ea936854b5e72e3db90a49ff87c0e4"
+  },
+  "meaning": "Exact remote heads at this read; not test execution or a guarantee against later branch changes."
+}
