@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Read-only CPU/Q1 capture requalification; no live operations",
+  "tests": 4,
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "prototypes/vr444/experiments/native_rrb_evidence",
+        "-p",
+        "test_record.py"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "artifact_sha256": {
+    "record.py": "16021a03ccb92f551decc1097ce4923cc71a8b7053318314a172c71e6f33272e",
+    "test_record.py": "ff9dbb9487645c2332f986b7efb9d457cd9756577e0f0b9ed1ab31a56d82838d",
+    "cpu-q8.json": "12930af55c30fb9789b67a6d5352ac8724a0a8e786094864df370a692ffbac0d",
+    "q1-chroma-grid.json": "0c6d015e8b6525b55994481f158e3520e440c9e590bfb0039ec2f0a9c589a2ce",
+    "tests.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests.stderr": "119eb158af9c8a17b35e94789e871de6f57880473f2db9e480f799d8e7a49d2d",
+    "RESULTS.txt": "b3e15c623179f530468d9e3493c4bdc5075f4e3af8d2910c8ba33284f416c360"
+  },
+  "full_goal_qualified": false
+}
