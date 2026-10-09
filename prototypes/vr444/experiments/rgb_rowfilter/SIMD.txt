@@ -1,0 +1,84 @@
+Separate scalar / SIMD row-filter comparison
+===========================================
+
+Branch research/sub15-20261009/rgb-rowfilter-simd inherits the RRF1 format and
+strict grammar from2773a29. Header, CRC, filtering, fallback choices and output
+bytes are unchanged. The original scalar measurements remain in results/;
+the new seven-arm matched measurements belong in simd-results/. Do not compare
+unmatched timings across the two host runs.
+
+Explicit vector paths cover opaque RGBA->RGB packing, RGB->RGBA expansion,
+previous-row subtraction and row reconstruction. x86 uses runtime-checked SSSE3
+for packing/expansion and baseline SSE2 byte operations for row arithmetic.
+SSSE3-disabled hosts fall back to scalar pack/expand. Little-endian AArch64 uses
+NEON vld3/vld4 and vst3/vst4 plus byte add/subtract. Other targets retain scalar
+fallback. Input/output stores may be unaligned. The SSSE3 expansion load includes
+four lookahead bytes, so it runs only with at least six RGB pixels remaining;
+the scalar tail handles the final pixels. Packing stores exactly twelve bytes
+per four pixels. NEON operates only on complete sixteen-pixel groups.
+
+The optional trailing bool on encode/decode_into/predict/restore chooses explicit
+SIMD or scalar arithmetic. Existing callers keep the same signatures via a default
+true argument. Scalar code still permits normal compiler optimization; it is not
+an artificial no-vectorization control. No unchecked new wire mode is introduced.
+unpack_rgb and inspect remain unchanged and provide the same complete bounded
+residual API for shader experiments. All filtering operates modulo256 on existing
+RGB code values. Alpha255 remains enforced on every lane and scalar tail.
+
+Build and compare
+-----------------
+  prototypes/vr444/experiments/rgb_rowfilter/build.sh /tmp/wivrn-rgb-rowfilter-simd-build
+  /tmp/wivrn-rgb-rowfilter-simd-build/test
+  prototypes/vr444/experiments/rgb_rowfilter/build-android.sh
+  /tmp/wivrn-rgb-rowfilter-simd-build/compare \
+    validation/results/codec-viability-0.8.0/compact/corpus 31 > /tmp/rrf-simd.json
+  python3 prototypes/vr444/experiments/rgb_rowfilter/summarize_simd.py \
+    /tmp/rrf-simd.json /tmp/rrf-simd-summary.json
+
+ARM64 API29 outputs are compile-only test/compare binaries. No ADB, headset or
+native runtime operation is performed. The Android compile does not enable
+WPC_ARM_CRC; CRC behavior is the existing software implementation in both arms.
+
+Validation
+----------
+ASan+UBSan:271 roundtrips,8,422 rejection checks,10,000 mutations, maximum4MP,
+65 primitive lengths1..65 exercising exact allocation tails and unaligned guarded
+buffers. All33 positions in a33-pixel input reject alpha!=255 in both implementations.
+All encoder policies produce identical scalar/SIMD wire bytes in generated cases;
+both decoders preserve the independent original pixels. Four manually authored
+raw/LZ4 golden vectors pass. The measured38 cases additionally require canonical
+wire equality across scalar/SIMD policies, not merely equal sizes or output pixels.
+An independent compositor-team read-only review found no blocker in validated
+encode/decode bounds, vector tails, row dependencies or residual lifetime rules.
+
+Comparison includes VR444/LZ4 control plus scalar and SIMD versions of plain,
+up and adaptive RGB policies,3 warmups and31 repetitions each. It keeps24 captured
+eyes and14 synthetic cases. Timing includes source reconstruction, wrapper work,
+strict grammar/CRC/LZ4 processing and RGB restoration/expansion. Exact comparisons
+remain outside timing. Group values are means of per-eye p50s, not pooled p95 or
+stereo completion predictions. Wire costs and corpus limitations from README.txt
+still apply. In particular, vectorization cannot remove Q8's observed wire growth.
+
+This is one host without affinity/frequency/thermal control. Collaborator jobs are
+held for the short run; normal desktop/services continue. Runtime speed and feature
+availability on an Android/headset device remain untested. No performance result
+here qualifies strict receive-to-submit, compositor or optical latency.
+
+Frozen host result
+------------------
+All38 cases x7 profiles x31 repetitions pass exact pixels; scalar and SIMD wire
+bytes are identical for all three policies. Representative mean per-eye p50 ms:
+
+  Group       VR444 client  scalar Up client  SIMD Up client  VR444 server  SIMD Up server
+  Q1 captures     .228250          .282741         .208605        .068484         .369682
+  paired-a Q8      .403451          .375256         .304403        .095076         .690381
+  paired-b Q8      .328948          .333518         .261388        .081748         .576335
+
+Explicit SIMD saves about.072-.074 ms of client work versus this branch's scalar
+Up implementation on these captures. The generic loop refactor also lets the
+compiler optimize row arithmetic differently from2773a29; do not attribute the
+entire historical change to explicit intrinsics. Compared with matched VR444,
+SIMD Up saves only.020 ms on Q1 client work while adding.301 ms server transcode.
+The Q1 wire saving remains43.35%; Q8 wire still grows27.88-36.07%. Combined host
+server+client work remains worse than VR444/LZ4. Retain as an exact bandwidth/CPU
+tradeoff and as a better CPU control for shader trials, not a promoted latency path.

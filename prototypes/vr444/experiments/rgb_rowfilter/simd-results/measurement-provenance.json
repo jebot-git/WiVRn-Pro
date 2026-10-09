@@ -1,0 +1,35 @@
+{
+  "created_utc": "2026-10-09T06:58:33.754837+00:00",
+  "git_base": "2773a29a179cbab87bbeb31c4a7303eb565a77fa",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "cpu_model": "12th Gen Intel(R) Core(TM) i7-12700",
+  "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+  "headset_accessed": false,
+  "network_accessed": false,
+  "android_runtime_tested": false,
+  "source_sha256": {
+    "prototypes/vr444/experiments/rgb_rowfilter/README.txt": "fa55b18cee59c43c7a19f401e929f147009b9febab4d673c4963d844019c602b",
+    "prototypes/vr444/experiments/rgb_rowfilter/SIMD.txt": "36ab13c7985e68f2c3536446610ef3b3723007abcf048034ba444411db742d86",
+    "prototypes/vr444/experiments/rgb_rowfilter/bench.cpp": "88b8956de6e0893be8d3110a20c7aad3d6f51b9fba9879e79abd6522e0ee79ab",
+    "prototypes/vr444/experiments/rgb_rowfilter/build-android.sh": "1184232ec7d6f31479645945ee978952dff13d768f0eefa69b4220fb5cc6480b",
+    "prototypes/vr444/experiments/rgb_rowfilter/build.sh": "bde4cb58dcadd88d97bfc36f2169fbcf8ad73db4e2988c309068f0059a715b01",
+    "prototypes/vr444/experiments/rgb_rowfilter/export.cpp": "0d6d2a237b50d20dc7f3894e79324f87826147a524d3edb627641250de1f5ba7",
+    "prototypes/vr444/experiments/rgb_rowfilter/golden.py": "056566bf7c82db6d53d74ca18c04f20273277a00693ae70f8b3e0e4d27473998",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/rgb_rowfilter/summarize.py": "df1e96dd49a027fc37d05cce0f70f3110430b5b02fa264d68de8770b630a4d06",
+    "prototypes/vr444/experiments/rgb_rowfilter/summarize_simd.py": "93b385ddf9dc65c6add24a8ec3c36936bf89a34634321719e99530861a0e4d6b",
+    "prototypes/vr444/experiments/rgb_rowfilter/test.cpp": "0ad621fd08eac90121fc1ca6cd6ca29bee265292e67a4cd09d28dc8b1f1312f7"
+  },
+  "binary_sha256": {
+    "test": "02f3165b81a32c96b6230135f75b4b6ff0b3fe4a8339c651b48eba86a08dc733",
+    "compare": "f4390c12df8831d0a3f845237524080c607486dd411081033619960ecabeb600",
+    "export": "8d03a1abb69480f903b02307dbe7e2dde8b06ce6059ff416a0e78cca5d788c81",
+    "test-android": "76e52c1bd646b10f2028d3ae8bd66a83f9b357f4efe88a86ff414c7f511f520f",
+    "compare-android": "1025d63f558bd6c8ae392d7351b24a2c9d04b8dcbe0f7abaef7f2b7bc9c27be5"
+  },
+  "benchmark_sha256": "b35227ad23563d0f6b1389901f127292388767f2f97810ed4e8aae9b88715ad1",
+  "command": "/tmp/wivrn-rgb-rowfilter-simd-build/compare /home/blux/spatial-bridge/validation/results/codec-viability-0.8.0/compact/corpus 31",
+  "coordinated_window": "both GPU and compositor teams explicitly confirmed idle before final batch; ordinary desktop/services continued",
+  "limitations": "one x86 host without affinity/frequency/thermal control;24 captured eyes +14 synthetics; scalar permits compiler optimization; no network or headset/compositor/optical measurement"
+}

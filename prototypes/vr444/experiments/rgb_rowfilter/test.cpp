@@ -14,11 +14,26 @@ int main(int argc,char**argv){try{
     for(auto [width,height]:{std::pair{1u,1u},{1u,17u},{17u,1u},{15u,16u},{16u,15u},{16u,16u},{17u,17u},{35u,65u},{576u,640u}})
         for(unsigned kind=0;kind<5;++kind){std::vector<uint32_t>input(size_t(width)*height),output(input.size());
             for(unsigned y=0;y<height;++y)for(unsigned x=0;x<width;++x){unsigned color=kind==0?0:kind==1?0x123456:kind==2?(x*19+y*7)*0x010101:kind==3?((x/16+y/16)%2?0xff1234:0x99cc):rng();input[size_t(y)*width+x]=color|0xff000000u;}
-            for(Policy p:{Policy::plain,Policy::up,Policy::adaptive}){auto wire=encode(input,width,height,p,tx);auto shape=unpack_rgb(wire,rx);
+            for(Policy p:{Policy::plain,Policy::up,Policy::adaptive}){Workspace reference;auto scalar=encode(input,width,height,p,reference,false);auto wire=encode(input,width,height,p,tx,true);
+                need(std::equal(wire.begin(),wire.end(),scalar.begin(),scalar.end()));auto shape=unpack_rgb(wire,rx);
                 Bytes expected(input.size()*3);for(size_t i=0;i<input.size();++i)for(unsigned c=0;c<3;++c)expected[3*i+c]=uint8_t(input[i]>>(8*c));
                 if(shape.mode==2){Bytes residual;predict(expected,size_t(width)*3,residual);need(rx.rgb==residual);}else need(rx.rgb==expected);
-                decode_into(wire,output,rx);need(output==input);++trips;}
+                for(bool simd:{false,true}){decode_into(wire,output,rx,simd);need(output==input);++trips;}}
         }
+    // Exact-sized buffers exercise each SIMD load/store tail under ASan. Offset
+    // buffers separately verify unaligned accesses and untouched output guards.
+    unsigned simd_boundaries=0;
+    for(size_t n=1;n<=65;++n){std::vector<uint32_t>input(n),a(n),b(n);for(auto&p:input)p=rng()|0xff000000u;
+        Bytes rgb(n*3),reference(n*3);detail::pack(input,rgb,true);detail::pack(input,reference,false);need(rgb==reference);
+        detail::expand(rgb,a,true);detail::expand(rgb,b,false);need(a==input&&b==input);
+        Bytes guarded(n*3+2,0x77);detail::pack(input,std::span(guarded).subspan(1,n*3),true);need(guarded.front()==0x77&&guarded.back()==0x77);
+        std::vector<uint32_t>out(n+2,0x12345678u);detail::expand(std::span(guarded).subspan(1,n*3),std::span(out).subspan(1,n),true);
+        need(out.front()==0x12345678u&&out.back()==0x12345678u&&std::equal(input.begin(),input.end(),out.begin()+1));
+        Bytes filter_fast,filter_slow;predict(rgb,3,filter_fast,true);predict(rgb,3,filter_slow,false);need(filter_fast==filter_slow);
+        restore(filter_fast,3,true);restore(filter_slow,3,false);need(filter_fast==rgb&&filter_slow==rgb);++simd_boundaries;
+    }
+    for(size_t bad_lane=0;bad_lane<33;++bad_lane){std::vector<uint32_t>input(33,0xff123456);input[bad_lane]&=0x7fffffffu;Bytes rgb(99);
+        reject([&]{detail::pack(input,rgb,true);});reject([&]{detail::pack(input,rgb,false);});}
     // Independent row carry check, including modulo wrap and first-row identity.
     Bytes a{250,1,127,4,255,128,2,0,1,7,1,254},filtered;predict(a,6,filtered);
     need(filtered==Bytes({250,1,127,4,255,128,8,255,130,3,2,126}));restore(filtered,6);need(filtered==a);
@@ -45,5 +60,5 @@ int main(int argc,char**argv){try{
     reject([&]{encode(maximum,4096,1025,Policy::plain,tx);});input[0]=0x7faabbcc;reject([&]{encode(input,17,17,Policy::plain,tx);});
     reject([&]{decode_into(original,std::span<uint32_t>(output).first(output.size()-1),rx);});
     reject([&]{decode_into(tx.wire,maxout,tx);});
-    std::cout<<"{\"pass\":true,\"roundtrips\":"<<trips<<",\"rejections\":"<<rejections<<",\"mutations\":10000,\"maximum_pixels\":"<<max_pixels<<",\"output_unchanged_on_rejection\":true,\"independent_modulo_predictor_oracle\":true}\n";
+    std::cout<<"{\"pass\":true,\"roundtrips\":"<<trips<<",\"rejections\":"<<rejections<<",\"mutations\":10000,\"maximum_pixels\":"<<max_pixels<<",\"output_unchanged_on_rejection\":true,\"independent_modulo_predictor_oracle\":true,\"scalar_simd_canonical_wire_equal\":true,\"simd_boundary_cases\":"<<simd_boundaries<<",\"backend\":\""<<detail::backend()<<"\"}\n";
 }catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}

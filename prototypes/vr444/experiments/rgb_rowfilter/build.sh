@@ -12,5 +12,6 @@ clang -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -c "$lz/vendor
 clang++ "${flags[@]}" -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer "$exp/test.cpp" "$out/lz4-test.o" -o "$out/test"
 clang -O3 -DNDEBUG -c "$lz/vendor/lz4.c" -o "$out/lz4.o"
 clang++ "${flags[@]}" -O3 -DNDEBUG "$exp/bench.cpp" "$ref/codec.cpp" "$direct/direct.cpp" "$out/lz4.o" -o "$out/bench"
+clang++ "${flags[@]}" -O3 -DNDEBUG -DRRF_COMPARE_SIMD "$exp/bench.cpp" "$ref/codec.cpp" "$direct/direct.cpp" "$out/lz4.o" -o "$out/compare"
 clang++ "${flags[@]}" -O3 -DNDEBUG "$exp/export.cpp" "$ref/codec.cpp" "$out/lz4.o" -o "$out/export"
-printf '%s\n' "$out/test" "$out/bench" "$out/export"
+printf '%s\n' "$out/test" "$out/bench" "$out/compare" "$out/export"
