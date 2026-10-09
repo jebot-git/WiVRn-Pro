@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "kind": "read_only_original_acquisition_reverification",
+  "checked_at_utc": "2026-10-09T10:21:32.212855+00:00",
+  "root": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z",
+  "runs": [
+    {
+      "run": "01-cached",
+      "manifest_sha256": "e73b9d059f67b42863ad46ff81ceb458d8a3b88463aa9c96d0a64539491f750a",
+      "files_verified": 298
+    },
+    {
+      "run": "02-mapped",
+      "manifest_sha256": "0ab8828fb4ff5e8d7a26ea0b1dfbd1ded12dfb43acbbf344993249b8eb75ff99",
+      "files_verified": 298
+    },
+    {
+      "run": "03-mapped",
+      "manifest_sha256": "bb2d24476ad40aaf66b530d3565c0307564d8bbbb6d92b989e80a12806bf4bae",
+      "files_verified": 298
+    },
+    {
+      "run": "04-cached",
+      "manifest_sha256": "26da311a0b022761359515878cece849f28f4aecceaef8fe73a7283e8fecf15f",
+      "files_verified": 298
+    },
+    {
+      "run": "05-closest-traced",
+      "manifest_sha256": "38502bec943be9ad1c778a4775327dd4dbb0a32940b3fcc7946607a26b031371",
+      "files_verified": 300
+    }
+  ],
+  "files_verified": 1492,
+  "headset_operations": false,
+  "original_files_written": false,
+  "original_failed_summary_promoted": false
+}

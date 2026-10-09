@@ -1,0 +1,585 @@
+{
+  "schema": 1,
+  "kind": "pinned_compositor_research_catalog",
+  "approaches": [
+    {
+      "id": "compositor",
+      "branch": "research/sub15-20261009/compositor",
+      "commit": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/TRACE-GAP-REPAIR.txt",
+          "kind": "notes",
+          "sha256": "d88f119c14274b45b55b89da0942594e06b58e62ebfd8a1439c506d52959448a",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/trace-gap-reanalysis-20261009.json",
+          "kind": "analysis",
+          "sha256": "a44e8550157700dedcf426a3f035aeed11dd7fa002935a371c56cfef6c1c56e7",
+          "source_bindings": 3
+        }
+      ]
+    },
+    {
+      "id": "compositor-attempts",
+      "branch": "research/sub15-20261009/compositor-attempts",
+      "commit": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/RENDER-ATTEMPTS.txt",
+          "kind": "notes",
+          "sha256": "3cdb9622ea938d01fa0a99d8e8aa541d65b282c88f53397e0e89b6692f407009",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/attempt-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "28d9ec03fce8e1632655b833095b92fea157935d8d8067f3c3ad67ecf917260e",
+          "source_bindings": 12
+        }
+      ]
+    },
+    {
+      "id": "compositor-pacing",
+      "branch": "research/sub15-20261009/compositor-pacing",
+      "commit": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/HORIZON-RESEARCH.txt",
+          "kind": "notes",
+          "sha256": "080694c9b96254a910174bb869520c70ffff24e41588bc89d0290c55af675fe6",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/horizon-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "1244cd459e64ecf411b553a4fb5863211175904d155fd462c7070ebf4065eb76",
+          "source_bindings": 8
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/horizon-counterfactual-20261009.json",
+          "kind": "analysis",
+          "sha256": "d880f9a807e8d32e7d7e18ec23084836f81201b1cc60634b121367a518fad571",
+          "source_bindings": 6
+        }
+      ]
+    },
+    {
+      "id": "compositor-reserve",
+      "branch": "research/sub15-20261009/compositor-reserve",
+      "commit": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/READY-SUCCESSOR.txt",
+          "kind": "notes",
+          "sha256": "7f3de3871e353d73a497b5b7a85444e618f3dfc4c6277f32f9043b13cb38b710",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/ready-successor-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "538c8ef34311080a64e26a409548d03846ff30e0574a868775c412da6894fbd5",
+          "source_bindings": 12
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/ready-successor-counterfactual-20261009.json",
+          "kind": "analysis",
+          "sha256": "a814a432a5d12c33000c5bcc17f6d152fff58a7d047a1a8c4fe0480ef3908629",
+          "source_bindings": 8
+        }
+      ]
+    },
+    {
+      "id": "compositor-pacer-trace",
+      "branch": "research/sub15-20261009/compositor-pacer-trace",
+      "commit": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/pacer_timing/PACER-TRACE.txt",
+          "kind": "notes",
+          "sha256": "07eff9b40f8cdec9ad22cc21162bded57e99320280f7709e511747652e9505d8",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/pacer_timing/validation-20261009.json",
+          "kind": "validation",
+          "sha256": "3aa6dcc73f14370f235da66c03abce8b95a4f32751367d97c85e969775bc9ab3",
+          "source_bindings": 14
+        }
+      ]
+    },
+    {
+      "id": "compositor-selection-audit",
+      "branch": "research/sub15-20261009/compositor-selection-audit",
+      "commit": "1733d189ee5e270eeb2d59323e89758c3d3d9893",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/SUPPORT-AUDIT.txt",
+          "kind": "notes",
+          "sha256": "ab7b53715a5ad9d4224ea4db04854dc8399f1d060f5fa088230c6b43df4c394d",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/ready-successor-audited-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "122dcfc8ae1e1eb197b5027b08d82fa41ceea8c07d319629740023712aadbc2a",
+          "source_bindings": 12
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/ready-successor-audited-counterfactual-20261009.json",
+          "kind": "analysis",
+          "sha256": "a4351fe258002325be48ed0612caa4d6f76e9f4a8654692af167bc4382aa63f5",
+          "source_bindings": 8
+        }
+      ]
+    },
+    {
+      "id": "compositor-oracle",
+      "branch": "research/sub15-20261009/compositor-oracle",
+      "commit": "ecec3fd338447cfa126316839cfe0c2289185422",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/AVAILABILITY-ORACLE.txt",
+          "kind": "notes",
+          "sha256": "3cd057be0097b80793152ec3dcda3d2c4809245b3638339f893842f6bc084e9a",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/oracle-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "83c3ed2afb2e1f47fa2b3c7f9d2d8a78db1af61bc8e784785068045449ef2ce6",
+          "source_bindings": 8
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/availability-oracle-20261009.json",
+          "kind": "analysis",
+          "sha256": "7a85555a68d202de77f3929331c67caebb59a402a4a44408d1dbca706a91794e",
+          "source_bindings": 6
+        }
+      ]
+    },
+    {
+      "id": "compositor-timeline",
+      "branch": "research/sub15-20261009/compositor-timeline",
+      "commit": "1ad36651f61a844d2960230f918fd8f4e65a66a8",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/client_timeline/TIMELINE.txt",
+          "kind": "notes",
+          "sha256": "a9bdab75196f5d50855c464bab9c4e207592cf345154c270ec9612866762610c",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/client_timeline/validation-20261009.json",
+          "kind": "validation",
+          "sha256": "08d3a6ccdd6c5911e523094efddd8c8439be6a3fb57b091f2b9984e01cd8e02a",
+          "source_bindings": 7
+        }
+      ]
+    },
+    {
+      "id": "compositor-pacer-init",
+      "branch": "research/sub15-20261009/compositor-pacer-init",
+      "commit": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/pacer_timing/CONSTRUCTOR-ORDER.txt",
+          "kind": "notes",
+          "sha256": "fc19dbf9cbbc04b3e2c9890c389b025b9f6a6862cce30a2a077c1242f2a57541",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/pacer_timing/constructor-fixed-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "3bab54e238976e33272b9644a6d6a6c001cd3d3d33a41faf1768190d8f551349",
+          "source_bindings": 14
+        }
+      ]
+    },
+    {
+      "id": "compositor-pacer-capture",
+      "branch": "research/sub15-20261009/compositor-pacer-capture",
+      "commit": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/pacer_timing/CAPTURE-CONTRACT.txt",
+          "kind": "notes",
+          "sha256": "bd84e92f5261c60178b5d7384a60463f6e45302c11bc79643f377664ca4cc5cc",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/pacer_timing/capture-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "5fc70a8712caf3d8ed45c1654b6c5f3824150e1d0b4c20987ad5cb6a2adb1b76",
+          "source_bindings": 9
+        }
+      ]
+    },
+    {
+      "id": "compositor-target-envelope",
+      "branch": "research/sub15-20261009/compositor-target-envelope",
+      "commit": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/TARGET-ENVELOPE.txt",
+          "kind": "notes",
+          "sha256": "dcd696ce36b4cec137eb0d8c4a2343071dd4c393f1a102ff25a15b468d1706f2",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/envelope-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "c57ca257741df72e225b231439455cfd7aa4592c6d86ef78381998344d5abfea",
+          "source_bindings": 10
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/target-envelope-20261009.json",
+          "kind": "analysis",
+          "sha256": "d173d3b67a1a307dce99219493f03b86adc1e222cce15971534b0ed23ecb0891",
+          "source_bindings": 7
+        }
+      ]
+    },
+    {
+      "id": "compositor-supply-phase",
+      "branch": "research/sub15-20261009/compositor-supply-phase",
+      "commit": "d710ecf0a5f638f05574b6227e38fe696e4b9eb5",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/SUPPLY-PHASE.txt",
+          "kind": "notes",
+          "sha256": "197b990dc00597211d92ed7c75a96b15fbb6410e91f974d0bff971515494d95a",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/supply-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "ca2e25a7a6ce2c94d4debdd500d7b4f3c414673f1d3ba82586d3577e85c03cdf",
+          "source_bindings": 11
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/supply-phase-20261009.json",
+          "kind": "analysis",
+          "sha256": "e987a818725f73026aee9994cbb6dcef44ab8c83beadd63053e7c7ed57f770df",
+          "source_bindings": 8
+        }
+      ]
+    },
+    {
+      "id": "compositor-full-count",
+      "branch": "research/sub15-20261009/compositor-full-count",
+      "commit": "f601c7dc6f7b949a6c748daf7fe947aa264219ca",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/FULL-COUNT.txt",
+          "kind": "notes",
+          "sha256": "a3a240303a37da5f41a4ff1cfc935b9fb1117e8b987569c0313e48c59605289c",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/full-count-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "a83b3d323f6af0bf9ef4b81cdcc2dcddfdeb8e3b5a217cfbba99b7315e24e9a6",
+          "source_bindings": 12
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/full-count-20261009.json",
+          "kind": "analysis",
+          "sha256": "158409d4d28a1ee101a8b9d7df35ae52db413ec39cfbfb46775d9847979d944f",
+          "source_bindings": 9
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/full-count-reference-20261009.json",
+          "kind": "analysis",
+          "sha256": "4be1ef0bd2225b9121435008e7f4947b4a9e9af79fbac8d5466abb6a5bb45498",
+          "source_bindings": 10
+        }
+      ]
+    },
+    {
+      "id": "compositor-cardinality",
+      "branch": "research/sub15-20261009/compositor-cardinality",
+      "commit": "45ea201200916d17567dbaf0cd432faa0dd8b99b",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/CARDINALITY.txt",
+          "kind": "notes",
+          "sha256": "c4bd9dca3047ef45c4ddb97c15771a614961158230862ee6c25415dfbd6e8af2",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "1e546036478cc64bd46da83d335f6cefdcc99bcef699ed169300d4160e581bd9",
+          "source_bindings": 6
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/cardinality-20261009.json",
+          "kind": "analysis",
+          "sha256": "6cb4712c8875df0476cb331cbf5bbd67043677d0f59c7b5fd0edc7f80ba6e8d9",
+          "source_bindings": 11
+        }
+      ]
+    },
+    {
+      "id": "compositor-publication-ledger",
+      "branch": "research/sub15-20261009/compositor-publication-ledger",
+      "commit": "ced4c13e3b3478fc9d1143b1378725d185f60f4a",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/PUBLICATION-LEDGER.txt",
+          "kind": "notes",
+          "sha256": "99998c7d72f9b923a678b8c2e43c44126ef3cd808f71b3f1df5e41da8841d160",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/publication-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "53031fe6f277840b7d5035773db8855d1ed03dc935967ac10a15609d9b5c1411",
+          "source_bindings": 9
+        }
+      ]
+    },
+    {
+      "id": "compositor-publication-capture",
+      "branch": "research/sub15-20261009/compositor-publication-capture",
+      "commit": "be5fd0bddfc471c8f2243f93b22a85283e618a32",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/PUBLICATION-CAPTURE.txt",
+          "kind": "notes",
+          "sha256": "7b982c4ea1627df9fd820daf0640451d2ed911d6f58298260f67b67d08231117",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/publication-capture-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "701d7168d2482c7d001bf717b94276c9b327fa916365e702e027724e036e31bb",
+          "source_bindings": 38
+        }
+      ]
+    },
+    {
+      "id": "compositor-phase-frontier",
+      "branch": "research/sub15-20261009/compositor-phase-frontier",
+      "commit": "b2076cb103901d0a1461b767f48239f5015a3d70",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/PHASE-FRONTIER.txt",
+          "kind": "notes",
+          "sha256": "174ad48a1769f26643bb5c1f9ea3204f3905be6755c17a5b98869d3dc8fa9d0d",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/phase-frontier-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "a53d68c473dc78034165589f36f8c0d75b3bd6a040a86d91714b32c29f9457e8",
+          "source_bindings": 33,
+          "known_source_gaps": [
+            {
+              "path": "prototypes/vr444/experiments/selection_policy/plot_phase_frontier.py",
+              "recorded_sha256": "5a226fbc25ca24704224ae6934d5f58cccc028c2ba309affa0cf39b1000a8290",
+              "committed_sha256": "7c95865e9e2b6a63ab8219e88376c43ba473d406555b0bc0dd41fbe6e5a3e2d6",
+              "reason": "Validation preceded the final plot layout edit. The separately pinned figure-render receipt binds the final plot, data and PNG; it does not retroactively change the original test receipt."
+            }
+          ]
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/phase-frontier-20261009.json",
+          "kind": "analysis",
+          "sha256": "5c69ae08dc23daf4988ee8e92b7ac01fc86fadb8483e4e082910b3a6e1cb920c",
+          "source_bindings": 12
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/phase-frontier-figure-20261009.json",
+          "kind": "figure_receipt",
+          "sha256": "985adc5919d210f2651ed05df5ec31dbc106253f56befd90ab973978ce905213",
+          "source_bindings": 3
+        }
+      ]
+    },
+    {
+      "id": "compositor-target-admission",
+      "branch": "research/sub15-20261009/compositor-target-admission",
+      "commit": "6586e3bec1a775a389f141fe41d1ea52c2dc50af",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/TARGET-ADMISSION.txt",
+          "kind": "notes",
+          "sha256": "a316d2e197a7c3e2932c743a4d54f165826f3f12132abbe1cf8b1ee7523a5ca1",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/target-admission-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "60d9eefbbd9e08cd58f28248977e24da48d583351ea04dad3aaf6bf46fa80d32",
+          "source_bindings": 34
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/target-admission-20261009.json",
+          "kind": "analysis",
+          "sha256": "d95e829d80897f383f3c5bc5716903bb4c20440b19d9b5182c003ce3da2d0ab8",
+          "source_bindings": 13
+        }
+      ]
+    },
+    {
+      "id": "compositor-source-novelty",
+      "branch": "research/sub15-20261009/compositor-source-novelty",
+      "commit": "7876b29526ce6b3c215792a5fc47f77be185a66b",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/SOURCE-NOVELTY.txt",
+          "kind": "notes",
+          "sha256": "22e51b6dfd5d4efe3f68eaea9563100e1ffef89ab882ceb17f720ca4324c7298",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "a4b398a45faca8a2c7b44574ec137b79319e4262051f571b95687114e637e5b9",
+          "source_bindings": 44
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/source-novelty-20261009.json",
+          "kind": "analysis",
+          "sha256": "f3853ef6a619e6f608c75235a8b66fdf7478f232bde645aeba78171f4721b3a1",
+          "source_bindings": 14
+        }
+      ]
+    },
+    {
+      "id": "compositor-quantile-bound",
+      "branch": "research/sub15-20261009/compositor-quantile-bound",
+      "commit": "169dc9b6c9f99812596af782c7cf8585b0b32f70",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/QUANTILE-BOUND.txt",
+          "kind": "notes",
+          "sha256": "a9ea456c42dee0a5dc969aac281872c4c6ea0393ee5b78b85984b317e60c0463",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/quantile-bound-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "029b30754d38beb06a16e47f543bc27a4b684801cac7025ff1ad316c1ea8cf63",
+          "source_bindings": 54
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/quantile-bound-20261009.json",
+          "kind": "analysis",
+          "sha256": "88ce75313c3290a81ec62ea01d489d88dc5edb65152d09b345eadfecd32edc32",
+          "source_bindings": 17
+        }
+      ]
+    },
+    {
+      "id": "compositor-host-timeline",
+      "branch": "research/sub15-20261009/compositor-host-timeline",
+      "commit": "d39a89eab25160412fd1498ef0ef547f3880a999",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/host_timeline/README.txt",
+          "kind": "notes",
+          "sha256": "063b4f94cbecd41508ea7d205705a9b6a8f4f08fd65bc683eb493d4e420ff208",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/host_timeline/host-timeline-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "cee13884eafaa8066e4c18d7725c693b4e4dfdfec804be7ed04e3cff2b636617",
+          "source_bindings": 39
+        },
+        {
+          "path": "prototypes/vr444/experiments/host_timeline/host-timeline-20261009.json",
+          "kind": "analysis",
+          "sha256": "eeba1c87c2ceae718c11bf40fb401766611a63a18bc9b7512af8d93eef36cd18",
+          "source_bindings": 9
+        }
+      ]
+    },
+    {
+      "id": "compositor-receipt-floor",
+      "branch": "research/sub15-20261009/compositor-receipt-floor",
+      "commit": "754ab4c4c9216865e5cc81f22c9ba85a5b045aea",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/RECEIPT-FLOOR.txt",
+          "kind": "notes",
+          "sha256": "d9f66c6fc8720547b4db3e5f40d63c6f0fbdb297e083fc24ffb30759bf35fa2b",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/receipt-floor-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "173acf5b659b9185bba26a2e73edf556ff4a5ef5bbda9b98c05167801122da82",
+          "source_bindings": 58
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/receipt-floor-20261009.json",
+          "kind": "analysis",
+          "sha256": "4046280ff4220192b37542748501e173146c802948eec89da0df612312508442",
+          "source_bindings": 18
+        }
+      ]
+    },
+    {
+      "id": "compositor-exact-phase",
+      "branch": "research/sub15-20261009/compositor-exact-phase",
+      "commit": "306920270d9a5b4601851e8fe3958f32e9306d5a",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/EXACT-PHASE.txt",
+          "kind": "notes",
+          "sha256": "3e75312dfea2de9c5cb15fad4e2d03b74ae6275d42cefd5d803df7d3d5edf33e",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/phase-exact-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "a8ab869fe71d015adfb67ab47972511123759deb08722e53b4b27b9162c8fe3f",
+          "source_bindings": 62
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/phase-exact-20261009.json",
+          "kind": "analysis",
+          "sha256": "38a139cbaf285683c8e8a4a1ee6326a576dc047345b80a5edb714d48761e1a87",
+          "source_bindings": 20
+        }
+      ]
+    },
+    {
+      "id": "compositor-source-receipt-age",
+      "branch": "research/sub15-20261009/compositor-source-receipt-age",
+      "commit": "5dca66284036955f0232a24c2b94075b16927ccd",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/SOURCE-RECEIPT-AGE.txt",
+          "kind": "notes",
+          "sha256": "38c97d6b186ce4b2d670290365db8d481c9fe6ec08d404450ddd999ab8449e77",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/source-receipt-age-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "b5cfb7938692a25b2e71e43278b34b162767e95e7c0e3cc1227689a7966b2b1c",
+          "source_bindings": 49
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/source-receipt-age-20261009.json",
+          "kind": "analysis",
+          "sha256": "99ac1693dd3c4eb516d6ac87c48b8df7560cc891ca281ed86d0a8851ebcb6b16",
+          "source_bindings": 21
+        }
+      ]
+    }
+  ],
+  "native_integration_required": [
+    "Regenerate integration.patch and overlay-manifest in the integration owner worktree.",
+    "Include compositor-pacer-init when integrating compositor-pacer-trace; the original trace milestone precedes the constructor-order fix.",
+    "Perform a linked native build and qualification before any future authorized headset test."
+  ],
+  "headset_testing_suspended": true,
+  "promotion_eligible": false
+}

@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "kind": "remote_published_branch_identity",
+  "checked_at_utc": "2026-10-09T10:21:10.387344+00:00",
+  "remote": "https://github.com/jebot-git/WiVRn-Pro.git",
+  "command": [
+    "git",
+    "ls-remote",
+    "--heads",
+    "origin"
+  ],
+  "catalog_sha256": "b8735b85b4f6935b504e2f9402e0b39b56e4e97dfb502dc51136e4a3830eea7b",
+  "branches": [
+    {
+      "branch": "research/sub15-20261009/compositor",
+      "commit": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-attempts",
+      "commit": "ff669ce78dda99cd748a20f46f6e739a5919f975"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-pacing",
+      "commit": "747a9ed4232f5d472b3400f924164b009d85a750"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-reserve",
+      "commit": "7e7b43a0241d96e348fd3659b2310676476d6b94"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-pacer-trace",
+      "commit": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-selection-audit",
+      "commit": "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-oracle",
+      "commit": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-timeline",
+      "commit": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-pacer-init",
+      "commit": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-pacer-capture",
+      "commit": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-target-envelope",
+      "commit": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-supply-phase",
+      "commit": "d710ecf0a5f638f05574b6227e38fe696e4b9eb5"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-full-count",
+      "commit": "f601c7dc6f7b949a6c748daf7fe947aa264219ca"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-cardinality",
+      "commit": "45ea201200916d17567dbaf0cd432faa0dd8b99b"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-publication-ledger",
+      "commit": "ced4c13e3b3478fc9d1143b1378725d185f60f4a"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-publication-capture",
+      "commit": "be5fd0bddfc471c8f2243f93b22a85283e618a32"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-phase-frontier",
+      "commit": "b2076cb103901d0a1461b767f48239f5015a3d70"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-target-admission",
+      "commit": "6586e3bec1a775a389f141fe41d1ea52c2dc50af"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-source-novelty",
+      "commit": "7876b29526ce6b3c215792a5fc47f77be185a66b"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-quantile-bound",
+      "commit": "169dc9b6c9f99812596af782c7cf8585b0b32f70"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-host-timeline",
+      "commit": "d39a89eab25160412fd1498ef0ef547f3880a999"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-receipt-floor",
+      "commit": "754ab4c4c9216865e5cc81f22c9ba85a5b045aea"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-exact-phase",
+      "commit": "306920270d9a5b4601851e8fe3958f32e9306d5a"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-source-receipt-age",
+      "commit": "5dca66284036955f0232a24c2b94075b16927ccd"
+    }
+  ],
+  "branch_count": 24,
+  "headset_operations": false,
+  "source_execution": false
+}

@@ -1,0 +1,1157 @@
+{
+  "schema": 1,
+  "status": "completed_with_historical_source_gap",
+  "mode": "python",
+  "stages": [
+    {
+      "stage": "historical_git_blob_integrity",
+      "result": {
+        "schema": 1,
+        "status": "incomplete_source_history",
+        "kind": "historical_git_blob_integrity_only",
+        "archived_artifact_integrity": "pass",
+        "repository_source_integrity": "incomplete",
+        "known_source_gaps": [
+          {
+            "artifact": "prototypes/vr444/experiments/selection_policy/phase-frontier-validation-20261009.json",
+            "commit": "b2076cb103901d0a1461b767f48239f5015a3d70",
+            "path": "prototypes/vr444/experiments/selection_policy/plot_phase_frontier.py",
+            "recorded_sha256": "5a226fbc25ca24704224ae6934d5f58cccc028c2ba309affa0cf39b1000a8290",
+            "committed_sha256": "7c95865e9e2b6a63ab8219e88376c43ba473d406555b0bc0dd41fbe6e5a3e2d6",
+            "reason": "Validation preceded the final plot layout edit. The separately pinned figure-render receipt binds the final plot, data and PNG; it does not retroactively change the original test receipt."
+          }
+        ],
+        "approaches": [
+          {
+            "id": "compositor",
+            "commit": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/TRACE-GAP-REPAIR.txt",
+                "kind": "notes",
+                "sha256": "d88f119c14274b45b55b89da0942594e06b58e62ebfd8a1439c506d52959448a",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/trace-gap-reanalysis-20261009.json",
+                "kind": "analysis",
+                "sha256": "a44e8550157700dedcf426a3f035aeed11dd7fa002935a371c56cfef6c1c56e7",
+                "source_bindings_verified": 3,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 3
+          },
+          {
+            "id": "compositor-attempts",
+            "commit": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/RENDER-ATTEMPTS.txt",
+                "kind": "notes",
+                "sha256": "3cdb9622ea938d01fa0a99d8e8aa541d65b282c88f53397e0e89b6692f407009",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/attempt-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "28d9ec03fce8e1632655b833095b92fea157935d8d8067f3c3ad67ecf917260e",
+                "source_bindings_verified": 12,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 12
+          },
+          {
+            "id": "compositor-pacing",
+            "commit": "747a9ed4232f5d472b3400f924164b009d85a750",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/HORIZON-RESEARCH.txt",
+                "kind": "notes",
+                "sha256": "080694c9b96254a910174bb869520c70ffff24e41588bc89d0290c55af675fe6",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/horizon-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "1244cd459e64ecf411b553a4fb5863211175904d155fd462c7070ebf4065eb76",
+                "source_bindings_verified": 8,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/horizon-counterfactual-20261009.json",
+                "kind": "analysis",
+                "sha256": "d880f9a807e8d32e7d7e18ec23084836f81201b1cc60634b121367a518fad571",
+                "source_bindings_verified": 6,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 14
+          },
+          {
+            "id": "compositor-reserve",
+            "commit": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/READY-SUCCESSOR.txt",
+                "kind": "notes",
+                "sha256": "7f3de3871e353d73a497b5b7a85444e618f3dfc4c6277f32f9043b13cb38b710",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/ready-successor-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "538c8ef34311080a64e26a409548d03846ff30e0574a868775c412da6894fbd5",
+                "source_bindings_verified": 12,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/ready-successor-counterfactual-20261009.json",
+                "kind": "analysis",
+                "sha256": "a814a432a5d12c33000c5bcc17f6d152fff58a7d047a1a8c4fe0480ef3908629",
+                "source_bindings_verified": 8,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 20
+          },
+          {
+            "id": "compositor-pacer-trace",
+            "commit": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/pacer_timing/PACER-TRACE.txt",
+                "kind": "notes",
+                "sha256": "07eff9b40f8cdec9ad22cc21162bded57e99320280f7709e511747652e9505d8",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/pacer_timing/validation-20261009.json",
+                "kind": "validation",
+                "sha256": "3aa6dcc73f14370f235da66c03abce8b95a4f32751367d97c85e969775bc9ab3",
+                "source_bindings_verified": 14,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 14
+          },
+          {
+            "id": "compositor-selection-audit",
+            "commit": "1733d189ee5e270eeb2d59323e89758c3d3d9893",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/SUPPORT-AUDIT.txt",
+                "kind": "notes",
+                "sha256": "ab7b53715a5ad9d4224ea4db04854dc8399f1d060f5fa088230c6b43df4c394d",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/ready-successor-audited-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "122dcfc8ae1e1eb197b5027b08d82fa41ceea8c07d319629740023712aadbc2a",
+                "source_bindings_verified": 12,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/ready-successor-audited-counterfactual-20261009.json",
+                "kind": "analysis",
+                "sha256": "a4351fe258002325be48ed0612caa4d6f76e9f4a8654692af167bc4382aa63f5",
+                "source_bindings_verified": 8,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 20
+          },
+          {
+            "id": "compositor-oracle",
+            "commit": "ecec3fd338447cfa126316839cfe0c2289185422",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/AVAILABILITY-ORACLE.txt",
+                "kind": "notes",
+                "sha256": "3cd057be0097b80793152ec3dcda3d2c4809245b3638339f893842f6bc084e9a",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/oracle-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "83c3ed2afb2e1f47fa2b3c7f9d2d8a78db1af61bc8e784785068045449ef2ce6",
+                "source_bindings_verified": 8,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/availability-oracle-20261009.json",
+                "kind": "analysis",
+                "sha256": "7a85555a68d202de77f3929331c67caebb59a402a4a44408d1dbca706a91794e",
+                "source_bindings_verified": 6,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 14
+          },
+          {
+            "id": "compositor-timeline",
+            "commit": "1ad36651f61a844d2960230f918fd8f4e65a66a8",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/client_timeline/TIMELINE.txt",
+                "kind": "notes",
+                "sha256": "a9bdab75196f5d50855c464bab9c4e207592cf345154c270ec9612866762610c",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/client_timeline/validation-20261009.json",
+                "kind": "validation",
+                "sha256": "08d3a6ccdd6c5911e523094efddd8c8439be6a3fb57b091f2b9984e01cd8e02a",
+                "source_bindings_verified": 7,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 7
+          },
+          {
+            "id": "compositor-pacer-init",
+            "commit": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/pacer_timing/CONSTRUCTOR-ORDER.txt",
+                "kind": "notes",
+                "sha256": "fc19dbf9cbbc04b3e2c9890c389b025b9f6a6862cce30a2a077c1242f2a57541",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/pacer_timing/constructor-fixed-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "3bab54e238976e33272b9644a6d6a6c001cd3d3d33a41faf1768190d8f551349",
+                "source_bindings_verified": 14,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 14
+          },
+          {
+            "id": "compositor-pacer-capture",
+            "commit": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/pacer_timing/CAPTURE-CONTRACT.txt",
+                "kind": "notes",
+                "sha256": "bd84e92f5261c60178b5d7384a60463f6e45302c11bc79643f377664ca4cc5cc",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/pacer_timing/capture-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "5fc70a8712caf3d8ed45c1654b6c5f3824150e1d0b4c20987ad5cb6a2adb1b76",
+                "source_bindings_verified": 9,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 9
+          },
+          {
+            "id": "compositor-target-envelope",
+            "commit": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/TARGET-ENVELOPE.txt",
+                "kind": "notes",
+                "sha256": "dcd696ce36b4cec137eb0d8c4a2343071dd4c393f1a102ff25a15b468d1706f2",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/envelope-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "c57ca257741df72e225b231439455cfd7aa4592c6d86ef78381998344d5abfea",
+                "source_bindings_verified": 10,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/target-envelope-20261009.json",
+                "kind": "analysis",
+                "sha256": "d173d3b67a1a307dce99219493f03b86adc1e222cce15971534b0ed23ecb0891",
+                "source_bindings_verified": 7,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 17
+          },
+          {
+            "id": "compositor-supply-phase",
+            "commit": "d710ecf0a5f638f05574b6227e38fe696e4b9eb5",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/SUPPLY-PHASE.txt",
+                "kind": "notes",
+                "sha256": "197b990dc00597211d92ed7c75a96b15fbb6410e91f974d0bff971515494d95a",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/supply-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "ca2e25a7a6ce2c94d4debdd500d7b4f3c414673f1d3ba82586d3577e85c03cdf",
+                "source_bindings_verified": 11,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/supply-phase-20261009.json",
+                "kind": "analysis",
+                "sha256": "e987a818725f73026aee9994cbb6dcef44ab8c83beadd63053e7c7ed57f770df",
+                "source_bindings_verified": 8,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 19
+          },
+          {
+            "id": "compositor-full-count",
+            "commit": "f601c7dc6f7b949a6c748daf7fe947aa264219ca",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/FULL-COUNT.txt",
+                "kind": "notes",
+                "sha256": "a3a240303a37da5f41a4ff1cfc935b9fb1117e8b987569c0313e48c59605289c",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/full-count-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "a83b3d323f6af0bf9ef4b81cdcc2dcddfdeb8e3b5a217cfbba99b7315e24e9a6",
+                "source_bindings_verified": 12,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/full-count-20261009.json",
+                "kind": "analysis",
+                "sha256": "158409d4d28a1ee101a8b9d7df35ae52db413ec39cfbfb46775d9847979d944f",
+                "source_bindings_verified": 9,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/full-count-reference-20261009.json",
+                "kind": "analysis",
+                "sha256": "4be1ef0bd2225b9121435008e7f4947b4a9e9af79fbac8d5466abb6a5bb45498",
+                "source_bindings_verified": 10,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 31
+          },
+          {
+            "id": "compositor-cardinality",
+            "commit": "45ea201200916d17567dbaf0cd432faa0dd8b99b",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/CARDINALITY.txt",
+                "kind": "notes",
+                "sha256": "c4bd9dca3047ef45c4ddb97c15771a614961158230862ee6c25415dfbd6e8af2",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "1e546036478cc64bd46da83d335f6cefdcc99bcef699ed169300d4160e581bd9",
+                "source_bindings_verified": 6,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/cardinality-20261009.json",
+                "kind": "analysis",
+                "sha256": "6cb4712c8875df0476cb331cbf5bbd67043677d0f59c7b5fd0edc7f80ba6e8d9",
+                "source_bindings_verified": 11,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 17
+          },
+          {
+            "id": "compositor-publication-ledger",
+            "commit": "ced4c13e3b3478fc9d1143b1378725d185f60f4a",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/PUBLICATION-LEDGER.txt",
+                "kind": "notes",
+                "sha256": "99998c7d72f9b923a678b8c2e43c44126ef3cd808f71b3f1df5e41da8841d160",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/publication-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "53031fe6f277840b7d5035773db8855d1ed03dc935967ac10a15609d9b5c1411",
+                "source_bindings_verified": 9,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 9
+          },
+          {
+            "id": "compositor-publication-capture",
+            "commit": "be5fd0bddfc471c8f2243f93b22a85283e618a32",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/PUBLICATION-CAPTURE.txt",
+                "kind": "notes",
+                "sha256": "7b982c4ea1627df9fd820daf0640451d2ed911d6f58298260f67b67d08231117",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/publication-capture-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "701d7168d2482c7d001bf717b94276c9b327fa916365e702e027724e036e31bb",
+                "source_bindings_verified": 37,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": [
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/home/blux/spatial-bridge/.worktrees/wivrn-codec-tests/.cxx/Debug/2hd2e6j2/arm64-v8a/compile_commands.json",
+                    "sha256": "dd1c7ef9d3b2100ff8d6f217d42712622de68ab9c80c999c7fc3877a3522d7ea",
+                    "scope": "external_unverified"
+                  }
+                ]
+              }
+            ],
+            "source_bindings_verified": 37
+          },
+          {
+            "id": "compositor-phase-frontier",
+            "commit": "b2076cb103901d0a1461b767f48239f5015a3d70",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/PHASE-FRONTIER.txt",
+                "kind": "notes",
+                "sha256": "174ad48a1769f26643bb5c1f9ea3204f3905be6755c17a5b98869d3dc8fa9d0d",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/phase-frontier-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "a53d68c473dc78034165589f36f8c0d75b3bd6a040a86d91714b32c29f9457e8",
+                "source_bindings_verified": 31,
+                "known_source_gaps": [
+                  {
+                    "artifact": "prototypes/vr444/experiments/selection_policy/phase-frontier-validation-20261009.json",
+                    "commit": "b2076cb103901d0a1461b767f48239f5015a3d70",
+                    "path": "prototypes/vr444/experiments/selection_policy/plot_phase_frontier.py",
+                    "recorded_sha256": "5a226fbc25ca24704224ae6934d5f58cccc028c2ba309affa0cf39b1000a8290",
+                    "committed_sha256": "7c95865e9e2b6a63ab8219e88376c43ba473d406555b0bc0dd41fbe6e5a3e2d6",
+                    "reason": "Validation preceded the final plot layout edit. The separately pinned figure-render receipt binds the final plot, data and PNG; it does not retroactively change the original test receipt."
+                  }
+                ],
+                "external_source_bindings_unverified": [
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+                    "sha256": "2c6cfa6668d7225fbd7edb61efcb76401a66bed5870b0f1c0987330fd3c1d918",
+                    "scope": "external_unverified"
+                  }
+                ]
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/phase-frontier-20261009.json",
+                "kind": "analysis",
+                "sha256": "5c69ae08dc23daf4988ee8e92b7ac01fc86fadb8483e4e082910b3a6e1cb920c",
+                "source_bindings_verified": 12,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/phase-frontier-figure-20261009.json",
+                "kind": "figure_receipt",
+                "sha256": "985adc5919d210f2651ed05df5ec31dbc106253f56befd90ab973978ce905213",
+                "source_bindings_verified": 3,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 46
+          },
+          {
+            "id": "compositor-target-admission",
+            "commit": "6586e3bec1a775a389f141fe41d1ea52c2dc50af",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/TARGET-ADMISSION.txt",
+                "kind": "notes",
+                "sha256": "a316d2e197a7c3e2932c743a4d54f165826f3f12132abbe1cf8b1ee7523a5ca1",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/target-admission-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "60d9eefbbd9e08cd58f28248977e24da48d583351ea04dad3aaf6bf46fa80d32",
+                "source_bindings_verified": 33,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": [
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+                    "sha256": "2c6cfa6668d7225fbd7edb61efcb76401a66bed5870b0f1c0987330fd3c1d918",
+                    "scope": "external_unverified"
+                  }
+                ]
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/target-admission-20261009.json",
+                "kind": "analysis",
+                "sha256": "d95e829d80897f383f3c5bc5716903bb4c20440b19d9b5182c003ce3da2d0ab8",
+                "source_bindings_verified": 13,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 46
+          },
+          {
+            "id": "compositor-source-novelty",
+            "commit": "7876b29526ce6b3c215792a5fc47f77be185a66b",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/SOURCE-NOVELTY.txt",
+                "kind": "notes",
+                "sha256": "22e51b6dfd5d4efe3f68eaea9563100e1ffef89ab882ceb17f720ca4324c7298",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "a4b398a45faca8a2c7b44574ec137b79319e4262051f571b95687114e637e5b9",
+                "source_bindings_verified": 44,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/source-novelty-20261009.json",
+                "kind": "analysis",
+                "sha256": "f3853ef6a619e6f608c75235a8b66fdf7478f232bde645aeba78171f4721b3a1",
+                "source_bindings_verified": 14,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 58
+          },
+          {
+            "id": "compositor-quantile-bound",
+            "commit": "169dc9b6c9f99812596af782c7cf8585b0b32f70",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/QUANTILE-BOUND.txt",
+                "kind": "notes",
+                "sha256": "a9ea456c42dee0a5dc969aac281872c4c6ea0393ee5b78b85984b317e60c0463",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/quantile-bound-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "029b30754d38beb06a16e47f543bc27a4b684801cac7025ff1ad316c1ea8cf63",
+                "source_bindings_verified": 52,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": [
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+                    "sha256": "2c6cfa6668d7225fbd7edb61efcb76401a66bed5870b0f1c0987330fd3c1d918",
+                    "scope": "external_unverified"
+                  },
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+                    "sha256": "28b7c31ae2c356fdfcfbcc672c8725078e32227c8625f793aec3102a0f002a02",
+                    "scope": "external_unverified"
+                  }
+                ]
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/quantile-bound-20261009.json",
+                "kind": "analysis",
+                "sha256": "88ce75313c3290a81ec62ea01d489d88dc5edb65152d09b345eadfecd32edc32",
+                "source_bindings_verified": 17,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 69
+          },
+          {
+            "id": "compositor-host-timeline",
+            "commit": "d39a89eab25160412fd1498ef0ef547f3880a999",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/host_timeline/README.txt",
+                "kind": "notes",
+                "sha256": "063b4f94cbecd41508ea7d205705a9b6a8f4f08fd65bc683eb493d4e420ff208",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/host_timeline/host-timeline-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "cee13884eafaa8066e4c18d7725c693b4e4dfdfec804be7ed04e3cff2b636617",
+                "source_bindings_verified": 39,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/host_timeline/host-timeline-20261009.json",
+                "kind": "analysis",
+                "sha256": "eeba1c87c2ceae718c11bf40fb401766611a63a18bc9b7512af8d93eef36cd18",
+                "source_bindings_verified": 9,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 48
+          },
+          {
+            "id": "compositor-receipt-floor",
+            "commit": "754ab4c4c9216865e5cc81f22c9ba85a5b045aea",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/RECEIPT-FLOOR.txt",
+                "kind": "notes",
+                "sha256": "d9f66c6fc8720547b4db3e5f40d63c6f0fbdb297e083fc24ffb30759bf35fa2b",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/receipt-floor-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "173acf5b659b9185bba26a2e73edf556ff4a5ef5bbda9b98c05167801122da82",
+                "source_bindings_verified": 56,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": [
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+                    "sha256": "2c6cfa6668d7225fbd7edb61efcb76401a66bed5870b0f1c0987330fd3c1d918",
+                    "scope": "external_unverified"
+                  },
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+                    "sha256": "28b7c31ae2c356fdfcfbcc672c8725078e32227c8625f793aec3102a0f002a02",
+                    "scope": "external_unverified"
+                  }
+                ]
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/receipt-floor-20261009.json",
+                "kind": "analysis",
+                "sha256": "4046280ff4220192b37542748501e173146c802948eec89da0df612312508442",
+                "source_bindings_verified": 18,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 74
+          },
+          {
+            "id": "compositor-exact-phase",
+            "commit": "306920270d9a5b4601851e8fe3958f32e9306d5a",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/EXACT-PHASE.txt",
+                "kind": "notes",
+                "sha256": "3e75312dfea2de9c5cb15fad4e2d03b74ae6275d42cefd5d803df7d3d5edf33e",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/phase-exact-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "a8ab869fe71d015adfb67ab47972511123759deb08722e53b4b27b9162c8fe3f",
+                "source_bindings_verified": 60,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": [
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe",
+                    "sha256": "2c6cfa6668d7225fbd7edb61efcb76401a66bed5870b0f1c0987330fd3c1d918",
+                    "scope": "external_unverified"
+                  },
+                  {
+                    "location": "/sources_sha256",
+                    "path": "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+                    "sha256": "28b7c31ae2c356fdfcfbcc672c8725078e32227c8625f793aec3102a0f002a02",
+                    "scope": "external_unverified"
+                  }
+                ]
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/phase-exact-20261009.json",
+                "kind": "analysis",
+                "sha256": "38a139cbaf285683c8e8a4a1ee6326a576dc047345b80a5edb714d48761e1a87",
+                "source_bindings_verified": 20,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 80
+          },
+          {
+            "id": "compositor-source-receipt-age",
+            "commit": "5dca66284036955f0232a24c2b94075b16927ccd",
+            "artifacts": [
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/SOURCE-RECEIPT-AGE.txt",
+                "kind": "notes",
+                "sha256": "38c97d6b186ce4b2d670290365db8d481c9fe6ec08d404450ddd999ab8449e77",
+                "source_bindings_verified": 0,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/source-receipt-age-validation-20261009.json",
+                "kind": "validation",
+                "sha256": "b5cfb7938692a25b2e71e43278b34b162767e95e7c0e3cc1227689a7966b2b1c",
+                "source_bindings_verified": 49,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              },
+              {
+                "path": "prototypes/vr444/experiments/selection_policy/source-receipt-age-20261009.json",
+                "kind": "analysis",
+                "sha256": "99ac1693dd3c4eb516d6ac87c48b8df7560cc891ca281ed86d0a8851ebcb6b16",
+                "source_bindings_verified": 21,
+                "known_source_gaps": [],
+                "external_source_bindings_unverified": []
+              }
+            ],
+            "source_bindings_verified": 70
+          }
+        ],
+        "approach_count": 24,
+        "artifacts_verified": 66,
+        "repository_source_bindings_verified": 748,
+        "fresh_test_execution": false,
+        "external_artifacts_verified": false,
+        "headset_operations": false,
+        "native_build_qualified": false,
+        "latency_gate_pass": false,
+        "promotion_eligible": false,
+        "limitations": [
+          "Checks archived artifact bytes and declared repository/virtual-overlay source hashes at each immutable Git commit.",
+          "Does not rerun historical tests or verify compiler binaries, native build caches, temporary executables, acquisition files, devices or remote branch state.",
+          "A historical pass remains limited to the original receipt scope. Later source changes do not inherit earlier execution.",
+          "The original failed run remains failed; diagnostic reanalysis does not replace qualification."
+        ]
+      }
+    },
+    {
+      "stage": "fresh_python_regressions",
+      "status": "pass",
+      "command": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-v"
+      ],
+      "tests_executed": 331,
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "test_one_per_deadline_unique_frame_and_nondecreasing_target (test_availability_oracle.AvailabilityOracleTests.test_one_per_deadline_unique_frame_and_nondecreasing_target) ... ok\ntest_quantile_optimum_at_max_count_matches_exhaustive_subsets (test_availability_oracle.AvailabilityOracleTests.test_quantile_optimum_at_max_count_matches_exhaustive_subsets) ... ok\ntest_randomized_prefix_solver_matches_exhaustive_subsets (test_availability_oracle.AvailabilityOracleTests.test_randomized_prefix_solver_matches_exhaustive_subsets) ... ok\ntest_snapshot_horizon_and_join_contract (test_availability_oracle.AvailabilityOracleTests.test_snapshot_horizon_and_join_contract) ... ok\ntest_solver_empty_unknown_unsorted_and_invalid_node_contract (test_availability_oracle.AvailabilityOracleTests.test_solver_empty_unknown_unsorted_and_invalid_node_contract) ... ok\ntest_strict_age_boundary_and_distinct_objectives (test_availability_oracle.AvailabilityOracleTests.test_strict_age_boundary_and_distinct_objectives) ... ok\ntest_trace_corruption_and_bad_parameter_fail_closed (test_availability_oracle.AvailabilityOracleTests.test_trace_corruption_and_bad_parameter_fail_closed) ... ok\ntest_alpha_participation_cannot_be_hidden (test_candidate_trace.CandidateTraceTests.test_alpha_participation_cannot_be_hidden) ... ok\ntest_bounded_policy_cannot_run_without_diagnostic_trace (test_candidate_trace.CandidateTraceTests.test_bounded_policy_cannot_run_without_diagnostic_trace) ... ok\ntest_budget_boundary_records_cap_and_drops_are_explicit (test_candidate_trace.CandidateTraceTests.test_budget_boundary_records_cap_and_drops_are_explicit) ... ok\ntest_choice_identity_and_metadata_are_verified (test_candidate_trace.CandidateTraceTests.test_choice_identity_and_metadata_are_verified) ... ok\ntest_disabled_must_be_absent (test_candidate_trace.CandidateTraceTests.test_disabled_must_be_absent) ... ok\ntest_entire_record_cannot_regress_together (test_candidate_trace.CandidateTraceTests.test_entire_record_cannot_regress_together) ... ok\ntest_failed_write_missing_counter_or_duplicate_trace_fails (test_candidate_trace.CandidateTraceTests.test_failed_write_missing_counter_or_duplicate_trace_fails) ... ok\ntest_fence_time_order_is_checked_for_native_diagnostics_too (test_candidate_trace.CandidateTraceTests.test_fence_time_order_is_checked_for_native_diagnostics_too) ... ok\ntest_future_bound_and_previous_choice_cannot_be_forged (test_candidate_trace.CandidateTraceTests.test_future_bound_and_previous_choice_cannot_be_forged) ... ok\ntest_input_types_and_disabled_partial_trace_fail (test_candidate_trace.CandidateTraceTests.test_input_types_and_disabled_partial_trace_fail) ... ok\ntest_missing_order_nonfinite_and_bounds_fail (test_candidate_trace.CandidateTraceTests.test_missing_order_nonfinite_and_bounds_fail) ... ok\ntest_newer_orphan_is_not_a_complete_candidate (test_candidate_trace.CandidateTraceTests.test_newer_orphan_is_not_a_complete_candidate) ... ok\ntest_observed_newer_frame_is_opportunity_not_speedup (test_candidate_trace.CandidateTraceTests.test_observed_newer_frame_is_opportunity_not_speedup) ... ok\ntest_retained_fallback_requires_observed_previous_pair (test_candidate_trace.CandidateTraceTests.test_retained_fallback_requires_observed_previous_pair) ... ok\ntest_same_identity_cannot_change_target_or_publication (test_candidate_trace.CandidateTraceTests.test_same_identity_cannot_change_target_or_publication) ... ok\ntest_schema2_alpha_fallback_does_not_invent_a_complete_candidate (test_candidate_trace.CandidateTraceTests.test_schema2_alpha_fallback_does_not_invent_a_complete_candidate) ... ok\ntest_schema2_bounded_choice_replays_actual_eligibility (test_candidate_trace.CandidateTraceTests.test_schema2_bounded_choice_replays_actual_eligibility) ... ok\ntest_schema2_cannot_silently_ignore_schema3_accounting (test_candidate_trace.CandidateTraceTests.test_schema2_cannot_silently_ignore_schema3_accounting) ... ok\ntest_schema2_closest_default_and_requested_policy_binding (test_candidate_trace.CandidateTraceTests.test_schema2_closest_default_and_requested_policy_binding) ... ok\ntest_schema2_default_cannot_qualify_mismatched_eye_targets (test_candidate_trace.CandidateTraceTests.test_schema2_default_cannot_qualify_mismatched_eye_targets) ... ok\ntest_schema2_first_previous_must_be_coherent_and_repeat_flag_honest (test_candidate_trace.CandidateTraceTests.test_schema2_first_previous_must_be_coherent_and_repeat_flag_honest) ... ok\ntest_schema2_first_prior_target_must_be_zero_or_before_current_target (test_candidate_trace.CandidateTraceTests.test_schema2_first_prior_target_must_be_zero_or_before_current_target) ... ok\ntest_schema2_gap_cannot_hide_an_unobserved_selection_transition (test_candidate_trace.CandidateTraceTests.test_schema2_gap_cannot_hide_an_unobserved_selection_transition) ... ok\ntest_schema2_gap_cannot_hide_prior_target_regression_or_current_target (test_candidate_trace.CandidateTraceTests.test_schema2_gap_cannot_hide_prior_target_regression_or_current_target) ... ok\ntest_schema2_gap_preserves_bound_join_counter_and_metadata_checks (test_candidate_trace.CandidateTraceTests.test_schema2_gap_preserves_bound_join_counter_and_metadata_checks) ... ok\ntest_schema2_intervening_render_target_preserves_submission_contract (test_candidate_trace.CandidateTraceTests.test_schema2_intervening_render_target_preserves_submission_contract) ... ok\ntest_schema2_policy_bound_slots_and_metadata_fail_closed (test_candidate_trace.CandidateTraceTests.test_schema2_policy_bound_slots_and_metadata_fail_closed) ... ok\ntest_schema2_requested_policy_is_bound_after_trace_cap (test_candidate_trace.CandidateTraceTests.test_schema2_requested_policy_is_bound_after_trace_cap) ... ok\ntest_schema3_aborted_or_unaccounted_attempt_is_never_a_benign_skip (test_candidate_trace.CandidateTraceTests.test_schema3_aborted_or_unaccounted_attempt_is_never_a_benign_skip) ... ok\ntest_schema3_attempt_accounting_remains_required_after_snapshot_cap (test_candidate_trace.CandidateTraceTests.test_schema3_attempt_accounting_remains_required_after_snapshot_cap) ... ok\ntest_schema3_every_skip_reason_is_counted_and_mixed_skips_sum_exactly (test_candidate_trace.CandidateTraceTests.test_schema3_every_skip_reason_is_counted_and_mixed_skips_sum_exactly) ... ok\ntest_schema3_first_submission_cannot_invent_previous_selection (test_candidate_trace.CandidateTraceTests.test_schema3_first_submission_cannot_invent_previous_selection) ... ok\ntest_schema3_gap_target_and_skipped_count_cannot_contradict_each_other (test_candidate_trace.CandidateTraceTests.test_schema3_gap_target_and_skipped_count_cannot_contradict_each_other) ... ok\ntest_schema3_missing_extra_unknown_and_disagreeing_accounting_fail (test_candidate_trace.CandidateTraceTests.test_schema3_missing_extra_unknown_and_disagreeing_accounting_fail) ... ok\ntest_schema3_startup_and_skipped_attempts_have_explicit_limited_coverage (test_candidate_trace.CandidateTraceTests.test_schema3_startup_and_skipped_attempts_have_explicit_limited_coverage) ... ok\ntest_tie_retains_existing_history_order (test_candidate_trace.CandidateTraceTests.test_tie_retains_existing_history_order) ... ok\ntest_certificate_age_count_cadence_and_hash_recomputed (test_cardinality.CardinalityAuditTests.test_certificate_age_count_cadence_and_hash_recomputed) ... ok\ntest_dishonest_or_malformed_solver_certificates_fail (test_cardinality.CardinalityAuditTests.test_dishonest_or_malformed_solver_certificates_fail) ... ok\ntest_nonmonotonic_source_targets_fail_solver_population_contract (test_cardinality.CardinalityAuditTests.test_nonmonotonic_source_targets_fail_solver_population_contract) ... ok\ntest_observed_warm_prefix_excludes_prior_firsts_and_preserves_forward_identity (test_cardinality.CardinalityAuditTests.test_observed_warm_prefix_excludes_prior_firsts_and_preserves_forward_identity) ... ok\ntest_common_client_clock_translation_preserves_intervals (test_client_timeline.ClientTimelineTests.test_common_client_clock_translation_preserves_intervals) ... ok\ntest_corrupt_stage_eye_join_and_missing_prediction_rejected (test_client_timeline.ClientTimelineTests.test_corrupt_stage_eye_join_and_missing_prediction_rejected) ... ok\ntest_exact_stereo_stages_and_threshold_crossing_partition (test_client_timeline.ClientTimelineTests.test_exact_stereo_stages_and_threshold_crossing_partition) ... ok\ntest_manifest_sealing_and_tampering_fail_closed (test_client_timeline.ClientTimelineTests.test_manifest_sealing_and_tampering_fail_closed) ... ok\ntest_repeat_after_warmup_is_not_new_first_submission (test_client_timeline.ClientTimelineTests.test_repeat_after_warmup_is_not_new_first_submission) ... ok\ntest_strict_threshold_exact_boundary_and_stage_crossings (test_client_timeline.ClientTimelineTests.test_strict_threshold_exact_boundary_and_stage_crossings) ... ok\ntest_changed_artifact_source_or_binding_population_rejected (test_compositor_qualification.CompositorQualificationTests.test_changed_artifact_source_or_binding_population_rejected) ... ok\ntest_complete_catalog_checks_pinned_sources_without_execution_claim (test_compositor_qualification.CompositorQualificationTests.test_complete_catalog_checks_pinned_sources_without_execution_claim) ... ok\ntest_external_sources_are_explicitly_unverified_not_read (test_compositor_qualification.CompositorQualificationTests.test_external_sources_are_explicitly_unverified_not_read) ... ok\ntest_figures_bind_final_render_without_rewriting_earlier_receipt (test_compositor_qualification.CompositorQualificationTests.test_figures_bind_final_render_without_rewriting_earlier_receipt) ... ok\ntest_historical_layout_gap_remains_incomplete_and_exactly_bounded (test_compositor_qualification.CompositorQualificationTests.test_historical_layout_gap_remains_incomplete_and_exactly_bounded) ... ok\ntest_malformed_source_map_digests_do_not_disappear (test_compositor_qualification.CompositorQualificationTests.test_malformed_source_map_digests_do_not_disappear) ... ok\ntest_missing_duplicate_or_wrong_branch_milestone_rejected (test_compositor_qualification.CompositorQualificationTests.test_missing_duplicate_or_wrong_branch_milestone_rejected) ... ok\ntest_python_suite_requires_real_execution_without_skips (test_compositor_qualification.CompositorQualificationTests.test_python_suite_requires_real_execution_without_skips) ... ok\ntest_admission_needs_64_bytes_saved_and_raw_escape_cannot_grow (test_compression.CompressionEvidence.test_admission_needs_64_bytes_saved_and_raw_escape_cannot_grow) ... ok\ntest_config_rejects_non_vr444_before_side_effects (test_compression.CompressionEvidence.test_config_rejects_non_vr444_before_side_effects) ... ok\ntest_flags_must_be_boolean_and_applied_requires_attempt (test_compression.CompressionEvidence.test_flags_must_be_boolean_and_applied_requires_attempt) ... ok\ntest_missing_fresh_evidence_is_unverified (test_compression.CompressionEvidence.test_missing_fresh_evidence_is_unverified) ... ok\ntest_mixed_compressed_and_raw_frames_account_exact_payload_bytes (test_compression.CompressionEvidence.test_mixed_compressed_and_raw_frames_account_exact_payload_bytes) ... ok\ntest_off_and_opted_in_raw_escape_are_distinct (test_compression.CompressionEvidence.test_off_and_opted_in_raw_escape_are_distinct) ... ok\ntest_payload_sizes_are_bounded_positive_integers (test_compression.CompressionEvidence.test_payload_sizes_are_bounded_positive_integers) ... ok\ntest_receiver_decompressed_size_and_flag_match_sender (test_compression.CompressionEvidence.test_receiver_decompressed_size_and_flag_match_sender) ... ok\ntest_receiver_requires_matching_frame_and_eye_provenance (test_compression.CompressionEvidence.test_receiver_requires_matching_frame_and_eye_provenance) ... ok\ntest_sender_and_receiver_envelope_lengths_are_both_checked (test_compression.CompressionEvidence.test_sender_and_receiver_envelope_lengths_are_both_checked) ... ok\ntest_sender_configuration_must_match_requested_mode (test_compression.CompressionEvidence.test_sender_configuration_must_match_requested_mode) ... ok\ntest_suite_forwards_compression_and_defaults_off (test_compression.CompressionEvidence.test_suite_forwards_compression_and_defaults_off) ... ok\ntest_strict_p95_boundary_and_no_promotion (test_cpu_target.CpuTargetTests.test_strict_p95_boundary_and_no_promotion) ... ok\ntest_tail_and_cadence_still_matter (test_cpu_target.CpuTargetTests.test_tail_and_cadence_still_matter) ... ok\ntest_wrong_path_empty_and_missing_metadata_fail (test_cpu_target.CpuTargetTests.test_wrong_path_empty_and_missing_metadata_fail) ... ok\ntest_actual_each_eye_required (test_decoder_selection.DecoderSelection.test_actual_each_eye_required) ... ok\ntest_missing_evidence_unverified (test_decoder_selection.DecoderSelection.test_missing_evidence_unverified) ... ok\ntest_policy_and_backend_are_checked (test_decoder_selection.DecoderSelection.test_policy_and_backend_are_checked) ... ok\ntest_512_random_small_populations_match_exhaustive_combinations (test_full_count.FullCountTests.test_512_random_small_populations_match_exhaustive_combinations) ... ok\ntest_bad_solver_contract_and_bounded_state_work (test_full_count.FullCountTests.test_bad_solver_contract_and_bounded_state_work) ... ok\ntest_necessary_good_count_does_not_prove_joint_full_count (test_full_count.FullCountTests.test_necessary_good_count_does_not_prove_joint_full_count) ... ok\ntest_scenarios_are_explicit_bounded_and_no_earlier_admission (test_full_count.FullCountTests.test_scenarios_are_explicit_bounded_and_no_earlier_admission) ... ok\ntest_sealed_population_join_and_clock_translation (test_full_count.FullCountTests.test_sealed_population_join_and_clock_translation) ... ok\ntest_target_order_readiness_and_exact_threshold (test_full_count.FullCountTests.test_target_order_readiness_and_exact_threshold) ... ok\ntest_cap_and_mixed_missing_time (test_gaze_metrics.GazeMetrics.test_cap_and_mixed_missing_time) ... ok\ntest_clamped_past_time_is_valid (test_gaze_metrics.GazeMetrics.test_clamped_past_time_is_valid) ... ok\ntest_failed_locate_is_not_valid_even_with_raw_flags (test_gaze_metrics.GazeMetrics.test_failed_locate_is_not_valid_even_with_raw_flags) ... ok\ntest_false_boolean_claims_are_rejected (test_gaze_metrics.GazeMetrics.test_false_boolean_claims_are_rejected) ... ok\ntest_future_time_is_valid_expression_time (test_gaze_metrics.GazeMetrics.test_future_time_is_valid_expression_time) ... ok\ntest_off_missing_and_unrequested_collection (test_gaze_metrics.GazeMetrics.test_off_missing_and_unrequested_collection) ... ok\ntest_order_and_rate (test_gaze_metrics.GazeMetrics.test_order_and_rate) ... ok\ntest_orientation_valid_is_required_not_position_or_tracking (test_gaze_metrics.GazeMetrics.test_orientation_valid_is_required_not_position_or_tracking) ... ok\ntest_sequence_gaps_valid_repeats_and_regressions_invalid (test_gaze_metrics.GazeMetrics.test_sequence_gaps_valid_repeats_and_regressions_invalid) ... ok\ntest_types_and_ranges_are_strict (test_gaze_metrics.GazeMetrics.test_types_and_ranges_are_strict) ... ok\ntest_world_transform_can_reduce_validity_but_not_invent_it (test_gaze_metrics.GazeMetrics.test_world_transform_can_reduce_validity_but_not_invent_it) ... ok\ntest_zero_time_never_qualifies_alone (test_gaze_metrics.GazeMetrics.test_zero_time_never_qualifies_alone) ... ok\ntest_decoder_never_falls_back_to_secure_or_software (test_hardware.HardwareEvidenceTests.test_decoder_never_falls_back_to_secure_or_software) ... ok\ntest_gpu_identity_rejects_software_and_ambiguity (test_hardware.HardwareEvidenceTests.test_gpu_identity_rejects_software_and_ambiguity) ... ok\ntest_missing_duplicate_reordered_and_wrong_timestamp_frames_fail (test_hardware.HardwareEvidenceTests.test_missing_duplicate_reordered_and_wrong_timestamp_frames_fail) ... ok\ntest_optional_unsupported_never_hides_failures_or_interruption (test_hardware.HardwareEvidenceTests.test_optional_unsupported_never_hides_failures_or_interruption) ... ok\ntest_quality_catches_panel_swap_and_range_compression (test_hardware.HardwareEvidenceTests.test_quality_catches_panel_swap_and_range_compression) ... ok\ntest_small_samples_cannot_claim_reliable_p99 (test_hardware.HardwareEvidenceTests.test_small_samples_cannot_claim_reliable_p99) ... ok\ntest_actual_warm_source_history_survives_new_encoded_id (test_host_timeline.HostTimelineTests.test_actual_warm_source_history_survives_new_encoded_id) ... ok\ntest_early_wake_is_a_signed_phase_not_negative_stage (test_host_timeline.HostTimelineTests.test_early_wake_is_a_signed_phase_not_negative_stage) ... ok\ntest_exact_callback_stages_and_distinct_prediction_lead (test_host_timeline.HostTimelineTests.test_exact_callback_stages_and_distinct_prediction_lead) ... ok\ntest_host_clock_translation_preserves_every_duration_and_phase (test_host_timeline.HostTimelineTests.test_host_clock_translation_preserves_every_duration_and_phase) ... ok\ntest_independent_client_clock_translation_cannot_change_host_intervals (test_host_timeline.HostTimelineTests.test_independent_client_clock_translation_cannot_change_host_intervals) ... ok\ntest_missing_duplicate_regressive_or_unsupported_source_fails (test_host_timeline.HostTimelineTests.test_missing_duplicate_regressive_or_unsupported_source_fails) ... ok\ntest_unselected_prior_host_latch_is_distinct_from_selection_history (test_host_timeline.HostTimelineTests.test_unselected_prior_host_latch_is_distinct_from_selection_history) ... ok\ntest_diagnostic_trace_cannot_be_promoted (test_latency_policy.CandidateEvidenceTests.test_diagnostic_trace_cannot_be_promoted) ... ok\ntest_executable_helper_headers_must_match_build_receipt (test_latency_policy.CandidateEvidenceTests.test_executable_helper_headers_must_match_build_receipt) ... ok\ntest_missing_or_mismatched_candidate_config_and_source_rejected (test_latency_policy.CandidateEvidenceTests.test_missing_or_mismatched_candidate_config_and_source_rejected) ... ok\ntest_native_reference_explicit_and_never_candidate (test_latency_policy.CandidateEvidenceTests.test_native_reference_explicit_and_never_candidate) ... ok\ntest_new_experimental_controls_and_hidden_source_trace_block_promotion (test_latency_policy.CandidateEvidenceTests.test_new_experimental_controls_and_hidden_source_trace_block_promotion) ... ok\ntest_pacer_traces_are_diagnostic_even_with_false_provenance (test_latency_policy.CandidateEvidenceTests.test_pacer_traces_are_diagnostic_even_with_false_provenance) ... ok\ntest_publication_traces_and_config_cannot_masquerade_as_untraced (test_latency_policy.CandidateEvidenceTests.test_publication_traces_and_config_cannot_masquerade_as_untraced) ... ok\ntest_raw_runtime_rechecked_even_when_summary_claims_pass (test_latency_policy.CandidateEvidenceTests.test_raw_runtime_rechecked_even_when_summary_claims_pass) ... ok\ntest_readback_and_manifest_tampering_rejected (test_latency_policy.CandidateEvidenceTests.test_readback_and_manifest_tampering_rejected) ... ok\ntest_same_evidence_under_different_paths_cannot_count_as_repeat (test_latency_policy.CandidateEvidenceTests.test_same_evidence_under_different_paths_cannot_count_as_repeat) ... ok\ntest_trace_cannot_be_hidden_by_false_provenance_flag (test_latency_policy.CandidateEvidenceTests.test_trace_cannot_be_hidden_by_false_provenance_flag) ... ok\ntest_valid_but_different_effective_config_cannot_form_candidate_repeats (test_latency_policy.CandidateEvidenceTests.test_valid_but_different_effective_config_cannot_form_candidate_repeats) ... ok\ntest_valid_independent_repeats_bind_to_current_receipt (test_latency_policy.CandidateEvidenceTests.test_valid_independent_repeats_bind_to_current_receipt) ... ok\ntest_geometry_rate_transport_and_missing_profile_fail (test_latency_policy.LatencyPolicyTests.test_geometry_rate_transport_and_missing_profile_fail) ... ok\ntest_high_repeated_refresh_cannot_hide_low_unique_cadence (test_latency_policy.LatencyPolicyTests.test_high_repeated_refresh_cannot_hide_low_unique_cadence) ... ok\ntest_insufficient_duration_and_empty_fail (test_latency_policy.LatencyPolicyTests.test_insufficient_duration_and_empty_fail) ... ok\ntest_native_level_can_pass_but_not_certify_release (test_latency_policy.LatencyPolicyTests.test_native_level_can_pass_but_not_certify_release) ... ok\ntest_tail_cannot_hide_behind_good_median (test_latency_policy.LatencyPolicyTests.test_tail_cannot_hide_behind_good_median) ... ok\ntest_uses_earliest_eye_receipt_not_pooled_average (test_latency_policy.LatencyPolicyTests.test_uses_earliest_eye_receipt_not_pooled_average) ... ok\ntest_wrong_stereo_clock_and_nan_fail (test_latency_policy.LatencyPolicyTests.test_wrong_stereo_clock_and_nan_fail) ... ok\ntest_actual_staging_memory_requires_strict_type_and_coherent_visible_flags (test_latency_runtime.LatencyRuntimeTests.test_actual_staging_memory_requires_strict_type_and_coherent_visible_flags) ... ok\ntest_cpu_and_resident_valid_both_phases (test_latency_runtime.LatencyRuntimeTests.test_cpu_and_resident_valid_both_phases) ... ok\ntest_cpu_output_valid_modes_and_actual_memory_evidence (test_latency_runtime.LatencyRuntimeTests.test_cpu_output_valid_modes_and_actual_memory_evidence) ... ok\ntest_cpu_provenance_flags_no_gpu_duration_claim (test_latency_runtime.LatencyRuntimeTests.test_cpu_provenance_flags_no_gpu_duration_claim) ... ok\ntest_decoder_durations_finite_nonnegative_real_numbers (test_latency_runtime.LatencyRuntimeTests.test_decoder_durations_finite_nonnegative_real_numbers) ... ok\ntest_empty_missing_and_wrong_collection_types_fail (test_latency_runtime.LatencyRuntimeTests.test_empty_missing_and_wrong_collection_types_fail) ... ok\ntest_every_presentation_time_is_required_strict_positive_int64 (test_latency_runtime.LatencyRuntimeTests.test_every_presentation_time_is_required_strict_positive_int64) ... ok\ntest_exact_stereo_and_decode_identity_join (test_latency_runtime.LatencyRuntimeTests.test_exact_stereo_and_decode_identity_join) ... ok\ntest_explicit_output_requires_complete_telemetry_for_each_eye (test_latency_runtime.LatencyRuntimeTests.test_explicit_output_requires_complete_telemetry_for_each_eye) ... ok\ntest_failed_duplicate_and_mixed_kernel_rejected (test_latency_runtime.LatencyRuntimeTests.test_failed_duplicate_and_mixed_kernel_rejected) ... ok\ntest_mapped_output_cannot_claim_a_staging_memcpy (test_latency_runtime.LatencyRuntimeTests.test_mapped_output_cannot_claim_a_staging_memcpy) ... ok\ntest_mapping_supported_with_key_identity_check (test_latency_runtime.LatencyRuntimeTests.test_mapping_supported_with_key_identity_check) ... ok\ntest_native_requires_no_custom_decoder_rows (test_latency_runtime.LatencyRuntimeTests.test_native_requires_no_custom_decoder_rows) ... ok\ntest_observational_distributions_and_no_input_mutation (test_latency_runtime.LatencyRuntimeTests.test_observational_distributions_and_no_input_mutation) ... ok\ntest_only_actual_snapshot_paths_may_report_snapshot_overhead (test_latency_runtime.LatencyRuntimeTests.test_only_actual_snapshot_paths_may_report_snapshot_overhead) ... ok\ntest_output_mode_mismatch_and_mixed_modes_rejected (test_latency_runtime.LatencyRuntimeTests.test_output_mode_mismatch_and_mixed_modes_rejected) ... ok\ntest_phase_and_every_order_boundary (test_latency_runtime.LatencyRuntimeTests.test_phase_and_every_order_boundary) ... ok\ntest_ready_during_selection_allowed_after_selection_rejected (test_latency_runtime.LatencyRuntimeTests.test_ready_during_selection_allowed_after_selection_rejected) ... ok\ntest_repeats_stable_and_submit_strictly_increasing (test_latency_runtime.LatencyRuntimeTests.test_repeats_stable_and_submit_strictly_increasing) ... ok\ntest_resident_provenance_flags_and_no_cpu_staging_claim (test_latency_runtime.LatencyRuntimeTests.test_resident_provenance_flags_and_no_cpu_staging_claim) ... ok\ntest_sampled_mapped_capture_source_and_cadence_are_enforced (test_latency_runtime.LatencyRuntimeTests.test_sampled_mapped_capture_source_and_cadence_are_enforced) ... ok\ntest_snapshot_clock_is_finite_nonnegative_and_inside_decode_upload (test_latency_runtime.LatencyRuntimeTests.test_snapshot_clock_is_finite_nonnegative_and_inside_decode_upload) ... ok\ntest_black_frames_do_not_pass_scene_gate (test_live_integration.LiveIntegration.test_black_frames_do_not_pass_scene_gate) ... ok\ntest_content_sanity_accepts_flat_shaded_edges_but_not_black_noise (test_live_integration.LiveIntegration.test_content_sanity_accepts_flat_shaded_edges_but_not_black_noise) ... ok\ntest_cpu_timing_is_not_reported_as_zero_gpu_work (test_live_integration.LiveIntegration.test_cpu_timing_is_not_reported_as_zero_gpu_work) ... ok\ntest_decode_warp_mismatch_is_detected (test_live_integration.LiveIntegration.test_decode_warp_mismatch_is_detected) ... ok\ntest_empty_evidence_fails (test_live_integration.LiveIntegration.test_empty_evidence_fails) ... ok\ntest_empty_stereo_metrics_are_unknown_not_perfect (test_live_integration.LiveIntegration.test_empty_stereo_metrics_are_unknown_not_perfect) ... ok\ntest_latency_counts_first_stereo_submission_only (test_live_integration.LiveIntegration.test_latency_counts_first_stereo_submission_only) ... ok\ntest_mixed_eye_presentation_is_detected (test_live_integration.LiveIntegration.test_mixed_eye_presentation_is_detected) ... ok\ntest_pair_utilization_requires_both_eyes_and_identical_warp (test_live_integration.LiveIntegration.test_pair_utilization_requires_both_eyes_and_identical_warp) ... ok\ntest_actual_submission_required_and_effect_never_claimed (test_meta_sr.MetaSR.test_actual_submission_required_and_effect_never_claimed) ... ok\ntest_config_resets_both_filters_and_modes_exclusive (test_meta_sr.MetaSR.test_config_resets_both_filters_and_modes_exclusive) ... ok\ntest_missing_fresh_telemetry_unverified (test_meta_sr.MetaSR.test_missing_fresh_telemetry_unverified) ... ok\ntest_no_projection_is_not_submission (test_meta_sr.MetaSR.test_no_projection_is_not_submission) ... ok\ntest_off_without_extension_valid (test_meta_sr.MetaSR.test_off_without_extension_valid) ... ok\ntest_suite_entrypoint_forwards_filter_and_defaults_off (test_meta_sr.MetaSR.test_suite_entrypoint_forwards_filter_and_defaults_off) ... ok\ntest_unsupported_is_not_success (test_meta_sr.MetaSR.test_unsupported_is_not_success) ... ok\ntest_all_modes_and_cadences_share_isolated_scene_and_comparison_optout (test_native_compare.NativeComparisonConfiguration.test_all_modes_and_cadences_share_isolated_scene_and_comparison_optout) ... ok\ntest_29_pairs_fail_even_with_usable_postwarmup_interval (test_native_compare.NativeComparisonGates.test_29_pairs_fail_even_with_usable_postwarmup_interval) ... ok\ntest_absent_pacer_overlay_stops_before_any_device_command (test_native_compare.NativeComparisonGates.test_absent_pacer_overlay_stops_before_any_device_command) ... ok\ntest_experimental_controls_are_explicit_and_backed_up (test_native_compare.NativeComparisonGates.test_experimental_controls_are_explicit_and_backed_up) ... ok\ntest_identity_failure_is_not_overridden_by_sufficient_counts (test_native_compare.NativeComparisonGates.test_identity_failure_is_not_overridden_by_sufficient_counts) ... ok\ntest_inherited_source_trace_is_removed_and_only_explicitly_enabled (test_native_compare.NativeComparisonGates.test_inherited_source_trace_is_removed_and_only_explicitly_enabled) ... ok\ntest_invalid_optional_feed_fails_even_with_valid_presentation_timing (test_native_compare.NativeComparisonGates.test_invalid_optional_feed_fails_even_with_valid_presentation_timing) ... ok\ntest_many_startup_pairs_cannot_substitute_for_postwarmup_cadence (test_native_compare.NativeComparisonGates.test_many_startup_pairs_cannot_substitute_for_postwarmup_cadence) ... ok\ntest_minimum_30_pairs_and_positive_postwarmup_window_pass_without_optional_feed (test_native_compare.NativeComparisonGates.test_minimum_30_pairs_and_positive_postwarmup_window_pass_without_optional_feed) ... ok\ntest_pacer_diagnostic_file_evaluation_requires_exact_source_join (test_native_compare.NativeComparisonGates.test_pacer_diagnostic_file_evaluation_requires_exact_source_join) ... ok\ntest_pacer_diagnostics_require_explicit_combined_controls_and_source_preflight (test_native_compare.NativeComparisonGates.test_pacer_diagnostics_require_explicit_combined_controls_and_source_preflight) ... ok\ntest_repeated_presentations_do_not_satisfy_unique_pair_minimum (test_native_compare.NativeComparisonGates.test_repeated_presentations_do_not_satisfy_unique_pair_minimum) ... ok\ntest_source_footer_wait_never_accepts_partial_or_false_completion (test_native_compare.NativeComparisonGates.test_source_footer_wait_never_accepts_partial_or_false_completion) ... ok\ntest_dedup_uses_session_stream_stage_frame_not_snapshot_frames (test_native_metrics.PerformanceMetrics.test_dedup_uses_session_stream_stage_frame_not_snapshot_frames) ... ok\ntest_duplicate_stream_in_snapshot_fails (test_native_metrics.PerformanceMetrics.test_duplicate_stream_in_snapshot_fails) ... ok\ntest_empty_null_stages_and_duplicate_snapshot_are_not_extra_frames (test_native_metrics.PerformanceMetrics.test_empty_null_stages_and_duplicate_snapshot_are_not_extra_frames) ... ok\ntest_inconsistent_duplicate_stage_is_not_silently_averaged (test_native_metrics.PerformanceMetrics.test_inconsistent_duplicate_stage_is_not_silently_averaged) ... ok\ntest_invalid_schemas_and_nonfinite_or_boolean_values_fail (test_native_metrics.PerformanceMetrics.test_invalid_schemas_and_nonfinite_or_boolean_values_fail) ... ok\ntest_session_change_is_explicit_failure_not_merged_run (test_native_metrics.PerformanceMetrics.test_session_change_is_explicit_failure_not_merged_run) ... ok\ntest_snapshot_and_stage_regressions_fail (test_native_metrics.PerformanceMetrics.test_snapshot_and_stage_regressions_fail) ... ok\ntest_clock_and_frame_regression_are_not_sorted_away (test_native_metrics.PresentMetrics.test_clock_and_frame_regression_are_not_sorted_away) ... ok\ntest_empty_or_wrong_container_fails (test_native_metrics.PresentMetrics.test_empty_or_wrong_container_fails) ... ok\ntest_exact_two_second_warmup_and_repeat_from_before_window (test_native_metrics.PresentMetrics.test_exact_two_second_warmup_and_repeat_from_before_window) ... ok\ntest_first_unique_pair_only_and_local_interval_cadence (test_native_metrics.PresentMetrics.test_first_unique_pair_only_and_local_interval_cadence) ... ok\ntest_future_predicted_display_is_not_measured_photon_time (test_native_metrics.PresentMetrics.test_future_predicted_display_is_not_measured_photon_time) ... ok\ntest_invalid_warmup_is_reported_without_exception (test_native_metrics.PresentMetrics.test_invalid_warmup_is_reported_without_exception) ... ok\ntest_mismatched_frame_warp_and_changed_repeat_identity_fail (test_native_metrics.PresentMetrics.test_mismatched_frame_warp_and_changed_repeat_identity_fail) ... ok\ntest_single_sample_has_no_fabricated_cadence_or_steady_state (test_native_metrics.PresentMetrics.test_single_sample_has_no_fabricated_cadence_or_steady_state) ... ok\ntest_strict_clock_schema_finite_positive_and_ordered (test_native_metrics.PresentMetrics.test_strict_clock_schema_finite_positive_and_ordered) ... ok\ntest_channel_delay_correction (test_optical.OpticalTests.test_channel_delay_correction) ... ok\ntest_clock_gaps_expiry_and_nonfinite (test_optical.OpticalTests.test_clock_gaps_expiry_and_nonfinite) ... ok\ntest_conservative_limit_and_wrong_direction (test_optical.OpticalTests.test_conservative_limit_and_wrong_direction) ... ok\ntest_duplicate_trial (test_optical.OpticalTests.test_duplicate_trial) ... ok\ntest_excessive_uncertainty_and_reversed_causality (test_optical.OpticalTests.test_excessive_uncertainty_and_reversed_causality) ... ok\ntest_known_delay_uncertainty_and_strata (test_optical.OpticalTests.test_known_delay_uncertainty_and_strata) ... ok\ntest_missing_photon_cannot_pass (test_optical.OpticalTests.test_missing_photon_cannot_pass) ... ok\ntest_missing_trial_and_cherry_picked_schedule (test_optical.OpticalTests.test_missing_trial_and_cherry_picked_schedule) ... ok\ntest_noise_and_insufficient_baseline (test_optical.OpticalTests.test_noise_and_insufficient_baseline) ... ok\ntest_optical_plan_coverage_and_readiness (test_optical.OpticalTests.test_optical_plan_coverage_and_readiness) ... ok\ntest_provenance_requires_both_capture_and_calibration (test_optical.OpticalTests.test_provenance_requires_both_capture_and_calibration) ... ok\ntest_trial_timing_cannot_be_cherry_picked (test_optical.OpticalTests.test_trial_timing_cannot_be_cherry_picked) ... ok\ntest_duplicate_instance_match_is_ambiguous_and_unaccepted_predictions_are_allowed (test_pacer_source_join.PacerSourceJoinTests.test_duplicate_instance_match_is_ambiguous_and_unaccepted_predictions_are_allowed) ... ok\ntest_exact_output_target_join_preserves_phase_values (test_pacer_source_join.PacerSourceJoinTests.test_exact_output_target_join_preserves_phase_values) ... ok\ntest_matching_id_with_wrong_target_or_preceding_prediction_fails (test_pacer_source_join.PacerSourceJoinTests.test_matching_id_with_wrong_target_or_preceding_prediction_fails) ... ok\ntest_missing_selected_frame_false_footer_or_domain_fails (test_pacer_source_join.PacerSourceJoinTests.test_missing_selected_frame_false_footer_or_domain_fails) ... ok\ntest_same_host_clock_translation_preserves_durations (test_pacer_source_join.PacerSourceJoinTests.test_same_host_clock_translation_preserves_durations) ... ok\ntest_all_outputs_and_native_constants_are_replayed (test_pacer_trace.PacerTraceTests.test_all_outputs_and_native_constants_are_replayed) ... ok\ntest_feedback_phase_changes_do_not_require_prior_target_equality (test_pacer_trace.PacerTraceTests.test_feedback_phase_changes_do_not_require_prior_target_equality) ... ok\ntest_instances_keep_independent_identity_and_first_prediction (test_pacer_trace.PacerTraceTests.test_instances_keep_independent_identity_and_first_prediction) ... ok\ntest_missing_tail_overflow_and_drops_fail (test_pacer_trace.PacerTraceTests.test_missing_tail_overflow_and_drops_fail) ... ok\ntest_schema_and_field_types_are_exact (test_pacer_trace.PacerTraceTests.test_schema_and_field_types_are_exact) ... ok\ntest_valid_and_floor_residual_is_not_declared_failure (test_pacer_trace.PacerTraceTests.test_valid_and_floor_residual_is_not_declared_failure) ... ok\ntest_1024_exhaustive_integer_phase_populations (test_phase_exact.ExactPhaseTests.test_1024_exhaustive_integer_phase_populations) ... ok\ntest_exact_ties_preserve_earliest_minimizing_phase (test_phase_exact.ExactPhaseTests.test_exact_ties_preserve_earliest_minimizing_phase) ... ok\ntest_invalid_events_or_nonmonotone_oracle_rejected (test_phase_exact.ExactPhaseTests.test_invalid_events_or_nonmonotone_oracle_rejected) ... ok\ntest_readiness_breakpoints_cover_every_fixed_target_edge_change (test_phase_exact.ExactPhaseTests.test_readiness_breakpoints_cover_every_fixed_target_edge_change) ... ok\ntest_seed_is_a_hint_until_both_exact_boundaries_are_requalified (test_phase_exact.ExactPhaseTests.test_seed_is_a_hint_until_both_exact_boundaries_are_requalified) ... ok\ntest_age_count_without_cadence_never_becomes_joint_solution (test_phase_frontier.PhaseFrontierTests.test_age_count_without_cadence_never_becomes_joint_solution) ... ok\ntest_finite_grid_is_exact_distinct_and_contains_existing_reference_cases (test_phase_frontier.PhaseFrontierTests.test_finite_grid_is_exact_distinct_and_contains_existing_reference_cases) ... ok\ntest_omitted_reordered_or_mislabeled_scenarios_fail (test_phase_frontier.PhaseFrontierTests.test_omitted_reordered_or_mislabeled_scenarios_fail) ... ok\ntest_only_audited_declared_cells_produce_conditional_grid_solutions (test_phase_frontier.PhaseFrontierTests.test_only_audited_declared_cells_produce_conditional_grid_solutions) ... ok\ntest_checkpoint_config_and_all_publication_source_joins_are_required (test_publication_capture.PublicationCaptureTests.test_checkpoint_config_and_all_publication_source_joins_are_required) ... ok\ntest_forged_capture_metadata_never_relabels_prefix_as_valid (test_publication_capture.PublicationCaptureTests.test_forged_capture_metadata_never_relabels_prefix_as_valid) ... ok\ntest_opt_in_controls_and_backup_contract (test_publication_capture.PublicationCaptureTests.test_opt_in_controls_and_backup_contract) ... ok\ntest_presentation_fields_alone_reveal_unrequested_diagnostic (test_publication_capture.PublicationCaptureTests.test_presentation_fields_alone_reveal_unrequested_diagnostic) ... ok\ntest_source_preflight_precedes_every_device_command_and_output_creation (test_publication_capture.PublicationCaptureTests.test_source_preflight_precedes_every_device_command_and_output_creation) ... ok\ntest_disabled_and_duplicate_json_are_rejected (test_publication_trace.PublicationTraceTests.test_disabled_and_duplicate_json_are_rejected) ... ok\ntest_event_corruption_order_and_capacity_fail_closed (test_publication_trace.PublicationTraceTests.test_event_corruption_order_and_capacity_fail_closed) ... ok\ntest_exact_prefix_reconstructs_all_history_and_keeps_tail_unqualified (test_publication_trace.PublicationTraceTests.test_exact_prefix_reconstructs_all_history_and_keeps_tail_unqualified) ... ok\ntest_lost_invalid_or_foreign_epoch_checkpoint_fails (test_publication_trace.PublicationTraceTests.test_lost_invalid_or_foreign_epoch_checkpoint_fails) ... ok\ntest_metadata_and_ready_clock_validation_covers_evicted_unobserved_events (test_publication_trace.PublicationTraceTests.test_metadata_and_ready_clock_validation_covers_evicted_unobserved_events) ... ok\ntest_omitted_and_fabricated_snapshot_history_fails (test_publication_trace.PublicationTraceTests.test_omitted_and_fabricated_snapshot_history_fails) ... ok\ntest_outer_candidate_failure_is_not_a_publication_pass (test_publication_trace.PublicationTraceTests.test_outer_candidate_failure_is_not_a_publication_pass) ... ok\ntest_replay_counts_distinct_published_eye_identities (test_publication_trace.PublicationTraceTests.test_replay_counts_distinct_published_eye_identities) ... ok\ntest_reset_epoch_can_reuse_identity_without_reusing_old_history (test_publication_trace.PublicationTraceTests.test_reset_epoch_can_reuse_identity_without_reusing_old_history) ... ok\ntest_same_frame_cannot_change_metadata_within_an_epoch (test_publication_trace.PublicationTraceTests.test_same_frame_cannot_change_metadata_within_an_epoch) ... ok\ntest_unknown_missing_header_and_checkpoint_fields_fail (test_publication_trace.PublicationTraceTests.test_unknown_missing_header_and_checkpoint_fields_fail) ... ok\ntest_bad_query_types_scores_or_negative_ages_reject (test_quantile_bound.QuantileBoundTests.test_bad_query_types_scores_or_negative_ages_reject) ... ok\ntest_exact_integer_boundary_against_512_exhaustive_path_populations (test_quantile_bound.QuantileBoundTests.test_exact_integer_boundary_against_512_exhaustive_path_populations) ... ok\ntest_removing_worst_ages_cannot_worsen_nearest_rank_p95 (test_quantile_bound.QuantileBoundTests.test_removing_worst_ages_cannot_worsen_nearest_rank_p95) ... ok\ntest_zero_age_and_strict_fifteen_millisecond_boundary (test_quantile_bound.QuantileBoundTests.test_zero_age_and_strict_fifteen_millisecond_boundary) ... ok\ntest_a_supporting_frame_requires_host_source_provenance_even_if_not_selected (test_ready_successor.ReadySuccessorTests.test_a_supporting_frame_requires_host_source_provenance_even_if_not_selected) ... ok\ntest_advancement_requires_complete_strictly_later_successor (test_ready_successor.ReadySuccessorTests.test_advancement_requires_complete_strictly_later_successor) ... ok\ntest_custom_selector_cannot_hide_or_forge_required_successor_witnesses (test_ready_successor.ReadySuccessorTests.test_custom_selector_cannot_hide_or_forge_required_successor_witnesses) ... ok\ntest_forward_guard_can_retain_old_pair_without_inventing_a_reservation (test_ready_successor.ReadySuccessorTests.test_forward_guard_can_retain_old_pair_without_inventing_a_reservation) ... ok\ntest_second_horizon_endpoint_alpha_and_eye_metadata_guard_witness (test_ready_successor.ReadySuccessorTests.test_second_horizon_endpoint_alpha_and_eye_metadata_guard_witness) ... ok\ntest_all_eyes_and_alpha_have_their_own_receipt_floor (test_receipt_floor.ReceiptFloorTests.test_all_eyes_and_alpha_have_their_own_receipt_floor) ... ok\ntest_already_immediate_and_mode_controls (test_receipt_floor.ReceiptFloorTests.test_already_immediate_and_mode_controls) ... ok\ntest_floor_dominates_every_bounded_per_eye_improvement (test_receipt_floor.ReceiptFloorTests.test_floor_dominates_every_bounded_per_eye_improvement) ... ok\ntest_invalid_receipt_or_readiness_fails_closed (test_receipt_floor.ReceiptFloorTests.test_invalid_receipt_or_readiness_fails_closed) ... ok\ntest_duplicate_horizon_empty_warmup_and_bad_declarations_fail (test_selection_counterfactual.CounterfactualTests.test_duplicate_horizon_empty_warmup_and_bad_declarations_fail) ... ok\ntest_failed_observed_trace_or_missing_source_provenance_blocks_analysis (test_selection_counterfactual.CounterfactualTests.test_failed_observed_trace_or_missing_source_provenance_blocks_analysis) ... ok\ntest_fraction_boundary_and_first_period_preserve_guards (test_selection_counterfactual.CounterfactualTests.test_fraction_boundary_and_first_period_preserve_guards) ... ok\ntest_host_clock_shift_does_not_change_client_age_hypothesis (test_selection_counterfactual.CounterfactualTests.test_host_clock_shift_does_not_change_client_age_hypothesis) ... ok\ntest_invalid_ratios_and_runtime_inputs_fail (test_selection_counterfactual.CounterfactualTests.test_invalid_ratios_and_runtime_inputs_fail) ... ok\ntest_orphan_alpha_and_regressive_replacements_rejected (test_selection_counterfactual.CounterfactualTests.test_orphan_alpha_and_regressive_replacements_rejected) ... ok\ntest_pluggable_selector_cannot_invent_metadata_or_bypass_horizon (test_selection_counterfactual.CounterfactualTests.test_pluggable_selector_cannot_invent_metadata_or_bypass_horizon) ... ok\ntest_repeated_hypothetical_choice_does_not_claim_full_observed_cadence (test_selection_counterfactual.CounterfactualTests.test_repeated_hypothetical_choice_does_not_claim_full_observed_cadence) ... ok\ntest_source_join_distinguishes_new_encoded_frame_from_reused_app (test_selection_counterfactual.CounterfactualTests.test_source_join_distinguishes_new_encoded_frame_from_reused_app) ... ok\ntest_actual_warm_generation_excludes_new_encoded_alias (test_source_novelty.SourceNoveltyTests.test_actual_warm_generation_excludes_new_encoded_alias) ... ok\ntest_grouping_preserves_all_encoded_tradeoffs (test_source_novelty.SourceNoveltyTests.test_grouping_preserves_all_encoded_tradeoffs) ... ok\ntest_noncontiguous_recurrence_missing_join_and_bad_order_reject (test_source_novelty.SourceNoveltyTests.test_noncontiguous_recurrence_missing_join_and_bad_order_reject) ... ok\ntest_sets_canonicalize_order_but_never_duplicate_pacer (test_source_novelty.SourceNoveltyTests.test_sets_canonicalize_order_but_never_duplicate_pacer) ... ok\ntest_source_identity_and_ordinal_are_independently_audited (test_source_novelty.SourceNoveltyTests.test_source_identity_and_ordinal_are_independently_audited) ... ok\ntest_canonical_multisource_identity_and_receipt_ties (test_source_receipt_age.SourceReceiptAgeTests.test_canonical_multisource_identity_and_receipt_ties) ... ok\ntest_certificate_count_controls_hash_identity_and_score_fail_closed (test_source_receipt_age.SourceReceiptAgeTests.test_certificate_count_controls_hash_identity_and_score_fail_closed) ... ok\ntest_client_clock_translation_preserves_age_summary (test_source_receipt_age.SourceReceiptAgeTests.test_client_clock_translation_preserves_age_summary) ... ok\ntest_full_source_join_and_hindsight_origin_are_explicit (test_source_receipt_age.SourceReceiptAgeTests.test_full_source_join_and_hindsight_origin_are_explicit) ... ok\ntest_future_or_invalid_receipts_and_selected_ids_rejected (test_source_receipt_age.SourceReceiptAgeTests.test_future_or_invalid_receipts_and_selected_ids_rejected) ... ok\ntest_host_clock_translation_cannot_change_client_age (test_source_receipt_age.SourceReceiptAgeTests.test_host_clock_translation_cannot_change_client_age) ... ok\ntest_new_encoded_identity_cannot_reset_same_source_receipt (test_source_receipt_age.SourceReceiptAgeTests.test_new_encoded_identity_cannot_reset_same_source_receipt) ... ok\ntest_winning_paths_are_reaudited_without_new_optimization_claim (test_source_receipt_age.SourceReceiptAgeTests.test_winning_paths_are_reaudited_without_new_optimization_claim) ... ok\ntest_complete_adapter_roundtrip_still_rejects_simulated_hardware (test_suite.AdapterTests.test_complete_adapter_roundtrip_still_rejects_simulated_hardware) ... ok\ntest_legacy_optical_events_cannot_replace_physical_capture (test_suite.AdapterTests.test_legacy_optical_events_cannot_replace_physical_capture) ... ok\ntest_missing_integration_is_blocked (test_suite.AdapterTests.test_missing_integration_is_blocked) ... ok\ntest_path_traversal_and_hash_rejected (test_suite.AdapterTests.test_path_traversal_and_hash_rejected) ... ok\ntest_stop_attempted_after_run_error (test_suite.AdapterTests.test_stop_attempted_after_run_error) ... ok\ntest_burst_loss_and_invalid_packet (test_suite.FixtureTests.test_burst_loss_and_invalid_packet) ... ok\ntest_empty_zone_not_infinite_quality (test_suite.FixtureTests.test_empty_zone_not_infinite_quality) ... ok\ntest_gaze_faults_and_stereo (test_suite.FixtureTests.test_gaze_faults_and_stereo) ... ok\ntest_impairment_repeatability_deadlines_and_queue (test_suite.FixtureTests.test_impairment_repeatability_deadlines_and_queue) ... ok\ntest_no_synthetic_substitution_for_vr_corpus (test_suite.FixtureTests.test_no_synthetic_substitution_for_vr_corpus) ... ok\ntest_reproducible_rgb_and_chroma_damage (test_suite.FixtureTests.test_reproducible_rgb_and_chroma_damage) ... ok\ntest_quality_modes_do_not_claim_fixed_rate (test_suite.PlanTests.test_quality_modes_do_not_claim_fixed_rate) ... ok\ntest_reproducible_and_unique (test_suite.PlanTests.test_reproducible_and_unique) ... ok\ntest_smoke_and_soak (test_suite.PlanTests.test_smoke_and_soak) ... ok\ntest_absent_frame_is_not_success (test_suite.TraceTests.test_absent_frame_is_not_success) ... ok\ntest_already_normalized_is_not_double_converted (test_suite.TraceTests.test_already_normalized_is_not_double_converted) ... ok\ntest_bad_clock_and_extrapolation (test_suite.TraceTests.test_bad_clock_and_extrapolation) ... ok\ntest_complete_simulation_never_hardware_pass (test_suite.TraceTests.test_complete_simulation_never_hardware_pass) ... ok\ntest_cross_clock_without_sync_inconclusive (test_suite.TraceTests.test_cross_clock_without_sync_inconclusive) ... ok\ntest_duplicate_rejected (test_suite.TraceTests.test_duplicate_rejected) ... ok\ntest_explicit_drop_counts_transmitted_bytes (test_suite.TraceTests.test_explicit_drop_counts_transmitted_bytes) ... ok\ntest_hardware_identity_required (test_suite.TraceTests.test_hardware_identity_required) ... ok\ntest_negative_duration (test_suite.TraceTests.test_negative_duration) ... ok\ntest_optical_requires_calibration (test_suite.TraceTests.test_optical_requires_calibration) ... ok\ntest_stale_warp_and_stereo (test_suite.TraceTests.test_stale_warp_and_stereo) ... ok\ntest_telemetry_loss (test_suite.TraceTests.test_telemetry_loss) ... ok\ntest_all_participating_eyes_must_be_ready (test_supply_phase.SupplyPhaseTests.test_all_participating_eyes_must_be_ready) ... ok\ntest_bad_parameters_and_invalid_shifted_local_timestamps_fail (test_supply_phase.SupplyPhaseTests.test_bad_parameters_and_invalid_shifted_local_timestamps_fail) ... ok\ntest_clock_translation_and_source_failure_boundaries (test_supply_phase.SupplyPhaseTests.test_clock_translation_and_source_failure_boundaries) ... ok\ntest_exact_receipt_age_and_selection_readiness_boundaries (test_supply_phase.SupplyPhaseTests.test_exact_receipt_age_and_selection_readiness_boundaries) ... ok\ntest_later_observed_pair_use_is_explicit_not_silently_original_availability (test_supply_phase.SupplyPhaseTests.test_later_observed_pair_use_is_explicit_not_silently_original_availability) ... ok\ntest_publication_advance_is_clipped_at_each_eye_receipt (test_supply_phase.SupplyPhaseTests.test_publication_advance_is_clipped_at_each_eye_receipt) ... ok\ntest_recorded_admission_floor_distinguishes_early_and_after_fence (test_supply_phase.SupplyPhaseTests.test_recorded_admission_floor_distinguishes_early_and_after_fence) ... ok\ntest_all_edges_equivalent_in_1024_random_populations (test_target_admission.TargetAdmissionTests.test_all_edges_equivalent_in_1024_random_populations) ... ok\ntest_auditor_rejects_future_target_even_if_ready_and_low_age (test_target_admission.TargetAdmissionTests.test_auditor_rejects_future_target_even_if_ready_and_low_age) ... ok\ntest_bad_ceiling_or_unordered_input_rejects (test_target_admission.TargetAdmissionTests.test_bad_ceiling_or_unordered_input_rejects) ... ok\ntest_inclusive_crossing_and_never_admissible (test_target_admission.TargetAdmissionTests.test_inclusive_crossing_and_never_admissible) ... ok\ntest_native_horizon_is_recomputed_even_when_closest_logged_zero (test_target_admission.TargetAdmissionTests.test_native_horizon_is_recomputed_even_when_closest_logged_zero) ... ok\ntest_original_runtime_inputs_and_overflow_reject (test_target_admission.TargetAdmissionTests.test_original_runtime_inputs_and_overflow_reject) ... ok\ntest_existing_envelopes_reproduce_original_oracle (test_target_envelope.TargetEnvelopeTests.test_existing_envelopes_reproduce_original_oracle) ... ok\ntest_host_clock_translation_does_not_change_client_bounds (test_target_envelope.TargetEnvelopeTests.test_host_clock_translation_does_not_change_client_bounds) ... ok\ntest_invalid_envelopes_warmup_and_threshold_fail (test_target_envelope.TargetEnvelopeTests.test_invalid_envelopes_warmup_and_threshold_fail) ... ok\ntest_larger_envelope_inclusive_boundary_without_invented_pairs (test_target_envelope.TargetEnvelopeTests.test_larger_envelope_inclusive_boundary_without_invented_pairs) ... ok\ntest_missing_join_unavailable_frame_and_corrupt_contract_fail (test_target_envelope.TargetEnvelopeTests.test_missing_join_unavailable_frame_and_corrupt_contract_fail) ... ok\ntest_ratio_reduction_integer_rounding_and_large_timestamps (test_target_envelope.TargetEnvelopeTests.test_ratio_reduction_integer_rounding_and_large_timestamps) ... ok\ntest_zero_runtime_interval_does_not_create_finite_future_allowance (test_target_envelope.TargetEnvelopeTests.test_zero_runtime_interval_does_not_create_finite_future_allowance) ... ok\ntest_external_manifest_path_and_symlink_are_rejected (test_trace_reanalysis.TraceReanalysisTests.test_external_manifest_path_and_symlink_are_rejected) ... ok\ntest_failed_cleanup_and_unrequested_trace_cannot_be_reclassified (test_trace_reanalysis.TraceReanalysisTests.test_failed_cleanup_and_unrequested_trace_cannot_be_reclassified) ... ok\ntest_output_inside_original_or_existing_receipt_is_refused (test_trace_reanalysis.TraceReanalysisTests.test_output_inside_original_or_existing_receipt_is_refused) ... ok\ntest_reanalysis_preserves_failed_original_and_disclaims_qualification (test_trace_reanalysis.TraceReanalysisTests.test_reanalysis_preserves_failed_original_and_disclaims_qualification) ... ok\ntest_tampered_or_missing_original_evidence_fails_before_reanalysis (test_trace_reanalysis.TraceReanalysisTests.test_tampered_or_missing_original_evidence_fails_before_reanalysis) ... ok\n\n----------------------------------------------------------------------\nRan 331 tests in 5.156s\n\nOK\n"
+    }
+  ],
+  "catalog_sha256": "b8735b85b4f6935b504e2f9402e0b39b56e4e97dfb502dc51136e4a3830eea7b",
+  "current_files_sha256": {
+    "validation/wivrn-codecs/ADAPTER.txt": "e00e3f27723f4e6c64f8a2f8bdb1f4683ea6551189e957eacaca3b470d924ce6",
+    "validation/wivrn-codecs/HARDWARE.txt": "d138b18d5ecd4570f04690c49cc133ddc36afae6095557812f4f985bfb57b48a",
+    "validation/wivrn-codecs/OPTICAL.txt": "482f55c6a0f0df8c2e05b59e9398a8bcaa502e5e6a7b5aaa785abeaf5cc3ba5e",
+    "validation/wivrn-codecs/README.txt": "ae147208e46788ef7aacbd32d0a037b00dc997a847bbdd6757786360d1aea402",
+    "validation/wivrn-codecs/VALIDATION.txt": "925694b17adc26bb55c101ebcaf9ffe86618daefba95fa30cf4af5b424f3c31a",
+    "validation/wivrn-codecs/adapter_template.py": "6c7d507d2294a4e128b92400b62659131f2585a279eb107ba2d0b0324edfee7f",
+    "validation/wivrn-codecs/collect.py": "c63c3dfe1e83bd68b9b562abcdb9ba06c1671b535e4d0e501a2de0b7c6fc1b36",
+    "validation/wivrn-codecs/hardware/CodecHarness.java": "1f0f6189225bcd13cce05a7e79f62533fd96a7f583d179b5527a51ab90de6e4b",
+    "validation/wivrn-codecs/hardware/build.sh": "99415b33ddc3794c0bfcf00fe44c547c8719bda2f7df1a6ae3d157952482cbd3",
+    "validation/wivrn-codecs/hardware.py": "23c0953367f65f7fc2d16282d2f4d0e4a38e499c94a0e2c763cf871f093b04f7",
+    "validation/wivrn-codecs/impairment.py": "71cababd2d2f74f642a844e0dc7e778e0966944009bca3a017b44bbc55f05afa",
+    "validation/wivrn-codecs/integration/CPU-LATENCY-TARGET.json": "469cf8d1a0c3733202127efdee15c37f3200edcdb4daa6a3af9afbbff5e87e32",
+    "validation/wivrn-codecs/integration/CodecOptions.java": "705802a4a877229dc5bc072b1f2f3de8a1a3374b102d0a21ffafb893f6ee94de",
+    "validation/wivrn-codecs/integration/GAZE-TIMING.txt": "0259d415c39e65ba38eb59ea19c374948f2c6bcf3888e8ef269f536d633f850e",
+    "validation/wivrn-codecs/integration/LATENCY-POLICY.json": "1f8cef44961ddc1ee330e2221fd95cbeaaad8d94b4164041dd599bc8e82c40cd",
+    "validation/wivrn-codecs/integration/PORTING.txt": "ab2c79fcdb05332160c79be9a7cba2710c5765e329d75fabf3b226927254ba45",
+    "validation/wivrn-codecs/integration/QUEST-OPTIONS.txt": "dfccdda341b0db8846e6562fcd17cf9f417ce486f1fbafb7d08a6e086a1a2b85",
+    "validation/wivrn-codecs/integration/README.txt": "ad33beb7ba9acedc72db23d1ba165e7ddfcae3a75bf0133968fae99d1c77f9bb",
+    "validation/wivrn-codecs/integration/TEXTURE-BENCH.txt": "356b031befd93d4ce740c6aa08be9a22ca2d25dbb8ad9f91da404e5662917e9f",
+    "validation/wivrn-codecs/integration/TRANSFER-OPTIONS.txt": "a76a2adfbb310ebda634e1141cda46b0a412d7d89a073155c14680aeb17f20c3",
+    "validation/wivrn-codecs/integration/adapter.py": "d8b46f2cec830737f6383fa2668f428066ba03af4cd1c20461a7847336b661f7",
+    "validation/wivrn-codecs/integration/apply_overlay.py": "b7aa494d2f37d5dddcdc4d7627ba507e09eac99c0c41f7cfae6b5e92be7a8fbf",
+    "validation/wivrn-codecs/integration/build.sh": "b68ae6d00c90a10de98a51a9b6f8b2a2e3ca8239cc193a1cb24b4cfdc82de16b",
+    "validation/wivrn-codecs/integration/candidate_trace.py": "161e20fa104c42a1cc5ecdfc3786a8125100662e2ab6ec8a1aa0c98397470196",
+    "validation/wivrn-codecs/integration/color_contract_README.txt": "07d4953a7492e085401d30f9a71be363aba935ac03da903c039985e590327aae",
+    "validation/wivrn-codecs/integration/color_contract_build.sh": "f9647d62d4c6228636a555904c62803b7576cb5628699065cb124a7fdd619c16",
+    "validation/wivrn-codecs/integration/color_contract_probe.cpp": "d1b4482ec9012ad8999cf9f6c87d2354936def1d93af8548c9aa5e58c377e5f3",
+    "validation/wivrn-codecs/integration/cpu_target.py": "814676c6a89f42c4034ceaea677843b27134a130ea82ba7414c39eacb2e63707",
+    "validation/wivrn-codecs/integration/gaze_metrics.py": "a64df518f48b37bcc246267f6ea1e215249f22f6fb6a7317dc8d611da020e1ed",
+    "validation/wivrn-codecs/integration/gaze_timing_test.cpp": "9badcbaa4664dd8758a4e8066b3a1b2853abee8c5169f0140417cc8727a5675a",
+    "validation/wivrn-codecs/integration/integration.patch": "257491901337ed0772f06fbd89ad7c9b9a911bf41fd0a2a38e39d54349c782b7",
+    "validation/wivrn-codecs/integration/latency_policy.py": "48c97da0d3369572139b4bc444508fa674d5efcce523b6846d799b478a1413c2",
+    "validation/wivrn-codecs/integration/latency_runtime.py": "52849a220316633e2fb20fb92c314f6a87dd618cc6422bd38bab024fc9eb1628",
+    "validation/wivrn-codecs/integration/live.py": "c52f327a6bf3907a16843a24d66ca0c32113e94ffd4a15a60b532595b6197892",
+    "validation/wivrn-codecs/integration/meta_sr_policy_test.cpp": "b022c5dd95b6d24508046887f94a54230bed41839b1561b84aeadac6c5c42431",
+    "validation/wivrn-codecs/integration/native_compare.py": "5c631dddfaf144accc230ce50e4ad1f3cc013f4df495a8d3519b7ae557c3a2f9",
+    "validation/wivrn-codecs/integration/native_evidence.py": "9885a823302b708fc69a919e21bf8cdb18e44bd35ec1687f00768b46aa965481",
+    "validation/wivrn-codecs/integration/native_metrics.py": "0075fd06c5fcc1045785e104ed74a03db0fbd3130d3edc11a9cc10abd99f5825",
+    "validation/wivrn-codecs/integration/overlay-manifest.json": "6fbe8cec9660aaf25a03310a7eb871e5f9db6272eb0cbb7c1a5b17732d397146",
+    "validation/wivrn-codecs/integration/persistent_bench.cpp": "75b90a0001a17451546e8aa2f9d33a4c5c0e7ed9248294afa50e6c66159f5c63",
+    "validation/wivrn-codecs/integration/publication_trace.py": "c6bc4c7f027f2f9b9a487c9aa86053fc4cf22773fe2051a63244ba4e80b330ad",
+    "validation/wivrn-codecs/integration/quest_options.py": "f445b8fe6064ee2c5a6772b9360397874626f3034d2cde6a1927b13f8eb1533a",
+    "validation/wivrn-codecs/integration/resident_bench.cpp": "06a587f0a3be0b7949cb0d0922709b9de6dfd5e8d4da73a17e8ab84c1b7a123c",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b",
+    "validation/wivrn-codecs/integration/selection_trace_test.cpp": "93b2e001d595147f0bd5f162a379313e80ea6371e8cbfcb7eb2e5d18ba4a7cef",
+    "validation/wivrn-codecs/integration/source-overlay/CMakeLists.txt": "18bb3720e0f409da723dca97801e6eeaa0f8cc3901373e631dbf7ad67a25f615",
+    "validation/wivrn-codecs/integration/source-overlay/assets/codec-test/decode-coop128.spv": "47b9027b5e9aa73de850ef946a606b68fc7787829239fe946f9fb5674dff38e0",
+    "validation/wivrn-codecs/integration/source-overlay/assets/codec-test/decode-coop128dc.spv": "ef7f0cb75ef62e753ea29634c517e8ce5d875dba92c39342f8fad42e4f00c11b",
+    "validation/wivrn-codecs/integration/source-overlay/assets/codec-test/decode-coop64.spv": "06a4f6760ed97bf7aa897024862f5568d207f4b1dd35b2bf192a2fda2efe2f08",
+    "validation/wivrn-codecs/integration/source-overlay/assets/codec-test/decode.spv": "90d9fe82c49c81aeb57bfa0ec95d249850bd82856d4fd655ff6ef9af2d6863a3",
+    "validation/wivrn-codecs/integration/source-overlay/assets/codec-test/encode-coop128.spv": "08f46f4e1ba61702e4d56665776b2c874350ee698ce9976484414f399be9fb2e",
+    "validation/wivrn-codecs/integration/source-overlay/assets/codec-test/encode-coop64.spv": "3e534f0e9e2fe717b83340319ac648e8750aad7bb54c2eb925c061568b3774ae",
+    "validation/wivrn-codecs/integration/source-overlay/assets/codec-test/encode.spv": "c1d79637a60f1663b7eb7723537a5bb4457a94005a6e7c65b46dd29de92f9986",
+    "validation/wivrn-codecs/integration/source-overlay/build.gradle": "db126f9b8d01cc24ff948fd6fa2c501814ba473f49ab4b56f425bb6dc9e7c15c",
+    "validation/wivrn-codecs/integration/source-overlay/client/CMakeLists.txt": "8ca78af774102d5e647e433d07af1a6b34d3226543c6f733d8e5c524fa3ee594",
+    "validation/wivrn-codecs/integration/source-overlay/client/application.cpp": "56be47e927de63dbd38ef8e6a34cfdde2fba6860a9fef8906162fe4883f2c5e5",
+    "validation/wivrn-codecs/integration/source-overlay/client/application.h": "73c0a80e1e5956f40f4c6c7a6ba47b2259fcf61ff9ceaee098409687bcd59382",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/decoder.cpp": "b40e2e8b57ffd33828ac2a7f61be23f786c0cf624a27f11b4aaee8be7daf690c",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/decoder.h": "15b851a41aa253d1767beaca068769fc3a9d1697bd03e62745654c571901fc4d",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/test_decoder.cpp": "26b11e9ddc3a52e763260428aa0db1fa081a640d7f1731bb4965a8b77392c9ee",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/test_decoder.h": "a755208228a11dfd51e4e0f7c93cf6869c5a1431374e79d4a5f6a8643951e933",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/test_gpu_decoder.cpp": "2411a813a1f396445e5fff3394afabeaa698f1485f28d3a209ffacd68a662b96",
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/test_gpu_decoder.h": "c8ebaa71d14c4c61344c2ec8387e51d5424b5e883e56c3928d04612a4c14c8db",
+    "validation/wivrn-codecs/integration/source-overlay/client/java/org/meumeu/wivrn/CodecTestDecoder.java": "c0905e5883c59eadd2e844bb3cbc7c3c632dc66fa580363a138c9864d0c51c6a",
+    "validation/wivrn-codecs/integration/source-overlay/client/java/org/meumeu/wivrn/MainActivity.java": "56d6cfccf269e4f447194a671898be0d5a5fe4021f59da442875ec07b7b2ed82",
+    "validation/wivrn-codecs/integration/source-overlay/client/scene.cpp": "852e925e4a1ed0e3008e6bbe702cb1899a937ec89cfec073f35e68d315a6f9eb",
+    "validation/wivrn-codecs/integration/source-overlay/client/scenes/stream.cpp": "b2c4e323ce796ce523195fbc23b937beca017b15525a81a85b736e8d1b7d6c26",
+    "validation/wivrn-codecs/integration/source-overlay/client/scenes/stream.h": "759a58cd1ded05f6050222c1c2d72e6d18e45f1f2033dc2de65668e69b428b31",
+    "validation/wivrn-codecs/integration/source-overlay/client/scenes/stream_defoveator.cpp": "a9d9b8e4e15853fcf406a6a162042d900e1862c8ee6b2051d922ff88aacb62b8",
+    "validation/wivrn-codecs/integration/source-overlay/client/scenes/stream_defoveator.h": "9eb2660bc62b75342bd1c5e333311649c48e00531f9f84ff78d498ebe3ceca55",
+    "validation/wivrn-codecs/integration/source-overlay/client/scenes/stream_tracking.cpp": "65a33beacc0991ae8ee2f9425c6564409205c96358d1d8bba69ed92a325b8bbc",
+    "validation/wivrn-codecs/integration/source-overlay/client/wivrn_client.cpp": "2d4244cc6596cb73d4d0957a886e865ba36cd937358b9eddc69f2fe03eb0e5ad",
+    "validation/wivrn-codecs/integration/source-overlay/common/CMakeLists.txt": "1e9789236a123c6eb28d3386f5b5e98d4650b87faefb9e847e97882e2ecc26ec",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/README.txt": "75d89495e654de6d22e9896d1020a1c8d55848ade890ad303daae4b78264d3b0",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/frame_compression.h": "78a30e1a24e6d160b53f22815561d34388da9a7564c2700c458bfcc815b40973",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/vendor/LICENSE": "8b58c446121a109ccf32edc094bba3010a3d85e4ee3702950db55e4d3e87736c",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/vendor/provenance.json": "c93be50f298475c23d263e4ecc4e6d17254bc2d6e23e5fc2c8e72770d5f34595",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/compression/wpc1.h": "a7811b328b5918b21e3d1eacffdb17a8ee191f8590db40144c680a4e153857c5",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/gaze_timing.h": "0caa6bbeaa3b1813631476a67fa192c6c8b8707e4ad739842a80794f9c47daeb",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/layer_filter.h": "bf8a19ffea35580a99eb41bf1f19d9056f70df755ac9e29899f3934761ae6f2c",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/metadata.h": "91aa619f7e6c7a7511533c55c609d2366164baa193e8242e8ad54c0a63ca0196",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/publication_ledger.h": "721358e6e0fd072a555ba8199a1a66e33c66b7791f5b4470ea79c8cc2e64dad3",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/selection_policy.h": "ae68144a97d08e143d68156d585266f47fdb1abf83bfee295382287a017e459e",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/selection_trace.h": "cd876e7b876dbe7978554be241291be759904ad6b6c2abad70bffee1338f9e77",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/stereo_admission.h": "0bcb44f97ae6e68d18e8b5d070c31521d0fd8f38b33fdd9b84e6677eceb60192",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/direct.cpp": "796017f83b4a2159b3adb65876f14ce9b2ffeaef348d7907be0cc784d9621905",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/direct.hpp": "7577105236e1787ba627ef467411bb591748b79d96537b3fe0392689e32ad8bd",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/shaders/codec.comp": "48b0c0afeea6946d38116e16ecff788f379992167e291f4d10c2483c372eb154",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/shaders/codec_coop.comp": "c1323aa51285dd0991e5102e9112efc70091ca5e1db4f5e8e9d3922893fcdf4b",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/shaders/constant_decode.comp": "8bd015cecac79349bba4ed722e5706a2e8761f27f60ec96a3acd81da370c75ba",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/vulkan_runner.cpp": "95a8cdf86e0affdaf081c61d34f3a0580ca5e080ad92fe7d2d6179fcb9648181",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/vulkan_runner.hpp": "55b7e1d684dda079cca14bf14b99be79da7c7ebbabcdbc351cf2c74ac5d24099",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/wire.h": "0f44c63ba32326677b3d282a904e19429f8a9ce07c22d482fec15c7121cee485",
+    "validation/wivrn-codecs/integration/source-overlay/server/CMakeLists.txt": "7977e01277f71a3f35a4af3563d63a41656f7567ffdfbb94163e4718f310c21d",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_trace.h": "93f1e8b963ba4bdbf7bdcaa674a6fcbee3e1eb4dea3bb7001cba7f9ff802e638",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/compositor.cpp": "3097bca5fe842c0b581c6769e41537fb09fb9494255f1f46aad7429edce5a565",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/foveation.cpp": "9c82a03efdbae35f7fbfb88e5dcbe8def439d1e471f473163de5e187115113ae",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.cpp": "a4f83833addbedd448738d4f60ff3f9e43b072924f1e42ac8de3a3b846e6b14a",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.h": "1e603712260ed711f2999fa9791e778a75c4eee3a09d921b583fb1b8480a63fc",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/shaders/foveation_rgb.comp": "3770a28be8d2ffd31cb7883725624f94cbacefcc4d9d1241de6564de0a2ad3be",
+    "validation/wivrn-codecs/integration/source-overlay/server/driver/app_pacer.cpp": "77f415cb8ec0c85caaef1439699fa8f184c4d53c9418a080e0d431ebc2411a91",
+    "validation/wivrn-codecs/integration/source-overlay/server/driver/codec_source_trace.h": "76fc5a03bf95c202e8d8562773547a7f7e12c96b4e40120af1d10545472654d7",
+    "validation/wivrn-codecs/integration/source-overlay/server/driver/wivrn_hmd.cpp": "90df9b120bba84f977089d2ce07477d21bd8505108a80518a4c2cf2e4b9a1581",
+    "validation/wivrn-codecs/integration/source-overlay/server/encoder/encoder_settings.cpp": "c3f5c472905cd56ff2cf53fa68a19bd30363fe061254257d5f58a2e86fbf2271",
+    "validation/wivrn-codecs/integration/source-overlay/server/encoder/video_encoder.cpp": "de966ba70c511e57f1bfe15a8f21df8a08c546a3c16009f9d73bc974c9e13917",
+    "validation/wivrn-codecs/integration/source-overlay/server/encoder/video_encoder.h": "6c8b247906345ac15dc2b939412ee36388b06203f9e16c3996452ef106387aad",
+    "validation/wivrn-codecs/integration/source-overlay/server/encoder/video_encoder_test.cpp": "ef25c93f183db0360c02b9177bb83f9b7a4dab00b4e1d2a5e048a05aa93ea197",
+    "validation/wivrn-codecs/integration/source-overlay/server/encoder/video_encoder_test.h": "cc1eb4b00841d746a23738b2a0a6ebbb64d8622c23a814e1aad3c79a242ecdc3",
+    "validation/wivrn-codecs/integration/source-overlay/server/main.cpp": "e01251a0b964b38865f20a3ab7504b9284b40df60032d3282ddbf7e651ae4dec",
+    "validation/wivrn-codecs/integration/source-snapshot.json": "b79df532a5130ead08e94e4355675773fd5d62d91f1a34401e631a404a70b223",
+    "validation/wivrn-codecs/integration/stereo_admission_test.cpp": "76af4169d18abc428dd3aaca6ce3cf8bda102724476c3ebef41eed7a2e5e8336",
+    "validation/wivrn-codecs/integration/texture_probe.cpp": "6904769b64628fca5713ede46462d2e0bee49d973dab579d552141ea4cf27325",
+    "validation/wivrn-codecs/integration/texture_sample.comp": "10f39596c283e5ba24e0cef0e2e04bda953540c2ee8e6cb0720ecf98e9344ca7",
+    "validation/wivrn-codecs/integration/texture_sample_bench.cpp": "85c25da5903f2026533eaff60e4ecf7c63a998f23f4d49658213a11c8cd65a2a",
+    "validation/wivrn-codecs/integration/trace_sink.hpp": "45204a398f274b74669aeec529ffe50ad32ec65a53580fded5a52bdfe7a25dfb",
+    "validation/wivrn-codecs/integration/trace_sink_test.cpp": "9fb3ec2cc3a15d01fdf8e4109f20f2cc5509a09fad0da87b7f19fdc986459a5b",
+    "validation/wivrn-codecs/integration/transfer_analyze.py": "8556c0d44aceae52df1490609428aae354df1f501e1b06bf48aba1d5bed1658f",
+    "validation/wivrn-codecs/integration/upstream-working-tree.patch": "7567f1add1a892edad300045889c65445debd2def0dba13cfb8ac792a15a50a7",
+    "validation/wivrn-codecs/integration/validation.json": "e9a62db9438593c73231a242d0ed822c95cd04aa720c9790ef95a9c74c3ff92a",
+    "validation/wivrn-codecs/integration/vendor/BCDEC-PROVENANCE.txt": "7eae260dbe062477a19ddf1c37d539de150459146b8da511c1604f3f91c256a5",
+    "validation/wivrn-codecs/integration/vendor/bcdec.h": "134520764d96f70a27db814173616c89ad85db95fbd3328417c7a8c77e7ca189",
+    "validation/wivrn-codecs/integration/wire_test.cpp": "695db0f0bba66c4c0f387f6dffd011363ea7d3083aa698bc435e9ea4d716a57b",
+    "validation/wivrn-codecs/optical.py": "91fe897fd92c0214e6a82b16c07f8270d2cb6eae153d7d506eb33d5d7228e099",
+    "validation/wivrn-codecs/package.py": "d692f2306cf620aab5162a79b2618a95f26918f2477069f33450304ebc23c9b4",
+    "validation/wivrn-codecs/plans.py": "8a60c64f988cf9228f9cd28631b1c22494bea63e094da9bdd02325282d15558e",
+    "validation/wivrn-codecs/runner.py": "2309a3310b14e2d997ec6483ab278e6db84ad5d68c8c0ec8595777b8b54fb259",
+    "validation/wivrn-codecs/stimuli.py": "9a17a0c8b50565e542255a517688168531b77378592bc970697ed5e7acbab5c9",
+    "validation/wivrn-codecs/suite.py": "e7085baf871460ef01b0c5b6ce9326b72ec6aa6d83a6cc7790aa0775e07c0bf6",
+    "validation/wivrn-codecs/tests/test_availability_oracle.py": "63315b9f5fd84059b92f8218441966ab2b4765e17c0d499c572e4eca72cc5e1f",
+    "validation/wivrn-codecs/tests/test_candidate_trace.py": "8175f508ee3b202e683f4307156868a69f3a08a038dd58c8716b568139ceabef",
+    "validation/wivrn-codecs/tests/test_cardinality.py": "4703eaf3f0e8cced57165cfc83b076b1d162101825eec7d2c90e6b7b7ece541d",
+    "validation/wivrn-codecs/tests/test_client_timeline.py": "120d91ef839316d5f0bd42cd0bf145e892975f890b991f71d22915386b5de7ca",
+    "validation/wivrn-codecs/tests/test_compositor_qualification.py": "f2f98a756e8073bbc28676d1a714a10aa818061881b04972b45d99c989674fc1",
+    "validation/wivrn-codecs/tests/test_compression.py": "bd664d2532c0ec819baa61443e1b2c7c78c6c96571c08eae1a6ea7ceec8cae95",
+    "validation/wivrn-codecs/tests/test_cpu_target.py": "01e90d493837207930655af20920630d08e317d0b0d07a07f5943c87eb30ec90",
+    "validation/wivrn-codecs/tests/test_decoder_selection.py": "0367c7bddb62e7114e5a5f689c6015fba7da594cbde57253a1d41a811d69bd5f",
+    "validation/wivrn-codecs/tests/test_full_count.py": "965de31a33b76df216199ce1a5ae072acbab768ae14476762b03c3e91191a289",
+    "validation/wivrn-codecs/tests/test_gaze_metrics.py": "e387eaebeb5beaf8c358c37c623e5322c09663e58cca22a4324b3cea861f4d71",
+    "validation/wivrn-codecs/tests/test_hardware.py": "1ffe4ca62ec423a03f09d69c71b3653f81fdd8428492ad961bf9e9fde1b5bb88",
+    "validation/wivrn-codecs/tests/test_host_timeline.py": "741c6069a898ac1d0d758b4839641edfcc11752d127bb8a0e38a23f8f44f82de",
+    "validation/wivrn-codecs/tests/test_latency_policy.py": "9af8fcd725a047fffe79aaf6b0f3c7bcc6dd5afe5b87aa95eec30d24469cdf64",
+    "validation/wivrn-codecs/tests/test_latency_runtime.py": "e2b91feaa6930b9b39432352bb08847733e29d08b7dc766da39db46da6839573",
+    "validation/wivrn-codecs/tests/test_live_integration.py": "c3e711d0bf0a341665077c5a3fb619d60e5f45b1077811206429f304f0cbb812",
+    "validation/wivrn-codecs/tests/test_meta_sr.py": "b107bf7b1ac9d097a84f5b9f61af54ca1e3a57991155a5f17955f916d5c76e4a",
+    "validation/wivrn-codecs/tests/test_native_compare.py": "a242234d909919dfd5868fa3b8927e83b159063079fc734d9fab5bab4b726415",
+    "validation/wivrn-codecs/tests/test_native_metrics.py": "a1413e2167ffc9cd03efab947cb554012b4552223a9d9c170b766a65865e4f96",
+    "validation/wivrn-codecs/tests/test_optical.py": "db70f554dbd0cb43e17a1411c43e7cf1529756de2496247965dc520b90063e31",
+    "validation/wivrn-codecs/tests/test_pacer_source_join.py": "cd1ac525f59af10b78cc9214eb48b6e019f9d49af4c28229cba0e8d44f9a4940",
+    "validation/wivrn-codecs/tests/test_pacer_trace.py": "df85ac9476ea8c1118c1bb4d2bec97c3d22b39cb619d4b01f99472530afaf4e2",
+    "validation/wivrn-codecs/tests/test_phase_exact.py": "5fae31cb12661733fa9b0db44ee0380590496b95938d4bcbb047688596fe546c",
+    "validation/wivrn-codecs/tests/test_phase_frontier.py": "790af3eebbbdb8c74bfc69630de643ef74316347769ce15c145f40250fcb0e36",
+    "validation/wivrn-codecs/tests/test_publication_capture.py": "de07c1b5dbbacb4364f182892f3c6c26c10cf4337234c6da8367c681ea6322cd",
+    "validation/wivrn-codecs/tests/test_publication_trace.py": "fca82ff440d837af1cfbe73b53e93755e2c130595d5f3466c3bb00c86500338d",
+    "validation/wivrn-codecs/tests/test_quantile_bound.py": "4e46fd879da626a8c1892c2af556c4a23deb31e879c394f36b082beabca651dc",
+    "validation/wivrn-codecs/tests/test_ready_successor.py": "5b6663b27971498904784c510c52213e703c877802d3eff199788f6141c48006",
+    "validation/wivrn-codecs/tests/test_receipt_floor.py": "1b28349a6f3033f43420d88793c9a1f130a115baa89ef034ae8ae3c2e3947dd1",
+    "validation/wivrn-codecs/tests/test_selection_counterfactual.py": "0682b5132a8e7ee0b3360de0747812cf8baee1b55e4541f3476958ecec02e8ea",
+    "validation/wivrn-codecs/tests/test_source_novelty.py": "d8d79651d3ef017b6aa97d5ef373b3feb518cd0eb29065e47edb21150589c004",
+    "validation/wivrn-codecs/tests/test_source_receipt_age.py": "8867b03a2a4ddf8555978b92ca9d6e6573231bf66edd73b5db8a780aac1fb15f",
+    "validation/wivrn-codecs/tests/test_suite.py": "b1b51a67d6bf916b6c7f6dd84e52e660aebbf9acec59a34691fdcc9bf0c240ad",
+    "validation/wivrn-codecs/tests/test_supply_phase.py": "0d999a1449da05bfe73f19154a379265df9c3a314fba4ca527970bf01db3b695",
+    "validation/wivrn-codecs/tests/test_target_admission.py": "77310e1bc3c5b0f1879101e7549e42791f8f5850abad0ff25de8b4b042642b2e",
+    "validation/wivrn-codecs/tests/test_target_envelope.py": "93ab13723052973b1d7df8025eceacf61e7044f7803c198a98b0b8dc23b620e4",
+    "validation/wivrn-codecs/tests/test_trace_reanalysis.py": "8409d81eae3321e4617c6cb49174a2ec6a8b34f2ce9a519c3774c1ed8de47eb0",
+    "validation/wivrn-codecs/trace.py": "547c9674f98dfc478c41caf35a14bdb16268118da0c4201f3f94feb9430b82ec",
+    "prototypes/vr444/experiments/selection_policy/AVAILABILITY-ORACLE.txt": "3cd057be0097b80793152ec3dcda3d2c4809245b3638339f893842f6bc084e9a",
+    "prototypes/vr444/experiments/selection_policy/CARDINALITY.txt": "c4bd9dca3047ef45c4ddb97c15771a614961158230862ee6c25415dfbd6e8af2",
+    "prototypes/vr444/experiments/selection_policy/EXACT-PHASE.txt": "3e75312dfea2de9c5cb15fad4e2d03b74ae6275d42cefd5d803df7d3d5edf33e",
+    "prototypes/vr444/experiments/selection_policy/FULL-COUNT.txt": "a3a240303a37da5f41a4ff1cfc935b9fb1117e8b987569c0313e48c59605289c",
+    "prototypes/vr444/experiments/selection_policy/HORIZON-RESEARCH.txt": "080694c9b96254a910174bb869520c70ffff24e41588bc89d0290c55af675fe6",
+    "prototypes/vr444/experiments/selection_policy/PHASE-FRONTIER.txt": "174ad48a1769f26643bb5c1f9ea3204f3905be6755c17a5b98869d3dc8fa9d0d",
+    "prototypes/vr444/experiments/selection_policy/PUBLICATION-CAPTURE.txt": "7b982c4ea1627df9fd820daf0640451d2ed911d6f58298260f67b67d08231117",
+    "prototypes/vr444/experiments/selection_policy/PUBLICATION-LEDGER.txt": "99998c7d72f9b923a678b8c2e43c44126ef3cd808f71b3f1df5e41da8841d160",
+    "prototypes/vr444/experiments/selection_policy/QUANTILE-BOUND.txt": "a9ea456c42dee0a5dc969aac281872c4c6ea0393ee5b78b85984b317e60c0463",
+    "prototypes/vr444/experiments/selection_policy/README.txt": "c8e45a3fecaefdc590e9fd119e092137a2c6099652242c6cfd348f17725d24e4",
+    "prototypes/vr444/experiments/selection_policy/READY-SUCCESSOR.txt": "7f3de3871e353d73a497b5b7a85444e618f3dfc4c6277f32f9043b13cb38b710",
+    "prototypes/vr444/experiments/selection_policy/RECEIPT-FLOOR.txt": "d9f66c6fc8720547b4db3e5f40d63c6f0fbdb297e083fc24ffb30759bf35fa2b",
+    "prototypes/vr444/experiments/selection_policy/RENDER-ATTEMPTS.txt": "3cdb9622ea938d01fa0a99d8e8aa541d65b282c88f53397e0e89b6692f407009",
+    "prototypes/vr444/experiments/selection_policy/SOURCE-NOVELTY.txt": "22e51b6dfd5d4efe3f68eaea9563100e1ffef89ab882ceb17f720ca4324c7298",
+    "prototypes/vr444/experiments/selection_policy/SOURCE-RECEIPT-AGE.txt": "38c97d6b186ce4b2d670290365db8d481c9fe6ec08d404450ddd999ab8449e77",
+    "prototypes/vr444/experiments/selection_policy/SUPPLY-PHASE.txt": "197b990dc00597211d92ed7c75a96b15fbb6410e91f974d0bff971515494d95a",
+    "prototypes/vr444/experiments/selection_policy/SUPPORT-AUDIT.txt": "ab7b53715a5ad9d4224ea4db04854dc8399f1d060f5fa088230c6b43df4c394d",
+    "prototypes/vr444/experiments/selection_policy/TARGET-ADMISSION.txt": "a316d2e197a7c3e2932c743a4d54f165826f3f12132abbe1cf8b1ee7523a5ca1",
+    "prototypes/vr444/experiments/selection_policy/TARGET-ENVELOPE.txt": "dcd696ce36b4cec137eb0d8c4a2343071dd4c393f1a102ff25a15b468d1706f2",
+    "prototypes/vr444/experiments/selection_policy/TRACE-GAP-REPAIR.txt": "d88f119c14274b45b55b89da0942594e06b58e62ebfd8a1439c506d52959448a",
+    "prototypes/vr444/experiments/selection_policy/VALIDATION.txt": "b6cc61c65b1ab5e59db90acf8a58cb42d4f560d1a90288dd64e491363f968860",
+    "prototypes/vr444/experiments/selection_policy/attempt-validation-20261009.json": "28d9ec03fce8e1632655b833095b92fea157935d8d8067f3c3ad67ecf917260e",
+    "prototypes/vr444/experiments/selection_policy/availability-oracle-20261009.json": "7a85555a68d202de77f3929331c67caebb59a402a4a44408d1dbca706a91794e",
+    "prototypes/vr444/experiments/selection_policy/availability_oracle.py": "dd52cbb6ee398c43f3e4e9c6da0a1d850db7f39738fc5817651b7ce9f382e487",
+    "prototypes/vr444/experiments/selection_policy/cardinality-20261009.json": "6cb4712c8875df0476cb331cbf5bbd67043677d0f59c7b5fd0edc7f80ba6e8d9",
+    "prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json": "1e546036478cc64bd46da83d335f6cefdcc99bcef699ed169300d4160e581bd9",
+    "prototypes/vr444/experiments/selection_policy/cardinality.py": "58545fa8eb40278ea0245f78903e9ace1537785c387293def11c710fb7f9e8b5",
+    "prototypes/vr444/experiments/selection_policy/cardinality_oracle.h": "50ba2b3e25dc555d117502491eca9502932bfbad064868dac15a76a9ce5254b1",
+    "prototypes/vr444/experiments/selection_policy/cardinality_probe.cpp": "b18b6a363cb8277d9f0f05610128619feefdfd2e1e11321bc309cd14f0aa9970",
+    "prototypes/vr444/experiments/selection_policy/cardinality_test.cpp": "b5c952822d25602438f82d4c0083f4505cf582a8798fd3762806598115deaafc",
+    "prototypes/vr444/experiments/selection_policy/check_full_count_reference.py": "ce0d4c82ec0da60d3169800a71929711dd9bd64b36b27afc29bc7e8c7d99ac5f",
+    "prototypes/vr444/experiments/selection_policy/counterfactual.py": "857da8c912576b9cce34997300b169cf39e58c87786df8fdbd731bf82da7c827",
+    "prototypes/vr444/experiments/selection_policy/envelope-validation-20261009.json": "c57ca257741df72e225b231439455cfd7aa4592c6d86ef78381998344d5abfea",
+    "prototypes/vr444/experiments/selection_policy/full-count-20261009.json": "158409d4d28a1ee101a8b9d7df35ae52db413ec39cfbfb46775d9847979d944f",
+    "prototypes/vr444/experiments/selection_policy/full-count-reference-20261009.json": "4be1ef0bd2225b9121435008e7f4947b4a9e9af79fbac8d5466abb6a5bb45498",
+    "prototypes/vr444/experiments/selection_policy/full-count-validation-20261009.json": "a83b3d323f6af0bf9ef4b81cdcc2dcddfdeb8e3b5a217cfbba99b7315e24e9a6",
+    "prototypes/vr444/experiments/selection_policy/full_count.py": "8d4d2857a1458108c009defc0547cc825b45519964a8acd165785b79d92d80a8",
+    "prototypes/vr444/experiments/selection_policy/horizon-counterfactual-20261009.json": "d880f9a807e8d32e7d7e18ec23084836f81201b1cc60634b121367a518fad571",
+    "prototypes/vr444/experiments/selection_policy/horizon-validation-20261009.json": "1244cd459e64ecf411b553a4fb5863211175904d155fd462c7070ebf4065eb76",
+    "prototypes/vr444/experiments/selection_policy/horizon_policy.h": "3309374300c6596691391ab33be14b19a12458eff4e2a6b5f33d9df452bec3bf",
+    "prototypes/vr444/experiments/selection_policy/horizon_policy_test.cpp": "e9cbbeaf40c05babfe7cd1d052298d4db7884b89355983b71c20fefc675d4201",
+    "prototypes/vr444/experiments/selection_policy/novelty_oracle.h": "90ef9bfb8f4a4adc443db40b1e9818621766cdf2d9bca7ad2408f4c53ec44f00",
+    "prototypes/vr444/experiments/selection_policy/novelty_probe.cpp": "5fc046d4a8124c5884ce08320525d010e7ffbbdad0b4ad425d95bf2668e45ffd",
+    "prototypes/vr444/experiments/selection_policy/novelty_test.cpp": "b94a263c8ae2c58cea071bdcf0d62b87d7eb8e79450342b667410f85a60dd37e",
+    "prototypes/vr444/experiments/selection_policy/oracle-validation-20261009.json": "83c3ed2afb2e1f47fa2b3c7f9d2d8a78db1af61bc8e784785068045449ef2ce6",
+    "prototypes/vr444/experiments/selection_policy/phase-exact-20261009.json": "38a139cbaf285683c8e8a4a1ee6326a576dc047345b80a5edb714d48761e1a87",
+    "prototypes/vr444/experiments/selection_policy/phase-exact-20261009.png": "15643a3e3ba1803062426a3475b029e46c92d3de429a2ce1521e22c849705fe4",
+    "prototypes/vr444/experiments/selection_policy/phase-exact-figure-20261009.json": "cf425e523314c2b4dd2a4348e5a6595e6f89c753cd5520fb7c9574da0c3c6598",
+    "prototypes/vr444/experiments/selection_policy/phase-exact-validation-20261009.json": "a8ab869fe71d015adfb67ab47972511123759deb08722e53b4b27b9162c8fe3f",
+    "prototypes/vr444/experiments/selection_policy/phase-frontier-20261009.json": "5c69ae08dc23daf4988ee8e92b7ac01fc86fadb8483e4e082910b3a6e1cb920c",
+    "prototypes/vr444/experiments/selection_policy/phase-frontier-20261009.png": "a4e1694c162f1b4a99c3b7b973bfde0469e48bca72f3b97affe46bd10be938e2",
+    "prototypes/vr444/experiments/selection_policy/phase-frontier-figure-20261009.json": "985adc5919d210f2651ed05df5ec31dbc106253f56befd90ab973978ce905213",
+    "prototypes/vr444/experiments/selection_policy/phase-frontier-validation-20261009.json": "a53d68c473dc78034165589f36f8c0d75b3bd6a040a86d91714b32c29f9457e8",
+    "prototypes/vr444/experiments/selection_policy/phase_exact.py": "eec456e92a2b163fbb1a16fbe2bc02bc498eb6b7b4238c7b998556d2f7f407c6",
+    "prototypes/vr444/experiments/selection_policy/phase_exact_run.py": "71125d2970186945ba28f76b8d5070a2852900f53540f7a7a9493029d352391a",
+    "prototypes/vr444/experiments/selection_policy/phase_frontier.py": "fca2c49482ceda8b19737708c2441d3cdfb676233e7b9b592376a7195373336c",
+    "prototypes/vr444/experiments/selection_policy/plot_phase_exact.py": "9a2d6c49f400d2727b13471fa9dc0682c20b0f7d34a098dbba21f0a04ce27490",
+    "prototypes/vr444/experiments/selection_policy/plot_phase_frontier.py": "7c95865e9e2b6a63ab8219e88376c43ba473d406555b0bc0dd41fbe6e5a3e2d6",
+    "prototypes/vr444/experiments/selection_policy/plot_quantile_bound.py": "22a69ca3bf7419c7921d4e96628f55841cb7f14f4daa77fafeacaf4bc946d355",
+    "prototypes/vr444/experiments/selection_policy/plot_target_admission.py": "20628dd2d3c412d14441957dadc3243198502d9a6bcd2eb25a38ebc5af306bfe",
+    "prototypes/vr444/experiments/selection_policy/publication-capture-validation-20261009.json": "701d7168d2482c7d001bf717b94276c9b327fa916365e702e027724e036e31bb",
+    "prototypes/vr444/experiments/selection_policy/publication-validation-20261009.json": "53031fe6f277840b7d5035773db8855d1ed03dc935967ac10a15609d9b5c1411",
+    "prototypes/vr444/experiments/selection_policy/publication_ledger_test.cpp": "c0e1b75344b2b4e5b5c5ec5e641534d53687119528a7e8830cf1c051031d8de8",
+    "prototypes/vr444/experiments/selection_policy/quantile-bound-20261009.json": "88ce75313c3290a81ec62ea01d489d88dc5edb65152d09b345eadfecd32edc32",
+    "prototypes/vr444/experiments/selection_policy/quantile-bound-20261009.png": "cf9ac569eeadc361b4cda92ba292c8599b3bf7689243ab63e91cf08d6399680f",
+    "prototypes/vr444/experiments/selection_policy/quantile-bound-figure-20261009.json": "39074a642ae3aa6cf14dd73222fec52c60120b6d371b3dc1891798d655646ece",
+    "prototypes/vr444/experiments/selection_policy/quantile-bound-validation-20261009.json": "029b30754d38beb06a16e47f543bc27a4b684801cac7025ff1ad316c1ea8cf63",
+    "prototypes/vr444/experiments/selection_policy/quantile_bound.py": "2196234ecdc938406aa24934a976d38ec8df93f872c18dd237f78100334f1342",
+    "prototypes/vr444/experiments/selection_policy/ready-successor-audited-counterfactual-20261009.json": "a4351fe258002325be48ed0612caa4d6f76e9f4a8654692af167bc4382aa63f5",
+    "prototypes/vr444/experiments/selection_policy/ready-successor-audited-validation-20261009.json": "122dcfc8ae1e1eb197b5027b08d82fa41ceea8c07d319629740023712aadbc2a",
+    "prototypes/vr444/experiments/selection_policy/ready-successor-counterfactual-20261009.json": "a814a432a5d12c33000c5bcc17f6d152fff58a7d047a1a8c4fe0480ef3908629",
+    "prototypes/vr444/experiments/selection_policy/ready-successor-validation-20261009.json": "538c8ef34311080a64e26a409548d03846ff30e0574a868775c412da6894fbd5",
+    "prototypes/vr444/experiments/selection_policy/ready_successor.py": "cd50fedec4a5b97410521068bf36d2af3e12edacfe847606fcc21dbb115b930c",
+    "prototypes/vr444/experiments/selection_policy/ready_successor_policy.h": "3c591db7bb8c6e063197c5b734ffb3247156ef97e6c7c3d73dc6f4ab8ae90f05",
+    "prototypes/vr444/experiments/selection_policy/ready_successor_test.cpp": "cc3c406f2972dc4e75957c95626458b02f6447f575a381c3965cb89cfb37c617",
+    "prototypes/vr444/experiments/selection_policy/reanalyze_trace.py": "cd0b22f7c4f3be735672a98b435c40cf07754fec0173d3d3f0d016f07114c8ac",
+    "prototypes/vr444/experiments/selection_policy/receipt-floor-20261009.json": "4046280ff4220192b37542748501e173146c802948eec89da0df612312508442",
+    "prototypes/vr444/experiments/selection_policy/receipt-floor-comparison-20261009.json": "490df162a15c614d1d464135047d7997dedc5e44ac968362159277af1111820d",
+    "prototypes/vr444/experiments/selection_policy/receipt-floor-validation-20261009.json": "173acf5b659b9185bba26a2e73edf556ff4a5ef5bbda9b98c05167801122da82",
+    "prototypes/vr444/experiments/selection_policy/receipt_floor.py": "2317d91ccf0b571811b9e20de4c70dc72c1dbc544d4762c67981f5785e7aa6da",
+    "prototypes/vr444/experiments/selection_policy/render_attempt_test.cpp": "9b413d99f37499ec23fbd1584c85b31c13b027a8741cdbb193648ce599c9e384",
+    "prototypes/vr444/experiments/selection_policy/source-novelty-20261009.json": "f3853ef6a619e6f608c75235a8b66fdf7478f232bde645aeba78171f4721b3a1",
+    "prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json": "a4b398a45faca8a2c7b44574ec137b79319e4262051f571b95687114e637e5b9",
+    "prototypes/vr444/experiments/selection_policy/source-receipt-age-20261009.json": "99ac1693dd3c4eb516d6ac87c48b8df7560cc891ca281ed86d0a8851ebcb6b16",
+    "prototypes/vr444/experiments/selection_policy/source-receipt-age-validation-20261009.json": "b5cfb7938692a25b2e71e43278b34b162767e95e7c0e3cc1227689a7966b2b1c",
+    "prototypes/vr444/experiments/selection_policy/source_novelty.py": "ea3b3ea80325393d4aab80f6dedc3cab50c42541e399ff42b15e5d2c45ea40ca",
+    "prototypes/vr444/experiments/selection_policy/source_receipt_age.py": "59513bab5229256d963def54d8899f80dbd4fa4a9597179832f552b71d57d650",
+    "prototypes/vr444/experiments/selection_policy/supply-phase-20261009.json": "e987a818725f73026aee9994cbb6dcef44ab8c83beadd63053e7c7ed57f770df",
+    "prototypes/vr444/experiments/selection_policy/supply-validation-20261009.json": "ca2e25a7a6ce2c94d4debdd500d7b4f3c414673f1d3ba82586d3577e85c03cdf",
+    "prototypes/vr444/experiments/selection_policy/supply_phase.py": "7afe848798a43efa71f42bd4803e12470586e3f7f677aff720501ccd978c267e",
+    "prototypes/vr444/experiments/selection_policy/target-admission-20261009.json": "d95e829d80897f383f3c5bc5716903bb4c20440b19d9b5182c003ce3da2d0ab8",
+    "prototypes/vr444/experiments/selection_policy/target-admission-20261009.png": "436d05aa57a86b47ff87b24db03ab29ae6b962ef0c4d6a4cd4282b7c6c8e04ae",
+    "prototypes/vr444/experiments/selection_policy/target-admission-figure-20261009.json": "e10532e5eb46c2589664906e5239027234070c0a9532800a2f44c95926f25d3a",
+    "prototypes/vr444/experiments/selection_policy/target-admission-validation-20261009.json": "60d9eefbbd9e08cd58f28248977e24da48d583351ea04dad3aaf6bf46fa80d32",
+    "prototypes/vr444/experiments/selection_policy/target-envelope-20261009.json": "d173d3b67a1a307dce99219493f03b86adc1e222cce15971534b0ed23ecb0891",
+    "prototypes/vr444/experiments/selection_policy/target_admission.py": "96ee5bff6e7608eb588eb8028a82e1dd2dbff265909efb0af59153f956d1623b",
+    "prototypes/vr444/experiments/selection_policy/target_envelope.py": "b6af5e3305d37b92fa84a33b2a55411a1f1a9b77764a60d3029470451d0eb4ad",
+    "prototypes/vr444/experiments/selection_policy/test_selection_policy.cpp": "edaf75e6b4b6e948e863d5b85493c90c98a03f9ec1b07a3272a42d869555ec00",
+    "prototypes/vr444/experiments/selection_policy/trace-gap-reanalysis-20261009.json": "a44e8550157700dedcf426a3f035aeed11dd7fa002935a371c56cfef6c1c56e7",
+    "prototypes/vr444/experiments/selection_policy/validate_attempts.py": "6dc6bcac8b0729306d15b5d888ed5604b296ee0690fcdc4a796cdd59e0b04187",
+    "prototypes/vr444/experiments/selection_policy/validate_cardinality.py": "7f277f90a376200252c053019e3f99aab119d4d2a6efba10517dc44e2b8bfa5c",
+    "prototypes/vr444/experiments/selection_policy/validate_envelope.py": "81af49ffd0ed315aa563cad23c9188ebc5178bde75fbccf90f1ad828b46f9c6d",
+    "prototypes/vr444/experiments/selection_policy/validate_full_count.py": "837b817aca02603ae643b68f2f88aab0d4d8a73ab277abd30ccabba055ddc4a6",
+    "prototypes/vr444/experiments/selection_policy/validate_horizon.py": "0c49944572f89e2b268f857f59f60c7b200e0ceb74a082e42953028da2c2fab8",
+    "prototypes/vr444/experiments/selection_policy/validate_oracle.py": "66cf1a1509941d3db047bc98aceef60414f16943e16c112737515830b90dbf2a",
+    "prototypes/vr444/experiments/selection_policy/validate_phase_exact.py": "ae438dcd2841ff9985bed316c90ce26a11af6244dd760f2774434545e6f0f2fb",
+    "prototypes/vr444/experiments/selection_policy/validate_phase_frontier.py": "f0779c790a679e3d48c1e9d84bb63cea799e0906bb28e605dbda7e69f815db08",
+    "prototypes/vr444/experiments/selection_policy/validate_publication.py": "d7c3b7a22339fc856f039599aa7d343dae619ad42502612b27725b79fe5919fd",
+    "prototypes/vr444/experiments/selection_policy/validate_publication_capture.py": "2f2c5375d291b46c23891ab988574a4369dcfe48b2ab9b935c3028dbdc384cd3",
+    "prototypes/vr444/experiments/selection_policy/validate_quantile_bound.py": "5e1219cb53cb3c32d4b19c563ecc56bdf81aa2de6128ab7b6b33a1424a5630bd",
+    "prototypes/vr444/experiments/selection_policy/validate_receipt_floor.py": "39334dc8ed832f4879f9c029d43851d6b74e018711b0e5f1129cad064778dd6c",
+    "prototypes/vr444/experiments/selection_policy/validate_source_novelty.py": "07598ed28407531ea12836118f3a4dce9b34d96d8dedfd3511a94df933ee8fbc",
+    "prototypes/vr444/experiments/selection_policy/validate_source_receipt_age.py": "b571ef96e14eef4879de54fac109cfdd630ce17564b8dc07aac0b6a2a2bce2d6",
+    "prototypes/vr444/experiments/selection_policy/validate_supply.py": "27283427ff5bbb4d3294ebee9ce3fe36f2a8ae4bcecb9c3307e4257b8c3c267a",
+    "prototypes/vr444/experiments/selection_policy/validate_target_admission.py": "abba30b8acb4aad7cb59fa09adf8f599337f3f6e604cbab651e9e83ec7bcfc50",
+    "prototypes/vr444/experiments/pacer_timing/CAPTURE-CONTRACT.txt": "bd84e92f5261c60178b5d7384a60463f6e45302c11bc79643f377664ca4cc5cc",
+    "prototypes/vr444/experiments/pacer_timing/CONSTRUCTOR-ORDER.txt": "fc19dbf9cbbc04b3e2c9890c389b025b9f6a6862cce30a2a077c1242f2a57541",
+    "prototypes/vr444/experiments/pacer_timing/PACER-TRACE.txt": "b4d815ea13b5db10f7fe4cc5d1d3c83f9410ddd998f3b492bdc88996583306d2",
+    "prototypes/vr444/experiments/pacer_timing/analyze.py": "52e988abb06fa88c9d44486d566d8cb69c4ecba8db56a1f677e70a3911bda5e1",
+    "prototypes/vr444/experiments/pacer_timing/capture-validation-20261009.json": "5fc70a8712caf3d8ed45c1654b6c5f3824150e1d0b4c20987ad5cb6a2adb1b76",
+    "prototypes/vr444/experiments/pacer_timing/constructor-fixed-validation-20261009.json": "3bab54e238976e33272b9644a6d6a6c001cd3d3d33a41faf1768190d8f551349",
+    "prototypes/vr444/experiments/pacer_timing/constructor-validation-20261009.json": "c1a8251910acb7e3eb3c5c1ad590408f7745e32cfff0442b62922731e652ac9f",
+    "prototypes/vr444/experiments/pacer_timing/constructor_test.cpp": "c154a66fcf7d5547ec78a8ef9925363fc7005ff9ab5668cbf291ef2242eb6a11",
+    "prototypes/vr444/experiments/pacer_timing/join_source.py": "efb62c56134eda148180052338e83ea185f61161df7983bde3af6a9749d94b5e",
+    "prototypes/vr444/experiments/pacer_timing/pacer_trace_test.cpp": "50261f3a354be1cb76d100c8b1a8279ae6e74ed310d928f3feab6e52f1948b39",
+    "prototypes/vr444/experiments/pacer_timing/validate.py": "49b77f6174c628cc9ab9315c14d78c892b95972f482f6d980a41147d9b5e2186",
+    "prototypes/vr444/experiments/pacer_timing/validate_capture.py": "216ea8e3357d3b551412a282fd5f372d7b72c287fb63322b2e85681a4a0a38d1",
+    "prototypes/vr444/experiments/pacer_timing/validate_constructor.py": "330d3877e21402fc4c0a15c058b6d9dafb703c8d750548faf0bc16358b33b082",
+    "prototypes/vr444/experiments/pacer_timing/validation-20261009.json": "3aa6dcc73f14370f235da66c03abce8b95a4f32751367d97c85e969775bc9ab3",
+    "prototypes/vr444/experiments/client_timeline/TIMELINE.txt": "a9bdab75196f5d50855c464bab9c4e207592cf345154c270ec9612866762610c",
+    "prototypes/vr444/experiments/client_timeline/analyze.py": "898c4184f35cb7514405ce69b020a5b98c493adc917d1ec7c502e667d37aa60b",
+    "prototypes/vr444/experiments/client_timeline/timeline-20261009.json": "d67809674cf7e920fca87b15b64fe11b743d580ce75309d74c04ede5f6732b6c",
+    "prototypes/vr444/experiments/client_timeline/validate.py": "72ddeeff961625ffa383e076481b87403ed5be8bbb53cfc9c43ca90177e6d5a4",
+    "prototypes/vr444/experiments/client_timeline/validation-20261009.json": "08d3a6ccdd6c5911e523094efddd8c8439be6a3fb57b091f2b9984e01cd8e02a",
+    "prototypes/vr444/experiments/host_timeline/README.txt": "063b4f94cbecd41508ea7d205705a9b6a8f4f08fd65bc683eb493d4e420ff208",
+    "prototypes/vr444/experiments/host_timeline/analyze.py": "4de5b0b3985bf061af1fe2a050dab866bff24448f359e3a76861fae21a2c5de6",
+    "prototypes/vr444/experiments/host_timeline/host-timeline-20261009.json": "eeba1c87c2ceae718c11bf40fb401766611a63a18bc9b7512af8d93eef36cd18",
+    "prototypes/vr444/experiments/host_timeline/host-timeline-20261009.png": "2087d6549cb4d4057c3be4af1fb2c23416f52d3bcf4577567b1f1b982dbd3684",
+    "prototypes/vr444/experiments/host_timeline/host-timeline-figure-20261009.json": "908d895ecfe3c9d65d894cff31d1a9ce08e97de4c8a685f86abec650dba038ab",
+    "prototypes/vr444/experiments/host_timeline/host-timeline-validation-20261009.json": "cee13884eafaa8066e4c18d7725c693b4e4dfdfec804be7ed04e3cff2b636617",
+    "prototypes/vr444/experiments/host_timeline/plot.py": "e6eec9f0d8600a5fd5560dddd0f079839a31b98bbd939d6ae45de57ad798ca55",
+    "prototypes/vr444/experiments/host_timeline/validate.py": "a3130e2bb7034b5ef58d97f556aeb64d59454fdd5b1b9aebc6709c39116ca9ab",
+    "prototypes/vr444/experiments/compositor_qualification/build_catalog.py": "abdcc2bd2b63ae285fa66dd78f079f1af0d9419d7e253d6417eca72ff05e7d24",
+    "prototypes/vr444/experiments/compositor_qualification/catalog.json": "b8735b85b4f6935b504e2f9402e0b39b56e4e97dfb502dc51136e4a3830eea7b",
+    "prototypes/vr444/experiments/compositor_qualification/history.py": "323fedf1499e08e9c9f69a28e394a74cbd0393e634333b7f2352ec8915c6ad73",
+    "prototypes/vr444/experiments/compositor_qualification/run.py": "bcac3ec225321c4fbd7d05ea995e25af4f6ea5a7a8d00e6f846ba4e36308aae6"
+  },
+  "current_source_snapshot_unchanged": true,
+  "fresh_python_executed": true,
+  "fresh_cpp_tests": false,
+  "fresh_sanitizers": false,
+  "fresh_android_compile": false,
+  "fresh_native_build": false,
+  "acquisition_files_reverified": false,
+  "remote_refs_verified": false,
+  "headset_operations": false,
+  "performance_measurement": false,
+  "latency_gate_pass": false,
+  "promotion_eligible": false,
+  "scope": "Archived artifacts and source bindings are separate from fresh Python execution. The explicit historical plot-source gap remains visible."
+}
