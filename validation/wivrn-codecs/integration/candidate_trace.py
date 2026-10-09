@@ -79,10 +79,10 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
     previous_record = None
     observed_metadata = {}
     matched_times = []
-    different = newer = fallback = repeats = 0
+    different = newer = fallback = repeats = runtime_target_gaps = 0
     values = {k: [] for k in ('wait_frame_ms', 'wait_return_to_selection_ms', 'render_entry_to_selection_ms',
                              'selected_target_minus_runtime_target_ms', 'newest_target_minus_selected_target_ms',
-                             'trace_write_ms')}
+                             'trace_write_ms', 'prior_submission_to_previous_render_target_ms')}
     for index, r in enumerate(traces, 1):
         try:
             if type(r) is not dict or type(r.get('schema')) is not int or r['schema'] not in (1, 2) or type(r.get('sequence')) is not int or r['sequence'] != index:
@@ -153,11 +153,20 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                                    and [_identity(f) for f in selected] == [_identity(f) for f in r['previous']])
                 if r['repeat_previous'] != repeat_snapshot:
                     raise ValueError('repeat flag disagrees with explicit previous snapshot')
+                prior_target = r['previous_predicted_display_xr_ns']
+                if not _int(prior_target) or prior_target >= r['predicted_display_xr_ns']:
+                    raise ValueError('previous runtime target is not before current target')
                 if previous_record is not None:
                     if not _replay.snapshot_equal(r['previous'], previous_record['selected']):
                         raise ValueError('previous selection snapshot does not match prior trace')
-                    if r['previous_predicted_display_xr_ns'] != previous_record['predicted_display_xr_ns']:
-                        raise ValueError('previous runtime target differs from prior trace')
+                    # last_display_time advances on every render() entry, while
+                    # this journal contains successful projection submissions.
+                    # Empty/timewarp-only iterations need not produce a row.
+                    # The previous selection must still be exactly retained:
+                    # no unobserved selection transition is accepted here.
+                    gap = prior_target - previous_record['predicted_display_xr_ns']
+                    if gap < 0:
+                        raise ValueError('previous runtime target regresses behind prior trace')
                 decision = _replay.replay(r)
             if r['alpha_required'] != bool(history[0]['present'] and history[0]['alpha']):
                 raise ValueError('alpha participation disagrees with actual oldest-slot policy')
@@ -214,6 +223,9 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
                 raise ValueError('repeat flag disagrees with prior selection')
             previous = identities
             previous_frames = snapshots
+            if r['schema'] == 2 and previous_record is not None:
+                runtime_target_gaps += gap > 0
+                values['prior_submission_to_previous_render_target_ms'].append(gap / 1e6)
             previous_record = r
             repeats += r['repeat_previous']
             matched_times.append(r['selection_end_xr_ns'])
@@ -232,5 +244,10 @@ def evaluate(traces, presented, enabled=True, selection_policy=None):
     return result | dict(status='fail' if errors else 'pass', errors=sorted(errors),
                          selected_differs_from_newest_complete=different,
                          higher_frame_id_available=newer, fallback_records=fallback, repeated_records=repeats,
+                         unrecorded_render_target_gaps=runtime_target_gaps,
+                         render_attempt_coverage='not_recorded',
+                         skipped_render_count=None, skipped_render_reasons=None,
+                         continuity_scope='Successful projection submissions only; schema 1/2 does not record every render attempt. '
+                                          'Target gaps establish only compatibility with intervening renders, not their count or outcome.',
                          distributions={k: _stats(v) for k, v in values.items()},
                          warning='Higher frame ID or target is not proof of a newer application scene or physical display time')

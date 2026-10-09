@@ -47,7 +47,96 @@ def bounded_fixture():
     return r,p
 
 
+def fallback_after(r, p, previous_target=100):
+    """Second submission retaining the first pair across an optional empty render."""
+    r2, p2 = copy.deepcopy(r), copy.deepcopy(p)
+    r2.update(sequence=2, reason='no_complete_fallback', repeat_previous=True,
+              alpha_required=False, previous=copy.deepcopy(r['selected']),
+              closest=[dict(decoder=i, present=False) for i in range(3)],
+              chosen_slots=[-1]*3, eligible_left_slots=[False]*3,
+              history=[dict(decoder=i//3, slot=i%3, present=False) for i in range(9)])
+    for key in ('wait_frame_begin_xr_ns', 'wait_frame_end_xr_ns', 'render_entry_xr_ns',
+                'selection_begin_xr_ns', 'selection_end_xr_ns', 'end_frame_return_xr_ns',
+                'predicted_display_xr_ns'):
+        r2[key] += 100
+        if key in p2:
+            p2[key] += 100
+    r2['previous_predicted_display_xr_ns'] = p2['previous_predicted_display_xr_ns'] = previous_target
+    r2['max_ahead_xr_ns'] = p2['max_ahead_xr_ns'] = min(20, 200-previous_target)
+    p2.update(candidate_trace_records=2, submit_xr_ns=165,
+              render_fence_begin_xr_ns=152, render_fence_end_xr_ns=153)
+    return r2, p2
+
+
 class CandidateTraceTests(unittest.TestCase):
+    def test_schema2_intervening_render_target_preserves_submission_contract(self):
+        for prior in (100, 101, 150, 199):
+            with self.subTest(prior=prior):
+                r, p = bounded_fixture()
+                r2, p2 = fallback_after(r, p, prior)
+                result = module.evaluate([r, r2], [p, p2])
+                self.assertEqual(result['status'], 'pass', result['errors'])
+                self.assertEqual(result['unrecorded_render_target_gaps'], int(prior > 100))
+                self.assertEqual(result['render_attempt_coverage'], 'not_recorded')
+                self.assertIsNone(result['skipped_render_count'])
+                self.assertIsNone(result['skipped_render_reasons'])
+                self.assertFalse(result['promotion_eligible'])
+
+    def test_schema2_gap_cannot_hide_prior_target_regression_or_current_target(self):
+        for prior in (0, 99, 200, 201, True, 150.0, -1, 1 << 63):
+            with self.subTest(prior=prior):
+                r, p = bounded_fixture()
+                r2, p2 = fallback_after(r, p)
+                r2['previous_predicted_display_xr_ns'] = p2['previous_predicted_display_xr_ns'] = prior
+                self.assertEqual(module.evaluate([r, r2], [p, p2])['status'], 'fail')
+
+    def test_schema2_first_prior_target_must_be_zero_or_before_current_target(self):
+        for prior in (0, 99):
+            r, p = bounded_fixture()
+            r['selection_policy'] = p['selection_policy'] = 'closest-target'
+            r.update(reason='closest_target', selected=copy.deepcopy(r['closest']), chosen_slots=[0, 0, -1])
+            p.update(left=1, right=1, left_warp=11, right_warp=11)
+            r['previous_predicted_display_xr_ns'] = p['previous_predicted_display_xr_ns'] = prior
+            r['max_ahead_xr_ns'] = p['max_ahead_xr_ns'] = min(20, 100-prior) if prior else 0
+            self.assertEqual(module.evaluate([r], [p])['status'], 'pass')
+        for prior in (100, 101):
+            r, p = bounded_fixture()
+            r['previous_predicted_display_xr_ns'] = p['previous_predicted_display_xr_ns'] = prior
+            r['max_ahead_xr_ns'] = p['max_ahead_xr_ns'] = 0
+            self.assertEqual(module.evaluate([r], [p])['status'], 'fail')
+
+    def test_schema2_gap_cannot_hide_an_unobserved_selection_transition(self):
+        r, p = bounded_fixture()
+        r2, p2 = fallback_after(r, p, 150)
+        for frames in (r2['previous'], r2['selected']):
+            for f in frames[:2]:
+                f.update(frame=3, warp=13, view_display_time_xr_ns=130)
+        p2.update(left=3, right=3, left_warp=13, right_warp=13)
+        result = module.evaluate([r, r2], [p, p2])
+        self.assertEqual(result['status'], 'fail')
+        self.assertIn('previous selection snapshot does not match prior trace', result['errors'])
+
+    def test_schema2_gap_preserves_bound_join_counter_and_metadata_checks(self):
+        for mutation in ('bound', 'prior_join', 'counter', 'metadata', 'time_overlap', 'missing_trace'):
+            with self.subTest(mutation=mutation):
+                r, p = bounded_fixture()
+                r2, p2 = fallback_after(r, p, 150)
+                traces, presents = [r, r2], [p, p2]
+                if mutation == 'bound':
+                    r2['max_ahead_xr_ns'] = p2['max_ahead_xr_ns'] = 21
+                elif mutation == 'prior_join':
+                    p2['previous_predicted_display_xr_ns'] = 151
+                elif mutation == 'counter':
+                    p2['candidate_trace_records'] = 3
+                elif mutation == 'metadata':
+                    r2['previous'][0]['ready_xr_ns'] += 1
+                elif mutation == 'time_overlap':
+                    r2['wait_frame_begin_xr_ns'] = 59
+                else:
+                    traces.pop(0)
+                    traces[0]['sequence'] = 1
+                self.assertEqual(module.evaluate(traces, presents)['status'], 'fail')
+
     def test_schema2_bounded_choice_replays_actual_eligibility(self):
         r,p = bounded_fixture()
         result=module.evaluate([r],[p],selection_policy='bounded-newest')
