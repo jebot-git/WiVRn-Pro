@@ -100,8 +100,24 @@ def experimental_settings(args):
     if selection == 'bounded-newest' and not getattr(args, 'candidate_trace', False):
         raise ValueError('bounded-newest currently requires diagnostic candidate tracing')
     publication_trace_helpers(args)
+    quality_stream_scale(args)
     return rrb_settings(args) | quality_settings(args) | {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection,
             'codec-test-publication-trace.txt': '1' if getattr(args, 'publication_trace', False) else '0'}
+
+
+def quality_stream_scale(args):
+    scale = getattr(args, 'quality_stream_scale', None)
+    if scale is None:
+        return 0.3
+    if type(scale) not in (int, float) or scale not in (0.4, 0.5, 0.6):
+        raise ValueError('quality stream scale must be 0.4, 0.5 or 0.6')
+    if not (getattr(args, 'quality_capture', False) is True
+            and getattr(args, 'source_trace', False) is True
+            and getattr(args, 'quality_application_plan', None) is not None
+            and args.mode == 'custom-rrb32' and getattr(args, 'rrb_source', None) == 'q1'
+            and args.q == 1 and args.compression == 'none'):
+        raise ValueError('larger stream geometry requires the explicit Q1 application quality profile')
+    return float(scale)
 
 
 def quality_settings(args):
@@ -281,7 +297,7 @@ def build_configuration(args, runtime, source, output):
         server_config['encoder']['codec'] = codec
     client_config = {
         'servers': [], 'preferred_refresh_rate': 90, 'fps_divider': args.fps_divider,
-        'bitrate_bps': args.bitrate, 'resolution_scale': 1.0, 'stream_scale': 0.3,
+        'bitrate_bps': args.bitrate, 'resolution_scale': 1.0, 'stream_scale': quality_stream_scale(args),
         'eye_gaze': False, 'face_tracking': False, 'body_tracking': False,
         'microphone': False, 'hand_tracking': False, 'decoder_low_latency': True,
         'openxr_post_processing': {'super_sampling': 0, 'sharpening': 0},
@@ -437,7 +453,11 @@ def run(args):
             'shader_sha256': {p.name: sha(p) for p in sorted((source/'assets/codec-test').glob('*.spv'))},
             'headset_serial': args.serial, 'adb_target': args.serial,
             'headset_physical_serial': physical_serial,
-            'duration_s': args.seconds, 'geometry': [576, 640],
+            'duration_s': args.seconds,
+            'geometry': None if getattr(args, 'quality_stream_scale', None) is not None else [576, 640],
+            'quality_geometry_profile': getattr(args, 'quality_stream_scale', None) is not None,
+            'stream_scale': quality_stream_scale(args),
+            'geometry_source': 'bound per-eye WCT1 envelope' if getattr(args, 'quality_stream_scale', None) is not None else 'fixed latency profile',
             'requested_display_hz': 90, 'fps_divider': args.fps_divider,
             'requested_new_content_fps': 90/args.fps_divider, 'custom_frame_stride': 1,
             'native_encoder_requested': None if args.mode in CUSTOM_MODES else 'qsv',
@@ -848,6 +868,8 @@ def main():
     parser.add_argument('--quality-application-plan', type=Path,
                         help='Explicit independently generated application-source fixture plan; quality profile only')
     parser.add_argument('--quality-application-plan-sha256')
+    parser.add_argument('--quality-stream-scale', type=float, choices=(0.4, 0.5, 0.6),
+                        help='Separate Q1 application quality geometry; never latency eligible')
     args = parser.parse_args()
     result = run(args)
     print(json.dumps(result, indent=2))

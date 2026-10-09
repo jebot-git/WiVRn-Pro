@@ -9,9 +9,11 @@ from pathlib import Path
 import re
 import signal
 import subprocess
+import struct
 import tarfile
 import tempfile
 import time
+import zlib
 
 if __package__:
     from .gaze_metrics import gaze_timing_metrics
@@ -253,6 +255,38 @@ def rrb_metrics(encoded, decoded, rejected, mode, provenance):
                 scope='Effective RRB codec and joint wire admission; shared pair decode appears in both eyes and is counted once; no displayed quality or latency qualification')
 
 
+def capture_geometry(output, mode, path, encoded):
+    """Keep the fixed latency shape; admit larger explicit Q1 quality captures only."""
+    provenance_path = output/'provenance.json'
+    provenance = json.loads(provenance_path.read_text()) if provenance_path.is_file() else {}
+    if provenance.get('quality_geometry_profile', False) is not True:
+        return 576, 640
+    if not (mode == 'rrb32-q1' and provenance.get('quality_application') is True
+            and provenance.get('quality_capture') is True and provenance.get('source_trace') is True
+            and provenance.get('rrb_source') == 'q1' and provenance.get('custom_q') == 1
+            and provenance.get('custom_compression') == 'none'
+            and type(provenance.get('stream_scale')) in (int, float)
+            and provenance['stream_scale'] in (0.4, 0.5, 0.6)
+            and provenance.get('geometry') is None):
+        raise ValueError('invalid larger Q1 quality geometry profile')
+    payload_path = path.with_suffix('.envelope')
+    with payload_path.open('rb') as source:
+        raw = source.read(262145)
+    if not 48 < len(raw) <= 262144:
+        raise ValueError('bounded Q1 envelope required for capture geometry')
+    magic, kind, width, height, eye, size, frame, warp, crc, flags = struct.unpack('<6I2Q2I', raw[:48])
+    identity = tuple(map(int, path.stem.split('-')))
+    event = encoded.get(identity, {})
+    if not (magic == 0x31544357 and kind == 4 and eye in (0, 1) and flags == 0
+            and (frame, eye) == identity and event.get('warp') == warp
+            and event.get('payload_bytes') == len(raw) and event.get('effective_codec') == 'rrb32'
+            and event.get('source_contract') == 'post_foveation_rgb_exact'
+            and size == len(raw)-48 and zlib.crc32(raw[48:]) == crc
+            and 2 <= width <= 4096 and 2 <= height <= 4096 and width*height <= 4194304):
+        raise ValueError('invalid bound Q1 capture geometry or identity')
+    return width, height
+
+
 def evaluate(output, mode):
     output = Path(output)
     encoder_rows = [r for p in (output/'host').glob('encode-*.jsonl') for r in records(p)]
@@ -282,7 +316,11 @@ def evaluate(output, mode):
         other = output/'client/codec-test'/path.name
         if not other.exists(): continue
         a, b = path.read_bytes(), other.read_bytes()
-        if len(a) != 576*640*4 or len(b) != len(a):
+        try:
+            width, height = capture_geometry(output, mode, path, encoded)
+        except (OSError, ValueError, struct.error) as exc:
+            errors.append('capture geometry: '+str(exc)); continue
+        if len(a) != width*height*4 or len(b) != len(a):
             errors.append('invalid capture size'); continue
         # RGB-only codec comparison. No lens-space or source-to-presented claim.
         squared = sum((x-y)**2 for i,(x,y) in enumerate(zip(a,b)) if i%4 != 3)
@@ -307,8 +345,10 @@ def evaluate(output, mode):
         # A byte-exact black/no-layer frame cannot establish scene correctness.
         # Sample every fourth pixel; this is a scene-content sanity gate, not
         # the full corpus/protected-zone quality metric.
-        samples.append(dict(file=path.name, submitted_as_stereo=int(path.stem.split('-')[0]) in pairs, **scene_content(a), exact=a==b, hardware_reference_exact=hardware_reference_exact, rgb_psnr_db=None if squared==0 else 10*math.log10(255**2/(squared/(pixels*3))), host_sha256=hashlib.sha256(a).hexdigest(), client_sha256=hashlib.sha256(b).hexdigest(), reference_sha256=reference_sha256))
+        samples.append(dict(file=path.name, geometry=[width, height], submitted_as_stereo=int(path.stem.split('-')[0]) in pairs, **scene_content(a), exact=a==b, hardware_reference_exact=hardware_reference_exact, rgb_psnr_db=None if squared==0 else 10*math.log10(255**2/(squared/(pixels*3))), host_sha256=hashlib.sha256(a).hexdigest(), client_sha256=hashlib.sha256(b).hexdigest(), reference_sha256=reference_sha256))
     if not encoded: errors.append('no encoded frames')
+    if len({tuple(s['geometry']) for s in samples}) > 1:
+        errors.append('captured geometry changed within one native run')
     if len(pairs)<5: errors.append('fewer than five distinct stereo frames submitted to OpenXR')
     if len({int(s['file'].split('-')[1].split('.')[0]) for s in samples})<2:
         errors.append('missing paired-eye RGB quality samples')
@@ -331,7 +371,8 @@ def evaluate(output, mode):
                 quality_samples=samples, errors=errors, timings=timing_metrics(encoded,decoded,presented),
                 rrb_selection=rrb,
                 stereo=stereo_metrics(decoded,presented,[r for p in (output/'client/codec-test').glob('decode-*.jsonl') for r in records(p) if r.get('type')=='summary']),
-                limits=['576x640 per eye; offered cadence in provenance; TCP over ADB', 'hello_xr scene, not full VR corpus',
+                observed_capture_geometries=sorted({tuple(s['geometry']) for s in samples}),
+                limits=['Per-eye capture geometry and profile are explicit; TCP over ADB', 'Bounded scene or quality fixture, not full VR corpus',
                         'submission to OpenXR is not measured photon time', 'wall times include CPU copies, startup and capture overhead',
                         'no optical, impairment, thermal soak, or dynamic gaze qualification'])
 
