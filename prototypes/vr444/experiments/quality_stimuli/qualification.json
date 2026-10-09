@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Bounded offline application source/byte transfer qualification; no OpenXR/headset app run",
+  "source_sha256": {
+    "README.txt": "92ebb9c129d77034a76119c2236d59ee68ecb5652638da2afb3f8f8eff014d52",
+    "app.cpp": "93684d553f4754907b9ba91214a1cd474fe4af7294aa761191cef6fa9f0d415e",
+    "audit.py": "4f109ff748b3c2ca7a7ab965c32209bbad33039ec8de387e9c1c3819ac83c887",
+    "build.py": "81936a1bae15e6d2ec30eeb55b2a76a3dca188d592a62c17a40d7ce0dc9fd84d",
+    "build.sh": "11c2486183b4aabcad0d2cefd7a5bf91f009001f529f039e27eed2289eed35ab",
+    "pattern.hpp": "19b5bf7a118e5231ff28bb28b2c3796524858d70bcf6a644cbaf27fbfb3c6d58",
+    "plan.py": "37449e4e3b7bef7e36349882659980f61bf41f008b0a6235933be4fbb305f22e",
+    "test_audit.py": "2720e6eaedbbff5846a2c6beb36ed34723bb69ed30139137b72a4eb4d238265b",
+    "test_transfer.cpp": "c0e13448c1945870a7e8ec29ffbe539961f4020d5f33d6ab91ab76290a10db45"
+  },
+  "evidence_sha256": {
+    "build-receipt.json": "d91a30a71cfd3a2461beaea919802ce10f28f332f7564f59df3f9045b695a19c",
+    "gpu-test.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gpu-test.stdout": "20556ce896f7adefa9500d8b50ba826a0eec38bab7246b0853f951d41c9e4a8f",
+    "python-test.stderr": "6455de1a0f385a9e1e8d663b4fb0a39314b4649a6485dac48f1372303a97544f",
+    "python-test.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "binary_sha256": {
+    "quality-stimuli": "768621976665bbf9991c610aaab22f7724f4ea266bddcc73a3882218b1a725c7",
+    "test-transfer": "ffbd440c861e88d94b033068ba641f49c2db8c69d5f1cd24f9135c0c277f5d62"
+  },
+  "external_build_directory": "/tmp/sub15-quality-stimuli-final",
+  "cpu": {
+    "python_tests": 8,
+    "independent_cpp_stereo_fixtures": 18,
+    "patterns": 3,
+    "shapes": 6,
+    "execution": "CPU fixture emission only; no runtime creation"
+  },
+  "gpu": {
+    "device": "Intel Arc A770",
+    "cases": 21,
+    "exact_stereo_transfers": 63,
+    "wrong_eye_rejections": 21,
+    "shapes": 7,
+    "command": [
+      "timeout",
+      "-k",
+      "2",
+      "8",
+      "/tmp/sub15-quality-stimuli-final/test-transfer",
+      "/tmp/sub15-quality-stimuli-gpu-final",
+      "0"
+    ],
+    "exit_code": 0,
+    "stderr_empty": true,
+    "exact_application_transfer_function": true
+  },
+  "peer_review": {
+    "reviewer": "gpu_pipeline",
+    "source_review": "no remaining blocker after wait-idle teardown hardening",
+    "evidence_review": "no blocker in independent-source/artifact/plan scope"
+  },
+  "openxr_exercised": false,
+  "headset_exercised": false,
+  "latency_comparable": false,
+  "post_foveation_or_codec_quality_pass": false,
+  "limitations": [
+    "New host app compiled, but OpenXR/session/runtime path not yet exercised.",
+    "GPU test uses owned images on a host device; it does not validate runtime swapchain acquisition or teardown.",
+    "All fixture bytes are directly uploaded encoded SRGB codes, not shader-rasterized pixels.",
+    "Build binds local compiler/source/binary; no complete runtime environment reproduction.",
+    "Complete app evidence must additionally be joined to actual root runner command/binary/source receipts."
+  ]
+}
