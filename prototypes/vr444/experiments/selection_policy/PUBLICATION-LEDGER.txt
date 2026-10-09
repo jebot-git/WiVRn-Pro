@@ -1,0 +1,112 @@
+PUBLICATION / EVICTION PREFIX CONTRACT -- 2026-10-09
+
+Problem and scope
+The run05 selection snapshots expose only frames retained at those selection
+instants. A frame can be published and evicted between snapshots, so neither
+the observed-snapshot oracle nor the ever-observed-supply oracle establishes
+the full supply seen by an alternative selector. This branch implements and
+validates a separate diagnostic ledger contract. It has no native call sites,
+capture flag or device operations yet; native integration is a later stage.
+The immutable original acquisition is not changed or augmented with invented
+events.
+
+Recorder and synchronization
+common/codec_test/publication_ledger.h allocates a fixed array before callback
+workers begin. The default capacity is 16,384 events. Each publication records
+decoder, reset epoch, the complete added frame metadata and the exact evicted
+frame metadata. Reset events advance the epoch and describe all histories
+becoming empty. Same frame IDs in different reset epochs remain distinct.
+
+Callers must serialize reset(), publish() and mark() using the SAME external
+frames mutex. The whole event assignment finishes before the count advances.
+A captured Mark is private, owner-bound, immutable data copied while that lock
+is held. An unlocked reader uses only that captured count, never the mutable
+current count or epoch. Completed array elements never change; callbacks may
+only append different elements while the reader exports the captured prefix.
+No allocation, clock read, formatting, I/O or new lock occurs in append/mark.
+The constructor's allocation and memory initialization are diagnostic costs.
+
+The planned live integration captures a mark with common_frame's candidate
+history under frames_mutex, then exports the prefix after successful frame
+submission and before serializing that candidate record. The exporter is
+render-thread owned and binds to one Ledger for its lifetime. Publication
+records and a checkpoint are explicitly flushed; teardown is not needed to
+obtain the latest completed exported prefix. Stream failures and exceptions
+permanently invalidate that exporter instead of permitting partial retries.
+
+Capacity exhaustion or invalid append input increments a saturating lost
+counter and sets sticky invalid state. Checkpoints carry that state and epoch;
+an overflow cannot silently turn into a shorter complete history. Old marks
+remain descriptions of their earlier prefixes and do not read later counters.
+All publisher/reader threads must finish before destroying the Ledger.
+
+Independent reader
+integration/publication_trace.py strictly checks record kinds and exact fields,
+bounded integer types, canonical missing frames, consecutive event/checkpoint
+sequences, reset epochs, FIFO eviction identity and all metadata. Metadata for
+one frame/decoder/epoch may not change. It reconstructs all nine history slots
+and requires an exact match to every corresponding candidate snapshot.
+The public evaluator additionally requires the existing independent candidate
+and presentation validator to pass; this branch does not weaken its reset or
+selection contracts. Standalone replay is a lower-level reconstruction helper.
+
+Every published ready timestamp in the exported prefix must precede its
+checkpoint selection. This includes frames already evicted at that selection.
+Ready times are required to be nonregressing in the serialized publication
+order. Duplicate JSON keys, unknown fields, unbound trailing events, missing
+checkpoints, extra checkpoints and any lost/invalid state fail closed.
+
+Evidence limits
+Coverage ends at the last exported selection checkpoint. Events after that
+point and the final process tail are NOT recorded or certified. A failure
+between exporting a checkpoint and writing its candidate record leaves an
+unmatched record and fails validation; it is not truncated into a pass.
+The abrupt-exit fixture proves only that an explicit ostream flush exports the
+prefix without destructors in this host environment. It is not fsync, power
+loss durability, or an Android force-stop experiment.
+
+The existing ready timestamp is sampled before frames_mutex is released. The
+ledger order and checkpoint match prove the observed prefix and history, not
+the exact instant at which an alternative concurrent selection could acquire
+the lock. This uncertainty must remain explicit in any later event replay.
+Serialization after submission can perturb subsequent scheduling. Default-off
+diagnostics are never latency/promotion evidence. Source joins, actual handle
+ownership, GPU use and optical presentation require additional evidence.
+
+The standalone CLI binds the three explicit input hashes and rechecks them,
+but does not establish hardware, build or acquisition-manifest provenance.
+Its output explicitly retains that qualification limit. A future runner must
+bind requested configuration, native/analyzer sources and sealed artifacts.
+
+Validation
+publication-validation-20261009.json records host ASan/UBSan and TSan builds,
+bounds/overflow/reset tests, two concurrent publishers with unlocked prefix
+export, and exact C++ JSON agreement with an independent Python fixture.
+It also records abrupt _Exit after a flushed checkpoint, Python reconstruction
+plus existing candidate/presentation validation, and all 274 Python tests.
+The Python adversarial cases cover malformed events, false checkpoints,
+metadata corruption, events absent from snapshots, epochs and clock order.
+
+The GPU team independently reviewed the external-mutex/immutable-prefix model.
+It found two exporter API gaps: reusing an exporter with a different Ledger,
+and retrying after a throwing stream. Both now fail permanently and have
+regressions. No native or device measurement is claimed by this review.
+
+Reproduce with new output paths:
+  python3 prototypes/vr444/experiments/selection_policy/validate_publication.py \
+    --build-dir /tmp/sub15-publication-new \
+    --out /tmp/publication-validation-new.json
+  python3 validation/wivrn-codecs/integration/publication_trace.py \
+    --ledger /path/publication-trace.jsonl \
+    --candidates /path/selection-trace.jsonl \
+    --presented /path/codec-test-present.jsonl --out /tmp/publication-new.json
+
+Primary synchronization reference, consulted 2026-10-09:
+  https://eel.is/c++draft/intro.races
+  https://eel.is/c++draft/thread.mutex.requirements.mutex
+The C++ working draft defines same-location conflicting accesses and mutex
+release/acquire synchronization. Applying those rules to this design is an
+implementation argument: shared-mutex acquisition publishes the initialized
+prefix, while later writes affect different Event objects. The contract does
+not permit lock-free mark acquisition, mutation of old events, or destruction
+while readers/publishers remain active.

@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/validate_publication.py": "d7c3b7a22339fc856f039599aa7d343dae619ad42502612b27725b79fe5919fd",
+    "prototypes/vr444/experiments/selection_policy/publication_ledger_test.cpp": "c0e1b75344b2b4e5b5c5ec5e641534d53687119528a7e8830cf1c051031d8de8",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/publication_ledger.h": "721358e6e0fd072a555ba8199a1a66e33c66b7791f5b4470ea79c8cc2e64dad3",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/selection_trace.h": "cd876e7b876dbe7978554be241291be759904ad6b6c2abad70bffee1338f9e77",
+    "validation/wivrn-codecs/integration/publication_trace.py": "c6bc4c7f027f2f9b9a487c9aa86053fc4cf22773fe2051a63244ba4e80b330ad",
+    "validation/wivrn-codecs/integration/candidate_trace.py": "161e20fa104c42a1cc5ecdfc3786a8125100662e2ab6ec8a1aa0c98397470196",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b",
+    "validation/wivrn-codecs/tests/test_publication_trace.py": "fca82ff440d837af1cfbe73b53e93755e2c130595d5f3466c3bb00c86500338d",
+    "validation/wivrn-codecs/tests/test_candidate_trace.py": "8175f508ee3b202e683f4307156868a69f3a08a038dd58c8716b568139ceabef"
+  },
+  "executable_sha256": {
+    "address,undefined": "d7bca6b1f738ef3d4cf945b7961d48f5edc14867b3646f2121c63c33862e6d34",
+    "thread": "6f62356a47606b244c7560cba45f0acd5e1a250a5411501a942aa211d2835dec"
+  },
+  "compiler_invocation": "/usr/bin/clang++",
+  "compiler_binary_sha256": "4ea85504401d9f5c05109d6cb05778b241aa8d56fde1da2e5bc7ba46cffd44f5",
+  "compiler_version": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang++.cfg\n",
+  "checks": [
+    {
+      "name": "compiler version",
+      "command": [
+        "/usr/bin/clang++",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang++.cfg\n",
+      "stderr": ""
+    },
+    {
+      "name": "address,undefined compile",
+      "command": [
+        "/usr/bin/clang++",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-fno-omit-frame-pointer",
+        "-fsanitize=address,undefined",
+        "-pthread",
+        "-I/home/blux/spatial-bridge/.worktrees/sub15-compositor/validation/wivrn-codecs/integration/source-overlay/common",
+        "/home/blux/spatial-bridge/.worktrees/sub15-compositor/prototypes/vr444/experiments/selection_policy/publication_ledger_test.cpp",
+        "-o",
+        "/tmp/sub15-publication-validated-20261009/publication-address-undefined"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "address,undefined bounds/reset/concurrent prefix checks",
+      "command": [
+        "/tmp/sub15-publication-validated-20261009/publication-address-undefined"
+      ],
+      "returncode": 0,
+      "stdout": "publication ledger bounds, immutable marks, reset epochs and two-writer prefix export passed\n",
+      "stderr": ""
+    },
+    {
+      "name": "thread compile",
+      "command": [
+        "/usr/bin/clang++",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-fno-omit-frame-pointer",
+        "-fsanitize=thread",
+        "-pthread",
+        "-I/home/blux/spatial-bridge/.worktrees/sub15-compositor/validation/wivrn-codecs/integration/source-overlay/common",
+        "/home/blux/spatial-bridge/.worktrees/sub15-compositor/prototypes/vr444/experiments/selection_policy/publication_ledger_test.cpp",
+        "-o",
+        "/tmp/sub15-publication-validated-20261009/publication-thread"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "thread bounds/reset/concurrent prefix checks",
+      "command": [
+        "/tmp/sub15-publication-validated-20261009/publication-thread"
+      ],
+      "returncode": 0,
+      "stdout": "publication ledger bounds, immutable marks, reset epochs and two-writer prefix export passed\n",
+      "stderr": ""
+    },
+    {
+      "name": "C++ JSON fixture",
+      "command": [
+        "/tmp/sub15-publication-validated-20261009/publication-address-undefined",
+        "--fixture"
+      ],
+      "returncode": 0,
+      "stdout": "{\"kind\":\"header\",\"schema\":1,\"capacity\":16384,\"clock\":\"client_xr_ns\",\"coverage\":\"scene_start_through_last_selection_checkpoint\"}\n{\"kind\":\"reset\",\"sequence\":1,\"epoch\":1}\n{\"kind\":\"publish\",\"sequence\":2,\"epoch\":1,\"decoder\":0,\"added\":{\"present\":true,\"frame\":1,\"warp\":11,\"view_display_time_xr_ns\":100,\"receive_xr_ns\":10,\"ready_xr_ns\":20,\"alpha\":false},\"evicted\":{\"present\":false}}\n{\"kind\":\"publish\",\"sequence\":3,\"epoch\":1,\"decoder\":0,\"added\":{\"present\":true,\"frame\":2,\"warp\":12,\"view_display_time_xr_ns\":120,\"receive_xr_ns\":10,\"ready_xr_ns\":20,\"alpha\":false},\"evicted\":{\"present\":false}}\n{\"kind\":\"publish\",\"sequence\":4,\"epoch\":1,\"decoder\":1,\"added\":{\"present\":true,\"frame\":1,\"warp\":11,\"view_display_time_xr_ns\":100,\"receive_xr_ns\":10,\"ready_xr_ns\":20,\"alpha\":false},\"evicted\":{\"present\":false}}\n{\"kind\":\"publish\",\"sequence\":5,\"epoch\":1,\"decoder\":1,\"added\":{\"present\":true,\"frame\":2,\"warp\":12,\"view_display_time_xr_ns\":120,\"receive_xr_ns\":10,\"ready_xr_ns\":20,\"alpha\":false},\"evicted\":{\"present\":false}}\n{\"kind\":\"checkpoint\",\"selection_sequence\":1,\"prefix_records\":5,\"epoch\":1,\"dropped\":0,\"valid\":true,\"history\":[{\"decoder\":0,\"slot\":0,\"present\":false},{\"decoder\":0,\"slot\":1,\"present\":true,\"frame\":1,\"warp\":11,\"view_display_time_xr_ns\":100,\"receive_xr_ns\":10,\"ready_xr_ns\":20,\"alpha\":false},{\"decoder\":0,\"slot\":2,\"present\":true,\"frame\":2,\"warp\":12,\"view_display_time_xr_ns\":120,\"receive_xr_ns\":10,\"ready_xr_ns\":20,\"alpha\":false},{\"decoder\":1,\"slot\":0,\"present\":false},{\"decoder\":1,\"slot\":1,\"present\":true,\"frame\":1,\"warp\":11,\"view_display_time_xr_ns\":100,\"receive_xr_ns\":10,\"ready_xr_ns\":20,\"alpha\":false},{\"decoder\":1,\"slot\":2,\"present\":true,\"frame\":2,\"warp\":12,\"view_display_time_xr_ns\":120,\"receive_xr_ns\":10,\"ready_xr_ns\":20,\"alpha\":false},{\"decoder\":2,\"slot\":0,\"present\":false},{\"decoder\":2,\"slot\":1,\"present\":false},{\"decoder\":2,\"slot\":2,\"present\":false}]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "independent Python reconstruction and presentation join of C++ output",
+      "returncode": 0,
+      "result": {
+        "diagnostic_only": true,
+        "promotion_eligible": false,
+        "release_ready": false,
+        "latency_gate_evaluated": false,
+        "complete_process_tail": false,
+        "coverage": "scene_start_through_last_selection_checkpoint",
+        "terminal_publication_tail": "not_recorded",
+        "timestamp_scope": "Existing ready timestamps precede frames-mutex release; checkpoint order proves prefix visibility, not an exact alternative selection instant.",
+        "events": 5,
+        "reset_events": 1,
+        "publication_events": 4,
+        "checkpoints": 1,
+        "last_decoder_epoch": 1,
+        "distinct_published_eye_identities": 4,
+        "published_eye_identities_absent_all_candidate_snapshots": 0,
+        "status": "pass",
+        "errors": [],
+        "candidate_validation": {
+          "status": "pass",
+          "records": 1,
+          "promotion_eligible": false,
+          "scope": "Observed candidate availability and target choice only; no measured alternate-policy speedup or source-content age",
+          "errors": [],
+          "selected_differs_from_newest_complete": 1,
+          "higher_frame_id_available": 1,
+          "fallback_records": 0,
+          "repeated_records": 0,
+          "unrecorded_render_target_gaps": 0,
+          "render_attempt_coverage": "not_recorded",
+          "skipped_render_count": null,
+          "skipped_render_reasons": null,
+          "terminal_render_tail": "not_recorded",
+          "continuity_scope": "Successful projection submissions only; schema 1/2 does not record every render attempt. Target gaps establish only compatibility with intervening renders, not their count or outcome.",
+          "distributions": {
+            "wait_frame_ms": {
+              "count": 1,
+              "p50": 1e-05,
+              "p95": 1e-05,
+              "p99": 1e-05,
+              "min": 1e-05,
+              "max": 1e-05
+            },
+            "wait_return_to_selection_ms": {
+              "count": 1,
+              "p50": 1e-05,
+              "p95": 1e-05,
+              "p99": 1e-05,
+              "min": 1e-05,
+              "max": 1e-05
+            },
+            "render_entry_to_selection_ms": {
+              "count": 1,
+              "p50": 9e-06,
+              "p95": 9e-06,
+              "p99": 9e-06,
+              "min": 9e-06,
+              "max": 9e-06
+            },
+            "selected_target_minus_runtime_target_ms": {
+              "count": 1,
+              "p50": 0.0,
+              "p95": 0.0,
+              "p99": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "newest_target_minus_selected_target_ms": {
+              "count": 1,
+              "p50": 2e-05,
+              "p95": 2e-05,
+              "p99": 2e-05,
+              "min": 2e-05,
+              "max": 2e-05
+            },
+            "trace_write_ms": {
+              "count": 1,
+              "p50": 0.01,
+              "p95": 0.01,
+              "p99": 0.01,
+              "min": 0.01,
+              "max": 0.01
+            },
+            "prior_submission_to_previous_render_target_ms": null
+          },
+          "warning": "Higher frame ID or target is not proof of a newer application scene or physical display time"
+        }
+      }
+    },
+    {
+      "name": "explicit checkpoint flush survives _Exit without destructors",
+      "command": [
+        "/tmp/sub15-publication-validated-20261009/publication-address-undefined",
+        "--abrupt-fixture"
+      ],
+      "returncode": 0,
+      "stdout": null,
+      "stderr": ""
+    },
+    {
+      "name": "full Python offline suite",
+      "command": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "..................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 274 tests in 4.357s\n\nOK\n"
+    }
+  ],
+  "native_integration": false,
+  "headset_operations": false,
+  "measured_speedup": false,
+  "promotion_eligible": false,
+  "scope": "Host prefix recorder/analyzer contract; terminal tail, live integration and physical presentation remain unqualified."
+}
