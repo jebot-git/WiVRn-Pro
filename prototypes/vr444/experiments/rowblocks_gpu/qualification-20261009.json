@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "experiment": "rowblocks-gpu",
+  "date": "2026-10-09",
+  "base_commit": "97e8283",
+  "dependency": {
+    "original_rowblocks_commit": "a7db779",
+    "local_cherry_pick": "816576df",
+    "simd_base": "895e9ef",
+    "wire_and_api_changed": false
+  },
+  "headset_used": false,
+  "promotion_blocked": true,
+  "performance_gate_evaluated": false,
+  "hardware_reports": {
+    "arc": {
+      "fixture_count": 668,
+      "differing_stereo_block_size_fixtures": 512,
+      "measured_stereo_arm_invocations": 2004,
+      "warmup_stereo_arm_invocations": 2004,
+      "block_mode_counts": [
+        3239,
+        694,
+        9669
+      ],
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "maximum_srgb_code_error": 0.193304,
+      "exact_optimal_image_bytes": true,
+      "sampled_same_device_baseline_exact": true,
+      "cpu_prefix_restore_in_path": false,
+      "cpu_grammar_crc_lz4_in_path": true,
+      "promotion_blocked": true,
+      "headset_used": false,
+      "performance_gate_evaluated": false,
+      "pass": true,
+      "result_sha256": "b7f713ab50f8f5ceac9754dd882b9ebb05d126bdf83abfd22df6d4c860858f48"
+    },
+    "uhd": {
+      "fixture_count": 668,
+      "differing_stereo_block_size_fixtures": 512,
+      "measured_stereo_arm_invocations": 2004,
+      "warmup_stereo_arm_invocations": 2004,
+      "block_mode_counts": [
+        3239,
+        694,
+        9669
+      ],
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "maximum_srgb_code_error": 0.193304,
+      "exact_optimal_image_bytes": true,
+      "sampled_same_device_baseline_exact": true,
+      "cpu_prefix_restore_in_path": false,
+      "cpu_grammar_crc_lz4_in_path": true,
+      "promotion_blocked": true,
+      "headset_used": false,
+      "performance_gate_evaluated": false,
+      "pass": true,
+      "result_sha256": "f3dd3cf69a1a58c1a785be859f7fc229d981705d9f53cfe12be23af0345036b3"
+    }
+  },
+  "sanitizer_gpu_report": {
+    "fixture_count": 460,
+    "differing_stereo_block_size_fixtures": 456,
+    "measured_stereo_arm_invocations": 1380,
+    "warmup_stereo_arm_invocations": 1380,
+    "block_mode_counts": [
+      1851,
+      94,
+      3479
+    ],
+    "device": [
+      "Intel(R) Arc(tm) A770 Graphics (DG2)",
+      2,
+      109060195
+    ],
+    "maximum_srgb_code_error": 0.193304,
+    "exact_optimal_image_bytes": true,
+    "sampled_same_device_baseline_exact": true,
+    "cpu_prefix_restore_in_path": false,
+    "cpu_grammar_crc_lz4_in_path": true,
+    "promotion_blocked": true,
+    "headset_used": false,
+    "performance_gate_evaluated": false,
+    "pass": true,
+    "result_sha256": "c78ac6653a8626d141658d3a266d93a9dd5fbee4a8a3eac9fbae46914400dc56"
+  },
+  "sanitizer_cpu_report": {
+    "cpu_fixture_pass": true,
+    "fixture_count": 668,
+    "rrb_block_modes": 3,
+    "vulkan_initialized": false,
+    "headset_used": false
+  },
+  "verification": {
+    "sanitizer_diagnostics": false,
+    "leak_detection": false,
+    "leak_detection_reason": "ptrace environment",
+    "audit_unit_tests": 5,
+    "audit_negative_mutations": 42,
+    "host_build": "clang++ O2 warnings as errors",
+    "android_build": "NDK29 API29 ARM64 compile-only warnings as errors",
+    "spirv_val_vulkan11_modules": 4,
+    "spirv_capabilities": [
+      "Shader"
+    ],
+    "validator": "/home/blux/Android/Sdk/ndk/29.0.14206865/shader-tools/linux-x86_64/spirv-val",
+    "all_190_unique_corpus_files_match_committed_manifest": true,
+    "vulkan_validation_layer_enabled": false,
+    "independent_static_review": "Compositor team found no blocker in unequal-eye dispatch, metadata/raw tail bounds, predictor reset, complete-pair admission or disjoint write ownership."
+  },
+  "conditions": {
+    "scope": "Host correctness only; clock fields are not performance evidence",
+    "concurrent_research_correctness_work": "allowed",
+    "desktop_workload": "uncontrolled",
+    "icd": "/usr/share/vulkan/icd.d/intel_icd.x86_64.json"
+  },
+  "source_binary_shader_sha256": {
+    "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp": "2280ba86a0b5473de51280457330b7d23a95aa7d527ced3ded301a86dfb5b9cc",
+    "prototypes/vr444/experiments/direct_image_gpu/host_copy.hpp": "b45c592543bdb386bccc4173d8b6d732d93a5ebf8287504cd10756285779afe5",
+    "prototypes/vr444/experiments/direct_image_gpu/sample.comp": "b146b902a79640cdd887061a9475217aa156a763ee04bbfa521e20be2f32938c",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/rgb_rowblocks/fixtures/manifest.json": "d264fd91c99d9b16fbaee510a4bcf072b6b296b024c35fa6fa64bf216dacd6e5",
+    "prototypes/vr444/experiments/rgb_rowblocks/results/corpus-hashes.json": "c732fffe2a24894c487b11e5552098cd9531d6c29e5f52a63ae2865445af99b4",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "311f1e8f0880e401f61823d0461dfa60931db7abbc7b6b707f1ed45f9773d6e5",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/rowblocks_gpu/README.txt": "6a406ab35c6f3d9dc27247a8027f1b3e176d7e88cc29c597dc0291bdae15a383",
+    "prototypes/vr444/experiments/rowblocks_gpu/audit.py": "749dae443bf084dd5e2b8c1c396a15fcd86100a1dee935ae663e9e4ec4b61cf5",
+    "prototypes/vr444/experiments/rowblocks_gpu/build/rowblocks-gpu-android": "536c838a3acd7eb8ee294b0bcbc2c3037f99883d20ed1d6a04aaa70183afa646",
+    "prototypes/vr444/experiments/rowblocks_gpu/build/rowblocks-gpu-asan": "5d3e67acb0acc636404ebb9813f7dfa88867169754121da29f9bf4af615d8ee9",
+    "prototypes/vr444/experiments/rowblocks_gpu/build/rowblocks-gpu-host": "81b43f78822ac5743e0af08820d519d9cc2b5967d39b95c5f26cbdc93a7c9f6c",
+    "prototypes/vr444/experiments/rowblocks_gpu/build/shaders/buffer.spv": "b408089ce94765a38c30f2e98f2f6881c209646da10353ceef30ea22ead867ca",
+    "prototypes/vr444/experiments/rowblocks_gpu/build/shaders/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+    "prototypes/vr444/experiments/rowblocks_gpu/build/shaders/uint.spv": "076230140137e8b10b6a6f085b028b021f9d419b742906cefdfd41cd7d3ef416",
+    "prototypes/vr444/experiments/rowblocks_gpu/build/shaders/unorm.spv": "2ec428dab6a4dc25188ee57b42464c511b5c2d99fcfd563916ac188c60c3b087",
+    "prototypes/vr444/experiments/rowblocks_gpu/build.sh": "f63fee44065d73d3bd6ff8b2ed0b6776f7ccd02b09d6e8261989d0b9f5980fc3",
+    "prototypes/vr444/experiments/rowblocks_gpu/decode.comp": "562364be82fcf3c6bd352d3478aff749bc6ad4703c8cd7d48a5cc720a19ef918",
+    "prototypes/vr444/experiments/rowblocks_gpu/fixtures.hpp": "aa184e09104059e1904e26661ba625630ebf32afbb3bfcccba4171cd703e6117",
+    "prototypes/vr444/experiments/rowblocks_gpu/probe.cpp": "22da19897916235a5605d2d3b0c5b99c1ad0960de3ee9bb5a7ee841773e2b7ba",
+    "prototypes/vr444/experiments/rowblocks_gpu/test_audit.py": "0ece295a9b1757b1be863e2a8c5ce8b689bf76cb8f088651b9e5dc6a210c1c07",
+    "prototypes/vr444/experiments/rowfilter_gpu/fixtures.hpp": "2869b89c5d69606ffe3dd9462f67c4ae1b2b3b6009806e3744ec02a5d8f38263",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff"
+  },
+  "local_artifacts_sha256": {
+    "validation/results/sub15-rowblocks-gpu/arc-qualification.json": "b7f713ab50f8f5ceac9754dd882b9ebb05d126bdf83abfd22df6d4c860858f48",
+    "validation/results/sub15-rowblocks-gpu/uhd-qualification.json": "f3dd3cf69a1a58c1a785be859f7fc229d981705d9f53cfe12be23af0345036b3",
+    "validation/results/sub15-rowblocks-gpu/gpu-asan-default.json": "c78ac6653a8626d141658d3a266d93a9dd5fbee4a8a3eac9fbae46914400dc56",
+    "validation/results/sub15-rowblocks-gpu/cpu-asan.json": "e4f90da1a49010349c2fe6696eea1baa0bb9665f54c96ba441fc2715d55ba19c"
+  }
+}

@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: MIT
+#version 450
+layout(local_size_x=128) in;
+layout(set=0,binding=1,std430) readonly buffer RGB {uint packed[];};
+layout(set=0,binding=2,std430) readonly buffer Metadata {uint blocks[];};
+layout(set=0,binding=4,std430) readonly buffer Limit {uint raw_bytes[];};
+#if defined(OUTPUT_UNORM)
+layout(set=0,binding=3,rgba8) writeonly uniform image2D output_image;
+#elif defined(OUTPUT_UINT)
+layout(set=0,binding=3,rgba8ui) writeonly uniform uimage2D output_image;
+#else
+layout(set=0,binding=3,std430) writeonly buffer Output {uint result[];};
+#endif
+layout(push_constant) uniform Params {uint width,height,q,count;} pc;
+uint byte_at(uint p){return (packed[p/4]>>((p%4)*8))&255u;}
+void store_pixel(uint x,uint y,uvec3 p){
+#if defined(OUTPUT_UNORM)
+    imageStore(output_image,ivec2(x,y),vec4(p,255u)/255.0);
+#elif defined(OUTPUT_UINT)
+    imageStore(output_image,ivec2(x,y),uvec4(p,255u));
+#else
+    result[y*pc.width+x]=p.x|(p.y<<8)|(p.z<<16)|0xff000000u;
+#endif
+}
+void main(){
+    // Complete CPU preflight proves coverage/non-overlap of all row blocks.
+    // These uniform guards also bound metadata and the packed final uint.
+    if(blocks[0]==0||blocks[0]>256||blocks[0]>(pc.height+15)/16||raw_bytes[0]!=pc.width*pc.height*3)return;
+    uint columns=(pc.width+127)/128;
+    uint block=gl_WorkGroupID.x/columns;
+    if(block>=blocks[0])return; // Stereo eyes may use different block sizes.
+    uint m=1+block*4,row=blocks[m],height=blocks[m+1],mode=blocks[m+2],offset=blocks[m+3];
+    if(height==0||height>128||row>=pc.height||height>pc.height-row||mode>2||offset!=row*pc.width*3)return;
+    uint x=(gl_WorkGroupID.x%columns)*128+gl_LocalInvocationID.x;
+    if(x>=pc.width)return;
+    uvec3 previous=uvec3(0);
+    // Adjacent lanes visit adjacent RGB pixels in the same row. Each column's
+    // predictor is serial only within its independent bounded row block.
+    for(uint y=0;y<height;++y){
+        uint p=offset+(y*pc.width+x)*3;
+        uvec3 value=uvec3(byte_at(p),byte_at(p+1),byte_at(p+2));
+        if(mode==2){previous=(previous+value)&uvec3(255);value=previous;}
+        store_pixel(x,row+y,value);
+    }
+}
