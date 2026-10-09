@@ -50,7 +50,7 @@ static void bytes(const fs::path& path, const std::vector<uint8_t>& value) {
 }
 struct Options {
     std::string pattern; fs::path output; uint32_t width=0,height=0,frames=900,seconds=30;
-    bool emit=false;
+    bool emit=false; std::string source_reference_space="VIEW";
 };
 static uint32_t number(const char* text) {
     std::string s=text; require(!s.empty() && s.size()<10 && s.find_first_not_of("0123456789")==std::string::npos,"invalid unsigned integer");
@@ -68,8 +68,10 @@ static Options parse(int argc,char** argv) {
         else if(k=="--height") o.height=number(v);
         else if(k=="--frames") o.frames=number(v);
         else if(k=="--seconds") o.seconds=number(v);
+        else if(k=="--source-reference-space") o.source_reference_space=v;
         else throw std::runtime_error("unknown argument");
     }
+    require(o.source_reference_space=="VIEW"||o.source_reference_space=="LOCAL","choose explicit VIEW or LOCAL source reference space");
     require(quality_stimuli::known(o.pattern),"choose chroma-grid, rgb-ramp or fine-detail");
     require(o.output.is_absolute() && !fs::exists(o.output),"output must be a new absolute directory");
     require(bool(o.width)==bool(o.height),"both dimensions required together");
@@ -77,6 +79,10 @@ static Options parse(int argc,char** argv) {
     require(o.frames>=1 && o.frames<=10800 && o.seconds>=1 && o.seconds<=120,"frame/time bound exceeded");
     require(!o.emit || o.width,"offline fixtures require explicit dimensions");
     return o;
+}
+static XrReferenceSpaceType reference_space_type(const Options& opt) {
+    require(opt.source_reference_space=="VIEW"||opt.source_reference_space=="LOCAL","invalid reference space");
+    return opt.source_reference_space=="LOCAL"?XR_REFERENCE_SPACE_TYPE_LOCAL:XR_REFERENCE_SPACE_TYPE_VIEW;
 }
 static json pose(const XrPosef& p) {
     return {{"orientation",{p.orientation.x,p.orientation.y,p.orientation.z,p.orientation.w}},
@@ -162,7 +168,7 @@ struct App {
         uint32_t count=0;XC(xrEnumerateEnvironmentBlendModes(xr,system,XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,0,&count,nullptr));require(count&&count<=16,"bad blend mode count");
         std::vector<XrEnvironmentBlendMode> blend(count);XC(xrEnumerateEnvironmentBlendModes(xr,system,XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,count,&count,blend.data()));
         require(std::find(blend.begin(),blend.end(),XR_ENVIRONMENT_BLEND_MODE_OPAQUE)!=blend.end(),"opaque blend required");
-        XrReferenceSpaceCreateInfo rs{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};rs.referenceSpaceType=XR_REFERENCE_SPACE_TYPE_VIEW;rs.poseInReferenceSpace.orientation.w=1;XC(xrCreateReferenceSpace(session,&rs,&space));
+        XrReferenceSpaceCreateInfo rs{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};rs.referenceSpaceType=reference_space_type(opt);rs.poseInReferenceSpace.orientation.w=1;XC(xrCreateReferenceSpace(session,&rs,&space));
         XC(xrEnumerateSwapchainFormats(session,0,&count,nullptr));require(count&&count<=256,"bad format count");
         std::vector<int64_t> formats(count);XC(xrEnumerateSwapchainFormats(session,count,&count,formats.data()));
         require(std::find(formats.begin(),formats.end(),VK_FORMAT_R8G8B8A8_SRGB)!=formats.end(),"RGBA8 SRGB swapchain required; no silent format fallback");
@@ -173,7 +179,7 @@ struct App {
         VkCommandBufferAllocateInfo ca{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};ca.commandPool=pool;ca.level=VK_COMMAND_BUFFER_LEVEL_PRIMARY;ca.commandBufferCount=1;VC(vkAllocateCommandBuffers(device,&ca,&command));
         VkFenceCreateInfo fc{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};VC(vkCreateFence(device,&fc,nullptr,&fence));
         VkPhysicalDeviceProperties props{};vkGetPhysicalDeviceProperties(physical,&props);
-        record({{"type","header"},{"schema",1},{"pattern",opt.pattern},{"source_generation","direct_encoded_srgb_byte_upload"},{"source_stage","application_swapchain_before_compositor"},{"quality_only",true},{"latency_comparable",false},{"width_requested",opt.width},{"height_requested",opt.height},{"frame_limit",opt.frames},{"seconds_limit",opt.seconds},{"space","VIEW"},{"format",VK_FORMAT_R8G8B8A8_SRGB},{"format_name","R8G8B8A8_SRGB"},{"opaque",true},{"top_left_origin",true},{"device",props.deviceName},{"vendor_id",props.vendorID},{"device_id",props.deviceID},{"queue_family",family},{"graphics_api_version",ai.apiVersion}});
+        record({{"type","header"},{"schema",2},{"pattern",opt.pattern},{"source_generation","direct_encoded_srgb_byte_upload"},{"source_stage","application_swapchain_before_compositor"},{"quality_only",true},{"latency_comparable",false},{"width_requested",opt.width},{"height_requested",opt.height},{"frame_limit",opt.frames},{"seconds_limit",opt.seconds},{"space",opt.source_reference_space},{"source_reference_space",opt.source_reference_space},{"locate_and_layer_use_same_space",true},{"format",VK_FORMAT_R8G8B8A8_SRGB},{"format_name","R8G8B8A8_SRGB"},{"opaque",true},{"top_left_origin",true},{"device",props.deviceName},{"vendor_id",props.vendorID},{"device_id",props.deviceID},{"queue_family",family},{"graphics_api_version",ai.apiVersion}});
         for(unsigned i=0;i<2;++i) init_eye(i,views[i]);
     }
     void init_eye(unsigned index,const XrViewConfigurationView& view) {
@@ -281,7 +287,7 @@ struct App {
         const XrCompositionLayerBaseHeader* layers[]={reinterpret_cast<XrCompositionLayerBaseHeader*>(&layer)};
         XrFrameEndInfo end{XR_TYPE_FRAME_END_INFO};end.displayTime=fs.predictedDisplayTime;end.environmentBlendMode=XR_ENVIRONMENT_BLEND_MODE_OPAQUE;end.layerCount=rendered?1:0;end.layers=rendered?layers:nullptr;XC(xrEndFrame(session,&end));
         if(rendered)++submitted;
-        record({{"type","frame"},{"sequence",frames},{"predicted_display_time",fs.predictedDisplayTime},{"predicted_display_period",fs.predictedDisplayPeriod},{"should_render",bool(fs.shouldRender)},{"locate_called",located},{"view_state_flags",view_flags},{"decision",skip_reason},{"projection_submitted",rendered},{"views",details}});
+        record({{"type","frame"},{"sequence",frames},{"predicted_display_time",fs.predictedDisplayTime},{"predicted_display_period",fs.predictedDisplayPeriod},{"should_render",bool(fs.shouldRender)},{"locate_called",located},{"view_state_flags",view_flags},{"decision",skip_reason},{"projection_submitted",rendered},{"source_reference_space",opt.source_reference_space},{"views",details}});
     }
     void run() {
         deadline=Clock::now()+std::chrono::seconds(opt.seconds);init();
