@@ -1,0 +1,102 @@
+EXACT FULL-DEADLINE COUNT CHECK -- 2026-10-09
+
+Result
+The promising loose supply/phase ceiling does not survive a requirement to
+serve every observed warm deadline with a new advancing wire frame. On run05,
+the exact maximum count strictly under 15ms is 184 of 1,900 at original times,
+and 26 of 1,900 after a +5.555555ms sampling shift. Hypothetical publication
+advances up to 8ms do not change those full-count maxima in the tested cases.
+
+The earlier good-only path had 1,805 good choices at +5.555555ms / 4ms advance,
+which met a necessary 95% count condition. It did not establish that the other
+95 choices could be inserted while preserving wire/target order. This branch
+solves that joint constraint exactly rather than interpreting the ceiling as
+an attainable 1,900-choice result.
+
+This remains an optimistic known-supply model, not a live pacing result. It
+does not change native behavior, production or research selection policies,
+qualification limits, original evidence or headset suspension.
+
+Exact algorithm and proof boundary
+full_count.py requires exactly one choice at EVERY fixed warm deadline. Frames
+must have exact known metadata, be ready at the hypothetical selection time,
+strictly increase in wire ID and not regress in source target. The dynamic
+program keeps the best good count for each ending frame after each deadline.
+Only the previous deadline's states enter the prefix-maximum structure, so it
+cannot skip a deadline or select twice at one deadline. Histories that end at
+the same frame have identical future feasibility; retaining their best score
+is therefore sufficient.
+
+For D required choices from N sorted known identities, the zero-based frame
+rank chosen at deadline k lies in [k, N-D+k]. At least k identities must precede
+it and D-k-1 must follow it. This necessary rank band is independent of target
+or readiness constraints. It reduces run05's working band to 195 frames and
+keeps about 360,000 reachable states per scenario. A five-million-candidate
+rank-band budget fails explicitly rather than silently pruning more states.
+Compact parent arrays retain exact backtracking certificates.
+
+The objective is maximum under-threshold count at this mandatory total count.
+Every certificate is rechecked for frame/target order, publication readiness
+and score. Its age percentiles describe that certificate only: ties can choose
+older frames, so those percentiles are NOT claimed to be minimum possible
+percentiles. The threshold feasibility conclusion uses the exact maximum good
+count and nearest-rank required good count, not a percentile of a cherry-picked
+or filtered sample population.
+
+Preserved run05 results
+All cases require 1,900 choices; all are feasible, and all require at least
+1,805 good choices for strict p95<15ms.
+
+ sampling shift      publication advance       exact maximum good count
+ 0ms                 0ms                                184
+ 0ms                 8ms                                184
+ +5.555555ms         0ms                                 26
+ +5.555555ms         2ms                                 26
+ +5.555555ms         4ms                                 26
+ +5.555555ms         8ms                                 26
+
+Publication advances remain hypothetical, independently clipped at every
+participating eye's receipt. Sampling shifts preserve the original selection
+to submit interval and respect recorded wait/render/required-fence admission.
+Unlimited retention and earlier use of later-observed complete pairs remain
+relaxations. Source target ceilings are removed and projection quality remains
+unqualified. All 2,094 known identities have exact source joins; unseen or
+never-complete frames remain outside this universe.
+
+Independent validation
+full-count-validation-20261009.json binds 259 passing Python tests. The new
+layered solver matches exhaustive combinations on 512 small random populations
+with nonmonotonic target order, readiness constraints, unavailable frames and
+varying mandatory counts. A specific 20-deadline regression has a 19-good
+skipping path (enough for the loose 95% ceiling), yet requiring all 20 distinct
+choices forces zero good choices. This catches the exact inference error the
+new solver is intended to prevent.
+
+The transport team independently reviewed the rank-band proof, previous-layer
+only prefix states, score dominance, receipt/readiness ordering, certificate
+recheck and nearest-rank threshold. It found no blocker.
+
+The surprising +5.555555ms / 4ms case was also recomputed with the earlier
+generic DAG/Fenwick solver, which permits skips and maximizes unique count
+first, good count second. full-count-reference-20261009.json records 361,132
+candidate nodes, a maximum 1,900-choice chain, and the same exact good count
+26. This is a different optimization formulation, with the same admitted
+known-supply assumptions. Both analyses bind source and immutable input hashes.
+
+Interpretation and next boundary
+This full-count requirement is stronger than the existing 88Hz cadence floor.
+Failure at all 1,900 deadlines does not by itself rule out an alternative that
+uses slightly fewer distinct choices while retaining acceptable cadence. The
+next exact question is the count/age frontier with a small explicit skip
+budget. That investigation must preserve cadence evidence and continue to
+separate hypothetical supply/phase changes from executable runtime behavior.
+
+Reproduce offline with new output files:
+  python3 prototypes/vr444/experiments/selection_policy/validate_full_count.py \
+    --out /tmp/full-count-validation-new.json
+  python3 prototypes/vr444/experiments/selection_policy/full_count.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --out /tmp/full-count-new.json
+  python3 prototypes/vr444/experiments/selection_policy/check_full_count_reference.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    /tmp/full-count-new.json --out /tmp/full-count-reference-new.json

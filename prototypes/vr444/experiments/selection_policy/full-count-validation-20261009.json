@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "validation/wivrn-codecs/tests"
+  ],
+  "cwd": "/home/blux/spatial-bridge/.worktrees/sub15-compositor",
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "...................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 259 tests in 4.368s\n\nOK\n",
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/validate_full_count.py": "837b817aca02603ae643b68f2f88aab0d4d8a73ab277abd30ccabba055ddc4a6",
+    "prototypes/vr444/experiments/selection_policy/full_count.py": "8d4d2857a1458108c009defc0547cc825b45519964a8acd165785b79d92d80a8",
+    "prototypes/vr444/experiments/selection_policy/supply_phase.py": "7afe848798a43efa71f42bd4803e12470586e3f7f677aff720501ccd978c267e",
+    "prototypes/vr444/experiments/selection_policy/target_envelope.py": "b6af5e3305d37b92fa84a33b2a55411a1f1a9b77764a60d3029470451d0eb4ad",
+    "prototypes/vr444/experiments/selection_policy/availability_oracle.py": "dd52cbb6ee398c43f3e4e9c6da0a1d850db7f39738fc5817651b7ce9f382e487",
+    "prototypes/vr444/experiments/selection_policy/counterfactual.py": "857da8c912576b9cce34997300b169cf39e58c87786df8fdbd731bf82da7c827",
+    "prototypes/vr444/experiments/selection_policy/reanalyze_trace.py": "cd0b22f7c4f3be735672a98b435c40cf07754fec0173d3d3f0d016f07114c8ac",
+    "prototypes/vr444/experiments/compositor_freshness/analyze.py": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10",
+    "validation/wivrn-codecs/tests/test_full_count.py": "965de31a33b76df216199ce1a5ae072acbab768ae14476762b03c3e91191a289",
+    "validation/wivrn-codecs/tests/test_availability_oracle.py": "63315b9f5fd84059b92f8218441966ab2b4765e17c0d499c572e4eca72cc5e1f",
+    "validation/wivrn-codecs/integration/candidate_trace.py": "161e20fa104c42a1cc5ecdfc3786a8125100662e2ab6ec8a1aa0c98397470196",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b"
+  },
+  "exhaustive_small_populations": 512,
+  "headset_operations": false,
+  "native_behavior_changed": false,
+  "measured_speedup": false,
+  "latency_gate_evaluated": false,
+  "scope": "Exact conditional good-count optimum requiring every frozen deadline; no live pacing claim."
+}
