@@ -7,7 +7,7 @@
   "android_runtime_tested": false,
   "headset_accessed": false,
   "network_scope": "owned ephemeral127.0.0.1 UDP sockets only",
-  "performance_status": "48host loopback profiles pass; no target runtime measurement",
+  "performance_status": "48 host loopback profiles pass; no target runtime measurement",
   "source_sha256": {
     "prototypes/vr444/experiments/udp_batch/README.txt": "1d49c2902b9322b027c097d02e559f9422625d2c1fa3e0ecb67609747b1c09ad",
     "prototypes/vr444/experiments/udp_batch/build-android.sh": "c4765d49ac17bfbf88029d311f0fdb47d5bbe84b25a95570ba27a3345a215ff6",
@@ -28,7 +28,7 @@
   "measurement_base": "a1e08f2e53b322e8ebab2f6c11f2d93f8dbb2e83",
   "coordinated_window": "GPU compilation/execution held; compositor no CPU timing; known root fuzzer PID already gone; normal desktop/production apps continued",
   "cpu_model": "12th Gen Intel(R) Core(TM) i7-12700",
-  "command": "/tmp/wivrn-udp-batch-build/probe31",
+  "command": "/tmp/wivrn-udp-batch-build/probe 31",
   "bench_sha256": "d4d108f8ea8de8f299ec844ac241778fd24330b0961378309cfd34a6e1fa1e3b",
   "limitations": "No affinity/frequency/thermal control; one host; no WiFi,headset,codec,compositor,independent endpoint scheduling or optical timing"
 }
