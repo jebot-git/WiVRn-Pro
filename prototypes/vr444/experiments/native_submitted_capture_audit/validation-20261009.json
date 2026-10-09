@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "checks": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_submitted_capture.py",
+        "-v"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_bgra_permutation_retains_exact_values_and_hashes (test_submitted_capture.CaptureAudit.test_bgra_permutation_retains_exact_values_and_hashes) ... ok\ntest_bound_buffers_and_no_overwrite_output (test_submitted_capture.CaptureAudit.test_bound_buffers_and_no_overwrite_output) ... ok\ntest_complete_bound_capture_and_explicit_nonqualification (test_submitted_capture.CaptureAudit.test_complete_bound_capture_and_explicit_nonqualification) ... ok\ntest_config_bool_and_cleanup_failure (test_submitted_capture.CaptureAudit.test_config_bool_and_cleanup_failure) ... ok\ntest_duplicate_json_and_extra_unbound_artifact (test_submitted_capture.CaptureAudit.test_duplicate_json_and_extra_unbound_artifact) ... ok\ntest_hash_drift_and_pinned_receipt (test_submitted_capture.CaptureAudit.test_hash_drift_and_pinned_receipt) ... ok\ntest_missing_final_marker_and_partial_pair_reject (test_submitted_capture.CaptureAudit.test_missing_final_marker_and_partial_pair_reject) ... ok\ntest_presentation_exact_join_and_typed_ids (test_submitted_capture.CaptureAudit.test_presentation_exact_join_and_typed_ids) ... ok\ntest_semantic_mutations_reject_even_after_rehash (test_submitted_capture.CaptureAudit.test_semantic_mutations_reject_even_after_rehash) ... ok\ntest_source_shader_and_literal_bindings (test_submitted_capture.CaptureAudit.test_source_shader_and_literal_bindings) ... ok\ntest_symlink_artifacts_reject (test_submitted_capture.CaptureAudit.test_symlink_artifacts_reject) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.170s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_research_quality.py",
+        "-v"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_bound_actual_bytes_and_identity (test_research_quality.Quality.test_bound_actual_bytes_and_identity) ... ok\ntest_either_goal_is_enough_for_research (test_research_quality.Quality.test_either_goal_is_enough_for_research) ... ok\ntest_exact_all_channels (test_research_quality.Quality.test_exact_all_channels) ... ok\ntest_footprint_not_pixel_center (test_research_quality.Quality.test_footprint_not_pixel_center) ... ok\ntest_invalid_mappings (test_research_quality.Quality.test_invalid_mappings) ... ok\ntest_one_code_chroma_error_fails (test_research_quality.Quality.test_one_code_chroma_error_fails) ... ok\ntest_path_and_nonfinite_rejection (test_research_quality.Quality.test_path_and_nonfinite_rejection) ... ok\ntest_periphery_separate_from_protected (test_research_quality.Quality.test_periphery_separate_from_protected) ... ok\ntest_subsampling_damage_fails (test_research_quality.Quality.test_subsampling_damage_fails) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.004s\n\nOK\n"
+    }
+  ],
+  "sources_sha256": {
+    "validation/wivrn-codecs/integration/submitted_capture.py": "50b9e7adef1ed8beb7607c54940ea08c17e66a185c476ad5c903ec6fb0fb03f8",
+    "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
+    "validation/wivrn-codecs/tests/test_submitted_capture.py": "486772ba37c1835a130fd220a9d3c0e809090a50dc6bd2dc69de7c10a26cf39f"
+  },
+  "actual_build_receipt_sha256": "d6be1ee952a93a967cc6d3492edd89abe7e8fa49e25ad77df0f37dcbee82ec8f",
+  "renderer_shader_bindings": {
+    "reprojection.vert": {
+      "path": ".cxx/Debug/2hd2e6j2/arm64-v8a/client/reprojection.vert.spv-opt",
+      "sha256": "7a3c42e786031471c65e6fc7380c3966b4bda56ac035f689d378e1468c4da8f8",
+      "embedded_path": ".cxx/Debug/2hd2e6j2/arm64-v8a/client/reprojection.vert.spv",
+      "embedded_sha256": "f1912aad56bbf20b09c93e941552882ac53b284f583f8d9655f3736fa20a3493",
+      "literal_equivalent": true,
+      "actual_bytes": 2140,
+      "literal_equivalence_recomputed": true
+    },
+    "reprojection.frag": {
+      "path": ".cxx/Debug/2hd2e6j2/arm64-v8a/client/reprojection.frag.spv-opt",
+      "sha256": "a2cd27117ca0cb4f939625ce1ac9d6305d4318df9f136be75172be01c101b4d0",
+      "embedded_path": ".cxx/Debug/2hd2e6j2/arm64-v8a/client/reprojection.frag.spv",
+      "embedded_sha256": "a59ee572543971a80b39117e2d0049aba6b9890f1a053cffa94dca1e1c5de089",
+      "literal_equivalent": true,
+      "actual_bytes": 5788,
+      "literal_equivalence_recomputed": true
+    }
+  },
+  "actual_shader_inputs": {
+    ".cxx/Debug/2hd2e6j2/arm64-v8a/client/reprojection.vert.spv-opt": {
+      "bytes": 2140,
+      "sha256": "7a3c42e786031471c65e6fc7380c3966b4bda56ac035f689d378e1468c4da8f8"
+    },
+    ".cxx/Debug/2hd2e6j2/arm64-v8a/client/reprojection.vert.spv": {
+      "bytes": 3822,
+      "sha256": "f1912aad56bbf20b09c93e941552882ac53b284f583f8d9655f3736fa20a3493"
+    },
+    ".cxx/Debug/2hd2e6j2/arm64-v8a/client/reprojection.frag.spv-opt": {
+      "bytes": 5788,
+      "sha256": "a2cd27117ca0cb4f939625ce1ac9d6305d4318df9f136be75172be01c101b4d0"
+    },
+    ".cxx/Debug/2hd2e6j2/arm64-v8a/client/reprojection.frag.spv": {
+      "bytes": 10139,
+      "sha256": "a59ee572543971a80b39117e2d0049aba6b9890f1a053cffa94dca1e1c5de089"
+    }
+  },
+  "device_operations": false,
+  "actual_submitted_capture_audited": false,
+  "quality_pass": false,
+  "scope": "Synthetic/adversarial adapter tests plus actual sealed build shader byte equivalence; no native captured pair yet."
+}
