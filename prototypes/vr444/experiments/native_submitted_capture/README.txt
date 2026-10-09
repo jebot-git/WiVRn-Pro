@@ -12,8 +12,9 @@ integer1..900(default90). Unknown/duplicate/invalid typed fields reject, even
 with enabledfalse. Config is capped1024B. Enabled mode requires a NEW absent
 codec-test/quality directory; existing evidence is never overwritten.
 
-The first eligible coherent stereo pair consumes an attempt, then frame IDs
-must advance at least frame_stride. At mostmax_pairs attempts can allocate/copy;
+Eligible coherent stereo frames must have absolute frame ID %frame_stride==0,
+matching the server raw-input capture grid when stride is a multiple of90. The
+first such pair consumes an attempt, then IDs must advance at least the stride. At mostmax_pairs attempts can allocate/copy;
 failed xrEndFrame still consumes its attempt and cannot publish a pair marker.
 Current formats are actual R8G8B8A8_SRGB or B8G8R8A8_SRGB, copied unchanged with
 RGBA/BGRA channel order recorded. Each eye is at most4Mi pixels and4096 per axis:
@@ -84,3 +85,8 @@ Primary API contracts consulted:
   https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyImageToBuffer.html
   https://registry.khronos.org/OpenXR/specs/1.1/man/html/XrSwapchainCreateInfo.html
   https://registry.khronos.org/OpenXR/specs/1.1/man/html/xrReleaseSwapchainImage.html
+
+Alignment follow-up: absolute modulo sampling avoids permanently offsetting the
+client capture grid from the server frame%90 original-input readbacks. Root uses
+stride90..900 in multiples of90 for same-reference acquisitions; selectors can
+still skip eligible frames, so missing source/pair evidence must fail audit.

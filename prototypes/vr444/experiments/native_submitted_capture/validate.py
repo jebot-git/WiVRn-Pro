@@ -47,7 +47,7 @@ def main():
                       str(args.simdjson_root/'singleheader/simdjson.cpp'),'-o',str(binary)]
         run('ASan/UBSan contract compile',compile_argv,ROOT)
         output=run('ASan/UBSan config/budget/bounds/exclusive-write contract',[str(binary)],ROOT)
-        if output!='PASS submitted capture contract: 38 rejections; 24 budgets; bounds; no-overwrite evidence\n':
+        if output!='PASS submitted capture contract: 38 rejections; 24 budgets; absolute frame alignment; bounds; no-overwrite evidence\n':
             raise ValueError('unexpected contract success output')
         binary_binding=binding(binary)
         for relative in ['client/scenes/stream.cpp','client/xr/swapchain.cpp']:

@@ -53,7 +53,7 @@ struct Budget {
     bool have_frame = false;
     uint64_t last_frame = 0;
     bool take(uint64_t frame) {
-        if (!config.enabled || attempts >= config.max_pairs) return false;
+        if (!config.enabled || attempts >= config.max_pairs || frame % config.frame_stride != 0) return false;
         if (have_frame && (frame <= last_frame || frame-last_frame < config.frame_stride)) return false;
         have_frame = true; last_frame = frame; ++attempts; return true;
     }
