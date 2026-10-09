@@ -3,6 +3,7 @@
 #include <exception>
 #include <array>
 #include <cstring>
+#include <exception>
 #include <limits>
 #include <stdexcept>
 #include <string>

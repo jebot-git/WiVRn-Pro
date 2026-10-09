@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "scope": "Android C++23 self-contained helper TU compilation; include-only correction, historical headset artifact unchanged",
+  "before_sha256": "fc09d9443333d00d55aff4ff0e7a25d0ad4bf621691618b466e299a67e413cb7",
+  "after_sha256": "6239a7d334607b1502eeedc4b891f3137e2c5d06e0b34efe661b51e3d1396bc0",
+  "compiler_sha256": "c80e4e88c8861b8e47d3a04a4831d89282ac47c3d930a8e6628466ee31e5ca48",
+  "argv": [
+    "/home/blux/Android/Sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++",
+    "-std=c++23",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wno-missing-field-initializers",
+    "-c",
+    "/home/blux/spatial-bridge/.worktrees/sub15-native-staged-image/validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.cpp",
+    "-o",
+    "/tmp/sub15-helper-cxx23-selfcontained/helper.o"
+  ],
+  "before_returncode": 1,
+  "before_stderr": "/home/blux/spatial-bridge/.worktrees/sub15-native-staged-image/validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.cpp:74:45: error: no member named 'terminate' in namespace 'std'; did you mean 'template'?\n   74 |         if (state == State::uncertain) std::terminate();\n      |                                        ~~~~~^~~~~~~~~\n      |                                             template\n/home/blux/spatial-bridge/.worktrees/sub15-native-staged-image/validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.cpp:74:54: error: expected unqualified-id\n   74 |         if (state == State::uncertain) std::terminate();\n      |                                                      ^\n/home/blux/spatial-bridge/.worktrees/sub15-native-staged-image/validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.cpp:77:78: error: no member named 'terminate' in namespace 'std'; did you mean 'template'?\n   77 |             if (result != VK_SUCCESS && result != VK_ERROR_DEVICE_LOST) std::terminate();\n      |                                                                         ~~~~~^~~~~~~~~\n      |                                                                              template\n/home/blux/spatial-bridge/.worktrees/sub15-native-staged-image/validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.cpp:77:87: error: expected unqualified-id\n   77 |             if (result != VK_SUCCESS && result != VK_ERROR_DEVICE_LOST) std::terminate();\n      |                                                                                       ^\n4 errors generated.\n",
+  "after_returncode": 0,
+  "after_stderr": "",
+  "object_sha256": "b54aae75fab029745a6739ec87563e73a5d5d662ac08857b50b840dcc4da1abe",
+  "headset_run": false,
+  "historical_android_receipt": "aa8510fd:prototypes/vr444/experiments/native_staged_image/results/android-qualification.json",
+  "header_sha256": {
+    "validation/wivrn-codecs/integration/source-overlay/client/decoder/staged_rowblocks_image.h": "b096673b3923a49139cb1803d10ed9d28b54cc341ffa53e131156601896af672"
+  }
+}
