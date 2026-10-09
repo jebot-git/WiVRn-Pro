@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "status": "historical_observation_only",
+  "runs": [
+    {
+      "run": "rrb4-tail-0-1",
+      "warm_pairs": 1898,
+      "coherent_newer_pair_available": 1619,
+      "future_tolerance_ns_admission_counts": {
+        "0": 1001,
+        "100000": 1575,
+        "250000": 1614,
+        "500000": 1615
+      },
+      "selected_target_minus_runtime_ms": {
+        "p05": -0.14116,
+        "p50": -0.015074,
+        "p95": 0.078021,
+        "min": -11.091873,
+        "max": 5.930579
+      },
+      "runtime_target_minus_selection_ms": {
+        "p05": 19.101025,
+        "p50": 19.635306,
+        "p95": 21.535736,
+        "min": 18.234589,
+        "max": 25.660749
+      },
+      "ready_to_selection_ms": {
+        "p05": 7.569793,
+        "p50": 15.36219,
+        "p95": 20.15047,
+        "min": 0.10125,
+        "max": 24.752503
+      }
+    },
+    {
+      "run": "rrb4-tail-900-2",
+      "warm_pairs": 1889,
+      "coherent_newer_pair_available": 1573,
+      "future_tolerance_ns_admission_counts": {
+        "0": 770,
+        "100000": 1525,
+        "250000": 1571,
+        "500000": 1573
+      },
+      "selected_target_minus_runtime_ms": {
+        "p05": -0.08255,
+        "p50": -1.3e-05,
+        "p95": 0.083133,
+        "min": -11.060126,
+        "max": 0.346667
+      },
+      "runtime_target_minus_selection_ms": {
+        "p05": 18.800674,
+        "p50": 19.164351,
+        "p95": 20.39017,
+        "min": 18.084995,
+        "max": 22.463427
+      },
+      "ready_to_selection_ms": {
+        "p05": 7.802865,
+        "p50": 15.090262,
+        "p95": 18.561095,
+        "min": 0.47125,
+        "max": 21.216252
+      }
+    },
+    {
+      "run": "rrb4-tail-900-3",
+      "warm_pairs": 1897,
+      "coherent_newer_pair_available": 1340,
+      "future_tolerance_ns_admission_counts": {
+        "0": 699,
+        "100000": 1249,
+        "250000": 1307,
+        "500000": 1327
+      },
+      "selected_target_minus_runtime_ms": {
+        "p05": -0.154924,
+        "p50": -0.00233,
+        "p95": 0.155166,
+        "min": -19.76572,
+        "max": 4.9397
+      },
+      "runtime_target_minus_selection_ms": {
+        "p05": 18.716562,
+        "p50": 19.244675,
+        "p95": 20.664804,
+        "min": 17.768927,
+        "max": 42.977259
+      },
+      "ready_to_selection_ms": {
+        "p05": 6.692084,
+        "p50": 13.108543,
+        "p95": 17.022189,
+        "min": 0.100364,
+        "max": 30.566982
+      }
+    },
+    {
+      "run": "rrb4-tail-0-4",
+      "warm_pairs": 1910,
+      "coherent_newer_pair_available": 1284,
+      "future_tolerance_ns_admission_counts": {
+        "0": 653,
+        "100000": 1226,
+        "250000": 1280,
+        "500000": 1284
+      },
+      "selected_target_minus_runtime_ms": {
+        "p05": -0.106,
+        "p50": -0.003046,
+        "p95": 0.096772,
+        "min": -11.170674,
+        "max": 0.409313
+      },
+      "runtime_target_minus_selection_ms": {
+        "p05": 19.012811,
+        "p50": 19.579383,
+        "p95": 20.551239,
+        "min": 18.121067,
+        "max": 21.521357
+      },
+      "ready_to_selection_ms": {
+        "p05": 6.569844,
+        "p50": 12.446512,
+        "p95": 19.048596,
+        "min": 0.119688,
+        "max": 23.054273
+      }
+    }
+  ],
+  "input_artifacts": {
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/hashes.json": {
+      "sha256": "15182b8b9fb663780046bfbf97d127d0673db6d03fc836610b4269cae0e91ca8",
+      "bytes": 30387
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/summary.json": {
+      "sha256": "4d070fe3e35de0a6d4acbd73add7f55110abc26584441d30b48664a2204464c1",
+      "bytes": 1182192
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/client/codec-test-present.jsonl": {
+      "sha256": "9fefa00f732a9d1807c99cbd6f4f85feb38e73419d148da695b8b0a0d3c33628",
+      "bytes": 2811315
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/client/codec-test/selection-trace.jsonl": {
+      "sha256": "49adf64c97206dd448c2169cf0219476b88d8020d602d7d66cbf36520949f743",
+      "bytes": 7157742
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/hashes.json": {
+      "sha256": "5f0545253bf581fc5cd0e22243215a02fe4dd5d3c3346ec9d05461d5aa5b555b",
+      "bytes": 30482
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/summary.json": {
+      "sha256": "958a02845ea3b40b96ee619ea395bb1db9869034ad8359079e4e00e52ff1f33a",
+      "bytes": 1180114
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/client/codec-test-present.jsonl": {
+      "sha256": "75c65e25a1c3784cfaf27322a96fb19f73e0f953e15b6696c8aff412ed493064",
+      "bytes": 2800424
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/client/codec-test/selection-trace.jsonl": {
+      "sha256": "28901345c0a1e4530b80976a987d2293e232f8112e55ebfd4fa4dc825f4c126c",
+      "bytes": 7130088
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/hashes.json": {
+      "sha256": "4c097141971936a5aa47146403ed0d02ec30e07de09b60b00d3feae40a93b4e1",
+      "bytes": 30482
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/summary.json": {
+      "sha256": "99394c1d7b3d1ae6f587193071155c69c03ea32012d41c78fdf01eb3942309cb",
+      "bytes": 1183779
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/client/codec-test-present.jsonl": {
+      "sha256": "02df0d751a60172f814b15ee6f252047438dc79c7b6abe290387ca96db921f9f",
+      "bytes": 2799098
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/client/codec-test/selection-trace.jsonl": {
+      "sha256": "aa4dc96c05af0d80fed782f2eb9f9a244c3499e1b0be76566fd37d61445d2303",
+      "bytes": 7126511
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/hashes.json": {
+      "sha256": "e3c80b80551f1ca49127566268ea9b4a23ddcac6b476cc650eb391009dfe7584",
+      "bytes": 30387
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/summary.json": {
+      "sha256": "539c5656e219c4c8300858334fbbf82aef20084a9a79feff4588d2e3b0809ca0",
+      "bytes": 1189820
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/client/codec-test-present.jsonl": {
+      "sha256": "5b81c8fd68c86aa8ab93c6018d725c7349ef7873ea0699de235decb97dc4bb3b",
+      "bytes": 2834406
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/client/codec-test/selection-trace.jsonl": {
+      "sha256": "b3098202019f7ba3842204b6ea418077c92c1fb6928711f842f9ad5250169c9d",
+      "bytes": 7216457
+    }
+  },
+  "script_sha256": "06c0c3bd3a38dc0a2bd3c35f12031939c9e5eaf276613eecd86641b607882646",
+  "historical_summary_gate_status_imported": true,
+  "full_trace_validators_rerun": false,
+  "counterfactual_sequence_replayed": false,
+  "alternative_cadence_measured": false,
+  "latency_qualified": false,
+  "quality_qualified": false,
+  "scope": "Same recorded snapshots only. No native selector changes, future live timing prediction, pose fidelity or photon claim. Superseded by standalone codec scope; historical sub15 results are not sub5 qualification."
+}
