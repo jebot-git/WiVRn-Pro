@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "checks": [
+    {
+      "name": "ASan/UBSan compile",
+      "command": [
+        "/usr/bin/clang++",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-I/home/blux/spatial-bridge/.worktrees/sub15-compositor/validation/wivrn-codecs/integration/source-overlay/common",
+        "/home/blux/spatial-bridge/.worktrees/sub15-compositor/prototypes/vr444/experiments/selection_policy/horizon_policy_test.cpp",
+        "-o",
+        "/tmp/sub15-horizon-checks-wra7ynwj/horizon-test"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "name": "ASan/UBSan semantics",
+      "command": [
+        "/tmp/sub15-horizon-checks-wra7ynwj/horizon-test"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Horizon policy PASS: 20000 disabled and full-horizon equivalence cases, 9399 fractional admissions, boundary/alpha/malformed-config/overflow checks\n"
+    },
+    {
+      "name": "C++ fixture serialization",
+      "command": [
+        "/tmp/sub15-horizon-checks-wra7ynwj/horizon-test",
+        "--fixtures"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "independent_python_replays": 256
+    }
+  ],
+  "synthetic_fixtures_only": true,
+  "source_sha256": {
+    "prototypes/vr444/experiments/selection_policy/validate_horizon.py": "c6f5d790c191f24fe4c97823f6c371d1bc7879f60f87aaf6e07c0efe4583c656",
+    "prototypes/vr444/experiments/selection_policy/counterfactual.py": "9b45ea91174e88279f87178b0d589a4dc7569e8bc5f1d2151222050a1e17c74a",
+    "prototypes/vr444/experiments/selection_policy/horizon_policy.h": "3309374300c6596691391ab33be14b19a12458eff4e2a6b5f33d9df452bec3bf",
+    "prototypes/vr444/experiments/selection_policy/horizon_policy_test.cpp": "e9cbbeaf40c05babfe7cd1d052298d4db7884b89355983b71c20fefc675d4201",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/selection_policy.h": "ae68144a97d08e143d68156d585266f47fdb1abf83bfee295382287a017e459e",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/selection_trace.h": "cd876e7b876dbe7978554be241291be759904ad6b6c2abad70bffee1338f9e77",
+    "validation/wivrn-codecs/tests/test_selection_counterfactual.py": "7385a528fd83aadbcfe0edf1719d2091a460aa59c305f98790777dd38595a9a3"
+  },
+  "native_or_headset_changes": false,
+  "measured_speedup": false,
+  "limitations": [
+    "No actual selector integration or timing measurement.",
+    "LeakSanitizer disabled under ptrace; ASan/UBSan remain active."
+  ]
+}

@@ -1,0 +1,105 @@
+Fractional future-target horizon research, 2026-10-09
+==================================================
+
+Outcome
+Advancing complete selections can reduce conditional receive age while losing
+unique-frame cadence in frozen observations. This is not sufficient evidence for
+the sub-15 ms target, and none of the following alternatives is a measured live
+result. Both age and cadence must remain visible when evaluating this idea.
+
+The preserved run05 diagnostic has 1,900 first submissions after the 2-second
+warmup, observed p95 receive-to-submit 26.927659 ms and 89.220492 Hz. Its original
+failed acquisition summary is untouched. The submitted-trace repair explains
+the historical failure; all 300 original manifest files still verify.
+
+Conditional recurrent-selector results using the same recorded histories and
+the same submit times (future horizon is a fraction of the existing period bound):
+
+  Fraction   First-frame sample-age p95   Conditional unique cadence
+  0/1        26.972920 ms                 88.139886 Hz
+  1/2        26.952138 ms                 89.173510 Hz
+  3/4        26.952138 ms                 89.173510 Hz
+  31/32      20.595367 ms                 79.213139 Hz
+  1/1        17.468752 ms                 80.425999 Hz
+
+Full horizon chooses a different encoded frame in 1,603/1,900 warm observations;
+1,600 of those advance the latched application-frame identity. Three different
+encoded frames reuse the same application identity. This does not reveal the
+simulation/input epoch. The full-horizon hypothesis has only 1,712 first unique
+frames: an early advancement can be followed by a repeated choice while waiting
+for the next frame. Including all warm hypothetical submissions gives an age
+p95 of 18.733491 ms; neither age statistic is an acquired latency measurement.
+The narrower 31/32 horizon advances 903 application identities and has 1,687 first
+unique frames. Fractions at or below 3/4 admit no newer frame in this acquisition;
+rare constrained fallbacks can retain an older pair instead.
+
+What the counterfactual proves and does not prove
+counterfactual.py first verifies the complete observed selection/presentation
+contract and independently validates the host source recorder, including every
+frame used by a hypothetical choice. Ambiguous projection ownership, missing
+application joins, aborted/dropped source evidence or inconsistent input hashes
+fail analysis. It joins clocks only by encoded frame identity; shifting the host
+clock by a constant leaves every client-age hypothesis unchanged in tests.
+
+Two explicit models are reported: a local decision using the actually observed
+prior pair, and a recurrent decision retaining its prior hypothetical pair. They
+hold histories, frame arrival/ready times and submit times fixed. Different
+ownership would affect decoder slots, repeated-render behavior, feedback,
+transport, workload and later histories. Those effects are not simulated. This
+is an opportunity/constraint analysis, not a forecast of a live policy's timing.
+The hypothetical cadence is computed from first unique encoded choices at the
+original submit times, with repeats excluded. No promotion gate is evaluated.
+
+Prototype
+horizon_policy.h is standalone and opt-in through Config.enabled. Disabled
+behavior reproduces legacy closest-target exactly. Fraction 1/1 reproduces the
+existing bounded-newest policy. Other ratios only reduce the existing future
+replacement horizon; they preserve complete stereo/alpha metadata, exact slots,
+nonregression against closest and previous coherent choices, and retained
+fallback ownership. A retained fallback is not relabeled or retimed if its
+original target is outside a new admission horizon. Invalid ratios, runtime
+inputs and overflow fail explicitly. No native configuration flag, binary,
+source-overlay or runtime selector has been changed by this branch.
+
+Validation and reproduction
+  python3 -B -m unittest discover -s validation/wivrn-codecs/tests
+205 Python tests pass. New cases cover exact horizon boundaries, first period,
+incomplete/mismatched stereo, nonregressing fallback, invalid fractions and
+clocks, application identity reuse, source provenance failures, duplicate
+declarations, empty windows and conditional cadence under repeated choices.
+
+  python3 -B prototypes/vr444/experiments/selection_policy/validate_horizon.py \
+    --out NEW_VALIDATION_RECEIPT.json
+20,000 generated histories exactly reproduce both disabled closest-target and
+full-horizon bounded-newest. Across fractional choices, 9,522 actual admissions
+pass coherent identity, horizon, nonregression and fallback invariants. Named
+boundary/alpha/configuration/INT64 overflow cases pass. ASan/UBSan remain enabled;
+LeakSanitizer is disabled under ptrace. Independent Python replay agrees with
+256 serialized C++ fixtures. These are synthetic correctness tests, not device
+or throughput measurements. horizon-validation-20261009.json binds sources and
+commands.
+
+  python3 -B prototypes/vr444/experiments/selection_policy/counterfactual.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --out NEW_COUNTERFACTUAL_RECEIPT.json
+horizon-counterfactual-20261009.json retains the full ten-alternative report,
+original evidence manifest hash and analysis source hashes. The tool refuses an
+output inside the acquisition or an existing result. Original failed summaries
+and binaries are not reclassified or overwritten. No headset operation occurs.
+
+Next independent approach
+Investigate whether advancing only when another complete pair is already held
+in reserve preserves conditional cadence. A reserve is observable at the current
+snapshot, but its future availability still depends on ownership and feedback.
+Require the same cadence/identity guards and keep counterfactual conclusions
+separate from a later untraced hardware comparison.
+
+Primary references
+  https://registry.khronos.org/OpenXR/specs/1.1-khr/html/xrspec.html#frame-synchronization
+  https://github.com/KhronosGroup/OpenXR-Guide/blob/main/chapters/frame_submission.md
+The runtime supplies prediction targets and synchronizes application frames;
+predicted target differences are not measured photon times or simulation age.
+The reviewed local selection policy and source callback contracts are preserved
+in validation/wivrn-codecs/integration/source-overlay/common/codec_test/ and
+source-overlay/server/{driver,compositor}/. The existing single-projection path
+already bypasses layer squashing; these observations do not justify replacing it.
