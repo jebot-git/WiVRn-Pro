@@ -72,6 +72,19 @@ class NativeComparisonConfiguration(unittest.TestCase):
 
 
 class NativeComparisonGates(unittest.TestCase):
+    def test_longer_visible_window_is_only_an_explicit_quality_application(self):
+        from argparse import Namespace
+        for seconds in (10, 30):
+            self.assertTrue(compare.acquisition_duration_valid(Namespace(seconds=seconds)))
+        for seconds in (31, 60, 61, True):
+            self.assertFalse(compare.acquisition_duration_valid(Namespace(seconds=seconds)))
+        for seconds in (31, 60):
+            self.assertTrue(compare.acquisition_duration_valid(Namespace(seconds=seconds,
+                quality_application_plan=Path('/plan'), quality_capture=True)))
+        for changes in (dict(seconds=61), dict(quality_capture=False), dict(quality_application_plan=None)):
+            args=dict(seconds=60, quality_application_plan=Path('/plan'), quality_capture=True)|changes
+            self.assertFalse(compare.acquisition_duration_valid(Namespace(**args)))
+
     def test_quality_capture_bounds_reset_and_source_preflight(self):
         from argparse import Namespace
         args = Namespace(mode='custom-rrb32', quality_capture=True, quality_max_pairs=6, quality_frame_stride=90)

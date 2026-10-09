@@ -350,10 +350,15 @@ def evaluate_output(output):
             'metrics_source_sha256': sha(path)}
 
 
+def acquisition_duration_valid(args):
+    quality_profile = getattr(args, 'quality_application_plan', None) is not None and getattr(args, 'quality_capture', False) is True
+    return type(args.seconds) is int and 10 <= args.seconds <= (60 if quality_profile else 30)
+
+
 def run(args):
     experiment_config = experimental_settings(args)
-    if args.mode not in MODES or not 10 <= args.seconds <= 30 or args.fps_divider not in (1, 2):
-        raise ValueError('mode/10..30 seconds/fps-divider1|2 required')
+    if args.mode not in MODES or not acquisition_duration_valid(args) or args.fps_divider not in (1, 2):
+        raise ValueError('mode/bounded duration (10..30s, application quality up to60s)/fps-divider1|2 required')
     if not 1024 <= args.port <= 65535 or not 1_000_000 <= args.bitrate <= 200_000_000 or not 1 <= args.q <= 1024:
         raise ValueError('invalid port/1..200Mbps bitrate/quantizer')
     if args.decoder_backend not in ('resident', 'cpu-neon') or args.selection_phase not in ('early', 'after-fence'):
