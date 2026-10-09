@@ -137,6 +137,10 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
             if (summary.get('source_trace', {}).get('status') != 'off'
                     or (directory/'host/source-trace.jsonl').exists()):
                 errors.append('source tracing cannot masquerade as an untraced candidate')
+            if (provenance.get('pacer_trace', False) is not False
+                    or summary.get('pacer_trace', {}).get('status', 'off') != 'off'
+                    or (directory/'host/pacer-trace.jsonl').exists()):
+                errors.append('pacer tracing cannot masquerade as an untraced candidate')
             kernel = 'direct-neon' if backend == 'cpu-neon' else 'coop128dc'
             fixed = {'custom_decoder': kernel, 'scene_reference_space': 'Local',
                      'gaze_enabled': False, 'meta_sr_mode': 'off', 'user_presence_overridden': False,
