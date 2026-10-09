@@ -1,0 +1,107 @@
+TARGET-LEAD ENVELOPE SENSITIVITY -- 2026-10-09
+
+Question and result
+Does the existing one-period future-target allowance explain the frozen
+selection bound? Only partly. On preserved run05, removing the target ceiling
+entirely still leaves minimum p95 at all 1,900 warm advancing wire selections
+equal to 26.927659 ms. Widening that ceiling alone cannot reach sub-15ms while
+preserving the original full count in this fixed-deadline model.
+
+This is a separate diagnostic relaxation, not a new live selector. No native
+code, pose construction, target timestamp, qualification gate or runtime
+deadline changes. Headset operations remain suspended. Original run05 remains
+failed and all original files are unchanged.
+
+Exact model
+target_envelope.py independently validates the full actual candidate trace,
+then binds every complete visible/retained pair across acquisition to exact
+source application generations. All 2,094 such wire IDs are joined. Snapshot
+metadata must remain identical whenever an identity reappears. Only complete
+pairs actually available in each recorded snapshot enter that deadline's
+graph; removing the target ceiling does not introduce absent frames.
+
+For a finite ratio n/d, eligibility is:
+  wire_target <= runtime_target + floor(runtime_interval_bound * n / d)
+where the interval bound remains min(predicted period, current target minus
+previous-render target), or zero when no valid prior interval is available.
+Fractions use integer arithmetic. The independent experiment accepts zero
+through four periods plus an explicit no-ceiling case. The earlier production
+and research selector contracts remain limited to their existing one period.
+
+The previously tested exact graph solver chooses at most one wire ID per
+observed deadline, with strictly increasing IDs and nondecreasing source
+targets. Warm-start ownership, closest-target and successor guards are relaxed.
+Waiting/repeated/empty output costs nothing. These choices make the model an
+optimistic bound, not a scheduler or ownership simulation.
+
+Two different objectives are solved: maximum unique count (then maximum count
+strictly below 15ms), and maximum under-threshold count (then unique count).
+Binary search over exact observed ages separately finds minimum nearest-rank
+p95 among maximum-count paths. Every result has an explicit sequence/frame
+certificate. Application-generation set counts are reported separately from
+encoded identity; neither establishes distinct simulation/input content.
+
+Preserved run05 result
+All rows use the same 1,900 warm deadlines over 21.284347901 seconds.
+
+ future limit   deadlines with      max-count path       max-under15 path
+ (periods)      some age <15ms      unique / under15      unique / under15
+ 0                 180             1900 / 179            1899 / 180
+ 1/2               184             1900 / 184            1900 / 184
+ 1                1544             1900 / 184            1730 / 1534
+ 5/4              1557             1900 / 184            1726 / 1545
+ 3/2              1557             1900 / 184            1726 / 1545
+ 7/4              1557             1900 / 184            1726 / 1545
+ 2                1649             1900 / 184            1709 / 1637
+ 3                1649             1900 / 184            1709 / 1637
+ no ceiling       1649             1900 / 184            1709 / 1637
+
+Minimum p95 at maximum count is 27.500888ms with zero future allowance and
+26.927659ms for every other row. The <=1-period counts and full certificates
+exactly reproduce availability-oracle-20261009.json. That historical artifact
+is not rewritten or rebound to newer code.
+
+Without a target ceiling, 251 deadlines still lack any recorded complete pair
+with age strictly under 15ms. The maximum 1,637 under-threshold advancing choices
+give a necessary count ceiling for strict p95<15ms of:
+  floor(1637 * 100 / 95) = 1723
+This is a necessary bound, not proof that 1,723 such choices are attainable.
+The actual maximum-under-threshold certificate has 1,709 choices and p95
+14.677762ms, with source-target lead p95 21.812124ms. It omits 191 of the 1,900
+observed deadlines and relies on relaxed ownership/pose constraints. Reporting
+only that p95 would conceal its count loss and unqualified future-target use.
+These counts must not be advertised as measured live cadence.
+
+Implication and limits
+The result does not identify a causal bottleneck or prove that the observed
+waiting can be removed. It says a wider future-target rule on these exact
+snapshots cannot satisfy the full-count sub-15ms goal. The next useful question
+is how complete-pair availability evolves between deadlines, including arrival
+bursts, stereo skew, snapshot retention and submission phase. Changing any of
+those requires a different model or future observed evidence.
+
+Frame targets remain prediction timestamps, not optical display times. A
+larger-than-one-period envelope is not authorization to submit an unqualified
+future-predicted projection pose. General frame-loop and prediction context:
+https://registry.khronos.org/OpenXR/specs/1.1-khr/html/xrspec.html#frame-synchronization
+https://github.com/KhronosGroup/OpenXR-Guide/blob/main/chapters/frame_submission.md
+The actual one-period contract is local selection_policy.h and the replay
+validator, not a claim that OpenXR mandates that particular limit.
+
+Validation and reproduction
+envelope-validation-20261009.json binds 246 passing Python tests, including
+the graph solver's 256 exhaustive small-graph comparisons for two objectives
+and 64 exhaustive quantile graphs for three quantiles. New checks cover parity
+with old envelopes, inclusive larger limits, zero runtime intervals, integer
+rounding near int64 timestamp bounds, semantic duplicate ratios, unavailable
+data, missing source joins, clock-domain rejection and host-clock translation.
+
+The analysis verifies all 300 original manifest entries, then rechecks its
+three input hashes and manifest after analysis. Output must be new and outside
+the immutable original run. Source hashes are embedded in the result.
+
+  python3 prototypes/vr444/experiments/selection_policy/validate_envelope.py \
+    --out /tmp/envelope-validation-new.json
+  python3 prototypes/vr444/experiments/selection_policy/target_envelope.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --out /tmp/target-envelope-new.json

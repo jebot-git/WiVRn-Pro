@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "validation/wivrn-codecs/tests"
+  ],
+  "cwd": "/home/blux/spatial-bridge/.worktrees/sub15-compositor",
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "......................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 246 tests in 4.631s\n\nOK\n",
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/validate_envelope.py": "81af49ffd0ed315aa563cad23c9188ebc5178bde75fbccf90f1ad828b46f9c6d",
+    "prototypes/vr444/experiments/selection_policy/target_envelope.py": "b6af5e3305d37b92fa84a33b2a55411a1f1a9b77764a60d3029470451d0eb4ad",
+    "prototypes/vr444/experiments/selection_policy/availability_oracle.py": "dd52cbb6ee398c43f3e4e9c6da0a1d850db7f39738fc5817651b7ce9f382e487",
+    "prototypes/vr444/experiments/selection_policy/counterfactual.py": "857da8c912576b9cce34997300b169cf39e58c87786df8fdbd731bf82da7c827",
+    "prototypes/vr444/experiments/selection_policy/reanalyze_trace.py": "cd0b22f7c4f3be735672a98b435c40cf07754fec0173d3d3f0d016f07114c8ac",
+    "prototypes/vr444/experiments/compositor_freshness/analyze.py": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10",
+    "validation/wivrn-codecs/tests/test_target_envelope.py": "93ab13723052973b1d7df8025eceacf61e7044f7803c198a98b0b8dc23b620e4",
+    "validation/wivrn-codecs/tests/test_availability_oracle.py": "63315b9f5fd84059b92f8218441966ab2b4765e17c0d499c572e4eca72cc5e1f",
+    "validation/wivrn-codecs/integration/candidate_trace.py": "161e20fa104c42a1cc5ecdfc3786a8125100662e2ab6ec8a1aa0c98397470196",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b"
+  },
+  "existing_envelope_behavior_unchanged": true,
+  "headset_operations": false,
+  "native_behavior_changed": false,
+  "measured_speedup": false,
+  "latency_gate_evaluated": false,
+  "scope": "Offline target-ceiling sensitivity and exact source joins; graph solver retains exhaustive regression coverage."
+}
