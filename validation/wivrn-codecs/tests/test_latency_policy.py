@@ -119,6 +119,20 @@ class CandidateEvidenceTests(unittest.TestCase):
         self.seal(d)
         self.assertIn('source tracing cannot masquerade as an untraced candidate',module.inspect_run(d,self.receipt)['errors'])
 
+    def test_pacer_traces_are_diagnostic_even_with_false_provenance(self):
+        for mode in ('flag', 'summary', 'file'):
+            d = self.make_run('pacer_' + mode)
+            if mode == 'flag':
+                self.mutate(d, 'provenance.json', lambda p: p.update(pacer_trace=True))
+            elif mode == 'summary':
+                self.mutate(d, 'summary.json', lambda p: p.update(pacer_trace={'status': 'pass'}))
+            else:
+                (d/'host').mkdir()
+                (d/'host/pacer-trace.jsonl').write_text('{}\n')
+                self.seal(d)
+            self.assertIn('pacer tracing cannot masquerade as an untraced candidate',
+                          module.inspect_run(d, self.receipt)['errors'])
+
     def test_executable_helper_headers_must_match_build_receipt(self):
         for key in ('common/codec_test/selection_policy.h', 'server/driver/codec_source_trace.h'):
             for mutation in ('missing','mismatch'):
