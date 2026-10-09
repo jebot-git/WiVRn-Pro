@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "architecture": "block-mean-mlp-v1",
+  "block_size": 4,
+  "latent_channels": 2,
+  "quantization": "uint8",
+  "color": "rgb8",
+  "quality_arm": "new_lossy"
+}
