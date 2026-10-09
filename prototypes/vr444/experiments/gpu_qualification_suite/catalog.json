@@ -1,0 +1,187 @@
+{
+  "schema": 1,
+  "scope": "GPU research only; pinned historical evidence is not fresh execution",
+  "headset_used": false,
+  "promotion_eligible": false,
+  "approaches": [
+    {
+      "id": "direct-image",
+      "branch": "research/sub15-20261009/gpu",
+      "commit": "702698e6b7f0a159f535168edb9d3c8649f22bc9",
+      "notes": "prototypes/vr444/experiments/direct_image_gpu/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/direct_image_gpu/qualification-20261009.json",
+          "sha256": "179e7cfeae2ec5060701a73e81936b8cde6479943c8bb78bc00a7718a19074cc",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "vulkan-extensions",
+      "branch": "research/sub15-20261009/vulkan-extensions",
+      "commit": "00939ca2c504a525e69c173221e1afb67b5be6bc",
+      "notes": "prototypes/vr444/experiments/vulkan_extensions/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/vulkan_extensions/qualification-20261009.json",
+          "sha256": "be155d5e5835d3c0985b64b3cc602b42798e75b06cd945a8477987beb1f760f1",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "palette-decode",
+      "branch": "research/sub15-20261009/palette-gpu",
+      "commit": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8",
+      "notes": "prototypes/vr444/experiments/palette_gpu/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/palette_gpu/qualification-20261009.json",
+          "sha256": "3402143f38f56f3b15600ae509520f5554ff4ca0051ae7411f5d66cade536fd3",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "palette-encode",
+      "branch": "research/sub15-20261009/palette-gpu-encode",
+      "commit": "145310492b351e1d17e9cdfbb8ac34129e097096",
+      "notes": "prototypes/vr444/experiments/palette_gpu_encode/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/palette_gpu_encode/qualification-20261009.json",
+          "sha256": "f5e03cca01783734f2effe31cceb395172add51af209e6567ffef5c1f41cebde",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "palette-output-memory",
+      "branch": "research/sub15-20261009/palette-output-memory",
+      "commit": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd",
+      "notes": "prototypes/vr444/experiments/palette_output_memory/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/palette_output_memory/qualification-20261009.json",
+          "sha256": "a0afc2a437c78c04d021365b9307cfdd063acd90282de32259d7cf79a84ad1bc",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "palette-host-timing",
+      "branch": "research/sub15-20261009/palette-host-timing",
+      "commit": "969c93e6e92031d6a909f19cd7adf7c7a3544632",
+      "notes": "prototypes/vr444/experiments/palette_output_memory/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/palette_output_memory/host-timing-20261009.json",
+          "sha256": "b7ec9ecdf46a7e145bf6424aa45823f7a11afee6b5a84ea844877d72fd242698",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "rowfilter-decode",
+      "branch": "research/sub15-20261009/rowfilter-gpu",
+      "commit": "67d6e2d6ac7b1ea2fe75a51445ef8a8ed7be9446",
+      "notes": "prototypes/vr444/experiments/rowfilter_gpu/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/rowfilter_gpu/qualification-20261009.json",
+          "sha256": "effb5402b94b86cccc1f4e82869e991cd545d0dd7c1783351ef2cf84dd76975f",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "rowfilter-image-timing",
+      "branch": "research/sub15-20261009/rowfilter-image-timing",
+      "commit": "abea2ff160726969932e269e6add434d9a8a89d2",
+      "notes": "prototypes/vr444/experiments/rowfilter_image_timing/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/rowfilter_image_timing/qualification-and-timing-20261009.json",
+          "sha256": "c43350f88f68f70dff1eb550ed26e725ad28486b3c46f9dfd9dbc7977ab8bb7d",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "host-image-copy",
+      "branch": "research/sub15-20261009/host-image-copy",
+      "commit": "80e53b11eedaa37468cdedd23ff2b9ab7dfd5a30",
+      "notes": "prototypes/vr444/experiments/host_image_copy/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/host_image_copy/qualification-20261009.json",
+          "sha256": "4611a60606c4a20bd03b19599accef7f3298fcfbf5b7947d3835497735c6d26d",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "host-image-consumer",
+      "branch": "research/sub15-20261009/host-image-timing",
+      "commit": "97e8283978bc90753f1e148c54aba1c6edec25d7",
+      "notes": "prototypes/vr444/experiments/host_image_timing/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/host_image_timing/qualification-and-timing-20261009.json",
+          "sha256": "4fe828208236aa0977f5016c3bcf03ef18c5865c8c2686b8f9c820097b283975",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "rowblocks-decode",
+      "branch": "research/sub15-20261009/rowblocks-gpu",
+      "commit": "ff0c0975d5635e18e08ca93ec87992832d5c7ed1",
+      "notes": "prototypes/vr444/experiments/rowblocks_gpu/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_gpu/qualification-20261009.json",
+          "sha256": "85b79f1919be8abc6c0c868875d07f35e237712c7c2809c575829bf2d4964a78",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "rowblocks-image-timing",
+      "branch": "research/sub15-20261009/rowblocks-image-timing",
+      "commit": "ef628f4344a073707db014eb5446f0324bf9908d",
+      "notes": "prototypes/vr444/experiments/rowblocks_image_timing/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_image_timing/qualification-20261009.json",
+          "sha256": "5f0f79481ae14a088d5f8d9edab42a9706b54a607b4513961d296cff6708359a",
+          "minimum_source_bindings": 1
+        },
+        {
+          "path": "prototypes/vr444/experiments/rowblocks_image_timing/timing-20261009.json",
+          "sha256": "82e6226adcbebb9688cba79791610ad9ed12c7d4408658bddb24ad30d0012708",
+          "minimum_source_bindings": 1
+        }
+      ]
+    },
+    {
+      "id": "mapped-input-decode",
+      "branch": "research/sub15-20261009/mapped-input-decode",
+      "commit": "24d0b3ca35e656b5e7f8af771e1cb1cbbd7c9e71",
+      "notes": "prototypes/vr444/experiments/mapped_input_decode/README.txt",
+      "receipts": [
+        {
+          "path": "prototypes/vr444/experiments/mapped_input_decode/qualification-20261009.json",
+          "sha256": "2792603c3299d00b5098021f3413404e2307b9e86c0e5c4972465d28d679302f",
+          "minimum_source_bindings": 1
+        },
+        {
+          "path": "prototypes/vr444/experiments/mapped_input_decode/timing-20261009.json",
+          "sha256": "fc007b50aaa55929bad5f05f1f96129013f3eba64e9a0ddd3a2ed6d4d75c6857",
+          "minimum_source_bindings": 1
+        }
+      ]
+    }
+  ]
+}
