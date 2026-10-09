@@ -1,0 +1,19 @@
+{
+  "created_utc": "2026-10-09T06:02:16.674101+00:00",
+  "git_base": "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df",
+  "python": "3.14.7",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "domain": "deterministic model only; no wall-clock performance claims",
+  "source_sha256": {
+    "prototypes/vr444/experiments/datagram_v2/transport.py": "884cedd7b9883d70cba06677e0b452ab16c549278ae6f8b4c03853d8c1404b94",
+    "prototypes/vr444/experiments/datagram_xor/transport.py": "6947a8a16ff5072c79f10b5de9ddce4ddbaefff8e3fe6d8005414ba46cbe0555",
+    "prototypes/vr444/experiments/transport_queue/README.txt": "de783ed4e0ce3b0f192142d4b3330df7aac9d2e9670dfc69aa1fb8c460cbec78",
+    "prototypes/vr444/experiments/transport_queue/replay.py": "7f1608c343781e73cad55ef0d0ab32a848eeea83108d0bcc988e66d19aab025f",
+    "prototypes/vr444/experiments/transport_queue/test_replay.py": "dd9f79bbf48a2030c2b15ab09b6a4e5a41588d2db1351af3f6f8b450fa7eee81"
+  },
+  "matrix_sha256": "b919eb95e0f15739896556bf1ce8806a1bf24af89794c793dcfc7311a86dcb30",
+  "headset_accessed": false,
+  "sockets_opened": false,
+  "cases": 216,
+  "offered_frames": 19440
+}

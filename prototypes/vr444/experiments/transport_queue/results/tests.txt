@@ -1,0 +1,13 @@
+test_clean_sustainable_service_completes_every_frame (__main__.Tests.test_clean_sustainable_service_completes_every_frame) ... ok
+test_eager_preemption_starves_overloaded_complete_stereo (__main__.Tests.test_eager_preemption_starves_overloaded_complete_stereo) ... ok
+test_impossible_deadline_not_repaired_by_queue_policy (__main__.Tests.test_impossible_deadline_not_repaired_by_queue_policy) ... ok
+test_invalid_configuration (__main__.Tests.test_invalid_configuration) ... ok
+test_latest_pending_is_fresher_than_fifo_at_same_service (__main__.Tests.test_latest_pending_is_fresher_than_fifo_at_same_service) ... ok
+test_parity_adds_service_cost_on_lossless_link (__main__.Tests.test_parity_adds_service_cost_on_lossless_link) ... ok
+test_sender_expiry_and_replacement_do_not_mutate_flight (__main__.Tests.test_sender_expiry_and_replacement_do_not_mutate_flight) ... ok
+test_sender_rejects_bad_bounds_and_regressing_identity (__main__.Tests.test_sender_rejects_bad_bounds_and_regressing_identity) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.209s
+
+OK
