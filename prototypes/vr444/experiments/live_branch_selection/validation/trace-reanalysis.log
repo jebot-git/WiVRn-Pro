@@ -1,0 +1,10 @@
+test_external_manifest_path_and_symlink_are_rejected (test_trace_reanalysis.TraceReanalysisTests.test_external_manifest_path_and_symlink_are_rejected) ... ok
+test_failed_cleanup_and_unrequested_trace_cannot_be_reclassified (test_trace_reanalysis.TraceReanalysisTests.test_failed_cleanup_and_unrequested_trace_cannot_be_reclassified) ... ok
+test_output_inside_original_or_existing_receipt_is_refused (test_trace_reanalysis.TraceReanalysisTests.test_output_inside_original_or_existing_receipt_is_refused) ... ok
+test_reanalysis_preserves_failed_original_and_disclaims_qualification (test_trace_reanalysis.TraceReanalysisTests.test_reanalysis_preserves_failed_original_and_disclaims_qualification) ... ok
+test_tampered_or_missing_original_evidence_fails_before_reanalysis (test_trace_reanalysis.TraceReanalysisTests.test_tampered_or_missing_original_evidence_fails_before_reanalysis) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.087s
+
+OK

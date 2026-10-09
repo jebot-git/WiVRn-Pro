@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "checked_utc": "2026-10-09T13:49:30.306919+00:00",
+  "consolidated_analysis_parent": "c340b05928a3eb0f8205f71fcec405224fa1200c",
+  "scope": "Read-only consolidated-checkout replay from the extracted evidence archive plus relevant regression suites. External exact GPU/transport build artifacts are retained local prerequisites. Does not repeat native pixel or bitstream gates, rebuild binaries, run ADB or establish a latency target pass.",
+  "archive_sha256": "d9a13f64d266ed2303ce1714b881ecfcb6b1eb8c3c9cf17dbe0668a4184c3840",
+  "archive_file_count_verified": 572,
+  "native_runs_replayed": 10,
+  "worker_measured_stereo_invocations": 744,
+  "gpu_measured_invocations": 252,
+  "gpu_total_valid_invocations": 360,
+  "gpu_right_eye_omission_controls": 36,
+  "timeline_paths_replayed": 2,
+  "wireless_exact_pairs": 970,
+  "wireless_main_pairs": 960,
+  "wireless_smoke_pairs": 10,
+  "regression_test_count": 76,
+  "all_regression_suites_passed": true,
+  "sub15_qualified": false,
+  "production_promotion": false,
+  "acquisition_wrappers": {
+    "prototypes/vr444/experiments/headset_review_smoke/native_campaign.py": "b2cf6a837b482ebe676290f8199589a2ef94263049afac462ea60525da4972f9",
+    "prototypes/vr444/experiments/headset_review_smoke/wireless_campaign.py": "f0d2dd93674c8dec0c82fe1bce1a9c81682d34313519f55bd14217c69c48c345"
+  },
+  "replay_outputs_and_regression_logs": {
+    "validation/candidate-trace.log": {
+      "bytes": 4593,
+      "sha256": "e168e2a0fbd7965ffd020645cfdd0e42c9c77fe329af06d0c00bcd35773cfa69"
+    },
+    "validation/gpu-replay.json": {
+      "bytes": 154913,
+      "sha256": "80f6290729f0ecd852db136dbe78bea1fc706da6f4dcd22f98ef71fca1727c7e"
+    },
+    "validation/gpu.log": {
+      "bytes": 1187,
+      "sha256": "7d11fee450345aac1c2d1931d5bd0ccdb9efc5bcf13add8a6584208ea89d8623"
+    },
+    "validation/native-compare.log": {
+      "bytes": 1921,
+      "sha256": "cb37256cfca7c50a01312d013ce2db8575f90f96f8b802d706a8bdcdc457c672"
+    },
+    "validation/native-replay.json": {
+      "bytes": 95453,
+      "sha256": "a3948d019e40782a4cbd0c49c47d49fececb9c73c6495e388be366826fcf93ea"
+    },
+    "validation/native-replay.txt": {
+      "bytes": 4679,
+      "sha256": "712e7ad67926d79f8e1f3e77f06d973fd1b0c23ffc111e2192d332cf926c4e50"
+    },
+    "validation/native-summary.log": {
+      "bytes": 562,
+      "sha256": "55b3dccf010838e38515b1df6ada7b4f063b264801c7fec09356d0e9c68e52a7"
+    },
+    "validation/regressions.json": {
+      "bytes": 4594,
+      "sha256": "0edfb39ca2fa659190c2fa2b60628684d069c80e1cdfbd62bc73ca80ab4bac84"
+    },
+    "validation/timeline-replay.json": {
+      "bytes": 5584,
+      "sha256": "63917ef6e7f29c6ca849e56f0a48f0c6504cae8efc32410e5b285aa97671574a"
+    },
+    "validation/timeline.log": {
+      "bytes": 538,
+      "sha256": "19cfdf8eca5051cbed57929c493bf834d0ec2fadc038a27a64e315981c6b0e63"
+    },
+    "validation/trace-reanalysis.log": {
+      "bytes": 986,
+      "sha256": "33c144c174bbd92ae0d9f286e40288584d2de544f8bc37041beb539de628d588"
+    },
+    "validation/wireless-replay.json": {
+      "bytes": 31200,
+      "sha256": "c6ec152c13aed130891dbef5bdf791113be186d39ec5e2ba6be4ad2bf5978d61"
+    },
+    "validation/wireless.log": {
+      "bytes": 1162,
+      "sha256": "6682873a82ae4a57cf5ad5f2a4edeebd1271fcabe409de551de38cf61b274fbf"
+    },
+    "validation/worker-replay.json": {
+      "bytes": 13415,
+      "sha256": "823680fd4117d6c231af075fa7df973fb97c9efc04e8d5f53ac756dabccff547"
+    }
+  },
+  "independent_review": "Native summary, GPU comparison, timeline and wireless campaign reports/auditors received cross-team read-only review; root replayed all final auditors. Root selection native metrics and selected implementation ancestry independently reviewed."
+}

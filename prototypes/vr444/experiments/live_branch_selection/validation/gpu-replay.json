@@ -1,0 +1,4303 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "headset_execution": true,
+  "exploratory_comparison": true,
+  "tail_qualification": false,
+  "native_renderer_tested": false,
+  "sub15_qualification": false,
+  "promotion_eligible": false,
+  "plan_sha256": "2d635028cd45ec7d443a6aab7f90225d985b830db97a3d370ca548c92791f53f",
+  "receipt_sha256": "c611274ea41a3decc2e4544855e23940956925982fca2ebfc788b6a031b0373e",
+  "runner_sha256": "e495081a5bdbbef3aa94cff0082b700516740dca711d10d3ec9dedb143e4c64a",
+  "audit_sha256": "dc6b317eb68b8458e5b880033edb87b90dc1029af973170126c9b4a97342669a",
+  "raw_log_sha256": {
+    "serial.stdout": "c1bc05a54512f062e20d07657dea4d33cf7571c32f9fd60803beea95626c57d6",
+    "serial.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fingerprint.stdout": "d1ced593f32570f7ff31ed8bd35ce35e7a64837c4bdd6d6594a08877bf163c75",
+    "fingerprint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "battery-before.stdout": "cbf1ab0d72e01241f4d3c0754e1a71572b1340116fcce835cd9238e33e0c276b",
+    "battery-before.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-0.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-0.stderr": "295eee39ce6d1776d0f5f3f8071cac9d654853edb789c9c0488a084216500258",
+    "hash-0.stdout": "5260359a97570f2d48b72d6d3c8ebde86e5027ac83e17f5e870287c8baa4d94d",
+    "hash-0.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chmod-0.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chmod-0.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-1.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-1.stderr": "71e6ae32bc181a0a46d6ab3ffda74153c6f08e4f1a2efd389c9505674d9903fb",
+    "hash-1.stdout": "14b56d19db4a3579184e2a4cc7961f8a94591b916421eafed128b27ac5e91ff3",
+    "hash-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chmod-1.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chmod-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-2.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-2.stderr": "505a2827f00270c614742946d702f27c4ddd590beb42ad9212e0ebf489492c59",
+    "hash-2.stdout": "09130a30cd646ed157c23e7587aa48560e04485336e50046c56feb0e8bba088b",
+    "hash-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chmod-2.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "chmod-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-3.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-3.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-3.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-3.stderr": "a4b493a2b11c6c565cf6d26852dfa7a9ede6314aa700e758e5f18187b2fed320",
+    "hash-3.stdout": "4ffe3898bd00091e98fe7f94a46be64efbe7c3054a914afbb21ae305785cbf79",
+    "hash-3.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-4.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-4.stderr": "6d1a940e117cf816ad105d354c0249ffcc2f7e754416db96c93ebe1f71a2eb76",
+    "hash-4.stdout": "4c0ec1ce0e6f8bd5caea9d7c6af96e9a2fd2addaafee82195b50754126476ef2",
+    "hash-4.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-5.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-5.stderr": "0014709a0cfeefaed26605b9e28689745a052f7eedc8bfbe039371656d0d8df2",
+    "hash-5.stdout": "7763f3540d64c10f804c4cde31f6f8602fa29c3dda95493a9523045a5dfcc4aa",
+    "hash-5.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-6.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-6.stderr": "37f5865f89905e6b854ecd9f536f6d279508f181e0db67f41c3138d6199f22cb",
+    "hash-6.stdout": "3005b4e5efa6039850ec1729d06d786c9ce5b54e791892f013ce93f9f855abeb",
+    "hash-6.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-7.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-7.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-7.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-7.stderr": "a4667661b61b23d86b46643634895e7ef934de357a046338b48c39729a2cbacb",
+    "hash-7.stdout": "6c1fb34780b94a5ae1cb3b7cf1587bf3239352f9699f39a11fd2b5cfa1ca9eca",
+    "hash-7.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-8.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-8.stderr": "f94a9155f72888d64b6b433d274bb33d97395c807177b0115e4603641249c432",
+    "hash-8.stdout": "80cb4c5efc997b9a578f5136abf16af39000b3b0070a5b149de7054b9e4dbca3",
+    "hash-8.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-9.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-9.stderr": "14f896566ccf5804598ab9a0a1f79f8b550b48aae536902c7eff316389d522e7",
+    "hash-9.stdout": "4155ce85fa640dc25000453a102657a9768b3f6b00b5a4865e8a3fcdbadd1250",
+    "hash-9.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-10.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-10.stderr": "9ad745f0d2056c7f6fafec402fba587dd4301fe15378b73dd760afef6a140cd2",
+    "hash-10.stdout": "b5f45e6c9d7802b211c417f720e5b6d6c17e80f6ed664686b6def263b9b9c947",
+    "hash-10.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-11.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-11.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-11.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-11.stderr": "bb12b5bf08ab79ad12b883ec62ff6b794c30674db4366ec07f7687c523718ac3",
+    "hash-11.stdout": "e40997e4e84d4ae2b423431c84c9720082815d1c4c1f192437dc3b0b7adc09a5",
+    "hash-11.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-12.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-12.stderr": "7be92ff34788da384b0f80e4b7dc44ac59a2b15448c0966d23585b593485c45b",
+    "hash-12.stdout": "ad3fc2b0157e14eeb1485987f985fe0c41987fcf558105cc8aaf779990164eb7",
+    "hash-12.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-13.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-13.stderr": "3ff739a3adffd2b48973b7f9e79ced85d9737ee3c0ce63e7f0c6851c161ec497",
+    "hash-13.stdout": "1296fdd4d64a2c52af5c61f22a4877a134dde4cab45326a57fcb7137a29f3a34",
+    "hash-13.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-14.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-14.stderr": "fa9024bf0475bd8d7736da70436bd8a1350f8b831d09f061add675ff74052abd",
+    "hash-14.stdout": "3b9860faa04fdd12f427aab339d433acba6af1e63f66d217608150826f1ec019",
+    "hash-14.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-15.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-15.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-15.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-15.stderr": "2f2a37763b84fe2ec7a17c0d8b62781afda9a7e97a4cfa672bcc7e62d561b146",
+    "hash-15.stdout": "f77fd21196f96f691c8f34cb65c6dc2871b65fce955bfa6aec27a77195fb6f85",
+    "hash-15.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-16.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-16.stderr": "cd5d76ea3c3cbe26d8a1a2a9c2d347a9fd6f4771cb1f4b99a192f19b423d94e9",
+    "hash-16.stdout": "abdf61128a749f7174fd5576f03c6e3d37f2b0986a8738c328679a359a17a528",
+    "hash-16.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-17.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-17.stderr": "12be8112e77cf5d1c8de1cee1a4b28e8a9495366660eb614c233f529ea5f8904",
+    "hash-17.stdout": "870a61b341ed9cbeea77928d8bec05bdb177382bd7d8866b016d676199bcac53",
+    "hash-17.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-18.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-18.stderr": "68597e8af721b2afbfc69ceabae88a455952976016cd191ba601c3a7d4cbe8f5",
+    "hash-18.stdout": "03a5a9503c49404b364d0941b4777ddc3f965fbeea178784f6d31855bed2ad2a",
+    "hash-18.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-19.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-19.stderr": "7d583df82e3eccb0865b526b364ea4e479721274d5af7c66507c32ff1c714595",
+    "hash-19.stdout": "f92997ee71c89928669e9d6889b3d7576bd555116df14bfa0a40eace553bc63e",
+    "hash-19.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-20.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-20.stderr": "011297f8d8b62ae12b1e8fdd6da3abc8f109e0f145d246b394975877db57d45f",
+    "hash-20.stdout": "9493ae14fd97e6314e41e5bd5e4de70c58680f94b8a707917968694bcedce826",
+    "hash-20.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-21.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-21.stderr": "178ac1fae65c3910d7944678f54ad391b36fc7d060a386831cff92ec3eb8fe8a",
+    "hash-21.stdout": "a14a0a7b5028b73d0420d49791b1aff8e30d8ca9ae662dae87be230661c52f35",
+    "hash-21.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-22.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-22.stderr": "d8b4821b07289ac2d0b75a942b101ac58d098d055f41390568f7ee8c08f5d1c0",
+    "hash-22.stdout": "f4ad747d3d5170ba6b214b14ee171d17e25ffc29bd93db6f109fe45d5f521bb9",
+    "hash-22.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-23.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-23.stderr": "1919fe52795f61f94135dc75f7ee58a0a3eb5beafb129c94f17c63a1947b12a9",
+    "hash-23.stdout": "096097d24bcb33680b48a22cca499639a53479bc2c586b847b6373de5db3e719",
+    "hash-23.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-24.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-24.stderr": "a4cc62a719eaf9ee0efb1ac03552879e1fb57676467d4e73a88dd121b4e82f56",
+    "hash-24.stdout": "7ef5ca2a51321beec0c73c4a0e322fb0bde694b4688fb432fa6807baef00f8cc",
+    "hash-24.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-25.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-25.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-25.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-25.stderr": "bc59b0a57d9807ce123d768dfb63b3a81a145c5c55ac86ad066f0ce6faae09a8",
+    "hash-25.stdout": "1f78f16930c5c92dfdb829a318d05034f86c4d005bd5e582c6b7ae596b42a777",
+    "hash-25.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-26.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-26.stderr": "682c29f503c52996800ec3d4cca3f3176714238670cda32d7ba2394efb59fe3e",
+    "hash-26.stdout": "d133ce9bfd02af237c64df648de57fd1991aee55a70440d996d68e82804f650f",
+    "hash-26.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-27.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-27.stderr": "f47c6ff203e0f01ce2eeb6d8fe011d5fbdf63ed8cf79899599a56d68eb759fff",
+    "hash-27.stdout": "4018e5c4829d53b47bb721dbed634608f5b1407762a102cdb1ab41fd89661425",
+    "hash-27.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-28.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-28.stderr": "fe9e079b8dddf15331a13239bc5b0195b2ce1cba7e85ea19a1ec9f5b489bfd28",
+    "hash-28.stdout": "24b474838c2b4da75e3346a365e57d2e22cc27af3b1fc516d45616d892d69191",
+    "hash-28.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-29.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdir-29.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-29.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-29.stderr": "dc7c10055ed53f2832ed5892abb8f1c272e3e7de7e6eeb588eced739276ae0f7",
+    "hash-29.stdout": "d343775ab592314b91e96760d0b4058357fccd5e7afb90c1e5d38b1d7e5c6551",
+    "hash-29.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-30.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-30.stderr": "178bfb44dfe889076729a936e593f3b048f782c93c86bd274a4f7e8b4742c861",
+    "hash-30.stdout": "98ccf10a727da86c77a989f77d63d6041af76580482fc08197a81783b75b6b05",
+    "hash-30.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-31.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-31.stderr": "22dc22b7aeb789f16b0339806280678659c702519528c7ffb0cc288c6a101aee",
+    "hash-31.stdout": "c3621f9f81fc23db9062e811b5609e61c0d9677d9835d2036ea461888684f521",
+    "hash-31.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-32.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-32.stderr": "6ce6f88bf5e863e80337ddf468c417ff751659fbb8a3542c05cee8b1861a1502",
+    "hash-32.stdout": "953967119322b583e221b13a4b413da59fd3eef648212199ef0029483e87379f",
+    "hash-32.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-33.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-33.stderr": "ab4a513cb726b88c2c2ca22b93f12fcb2d19e4710106037bbc8d650d77b56b65",
+    "hash-33.stdout": "2c3a94b00d6d29e906ddd1f3b9da620cbe610b902408a45575dcf119964ae0ba",
+    "hash-33.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-34.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-34.stderr": "62d9418616ea09519323965660339f6b5ae0a9f17bcf7b530edcf9860deffefe",
+    "hash-34.stdout": "fbb5abcf7fe9b6f2322d298c60ee14a0ff3fc317f68179205ddd4f0e6e0adc77",
+    "hash-34.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-35.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-35.stderr": "c03b2d69f63f2ec843d7fdc1f1654a2acb2488fc53c414850f50dcf8a90bd324",
+    "hash-35.stdout": "a9d07f874ee6a78f2c460c1cb00d0986077df57d7f21811812f2dd54d19cbed9",
+    "hash-35.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-36.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-36.stderr": "107c6f68d6bb9367ea6cf7666018f403d83ecda8fc879390c5147607ea401615",
+    "hash-36.stdout": "5743a2058f53a8318a48d61788e28096475668924a5a27e2d584cbca5e1a3bb4",
+    "hash-36.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-37.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-37.stderr": "a8d6e8b8441bffa0bbabb19b49a1d0324d0c58ea28802c707535fd1ecc88f510",
+    "hash-37.stdout": "6a60965053b48ffde63b8408a82133b45bd6fc2c2261c95cab18ac6431b53fd6",
+    "hash-37.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-38.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "push-38.stderr": "f9ffb97795e5cea405592b2412b293a06aedbe710cac6066558d76ddf512953f",
+    "hash-38.stdout": "a8cf2962563922666d72eed1b12cc156afdbe92a605a0112085fdf50c9621f47",
+    "hash-38.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "extensions.stdout": "fbb7b926dbbc96bcca3f827b94c771b12ba2efa333958d3b27326674a57c0b1a",
+    "extensions.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "memory.stdout": "113fa95112a709ad7fca3a143252d980a5fa51763942b9405a9c27773d413865",
+    "memory.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gpu-repeat-1.stdout": "6155055e7c42fecf90cbd04608acf503bffab03c4b6aa64baa1887325e78fee3",
+    "gpu-repeat-1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gpu-repeat-2.stdout": "99e6825098ee9fbe1e98f181b6fdadc33d56c2bc6469edaed68a2eeb7161e0c8",
+    "gpu-repeat-2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "battery-after.stdout": "19000efd7c3a76a1228ed133e317c58730e9559d654341cd37f0c8ffb825d0fa",
+    "battery-after.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup-verified.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cleanup-verified.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source_build_provenance": [
+    {
+      "artifact": "memory-capabilities",
+      "commit": "c4dc09128e45fc5bda71fa0588e40d2077678b9b",
+      "receipt": "prototypes/vr444/experiments/gpu_qualification_suite/qualification-final-20261009.json",
+      "receipt_sha256": "a7724b6ba838cf3a6766d6ab31a502b122f7b94328f52a64c4ef501aa8d12e93",
+      "source_bindings": 219,
+      "fresh_build": false
+    },
+    {
+      "artifact": "mapped-consumer",
+      "commit": "c4dc09128e45fc5bda71fa0588e40d2077678b9b",
+      "receipt": "prototypes/vr444/experiments/gpu_qualification_suite/qualification-final-20261009.json",
+      "receipt_sha256": "a7724b6ba838cf3a6766d6ab31a502b122f7b94328f52a64c4ef501aa8d12e93",
+      "source_bindings": 219,
+      "fresh_build": false
+    },
+    {
+      "artifact": "extension-capabilities",
+      "commit": "00939ca2c504a525e69c173221e1afb67b5be6bc",
+      "receipt": "prototypes/vr444/experiments/vulkan_extensions/qualification-20261009.json",
+      "receipt_sha256": "be155d5e5835d3c0985b64b3cc602b42798e75b06cd945a8477987beb1f760f1",
+      "source_bindings": 8,
+      "fresh_build": false
+    }
+  ],
+  "corpus_manifest_sha256": {
+    "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f",
+    "prototypes/vr444/experiments/rgb_rowblocks/results/corpus-hashes.json": "c732fffe2a24894c487b11e5552098cd9531d6c29e5f52a63ae2865445af99b4"
+  },
+  "audit_helper_bindings": {
+    "prototypes/vr444/experiments/headset_review_smoke/audit.py": {
+      "commit": "146bab8d10a9e34ca3a78b6fc6634639287a3888",
+      "sha256": "69a22c83c07a92cfb9cb2222fe14384977fdc9e5237b475bd72528918bf1d317"
+    },
+    "prototypes/vr444/experiments/mapped_input_consumer/audit.py": {
+      "commit": "c4dc09128e45fc5bda71fa0588e40d2077678b9b",
+      "sha256": "587813ef24dc77adc125728589ae600c8c7acbcf6e38d659e9eee93e1fdfcc85"
+    },
+    "prototypes/vr444/experiments/mapped_input_decode/audit.py": {
+      "commit": "c4dc09128e45fc5bda71fa0588e40d2077678b9b",
+      "sha256": "b7c1d62761449020d0a72fb6acd9deaa766a85a8b270546fce6f242e660eae85"
+    },
+    "prototypes/vr444/experiments/rowfilter_image_timing/audit.py": {
+      "commit": "c4dc09128e45fc5bda71fa0588e40d2077678b9b",
+      "sha256": "c03d855953f972114081d7d0f5e6896dd1f65fec610af5f384fba6cee10d32ad"
+    }
+  },
+  "firmware": "oculus/seacliff/seacliff:14/UP1A.231005.007.A1/51503870024400340:user/abl_signing_keys:release,amss_signing_keys:release,release-keys",
+  "repeat_reports": [
+    {
+      "label": "gpu-repeat-1",
+      "result_sha256": "6155055e7c42fecf90cbd04608acf503bffab03c4b6aa64baa1887325e78fee3",
+      "process_elapsed_s": 129.71851634900668,
+      "recorded_invocations": 126,
+      "valid_invocations_including_warmups": 180,
+      "omission_controls": 18,
+      "all_consumer_and_readiness_gates_passed": true,
+      "profiles": [
+        {
+          "name": "corpus/lossless/360",
+          "device": "Adreno (TM) 650",
+          "driver": 2150838272,
+          "arm_components": {
+            "rrf_cpu_reference": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 6.41609,
+                "minimum": 4.97031,
+                "maximum": 11.8489
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 5.04557,
+                "minimum": 3.92958,
+                "maximum": 10.9647
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.63292,
+                "minimum": 1.25583,
+                "maximum": 4.69719
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.48917,
+                "minimum": 1.04682,
+                "maximum": 1.91021
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.503437,
+                "minimum": 0.328125,
+                "maximum": 0.610677
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.542917,
+                "minimum": 0.361979,
+                "maximum": 7.28875
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.122552,
+                "minimum": 0.119115,
+                "maximum": 0.151458
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.729583,
+                "minimum": 0.587708,
+                "maximum": 7.50906
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.525,
+                "minimum": 0.489219,
+                "maximum": 0.672083
+              }
+            },
+            "rrf_staged_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 13.1838,
+                "minimum": 5.90083,
+                "maximum": 19.3725
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 8.37922,
+                "minimum": 4.6213,
+                "maximum": 11.4081
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.8737,
+                "minimum": 1.26662,
+                "maximum": 8.09375
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.719323,
+                "minimum": 0.650469,
+                "maximum": 1.39807
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.25724,
+                "minimum": 0.243282,
+                "maximum": 0.377031
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.25484,
+                "minimum": 1.14719,
+                "maximum": 8.51005
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.977448,
+                "minimum": 0.817396,
+                "maximum": 1.81531
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 2.05042,
+                "minimum": 1.26583,
+                "maximum": 9.09271
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.676354,
+                "minimum": 0.594479,
+                "maximum": 1.71823
+              }
+            },
+            "rrf_direct_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 53.6238,
+                "minimum": 48.9273,
+                "maximum": 71.9429
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 52.6675,
+                "minimum": 47.2278,
+                "maximum": 71.1904
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 4.0224,
+                "minimum": 1.31432,
+                "maximum": 8.7799
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 43.5919,
+                "minimum": 38.3008,
+                "maximum": 64.5566
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.097344,
+                "minimum": 0.096459,
+                "maximum": 0.383437
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 43.4952,
+                "minimum": 38.1423,
+                "maximum": 64.4595
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.001406,
+                "minimum": 0.000886,
+                "maximum": 0.001979
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 2.15953,
+                "minimum": 1.39562,
+                "maximum": 7.75563
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.936562,
+                "minimum": 0.819375,
+                "maximum": 0.991823
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.853125,
+                "minimum": 0.750937,
+                "maximum": 7.91896
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.652135,
+                "minimum": 0.633177,
+                "maximum": 1.70089
+              }
+            },
+            "rrf_staged_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 17.808,
+                "minimum": 8.71109,
+                "maximum": 19.7534
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 10.1777,
+                "minimum": 7.14823,
+                "maximum": 10.9017
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 7.63625,
+                "minimum": 4.09313,
+                "maximum": 7.96188
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.872396,
+                "minimum": 0.643438,
+                "maximum": 1.15984
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.296146,
+                "minimum": 0.247812,
+                "maximum": 0.652552
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.32875,
+                "minimum": 1.22422,
+                "maximum": 1.99089
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.955208,
+                "minimum": 0.856354,
+                "maximum": 1.72854
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 7.32354,
+                "minimum": 1.12406,
+                "maximum": 9.57156
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.724792,
+                "minimum": 0.653281,
+                "maximum": 1.36771
+              }
+            },
+            "rrf_direct_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 49.7534,
+                "minimum": 34.8107,
+                "maximum": 65.7916
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 48.806,
+                "minimum": 33.9923,
+                "maximum": 63.6265
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.06448,
+                "minimum": 1.09385,
+                "maximum": 7.62063
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 37.396,
+                "minimum": 27.3662,
+                "maximum": 54.6269
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.096146,
+                "minimum": 0.095521,
+                "maximum": 0.187553
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 37.3005,
+                "minimum": 27.1786,
+                "maximum": 54.5312
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.001563,
+                "minimum": 0.001094,
+                "maximum": 0.001875
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 5.82688,
+                "minimum": 1.25891,
+                "maximum": 7.61479
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.922969,
+                "minimum": 0.81401,
+                "maximum": 1.05922
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.849635,
+                "minimum": 0.77401,
+                "maximum": 2.1625
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.600521,
+                "minimum": 0.583594,
+                "maximum": 0.659687
+              }
+            },
+            "rrb32_staged_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 6.71089,
+                "minimum": 3.89646,
+                "maximum": 12.5456
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 5.59068,
+                "minimum": 2.90885,
+                "maximum": 11.6219
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 1.84844,
+                "minimum": 1.27812,
+                "maximum": 5.27302
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.767708,
+                "minimum": 0.694635,
+                "maximum": 1.61193
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.25974,
+                "minimum": 0.221197,
+                "maximum": 0.71625
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.498646,
+                "minimum": 0.479583,
+                "maximum": 9.27792
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.267448,
+                "minimum": 0.253437,
+                "maximum": 0.312292
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.955573,
+                "minimum": 0.753021,
+                "maximum": 1.56844
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.628125,
+                "minimum": 0.586042,
+                "maximum": 1.38146
+              }
+            },
+            "rrb32_direct_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 59.7382,
+                "minimum": 45.8684,
+                "maximum": 67.6569
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 58.7396,
+                "minimum": 40.4487,
+                "maximum": 66.5658
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.82016,
+                "minimum": 1.23636,
+                "maximum": 8.72583
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 46.7397,
+                "minimum": 35.2789,
+                "maximum": 58.5248
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.112813,
+                "minimum": 0.110573,
+                "maximum": 0.342448
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 46.6292,
+                "minimum": 35.1661,
+                "maximum": 58.1823
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.003073,
+                "minimum": 0.002188,
+                "maximum": 0.005677
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 4.80979,
+                "minimum": 0.555573,
+                "maximum": 6.6675
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.29651,
+                "minimum": 0.285104,
+                "maximum": 1.04615
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.996198,
+                "minimum": 0.869688,
+                "maximum": 7.65526
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.709271,
+                "minimum": 0.682344,
+                "maximum": 0.86276
+              }
+            },
+            "rrb32_staged_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 10.6102,
+                "minimum": 4.43292,
+                "maximum": 12.2965
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 7.86,
+                "minimum": 3.49042,
+                "maximum": 11.2028
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.15276,
+                "minimum": 1.33667,
+                "maximum": 8.35646
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.1174,
+                "minimum": 0.719531,
+                "maximum": 1.5751
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.316093,
+                "minimum": 0.232031,
+                "maximum": 0.718906
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.31432,
+                "minimum": 0.497031,
+                "maximum": 7.11589
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.289323,
+                "minimum": 0.256146,
+                "maximum": 1.08932
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.875625,
+                "minimum": 0.722865,
+                "maximum": 7.74761
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.6925,
+                "minimum": 0.581927,
+                "maximum": 0.747917
+              }
+            },
+            "rrb32_direct_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 54.2555,
+                "minimum": 36.155,
+                "maximum": 87.2292
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 51.8056,
+                "minimum": 34.4022,
+                "maximum": 86.336
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.42844,
+                "minimum": 1.34859,
+                "maximum": 9.08995
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 44.3497,
+                "minimum": 32.1714,
+                "maximum": 68.263
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.11349,
+                "minimum": 0.111875,
+                "maximum": 0.151719
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 44.2276,
+                "minimum": 32.0579,
+                "maximum": 68.1212
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.005156,
+                "minimum": 0.001979,
+                "maximum": 0.006615
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 3.43755,
+                "minimum": 0.58125,
+                "maximum": 8.9674
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.281354,
+                "minimum": 0.264427,
+                "maximum": 1.05318
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.913437,
+                "minimum": 0.831145,
+                "maximum": 7.42448
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.683281,
+                "minimum": 0.628229,
+                "maximum": 1.39396
+              }
+            }
+          },
+          "input_memory": {
+            "rrf_cpu_reference": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_staged_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_direct_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_staged_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_direct_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_staged_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_direct_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_staged_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_direct_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            }
+          },
+          "comparisons": [
+            {
+              "candidate": "rrf_direct_default",
+              "baseline": "rrf_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 40.440000000000005,
+                  "ratio_of_medians": 4.067400901105903,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 4.589687972491053,
+                    "minimum": 2.768037166085947,
+                    "maximum": 11.029201297687871
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 42.872577,
+                  "ratio_of_medians": 60.60128759959017,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 59.494691536347375,
+                    "minimum": 32.411712707182325,
+                    "maximum": 85.11833349187802
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.04088599999999998,
+                  "ratio_of_medians": 0.958170664833321,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.014706664702368,
+                    "minimum": 0.46605924057048104,
+                    "maximum": 1.2050462688831363
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrf_direct_cached",
+              "baseline": "rrf_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 31.9454,
+                  "ratio_of_medians": 2.7938791554357594,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 3.6944968553459123,
+                    "minimum": 1.7622637115635789,
+                    "maximum": 6.337047832733935
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 36.523604,
+                  "ratio_of_medians": 42.865854497269595,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 46.275852365989785,
+                    "minimum": 31.545299351634707,
+                    "maximum": 84.89846729599434
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.03223899999999991,
+                  "ratio_of_medians": 0.9662492357685447,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9847530390901814,
+                    "minimum": 0.5697247387969038,
+                    "maximum": 1.1077412837090226
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_direct_default",
+              "baseline": "rrb32_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 53.02731,
+                  "ratio_of_medians": 8.901680701069456,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 7.636050145061167,
+                    "minimum": 3.9489143604132124,
+                    "maximum": 11.82570683476858
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 45.971992,
+                  "ratio_of_medians": 60.88213226903979,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 52.856805966336196,
+                    "minimum": 35.4012271004324,
+                    "maximum": 64.1770668046894
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.029061999999999977,
+                  "ratio_of_medians": 1.1086641141455533,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.116456836293149,
+                    "minimum": 0.9900861162218386,
+                    "maximum": 3.3499096998962505
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_direct_cached",
+              "baseline": "rrb32_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 43.6453,
+                  "ratio_of_medians": 5.113522836515805,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 6.041832619020838,
+                    "minimum": 2.9402675558085636,
+                    "maximum": 12.239223807332412
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 43.232299999999995,
+                  "ratio_of_medians": 39.69008412385896,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 40.515392876320035,
+                    "minimum": 20.42498888959431,
+                    "maximum": 91.08048246784438
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.007969000000000004,
+                  "ratio_of_medians": 0.9724563895715169,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9724563895715169,
+                    "minimum": 0.2521233790999238,
+                    "maximum": 1.1649020480507213
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_default",
+              "baseline": "rrf_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -6.47291,
+                  "ratio_of_medians": 0.5090254706533777,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.6475983997935219,
+                    "minimum": 0.223505455046061,
+                    "maximum": 2.066556738628295
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 0.0483849999999999,
+                  "ratio_of_medians": 1.0672646363316618,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0899942214012603,
+                    "minimum": 0.5273944751381215,
+                    "maximum": 2.2408987339484487
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.71,
+                  "ratio_of_medians": 0.2736186477439209,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.28960467060041667,
+                    "minimum": 0.13961086536183903,
+                    "maximum": 0.33471064219773344
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_cached",
+              "baseline": "rrf_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -7.197799999999999,
+                  "ratio_of_medians": 0.5958108715184187,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.6905042677448338,
+                    "minimum": 0.23465528923519946,
+                    "maximum": 1.3826283507574826
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 0.245004,
+                  "ratio_of_medians": 1.280840352317067,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.1648053114674608,
+                    "minimum": 0.9634087460339357,
+                    "maximum": 1.772783036387579
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.665885,
+                  "ratio_of_medians": 0.30289005117210077,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.2745726597555151,
+                    "minimum": 0.16737998542122254,
+                    "maximum": 1.2264672469564062
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_default",
+              "baseline": "rrf_cpu_reference",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 0.2948000000000004,
+                  "ratio_of_medians": 1.0459469864044926,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0459469864044926,
+                    "minimum": 0.43800690359442646,
+                    "maximum": 2.524108154219757
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.7214620000000002,
+                  "ratio_of_medians": 0.5155274414606794,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.6635668023155843,
+                    "minimum": 0.43216712653638295,
+                    "maximum": 1.082435182014142
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.14489600000000002,
+                  "ratio_of_medians": 2.1823226059142242,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 2.1728694797012817,
+                    "minimum": 1.6860449761650094,
+                    "maximum": 2.621768878814591
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_cached",
+              "baseline": "rrf_cpu_reference",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 4.194110000000001,
+                  "ratio_of_medians": 1.653686279338351,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.209013119906002,
+                    "minimum": 0.6909067672055723,
+                    "maximum": 2.06100430366967
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.37177000000000016,
+                  "ratio_of_medians": 0.7503508665901139,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.7503508665901139,
+                    "minimum": 0.41019485554009993,
+                    "maximum": 1.5046521847117937
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.166771,
+                  "ratio_of_medians": 2.3608182648997977,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 2.3608182648997977,
+                    "minimum": 1.6949847482470386,
+                    "maximum": 8.785759162303664
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "corpus/paired-a/1350",
+          "device": "Adreno (TM) 650",
+          "driver": 2150838272,
+          "arm_components": {
+            "rrf_cpu_reference": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 8.7588,
+                "minimum": 4.18573,
+                "maximum": 11.081
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 7.76448,
+                "minimum": 3.54948,
+                "maximum": 9.78469
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.2188,
+                "minimum": 1.10339,
+                "maximum": 5.275
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.72859,
+                "minimum": 1.21505,
+                "maximum": 3.63656
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.35948,
+                "minimum": 0.325468,
+                "maximum": 0.739063
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.486771,
+                "minimum": 0.360573,
+                "maximum": 5.44307
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.126406,
+                "minimum": 0.12349,
+                "maximum": 0.139792
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.7475,
+                "minimum": 0.626302,
+                "maximum": 1.29271
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.51849,
+                "minimum": 0.48724,
+                "maximum": 0.658906
+              }
+            },
+            "rrf_staged_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 10.624,
+                "minimum": 8.13464,
+                "maximum": 18.0633
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 6.69849,
+                "minimum": 4.3613,
+                "maximum": 10.3269
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 4.25854,
+                "minimum": 1.78589,
+                "maximum": 6.27063
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.1299,
+                "minimum": 0.769896,
+                "maximum": 1.66859
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.349323,
+                "minimum": 0.257552,
+                "maximum": 0.538073
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.49948,
+                "minimum": 1.26036,
+                "maximum": 2.07755
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 1.00432,
+                "minimum": 0.855365,
+                "maximum": 1.69677
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.75641,
+                "minimum": 1.04797,
+                "maximum": 7.91969
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.686406,
+                "minimum": 0.587344,
+                "maximum": 1.48698
+              }
+            },
+            "rrf_direct_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 63.1437,
+                "minimum": 41.3056,
+                "maximum": 81.2695
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 60.9869,
+                "minimum": 40.4641,
+                "maximum": 80.5514
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 5.21141,
+                "minimum": 2.63042,
+                "maximum": 7.50078
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 50.1959,
+                "minimum": 29.5856,
+                "maximum": 75.9136
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.249532,
+                "minimum": 0.203438,
+                "maximum": 0.695
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 49.8563,
+                "minimum": 29.336,
+                "maximum": 75.7091
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.001875,
+                "minimum": 0.001406,
+                "maximum": 0.002344
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 3.05167,
+                "minimum": 1.35141,
+                "maximum": 5.88099
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.938385,
+                "minimum": 0.80401,
+                "maximum": 1.10464
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.915833,
+                "minimum": 0.716615,
+                "maximum": 8.17875
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.60625,
+                "minimum": 0.587604,
+                "maximum": 0.757448
+              }
+            },
+            "rrf_staged_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 7.5863,
+                "minimum": 4.89896,
+                "maximum": 11.2737
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 5.2538,
+                "minimum": 3.49151,
+                "maximum": 8.94807
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 1.91156,
+                "minimum": 1.28167,
+                "maximum": 5.72307
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.38807,
+                "minimum": 0.809583,
+                "maximum": 1.46849
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.300781,
+                "minimum": 0.234427,
+                "maximum": 0.404844
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.40021,
+                "minimum": 1.13672,
+                "maximum": 1.8112
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 1.01656,
+                "minimum": 0.752083,
+                "maximum": 1.56479
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.83292,
+                "minimum": 0.958594,
+                "maximum": 5.80859
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.7475,
+                "minimum": 0.597344,
+                "maximum": 1.70125
+              }
+            },
+            "rrf_direct_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 62.1587,
+                "minimum": 45.3694,
+                "maximum": 73.1556
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 61.3529,
+                "minimum": 42.033,
+                "maximum": 71.3839
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.09177,
+                "minimum": 1.18432,
+                "maximum": 5.38109
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 55.4244,
+                "minimum": 34.5063,
+                "maximum": 66.9929
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.334896,
+                "minimum": 0.205208,
+                "maximum": 0.8275
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 55.0864,
+                "minimum": 34.2997,
+                "maximum": 66.7874
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.001771,
+                "minimum": 0.001094,
+                "maximum": 0.001875
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 2.13922,
+                "minimum": 1.23146,
+                "maximum": 6.54458
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.964375,
+                "minimum": 0.805625,
+                "maximum": 1.68557
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.03672,
+                "minimum": 0.80349,
+                "maximum": 7.34167
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.682969,
+                "minimum": 0.595208,
+                "maximum": 1.53964
+              }
+            },
+            "rrb32_staged_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 9.54682,
+                "minimum": 5.04354,
+                "maximum": 10.4948
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 8.64734,
+                "minimum": 3.4538,
+                "maximum": 9.65354
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.00948,
+                "minimum": 1.65365,
+                "maximum": 6.40797
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.947708,
+                "minimum": 0.842239,
+                "maximum": 1.3399
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.325104,
+                "minimum": 0.227187,
+                "maximum": 0.644115
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 4.45781,
+                "minimum": 0.482448,
+                "maximum": 6.51849
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.26151,
+                "minimum": 0.25125,
+                "maximum": 0.288854
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.786041,
+                "minimum": 0.730365,
+                "maximum": 1.63146
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.613177,
+                "minimum": 0.57625,
+                "maximum": 1.41198
+              }
+            },
+            "rrb32_direct_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 52.6032,
+                "minimum": 39,
+                "maximum": 72.4566
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 48.6622,
+                "minimum": 37.5396,
+                "maximum": 71.6329
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 1.95406,
+                "minimum": 1.09729,
+                "maximum": 8.31089
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 42.8313,
+                "minimum": 35.0144,
+                "maximum": 65.5149
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.219792,
+                "minimum": 0.218489,
+                "maximum": 0.464167
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 42.6128,
+                "minimum": 34.652,
+                "maximum": 65.0507
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.002448,
+                "minimum": 0.001615,
+                "maximum": 0.005313
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.678594,
+                "minimum": 0.511094,
+                "maximum": 1.6587
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.27974,
+                "minimum": 0.262187,
+                "maximum": 1.17995
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.868594,
+                "minimum": 0.693646,
+                "maximum": 7.51188
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.714219,
+                "minimum": 0.585208,
+                "maximum": 0.737656
+              }
+            },
+            "rrb32_staged_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 9.27886,
+                "minimum": 4.45927,
+                "maximum": 11.4693
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 4.97344,
+                "minimum": 3.72109,
+                "maximum": 9.28349
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.46406,
+                "minimum": 1.53422,
+                "maximum": 7.53552
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.921771,
+                "minimum": 0.827188,
+                "maximum": 1.65651
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.297709,
+                "minimum": 0.236146,
+                "maximum": 0.720313
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.662812,
+                "minimum": 0.469739,
+                "maximum": 4.62313
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.272396,
+                "minimum": 0.260833,
+                "maximum": 1.00057
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.62688,
+                "minimum": 0.736198,
+                "maximum": 5.47839
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.708073,
+                "minimum": 0.592135,
+                "maximum": 1.72115
+              }
+            },
+            "rrb32_direct_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 51.6367,
+                "minimum": 45.2538,
+                "maximum": 59.0225
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 49.1003,
+                "minimum": 39.5349,
+                "maximum": 58.0383
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.67495,
+                "minimum": 1.72896,
+                "maximum": 6.12224
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 44.1505,
+                "minimum": 34.9775,
+                "maximum": 48.2425
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.22198,
+                "minimum": 0.219219,
+                "maximum": 0.398021
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 43.9285,
+                "minimum": 34.7582,
+                "maximum": 47.8444
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.004896,
+                "minimum": 0.001458,
+                "maximum": 0.046041
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.44682,
+                "minimum": 0.604062,
+                "maximum": 7.06703
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.308333,
+                "minimum": 0.253437,
+                "maximum": 1.13245
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.896823,
+                "minimum": 0.856146,
+                "maximum": 7.86844
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.745573,
+                "minimum": 0.605,
+                "maximum": 0.761615
+              }
+            }
+          },
+          "input_memory": {
+            "rrf_cpu_reference": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_staged_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_direct_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_staged_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_direct_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_staged_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_direct_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_staged_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_direct_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            }
+          },
+          "comparisons": [
+            {
+              "candidate": "rrf_direct_default",
+              "baseline": "rrf_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 52.5197,
+                  "ratio_of_medians": 5.943495858433735,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 5.140320742429176,
+                    "minimum": 3.4286868955285024,
+                    "maximum": 9.85538793626155
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 49.066,
+                  "ratio_of_medians": 44.42508186565183,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 37.81661264098657,
+                    "minimum": 30.082824420618607,
+                    "maximum": 97.14988475915881
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.06593500000000008,
+                  "ratio_of_medians": 0.9343486139875736,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.8879245678000105,
+                    "minimum": 0.5277798405205184,
+                    "maximum": 1.107165946701116
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrf_direct_cached",
+              "baseline": "rrf_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 54.5724,
+                  "ratio_of_medians": 8.193546261023162,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 6.489049735224461,
+                    "minimum": 4.464184365115228,
+                    "maximum": 12.288751639702667
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 54.03633,
+                  "ratio_of_medians": 39.92911020337591,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 43.45357222618456,
+                    "minimum": 23.497810676272906,
+                    "maximum": 78.10860652953433
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.052184999999999926,
+                  "ratio_of_medians": 0.9486651058471709,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0711916105004369,
+                    "minimum": 0.5892362553441677,
+                    "maximum": 1.127989181447937
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_direct_default",
+              "baseline": "rrb32_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 43.056380000000004,
+                  "ratio_of_medians": 5.51002323286707,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 5.524069794968376,
+                    "minimum": 4.7594932706001405,
+                    "maximum": 11.42333269219248
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 41.883592,
+                  "ratio_of_medians": 45.194616907317446,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 41.57299768830463,
+                    "minimum": 31.393611463542054,
+                    "maximum": 76.54638181531396
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.01822999999999997,
+                  "ratio_of_medians": 1.0697105273220908,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0697105273220908,
+                    "minimum": 0.9076800044313044,
+                    "maximum": 4.37271164079987
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_direct_cached",
+              "baseline": "rrb32_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 42.357839999999996,
+                  "ratio_of_medians": 5.564983198367041,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 5.214744815976739,
+                    "minimum": 4.8726279335302385,
+                    "maximum": 10.148252965171428
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 43.228729,
+                  "ratio_of_medians": 47.89747128082789,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 49.546898649400134,
+                    "minimum": 27.73807583413321,
+                    "maximum": 52.33675175287571
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.035937,
+                  "ratio_of_medians": 1.1319292500624092,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.1318048712234026,
+                    "minimum": 0.9169078729738669,
+                    "maximum": 3.971483299142005
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_default",
+              "baseline": "rrf_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -1.0771800000000002,
+                  "ratio_of_medians": 0.8986088102409638,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.7647303191259663,
+                    "minimum": 0.5163513513513514,
+                    "maximum": 1.1736007985602315
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.1821919999999999,
+                  "ratio_of_medians": 0.838753872024073,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.8428108682184265,
+                    "minimum": 0.5679693633546887,
+                    "maximum": 1.7126737087521602
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.7428100000000001,
+                  "ratio_of_medians": 0.260385136211566,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.25250318623546275,
+                    "minimum": 0.17023756902821244,
+                    "maximum": 0.31547234221648063
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_cached",
+              "baseline": "rrf_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 1.6925600000000003,
+                  "ratio_of_medians": 1.2231074436813731,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9577315860822414,
+                    "minimum": 0.812430768109605,
+                    "maximum": 1.616481073698294
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.4662989999999999,
+                  "ratio_of_medians": 0.664066653699021,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0217457629421567,
+                    "minimum": 0.6237675333376559,
+                    "maximum": 1.2237579514533365
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.7441639999999998,
+                  "ratio_of_medians": 0.2679586054930354,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.3079733945068227,
+                    "minimum": 0.18706080275362413,
+                    "maximum": 0.6394276548290825
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_default",
+              "baseline": "rrf_cpu_reference",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 0.7880199999999995,
+                  "ratio_of_medians": 1.0899689455176507,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.1982006667580032,
+                    "minimum": 0.5364726154893472,
+                    "maximum": 2.457229682755457
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.7808820000000001,
+                  "ratio_of_medians": 0.5482549361039922,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.5482549361039922,
+                    "minimum": 0.36845260355940784,
+                    "maximum": 0.783747170898317
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.13510400000000003,
+                  "ratio_of_medians": 2.068810024840593,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 2.039777692059418,
+                    "minimum": 1.9303250543664872,
+                    "maximum": 2.33123496844382
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_cached",
+              "baseline": "rrf_cpu_reference",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 0.5200599999999991,
+                  "ratio_of_medians": 1.0593757135680686,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9869762692393604,
+                    "minimum": 0.7133602776636068,
+                    "maximum": 1.7472333911555418
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.8068190000000001,
+                  "ratio_of_medians": 0.5332502212786143,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.5090231069813237,
+                    "minimum": 0.42476681259212,
+                    "maximum": 1.3633266120735772
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.14599000000000004,
+                  "ratio_of_medians": 2.154929354619243,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 2.1053758531382103,
+                    "minimum": 2.0634542664114046,
+                    "maximum": 8.075234451923231
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "gpu-repeat-2",
+      "result_sha256": "99e6825098ee9fbe1e98f181b6fdadc33d56c2bc6469edaed68a2eeb7161e0c8",
+      "process_elapsed_s": 128.8654607849894,
+      "recorded_invocations": 126,
+      "valid_invocations_including_warmups": 180,
+      "omission_controls": 18,
+      "all_consumer_and_readiness_gates_passed": true,
+      "profiles": [
+        {
+          "name": "corpus/lossless/360",
+          "device": "Adreno (TM) 650",
+          "driver": 2150838272,
+          "arm_components": {
+            "rrf_cpu_reference": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 9.40349,
+                "minimum": 5.18672,
+                "maximum": 18.7453
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 8.81089,
+                "minimum": 4.50938,
+                "maximum": 10.9961
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 4.10625,
+                "minimum": 1.59135,
+                "maximum": 8.1312
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.89318,
+                "minimum": 1.19714,
+                "maximum": 2.34177
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.368489,
+                "minimum": 0.312136,
+                "maximum": 0.784896
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.403177,
+                "minimum": 0.367656,
+                "maximum": 6.86078
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.127083,
+                "minimum": 0.124479,
+                "maximum": 0.142292
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.734011,
+                "minimum": 0.59026,
+                "maximum": 7.88177
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.542396,
+                "minimum": 0.488906,
+                "maximum": 0.609792
+              }
+            },
+            "rrf_staged_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 10.2695,
+                "minimum": 5.68047,
+                "maximum": 12.3754
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 8.60911,
+                "minimum": 3.9675,
+                "maximum": 11.3316
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 4.8301,
+                "minimum": 1.73724,
+                "maximum": 6.24693
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.01266,
+                "minimum": 0.636667,
+                "maximum": 1.25302
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.253854,
+                "minimum": 0.22901,
+                "maximum": 0.371875
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.26266,
+                "minimum": 1.10354,
+                "maximum": 8.03932
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.911042,
+                "minimum": 0.811927,
+                "maximum": 1.01
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.6575,
+                "minimum": 0.844115,
+                "maximum": 1.71615
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.880573,
+                "minimum": 0.591927,
+                "maximum": 1.48245
+              }
+            },
+            "rrf_direct_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 57.429,
+                "minimum": 44.5383,
+                "maximum": 62.8078
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 52.4507,
+                "minimum": 43.7435,
+                "maximum": 59.0298
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 4.23807,
+                "minimum": 1.61635,
+                "maximum": 9.06521
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 44.4825,
+                "minimum": 33.4133,
+                "maximum": 49.4667
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.09776,
+                "minimum": 0.095937,
+                "maximum": 0.305885
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 44.3257,
+                "minimum": 33.1075,
+                "maximum": 49.3707
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.001875,
+                "minimum": 0.00125,
+                "maximum": 0.002917
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 5.45912,
+                "minimum": 1.25885,
+                "maximum": 9.19734
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.962448,
+                "minimum": 0.861198,
+                "maximum": 1.82641
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.00724,
+                "minimum": 0.793021,
+                "maximum": 7.95906
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.679948,
+                "minimum": 0.594531,
+                "maximum": 0.983333
+              }
+            },
+            "rrf_staged_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 10.0712,
+                "minimum": 5.76115,
+                "maximum": 12.9028
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 5.7801,
+                "minimum": 3.60469,
+                "maximum": 11.6364
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.17052,
+                "minimum": 1.34484,
+                "maximum": 8.50484
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.719323,
+                "minimum": 0.641198,
+                "maximum": 1.35948
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.303334,
+                "minimum": 0.223178,
+                "maximum": 0.487083
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.3888,
+                "minimum": 1.1075,
+                "maximum": 1.96646
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.939323,
+                "minimum": 0.828385,
+                "maximum": 1.69396
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.26286,
+                "minimum": 0.831407,
+                "maximum": 8.09802
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.677396,
+                "minimum": 0.58526,
+                "maximum": 1.4087
+              }
+            },
+            "rrf_direct_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 50.963,
+                "minimum": 47.6793,
+                "maximum": 74.5515
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 48.413,
+                "minimum": 43.1287,
+                "maximum": 73.3436
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.99734,
+                "minimum": 2.21563,
+                "maximum": 7.72005
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 42.6601,
+                "minimum": 35.299,
+                "maximum": 62.2916
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.097656,
+                "minimum": 0.096459,
+                "maximum": 0.331719
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 42.3284,
+                "minimum": 35.0076,
+                "maximum": 62.1941
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.001615,
+                "minimum": 0.001094,
+                "maximum": 0.002344
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 2.35865,
+                "minimum": 1.53917,
+                "maximum": 7.81162
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 1.01042,
+                "minimum": 0.889271,
+                "maximum": 1.20271
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.00271,
+                "minimum": 0.867604,
+                "maximum": 7.76141
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.696667,
+                "minimum": 0.594115,
+                "maximum": 0.831927
+              }
+            },
+            "rrb32_staged_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 5.65865,
+                "minimum": 4.59453,
+                "maximum": 10.9873
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 4.59198,
+                "minimum": 3.70953,
+                "maximum": 9.58469
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.06786,
+                "minimum": 1.45927,
+                "maximum": 7.6863
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.74125,
+                "minimum": 0.685573,
+                "maximum": 1.1575
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.288281,
+                "minimum": 0.246406,
+                "maximum": 0.492343
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.515625,
+                "minimum": 0.470937,
+                "maximum": 1.28141
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.267135,
+                "minimum": 0.257135,
+                "maximum": 1.05818
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.856302,
+                "minimum": 0.788906,
+                "maximum": 1.94646
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.605312,
+                "minimum": 0.566094,
+                "maximum": 1.63281
+              }
+            },
+            "rrb32_direct_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 60.6505,
+                "minimum": 34.7421,
+                "maximum": 76.415
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 59.6102,
+                "minimum": 33.9762,
+                "maximum": 75.1041
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 1.46109,
+                "minimum": 1.17229,
+                "maximum": 7.84922
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 53.6894,
+                "minimum": 32.1185,
+                "maximum": 64.0762
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.111771,
+                "minimum": 0.108646,
+                "maximum": 0.429739
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 53.5784,
+                "minimum": 31.6888,
+                "maximum": 63.9676
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.002344,
+                "minimum": 0.001979,
+                "maximum": 0.00526
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 2.03229,
+                "minimum": 0.59625,
+                "maximum": 8.62203
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.281406,
+                "minimum": 0.258229,
+                "maximum": 0.340625
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.898854,
+                "minimum": 0.764427,
+                "maximum": 1.30838
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.724323,
+                "minimum": 0.589687,
+                "maximum": 0.98125
+              }
+            },
+            "rrb32_staged_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 7.45636,
+                "minimum": 4.34328,
+                "maximum": 11.1779
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 6.60417,
+                "minimum": 3.52469,
+                "maximum": 10.1952
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.32443,
+                "minimum": 1.71427,
+                "maximum": 7.4474
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.06151,
+                "minimum": 0.723281,
+                "maximum": 1.33031
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.307605,
+                "minimum": 0.25125,
+                "maximum": 0.601458
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.533073,
+                "minimum": 0.487448,
+                "maximum": 7.00219
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.272344,
+                "minimum": 0.253958,
+                "maximum": 0.290729
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.816146,
+                "minimum": 0.710834,
+                "maximum": 0.979635
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.601823,
+                "minimum": 0.569062,
+                "maximum": 0.706719
+              }
+            },
+            "rrb32_direct_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 52.1852,
+                "minimum": 46.9198,
+                "maximum": 70.2751
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 51.1597,
+                "minimum": 39.7384,
+                "maximum": 69.3081
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.53208,
+                "minimum": 1.35568,
+                "maximum": 3.96542
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 45.7083,
+                "minimum": 34.4889,
+                "maximum": 57.8472
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.109688,
+                "minimum": 0.108645,
+                "maximum": 0.18
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 45.5995,
+                "minimum": 34.3758,
+                "maximum": 57.6672
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.004844,
+                "minimum": 0.001666,
+                "maximum": 0.060885
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.48172,
+                "minimum": 0.538334,
+                "maximum": 8.39485
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.303385,
+                "minimum": 0.26849,
+                "maximum": 1.04536
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.02375,
+                "minimum": 0.757396,
+                "maximum": 7.17859
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.745208,
+                "minimum": 0.604635,
+                "maximum": 1.37464
+              }
+            }
+          },
+          "input_memory": {
+            "rrf_cpu_reference": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_staged_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_direct_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_staged_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_direct_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_staged_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_direct_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_staged_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_direct_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            }
+          },
+          "comparisons": [
+            {
+              "candidate": "rrf_direct_default",
+              "baseline": "rrf_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 47.1595,
+                  "ratio_of_medians": 5.592190466916597,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 5.8305078144018685,
+                    "minimum": 3.598938216138468,
+                    "maximum": 8.335736303510098
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 43.469840000000005,
+                  "ratio_of_medians": 43.926391878814215,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 39.210983545123156,
+                    "minimum": 35.50023144083893,
+                    "maximum": 77.6963467558394
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.05140599999999995,
+                  "ratio_of_medians": 1.056425499592774,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.1142017268002893,
+                    "minimum": 0.8526712871287129,
+                    "maximum": 2.00474840896468
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrf_direct_cached",
+              "baseline": "rrf_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 40.8918,
+                  "ratio_of_medians": 5.060270871395663,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 6.369037957164704,
+                    "minimum": 4.2098846761943145,
+                    "maximum": 8.793990783090182
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 41.940777,
+                  "ratio_of_medians": 59.3059029114876,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 49.072530699004474,
+                    "minimum": 26.918895460028835,
+                    "maximum": 97.14877463747547
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.07109700000000008,
+                  "ratio_of_medians": 1.0756896190128422,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9756026414768935,
+                    "minimum": 0.5612013138205728,
+                    "maximum": 1.4422882895002354
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_direct_default",
+              "baseline": "rrb32_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 54.99185,
+                  "ratio_of_medians": 10.718192501745117,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 6.925841755875845,
+                    "minimum": 4.484703132233851,
+                    "maximum": 16.6317338226108
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 52.94815,
+                  "ratio_of_medians": 72.43089376053963,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 56.04326979370889,
+                    "minimum": 27.74816414686825,
+                    "maximum": 88.77635704399317
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.014270999999999978,
+                  "ratio_of_medians": 1.053422426862822,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0714847863858779,
+                    "minimum": 0.2659339620858455,
+                    "maximum": 1.2503548719544209
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_direct_cached",
+              "baseline": "rrb32_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 44.728840000000005,
+                  "ratio_of_medians": 6.998750060351163,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 7.77190210773085,
+                    "minimum": 4.19755052380143,
+                    "maximum": 12.483519645861126
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 44.64679,
+                  "ratio_of_medians": 43.05969797740954,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 48.653780669211606,
+                    "minimum": 30.615706917825854,
+                    "maximum": 54.495200233629454
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.03104100000000004,
+                  "ratio_of_medians": 1.1139771759245662,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.1464936789605817,
+                    "minimum": 0.9770599872769088,
+                    "maximum": 4.056373880515933
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_default",
+              "baseline": "rrf_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -4.610850000000001,
+                  "ratio_of_medians": 0.551015141925118,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.774181174140044,
+                    "minimum": 0.485004060795916,
+                    "maximum": 0.9567973124300111
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.27140999999999993,
+                  "ratio_of_medians": 0.7319830940295855,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9237681760865748,
+                    "minimum": 0.614733587708241,
+                    "maximum": 1.1143643380291424
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.643907,
+                  "ratio_of_medians": 0.293219192968052,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.2973154959988425,
+                    "minimum": 0.26414811698738505,
+                    "maximum": 1.1615051775878609
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_cached",
+              "baseline": "rrf_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -2.614839999999999,
+                  "ratio_of_medians": 0.7403646040193821,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.7403646040193821,
+                    "minimum": 0.401313934713335,
+                    "maximum": 1.7740728847539122
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 0.3421869999999999,
+                  "ratio_of_medians": 1.4757070189608839,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.1194382445141067,
+                    "minimum": 0.7064590872980845,
+                    "maximum": 2.0747257477409473
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.666979,
+                  "ratio_of_medians": 0.2899364755254582,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.3045746777200175,
+                    "minimum": 0.15825226097428513,
+                    "maximum": 0.3271195072499976
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_default",
+              "baseline": "rrf_cpu_reference",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -3.74484,
+                  "ratio_of_medians": 0.6017606229176614,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.8697887897457688,
+                    "minimum": 0.24510303916181655,
+                    "maximum": 1.5612709375449643
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -1.1519300000000001,
+                  "ratio_of_medians": 0.3915369906717797,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.49579200146569996,
+                    "minimum": 0.3082160075498448,
+                    "maximum": 0.6114051490085465
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.140052,
+                  "ratio_of_medians": 2.102051415216827,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 2.043400269862688,
+                    "minimum": 1.8484595058049644,
+                    "maximum": 8.490231475909656
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_cached",
+              "baseline": "rrf_cpu_reference",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -1.9471299999999996,
+                  "ratio_of_medians": 0.7929353888822129,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0460488605826135,
+                    "minimum": 0.23169967938629948,
+                    "maximum": 1.7301373689155222
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.8316700000000001,
+                  "ratio_of_medians": 0.5607020991136605,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.5337970027313125,
+                    "minimum": 0.41012439308728016,
+                    "maximum": 1.0165980177137226
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.14526099999999997,
+                  "ratio_of_medians": 2.1430403751878693,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 2.0454639257083898,
+                    "minimum": 1.9160938544341644,
+                    "maximum": 2.298331445464697
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "corpus/paired-a/1350",
+          "device": "Adreno (TM) 650",
+          "driver": 2150838272,
+          "arm_components": {
+            "rrf_cpu_reference": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 11.4445,
+                "minimum": 3.98901,
+                "maximum": 18.9817
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 10.2223,
+                "minimum": 3.30224,
+                "maximum": 18.1232
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.78068,
+                "minimum": 1.18448,
+                "maximum": 8.17833
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.32802,
+                "minimum": 1.1712,
+                "maximum": 1.83604
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.352865,
+                "minimum": 0.332031,
+                "maximum": 0.423698
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.529792,
+                "minimum": 0.376458,
+                "maximum": 8.97219
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.129531,
+                "minimum": 0.127135,
+                "maximum": 0.150885
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.855989,
+                "minimum": 0.685,
+                "maximum": 1.82547
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.556979,
+                "minimum": 0.519635,
+                "maximum": 1.33672
+              }
+            },
+            "rrf_staged_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 7.58568,
+                "minimum": 4.78578,
+                "maximum": 12.5237
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 5.97432,
+                "minimum": 3.85823,
+                "maximum": 11.1276
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 3.18219,
+                "minimum": 1.52948,
+                "maximum": 8.22026
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.986458,
+                "minimum": 0.766094,
+                "maximum": 1.43354
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.265677,
+                "minimum": 0.231198,
+                "maximum": 0.355313
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.20599,
+                "minimum": 1.10693,
+                "maximum": 1.88708
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.932812,
+                "minimum": 0.85474,
+                "maximum": 1.60115
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.00219,
+                "minimum": 0.775208,
+                "maximum": 1.63516
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.654427,
+                "minimum": 0.602708,
+                "maximum": 0.755677
+              }
+            },
+            "rrf_direct_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 43.0209,
+                "minimum": 30.4492,
+                "maximum": 70.079
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 41.984,
+                "minimum": 29.7384,
+                "maximum": 69.2981
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 1.75271,
+                "minimum": 1.52188,
+                "maximum": 8.93396
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 34.8086,
+                "minimum": 21.1487,
+                "maximum": 64.5139
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.33401,
+                "minimum": 0.204375,
+                "maximum": 0.36552
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 34.4431,
+                "minimum": 20.8147,
+                "maximum": 64.3095
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.001823,
+                "minimum": 0.001511,
+                "maximum": 0.003229
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 4.95646,
+                "minimum": 1.32974,
+                "maximum": 9.43318
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.932083,
+                "minimum": 0.809948,
+                "maximum": 1.70021
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.839271,
+                "minimum": 0.709115,
+                "maximum": 7.70755
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.621875,
+                "minimum": 0.567656,
+                "maximum": 0.711302
+              }
+            },
+            "rrf_staged_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 12.5605,
+                "minimum": 4.97313,
+                "maximum": 18.3419
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 9.7013,
+                "minimum": 3.48615,
+                "maximum": 11.8085
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.25234,
+                "minimum": 1.2562,
+                "maximum": 7.12182
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 0.792968,
+                "minimum": 0.766511,
+                "maximum": 1.23573
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.263542,
+                "minimum": 0.240417,
+                "maximum": 0.391198
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.51984,
+                "minimum": 1.19474,
+                "maximum": 8.33245
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.964792,
+                "minimum": 0.864375,
+                "maximum": 1.11677
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.73521,
+                "minimum": 0.817969,
+                "maximum": 9.4899
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.653437,
+                "minimum": 0.572865,
+                "maximum": 1.40656
+              }
+            },
+            "rrf_direct_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 53.3394,
+                "minimum": 25.6353,
+                "maximum": 71.4898
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 52.0868,
+                "minimum": 24.7938,
+                "maximum": 70.7827
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.71734,
+                "minimum": 1.25474,
+                "maximum": 4.17615
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 45.8657,
+                "minimum": 18.9804,
+                "maximum": 65.4278
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.20875,
+                "minimum": 0.204479,
+                "maximum": 0.577969
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 45.657,
+                "minimum": 18.7736,
+                "maximum": 65.222
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.00198,
+                "minimum": 0.00125,
+                "maximum": 0.003021
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 3.08849,
+                "minimum": 1.17511,
+                "maximum": 7.57453
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.917656,
+                "minimum": 0.862708,
+                "maximum": 1.04943
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.839792,
+                "minimum": 0.705312,
+                "maximum": 7.94672
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.634167,
+                "minimum": 0.58276,
+                "maximum": 0.681667
+              }
+            },
+            "rrb32_staged_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 11.0606,
+                "minimum": 5.2062,
+                "maximum": 17.5045
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 9.61917,
+                "minimum": 3.74807,
+                "maximum": 10.4788
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 6.26386,
+                "minimum": 2.01844,
+                "maximum": 8.03948
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.35922,
+                "minimum": 0.831354,
+                "maximum": 1.69865
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.271615,
+                "minimum": 0.248438,
+                "maximum": 0.549011
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.564167,
+                "minimum": 0.480417,
+                "maximum": 1.6987
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.268073,
+                "minimum": 0.256719,
+                "maximum": 1.05109
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.51464,
+                "minimum": 0.718281,
+                "maximum": 7.47839
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.611979,
+                "minimum": 0.581302,
+                "maximum": 0.763906
+              }
+            },
+            "rrb32_direct_default": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 51.3674,
+                "minimum": 31.3102,
+                "maximum": 71.5406
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 50.5302,
+                "minimum": 30.3965,
+                "maximum": 70.5435
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.6501,
+                "minimum": 1.36474,
+                "maximum": 7.70458
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 45.0807,
+                "minimum": 21.1626,
+                "maximum": 60.9824
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.215521,
+                "minimum": 0.2125,
+                "maximum": 0.622396
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 44.8672,
+                "minimum": 20.5402,
+                "maximum": 60.7699
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.004896,
+                "minimum": 0.004479,
+                "maximum": 0.005625
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.691198,
+                "minimum": 0.598177,
+                "maximum": 7.23359
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.271042,
+                "minimum": 0.260573,
+                "maximum": 0.292604
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.834584,
+                "minimum": 0.758073,
+                "maximum": 0.994948
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.642187,
+                "minimum": 0.576615,
+                "maximum": 0.747031
+              }
+            },
+            "rrb32_staged_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 9.37917,
+                "minimum": 3.97344,
+                "maximum": 11.9928
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 5.78807,
+                "minimum": 3.1937,
+                "maximum": 10.6391
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 2.05047,
+                "minimum": 1.41958,
+                "maximum": 7.31823
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 1.30141,
+                "minimum": 0.864271,
+                "maximum": 2.12505
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 0,
+                "minimum": 0,
+                "maximum": 0
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.321875,
+                "minimum": 0.25224,
+                "maximum": 0.671094
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 0.572657,
+                "minimum": 0.495313,
+                "maximum": 7.4287
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.266354,
+                "minimum": 0.260208,
+                "maximum": 0.288542
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 1.0826,
+                "minimum": 0.729792,
+                "maximum": 7.80589
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.645625,
+                "minimum": 0.572812,
+                "maximum": 1.40479
+              }
+            },
+            "rrb32_direct_cached": {
+              "joint_outer_wall_ms": {
+                "samples": 7,
+                "median": 60.6686,
+                "minimum": 41.2925,
+                "maximum": 67.6775
+              },
+              "stereo_total_ms": {
+                "samples": 7,
+                "median": 59.321,
+                "minimum": 40.4187,
+                "maximum": 66.8831
+              },
+              "stereo_poison_ms": {
+                "samples": 7,
+                "median": 1.58177,
+                "minimum": 1.20932,
+                "maximum": 7.99995
+              },
+              "stereo_preflight_decode_ms": {
+                "samples": 7,
+                "median": 46.1628,
+                "minimum": 26.9459,
+                "maximum": 64.0608
+              },
+              "direct_preflight_ms": {
+                "samples": 7,
+                "median": 0.22198,
+                "minimum": 0.212865,
+                "maximum": 0.574583
+              },
+              "direct_decode_ms": {
+                "samples": 7,
+                "median": 45.9439,
+                "minimum": 26.733,
+                "maximum": 63.8388
+              },
+              "stereo_upload_ms": {
+                "samples": 7,
+                "median": 0.00474,
+                "minimum": 0.001927,
+                "maximum": 0.005156
+              },
+              "stereo_pipeline_wall_ms": {
+                "samples": 7,
+                "median": 1.46865,
+                "minimum": 0.593854,
+                "maximum": 7.92875
+              },
+              "stereo_device_span_ms": {
+                "samples": 7,
+                "median": 0.286198,
+                "minimum": 0.270052,
+                "maximum": 1.05839
+              },
+              "first_consumer_wall_ms": {
+                "samples": 7,
+                "median": 0.871615,
+                "minimum": 0.762709,
+                "maximum": 7.49349
+              },
+              "first_consumer_device_ms": {
+                "samples": 7,
+                "median": 0.69901,
+                "minimum": 0.59849,
+                "maximum": 0.730312
+              }
+            }
+          },
+          "input_memory": {
+            "rrf_cpu_reference": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_staged_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_direct_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_staged_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrf_direct_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_staged_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_direct_default": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_staged_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            },
+            "rrb32_direct_cached": {
+              "types": [
+                4,
+                4
+              ],
+              "flags": [
+                15,
+                15
+              ]
+            }
+          },
+          "comparisons": [
+            {
+              "candidate": "rrf_direct_default",
+              "baseline": "rrf_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 35.43522,
+                  "ratio_of_medians": 5.67133071787895,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 8.211061072386167,
+                    "minimum": 3.062544946165181,
+                    "maximum": 10.361932934120235
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 33.822142,
+                  "ratio_of_medians": 35.28644909362588,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 35.639914833215045,
+                    "minimum": 15.099419546918174,
+                    "maximum": 53.54948456155087
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.0007289999999999797,
+                  "ratio_of_medians": 0.9992184920434128,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9833036946907832,
+                    "minimum": 0.5821334665709021,
+                    "maximum": 1.414013639387891
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrf_direct_cached",
+              "baseline": "rrf_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 40.7789,
+                  "ratio_of_medians": 4.246598463436965,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 4.753880020271127,
+                    "minimum": 1.3976360137172268,
+                    "maximum": 9.40391664806671
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 45.072731999999995,
+                  "ratio_of_medians": 57.84054337627747,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 47.92651257114969,
+                    "minimum": 15.359665946444611,
+                    "maximum": 68.41007455534145
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.047135999999999956,
+                  "ratio_of_medians": 0.9511438734981219,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.983000621381351,
+                    "minimum": 0.8217054541221559,
+                    "maximum": 1.087726680984088
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_direct_default",
+              "baseline": "rrb32_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 40.3068,
+                  "ratio_of_medians": 4.644178435166266,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 6.017525157269543,
+                    "minimum": 2.7557485218086777,
+                    "maximum": 10.222889849427634
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 43.72148,
+                  "ratio_of_medians": 33.16659554744633,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 39.22992598696311,
+                    "minimum": 12.458481735495836,
+                    "maximum": 64.86579172834574
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.0029689999999999994,
+                  "ratio_of_medians": 1.0110753414181959,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0192739921860088,
+                    "minimum": 0.2578675470226146,
+                    "maximum": 1.1218059064612222
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_direct_cached",
+              "baseline": "rrb32_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 51.289429999999996,
+                  "ratio_of_medians": 6.4684401711452075,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 6.782892302837031,
+                    "minimum": 3.923024436010064,
+                    "maximum": 10.71200269791415
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 44.86139,
+                  "ratio_of_medians": 35.471373356590156,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 35.471373356590156,
+                    "minimum": 16.84224014000875,
+                    "maximum": 63.835995885549785
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.01984400000000003,
+                  "ratio_of_medians": 1.0745023540100769,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0536119203436631,
+                    "minimum": 0.957879167302174,
+                    "maximum": 3.9907921329673313
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_default",
+              "baseline": "rrf_staged_default",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": 3.474920000000001,
+                  "ratio_of_medians": 1.4580894527583554,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.3977099419500627,
+                    "minimum": 0.7743581322946976,
+                    "maximum": 2.254801151643623
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 0.37276200000000015,
+                  "ratio_of_medians": 1.3778792406772515,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.0851853688972894,
+                    "minimum": 0.9102641014551389,
+                    "maximum": 1.9982871656237906
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.664739,
+                  "ratio_of_medians": 0.2873815945763991,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.2847068043739753,
+                    "minimum": 0.16446491584173872,
+                    "maximum": 1.1267972538946756
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_cached",
+              "baseline": "rrf_staged_cached",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -3.181329999999999,
+                  "ratio_of_medians": 0.7467194777277976,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.6538472023072855,
+                    "minimum": 0.31212461607346254,
+                    "maximum": 2.3575695789171007
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 0.508442,
+                  "ratio_of_medians": 1.6411885473310397,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 1.1233416734362307,
+                    "minimum": 0.7618379763606569,
+                    "maximum": 2.772367258917354
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": -0.698438,
+                  "ratio_of_medians": 0.2760740138807121,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.26970372888664085,
+                    "minimum": 0.23850389963913785,
+                    "maximum": 0.33381576283441794
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_default",
+              "baseline": "rrf_cpu_reference",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -0.3838999999999988,
+                  "ratio_of_medians": 0.9664555026431911,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9931250763032597,
+                    "minimum": 0.4831598445978067,
+                    "maximum": 4.287830815164664
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": 0.031200000000000117,
+                  "ratio_of_medians": 1.0234936220840047,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.7769220714145663,
+                    "minimum": 0.4802766047175316,
+                    "maximum": 1.4503500683060109
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.138542,
+                  "ratio_of_medians": 2.0695663586322963,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 2.0695663586322963,
+                    "minimum": 1.7014216124863306,
+                    "maximum": 8.130903296176252
+                  }
+                }
+              }
+            },
+            {
+              "candidate": "rrb32_staged_cached",
+              "baseline": "rrf_cpu_reference",
+              "fields": {
+                "joint_outer_wall_ms": {
+                  "median_difference_ms": -2.0653299999999994,
+                  "ratio_of_medians": 0.8195351478876317,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.9103489485749708,
+                    "minimum": 0.33848486655478793,
+                    "maximum": 2.3512525664262562
+                  }
+                },
+                "stereo_preflight_decode_ms": {
+                  "median_difference_ms": -0.026610000000000023,
+                  "ratio_of_medians": 0.9799626511648921,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 0.8764318230373549,
+                    "minimum": 0.665542974193401,
+                    "maximum": 1.1574094246312716
+                  }
+                },
+                "stereo_device_span_ms": {
+                  "median_difference_ms": 0.13682299999999997,
+                  "ratio_of_medians": 2.0562954041889583,
+                  "same_rep_ratios": {
+                    "samples": 7,
+                    "median": 2.0562954041889583,
+                    "minimum": 1.8519203366802532,
+                    "maximum": 2.180899041548375
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "valid_invocations_including_warmups": 360,
+  "recorded_invocations": 252,
+  "omission_controls": 36,
+  "limitations": [
+    "Seven observations per arm per process are exploratory; no p95/tail or population qualification.",
+    "Two fixed repeated captured pairs: one Q1 and one Q8; no corpus-wide or live-scene inference.",
+    "Raw portable probe labels remain host-only; wrapper serial/argv/upload hashes establish Android execution.",
+    "Three synchronous submissions: poison, readiness and first private compute consumer. Not native rendering.",
+    "Oracle, mapped-float snapshots, JSON output and setup are outside per-invocation clocks but perturb later work.",
+    "Default and cached requested arms can choose identical memory; actual selections are reported.",
+    "Device clocks cover queued GPU spans; CPU wall includes driver/scheduling/fence delays, without assigning cause.",
+    "Thermal, charging, OS, display and radio activity are uncontrolled unless separately recorded.",
+    "Source/binary bindings are historical; no fresh build, authenticity proof, wire/network, source age or optical claim."
+  ]
+}

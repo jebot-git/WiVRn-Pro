@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "date": "2026-10-09",
+  "scope": "Branches selected for further development after actual Quest tests; no production promotion.",
+  "sub15_qualified": false,
+  "metric": "Headset-local earliest-eye receipt to post-successful-xrEndFrame for first stereo use; not optical latency.",
+  "selection_report": "SELECTION.txt",
+  "evidence_manifest": "evidence-manifest.json",
+  "choices": [
+    {
+      "priority": 1,
+      "approach": "Publication and pacing diagnostics",
+      "disposition": "develop",
+      "implementations": [
+        {
+          "branch": "research/sub15-20261009/compositor-publication-capture",
+          "commit": "be5fd0bddfc471c8f2243f93b22a85283e618a32"
+        }
+      ],
+      "next": "Reconcile overlay and patch, include pacer initialization and render-attempt changes, rebuild native binaries, then collect interleaved fixed90Hz evidence.",
+      "tested_native_implementation": false
+    },
+    {
+      "priority": 2,
+      "approach": "RRB32 four-worker client and band-view server",
+      "disposition": "develop",
+      "implementations": [
+        {
+          "branch": "research/sub15-20261009/rowblocks-workers",
+          "commit": "260a1a2244b2381270398b65a1d3d2d282867508"
+        },
+        {
+          "branch": "research/sub15-20261009/rowblocks-band-views",
+          "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1"
+        },
+        {
+          "branch": "research/sub15-20261009/rgb-rowfilter-simd",
+          "commit": "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8"
+        }
+      ],
+      "next": "Native payload negotiation and complete-stereo ownership; keep VR444 and two-worker controls. Evaluate Q8 wire growth and CPU contention.",
+      "tested_native_implementation": false,
+      "actual_headset_component_evidence": true
+    },
+    {
+      "priority": 3,
+      "approach": "Native VR444 NEON mapped RGBA output",
+      "disposition": "continue opt-in",
+      "implementations": [
+        {
+          "branch": "research/sub15-20261009/base",
+          "commit": "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+        }
+      ],
+      "mode": "cpu-output=mapped-direct",
+      "next": "Compare under new publication diagnostics with cached-copy control; decoder-stage benefit has not established end-to-end benefit.",
+      "tested_native_implementation": true,
+      "native_build_receipt_sha256": "39b299718a74fbee6d2b98813377a5037e75af68f2f44636f89a5569b2ac4bf0"
+    },
+    {
+      "priority": 4,
+      "approach": "Staged RRB32 image shader",
+      "disposition": "secondary development",
+      "implementations": [
+        {
+          "branch": "research/sub15-20261009/rowblocks-image-timing",
+          "commit": "ef628f4344a073707db014eb5446f0324bf9908d"
+        }
+      ],
+      "actual_shared_consumer_source": "c4dc09128e45fc5bda71fa0588e40d2077678b9b",
+      "next": "Native image ownership and first-consumer integration, retain CPU RGBA upload baseline.",
+      "tested_native_implementation": false,
+      "actual_headset_component_evidence": true
+    },
+    {
+      "priority": 4,
+      "approach": "Vulkan timeline and synchronization2",
+      "disposition": "secondary development",
+      "implementations": [
+        {
+          "branch": "research/sub15-20261009/vulkan-extensions",
+          "commit": "00939ca2c504a525e69c173221e1afb67b5be6bc"
+        }
+      ],
+      "next": "Carry private-slot lifetime guarantees into real frame/image ownership and cancellation.",
+      "tested_native_implementation": false,
+      "actual_headset_component_evidence": true
+    },
+    {
+      "approach": "Direct ordinary TCP/UDP path diagnostic",
+      "disposition": "retain diagnostic and TCP baseline",
+      "implementations": [
+        {
+          "branch": "research/sub15-20261009/wireless-pair-probe",
+          "commit": "9ec0b0d1d7eaf3cdb54709acfa1d2bcec9d163fb"
+        }
+      ],
+      "next": "Only if pursuing UDP: correct preparation-aware pacing, then overlapping pair ownership and realistic loss/FEC.",
+      "native_transport_replacement_selected": false,
+      "actual_direct_lan_evidence": true,
+      "executed_source_commit": "9ec0b0d1d7eaf3cdb54709acfa1d2bcec9d163fb",
+      "evidence_report_commit": "bc157d5d6d1ca51731b3d4a79abf94a321695e8c"
+    },
+    {
+      "approach": "LZ4 directly into mapped RGB destination",
+      "disposition": "hold",
+      "implementations": [
+        {
+          "branch": "research/sub15-20261009/mapped-input-consumer",
+          "commit": "068dd29df03e44ab0668d9607d2896650c4b91f9"
+        },
+        {
+          "branch": "research/sub15-20261009/mapped-input-decode",
+          "commit": "24d0b3ca35e656b5e7f8af771e1cb1cbbd7c9e71"
+        }
+      ],
+      "reason": "All matched medians slower than staged paths on this Quest; does not apply to native VR444 mapped RGBA."
+    },
+    {
+      "approach": "Bounded-newest selector",
+      "disposition": "hold promotion",
+      "reason": "Interrupted first run, second misses88 unique Hz, drifting closest brackets prevent causal selection."
+    },
+    {
+      "approach": "Host image copy extension",
+      "disposition": "hold on tested device",
+      "implementations": [
+        {
+          "branch": "research/sub15-20261009/host-image-copy",
+          "commit": "80e53b11eedaa37468cdedd23ff2b9ab7dfd5a30"
+        }
+      ],
+      "reason": "Required extension absent."
+    },
+    {
+      "approach": "Neural research PR deployment",
+      "disposition": "hold",
+      "reason": "Evidence contract review findings and missing trained native adapters; no useful live qualification yet."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+Native selector/output development triage (2026-10-09)
+
+Nearest-rank p50/p95/p99 of first successful encoded stereo submission minus earliest eye receipt; two-second warmup; global prewarm seen-frame history retained.
+
+run                           p50 ms    p95 ms    p99 ms    unique Hz   fixed90 focused
+selector/01-hevc-before         13.797    15.812    16.530     89.748   True
+selector/02-closest-traced      15.641    18.011    19.117     89.097   True
+selector/03-bounded-traced      21.179    32.469    35.708     83.988   False
+selector/04-bounded-traced      18.135    28.730    30.341     86.202   True
+selector/05-closest-traced      29.672    34.982    36.277     88.492   True
+selector/06-hevc-after          15.115    17.497    18.798     87.902   True
+output/01-cached                27.638    30.674    32.331     88.588   True
+output/02-mapped                29.041    31.894    33.328     88.241   True
+output/03-mapped                17.822    20.870    22.669     89.158   True
+output/04-cached                18.570    24.217    26.031     89.859   True
+
+All ten acquisition evidence summaries and replayed runtime contracts pass. No sub-15 result.
+
+Warm first-use stereo stage medians (receipt->ready / ready->selection / selection->submit), ms:
+selector/01-hevc-before       3.090 / 7.831 / 1.400
+selector/02-closest-traced    2.431 / 11.245 / 1.456
+selector/03-bounded-traced    2.580 / 16.621 / 1.473
+selector/04-bounded-traced    2.168 / 14.320 / 1.462
+selector/05-closest-traced    1.887 / 25.777 / 1.458
+selector/06-hevc-after        3.249 / 7.620 / 1.485
+output/01-cached              2.074 / 23.746 / 1.451
+output/02-mapped              1.666 / 25.608 / 1.473
+output/03-mapped              1.764 / 14.389 / 1.410
+output/04-cached              2.208 / 14.119 / 1.429
+
+Warm selected-eye output-stage medians (CPU decode / staging copy / decode_upload), ms:
+01-cached     0.647 / 0.226 / 1.477
+02-mapped     0.589 / 0.000 / 1.097
+03-mapped     0.612 / 0.000 / 1.138
+04-cached     0.776 / 0.222 / 1.557
+
+Closest bracket: ready->selection median rises from 11.245 to 25.777 ms, while receipt->ready falls from 2.431 to 1.887 ms and selection->submit stays near 1.46 ms.
+This localizes the observed age change after publication; it does not establish cause or removability. Target/readiness phase and selected-source-history details are retained in JSON.
+The first bounded run has 124 warm presentations outside the 90 Hz band plus same-PID focus loss/recovery. Original evidence pass is preserved, but fixed-90 ranking excludes that run.
+
+Retain closest-target cached-copy as control; do not promote bounded-newest.
+One bounded run contains focus loss and 72 Hz periods and is excluded from fixed-90 comparisons. The other stays 90 Hz but misses 88 unique stereo Hz. Closest brackets drift substantially; no stable causal selector win is established.
+
+Continue native mapped-direct as an opt-in decoder/output investigation, keep cached-copy control.
+Both output arms have substantial session drift; these four runs do not establish an end-to-end winner. Compare joined decode/copy stages separately. Native VR444 NEON mapped RGBA output is distinct from RRF/RRB LZ4-to-mapped-RGB prototypes.
+
+Prioritize default-off publication/pacer diagnostics for the next native integration.
+Closest bracket age increase is observed chiefly between publication and selection, with target/supply phase changing. This does not establish cause or removability. Diagnostic branch needs synchronized overlay/patch and a fresh build; not present in this APK. Do not take the early pacer trace without its initialization fix.
+
+Retain repaired schema-2 trace analysis and preserve all original evidence statuses.
+Replay validates successful-submission traces; intervening/terminal render attempts remain unrecorded. No original failed historical capture is relabeled.
+
+Keep HEVC as a native hardware compression reference, not RGB444 quality equivalence.
+Actual per-eye streams are 576x640 HEVC Main yuvj420p. No run reaches p95 strictly below 15 ms; traces, samples and these short repeats cannot establish release readiness.
+
+Pooled per-eye events joined by exact frame/eye/warp to warm first stereo use. Durations are not summed into stereo latency. Quantiles of telescoping presentation stages are not additive.
+TCP over ADB reverse over wireless ADB; not direct codec Wi-Fi transport.
+The JSON binds every file read by portable root/path, byte count and SHA256. External build/binary verification is retained acquisition evidence, not repeated by this replay.
+No observed interruption cause is assigned. No displayed-image or optical motion-to-photon qualification.

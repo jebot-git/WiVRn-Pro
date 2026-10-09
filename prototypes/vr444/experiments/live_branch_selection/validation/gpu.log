@@ -1,0 +1,16 @@
+test_arm_variant_cannot_be_changed (test_triage.AuditTests.test_arm_variant_cannot_be_changed) ... ok
+test_clock_and_memory_mutations (test_triage.AuditTests.test_clock_and_memory_mutations) ... ok
+test_exact_order_and_population (test_triage.AuditTests.test_exact_order_and_population) ... ok
+test_manifest_filters_keep_both_eyes_and_partitions (test_triage.AuditTests.test_manifest_filters_keep_both_eyes_and_partitions) ... ok
+test_missing_or_duplicate_arm (test_triage.AuditTests.test_missing_or_duplicate_arm) ... ok
+test_old_smoke_cannot_be_relabelled (test_triage.AuditTests.test_old_smoke_cannot_be_relabelled) ... ok
+test_oracle_and_omission_gates (test_triage.AuditTests.test_oracle_and_omission_gates) ... ok
+test_plan_frozen (test_triage.AuditTests.test_plan_frozen) ... ok
+test_ratio_components_are_not_added_quantiles (test_triage.AuditTests.test_ratio_components_are_not_added_quantiles) ... ok
+test_synthetic_valid_shape (test_triage.AuditTests.test_synthetic_valid_shape) ... ok
+test_wire_population_and_size (test_triage.AuditTests.test_wire_population_and_size) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.046s
+
+OK

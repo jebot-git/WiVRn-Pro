@@ -1,0 +1,15 @@
+test_all_modes_and_cadences_share_isolated_scene_and_comparison_optout (test_native_compare.NativeComparisonConfiguration.test_all_modes_and_cadences_share_isolated_scene_and_comparison_optout) ... ok
+test_29_pairs_fail_even_with_usable_postwarmup_interval (test_native_compare.NativeComparisonGates.test_29_pairs_fail_even_with_usable_postwarmup_interval) ... ok
+test_experimental_controls_are_explicit_and_backed_up (test_native_compare.NativeComparisonGates.test_experimental_controls_are_explicit_and_backed_up) ... ok
+test_identity_failure_is_not_overridden_by_sufficient_counts (test_native_compare.NativeComparisonGates.test_identity_failure_is_not_overridden_by_sufficient_counts) ... ok
+test_inherited_source_trace_is_removed_and_only_explicitly_enabled (test_native_compare.NativeComparisonGates.test_inherited_source_trace_is_removed_and_only_explicitly_enabled) ... ok
+test_invalid_optional_feed_fails_even_with_valid_presentation_timing (test_native_compare.NativeComparisonGates.test_invalid_optional_feed_fails_even_with_valid_presentation_timing) ... ok
+test_many_startup_pairs_cannot_substitute_for_postwarmup_cadence (test_native_compare.NativeComparisonGates.test_many_startup_pairs_cannot_substitute_for_postwarmup_cadence) ... ok
+test_minimum_30_pairs_and_positive_postwarmup_window_pass_without_optional_feed (test_native_compare.NativeComparisonGates.test_minimum_30_pairs_and_positive_postwarmup_window_pass_without_optional_feed) ... ok
+test_repeated_presentations_do_not_satisfy_unique_pair_minimum (test_native_compare.NativeComparisonGates.test_repeated_presentations_do_not_satisfy_unique_pair_minimum) ... ok
+test_source_footer_wait_never_accepts_partial_or_false_completion (test_native_compare.NativeComparisonGates.test_source_footer_wait_never_accepts_partial_or_false_completion) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.007s
+
+OK

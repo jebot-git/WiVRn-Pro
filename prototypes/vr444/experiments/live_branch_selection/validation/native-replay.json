@@ -1,0 +1,2616 @@
+{
+  "all_read_inputs_unchanged": true,
+  "analyzer_base_commit": "5ce9642eb12f50cefa9443c7d93fdf40d9da7353",
+  "campaigns": {
+    "output": {
+      "build_verification_scope": "Saved acquisition receipts; replay does not rebuild or rehash external binaries/native checkout.",
+      "physical_serial": "230YC01D8W000E",
+      "postconditions": {
+        "analysis_sources_unchanged": true,
+        "dedicated_app_stopped": true,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "production_package_unchanged": true
+      },
+      "recorded_build_files_verified_before_and_after": 70,
+      "runs": [
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "output",
+          "cpu_output": "cached-copy",
+          "decoder_observed": {
+            "cpu_output_mode": [
+              "cached-copy"
+            ],
+            "cpu_vector_backend": [
+              "aarch64-neon"
+            ],
+            "staging_memory_flags": [
+              15
+            ],
+            "staging_memory_type": [
+              4
+            ]
+          },
+          "finish_utc": "2026-10-09T13:20:56.203810+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "23584",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 27.637555,
+            "stereo_receive_to_submit_ms_p95": 30.673909,
+            "stereo_receive_to_submit_ms_p99": 32.330941,
+            "unique_stereo_submission_hz": 88.58757095952409
+          },
+          "mode": "custom-vr444",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "fail",
+          "replayed_runtime_status": "pass",
+          "run": "01-cached",
+          "selection_policy": "closest-target",
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1879,
+              "max": 30.33068,
+              "min": 0.061823,
+              "p50": 23.746044,
+              "p95": 26.829482,
+              "p99": 29.073544
+            },
+            "receipt_to_ready_ms": {
+              "count": 1879,
+              "max": 11.601303,
+              "min": 1.068177,
+              "p50": 2.073959,
+              "p95": 7.617501,
+              "p99": 9.121772
+            },
+            "selection_to_submit_ms": {
+              "count": 1879,
+              "max": 4.529688,
+              "min": 0.981875,
+              "p50": 1.450782,
+              "p95": 1.866355,
+              "p99": 2.152865
+            }
+          },
+          "start_utc": "2026-10-09T13:20:01.441267+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": false,
+          "warm_period_ns": {
+            "count": 1879,
+            "max": 11111851,
+            "min": 11110436,
+            "p50": 11111112,
+            "p95": 11111356,
+            "p99": 11111426
+          },
+          "warm_presentations": 1879,
+          "warm_seconds": 21.199362164,
+          "warm_selected_eye_decoder_ms": {
+            "capture_snapshot_ms": {
+              "count": 3758,
+              "max": 0,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "cpu_decode_ms": {
+              "count": 3758,
+              "max": 2.59901,
+              "min": 0.260052,
+              "p50": 0.647031,
+              "p95": 1.06026,
+              "p99": 1.27031
+            },
+            "decode_upload_ms": {
+              "count": 3758,
+              "max": 3.99036,
+              "min": 0.774219,
+              "p50": 1.47745,
+              "p95": 2.60214,
+              "p99": 3.03984
+            },
+            "decompression_ms": {
+              "count": 3758,
+              "max": 0.371406,
+              "min": 0.008802,
+              "p50": 0.018021,
+              "p95": 0.02849,
+              "p99": 0.05323
+            },
+            "queue_wait_ms": {
+              "count": 3758,
+              "max": 9.33573,
+              "min": 0.016771,
+              "p50": 0.178177,
+              "p95": 0.565521,
+              "p99": 6.65156
+            },
+            "staging_copy_ms": {
+              "count": 3758,
+              "max": 2.12057,
+              "min": 0.126094,
+              "p50": 0.226458,
+              "p95": 0.549636,
+              "p99": 0.849739
+            },
+            "submit_fence_wait_ms": {
+              "count": 3758,
+              "max": 2.55833,
+              "min": 0.144062,
+              "p50": 0.374791,
+              "p95": 1.33406,
+              "p99": 1.77542
+            }
+          },
+          "warm_unique_pairs": 1879
+        },
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "output",
+          "cpu_output": "mapped-direct",
+          "decoder_observed": {
+            "cpu_output_mode": [
+              "mapped-direct"
+            ],
+            "cpu_vector_backend": [
+              "aarch64-neon"
+            ],
+            "staging_memory_flags": [
+              15
+            ],
+            "staging_memory_type": [
+              4
+            ]
+          },
+          "finish_utc": "2026-10-09T13:21:46.404824+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "24005",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 29.041097,
+            "stereo_receive_to_submit_ms_p95": 31.894274,
+            "stereo_receive_to_submit_ms_p99": 33.328389,
+            "unique_stereo_submission_hz": 88.24062157485318
+          },
+          "mode": "custom-vr444",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "fail",
+          "replayed_runtime_status": "pass",
+          "run": "02-mapped",
+          "selection_policy": "closest-target",
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1874,
+              "max": 32.086722,
+              "min": 0.183646,
+              "p50": 25.607763,
+              "p95": 28.906096,
+              "p99": 30.268232
+            },
+            "receipt_to_ready_ms": {
+              "count": 1874,
+              "max": 11.908491,
+              "min": 0.708125,
+              "p50": 1.665729,
+              "p95": 7.040938,
+              "p99": 8.802032
+            },
+            "selection_to_submit_ms": {
+              "count": 1874,
+              "max": 3.491406,
+              "min": 0.93724,
+              "p50": 1.473385,
+              "p95": 1.858437,
+              "p99": 2.08276
+            }
+          },
+          "start_utc": "2026-10-09T13:20:56.723857+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": false,
+          "warm_period_ns": {
+            "count": 1874,
+            "max": 11111695,
+            "min": 11110566,
+            "p50": 11111116,
+            "p95": 11111354,
+            "p99": 11111424
+          },
+          "warm_presentations": 1874,
+          "warm_seconds": 21.22605175,
+          "warm_selected_eye_decoder_ms": {
+            "capture_snapshot_ms": {
+              "count": 3748,
+              "max": 3.14771,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "cpu_decode_ms": {
+              "count": 3748,
+              "max": 1.46573,
+              "min": 0.127916,
+              "p50": 0.588906,
+              "p95": 0.890677,
+              "p99": 1.07448
+            },
+            "decode_upload_ms": {
+              "count": 3748,
+              "max": 4.15453,
+              "min": 0.343386,
+              "p50": 1.09651,
+              "p95": 2.03672,
+              "p99": 2.53229
+            },
+            "decompression_ms": {
+              "count": 3748,
+              "max": 0.307291,
+              "min": 0.006667,
+              "p50": 0.020781,
+              "p95": 0.027813,
+              "p99": 0.047031
+            },
+            "queue_wait_ms": {
+              "count": 3748,
+              "max": 10.1381,
+              "min": 0.016406,
+              "p50": 0.268698,
+              "p95": 0.547865,
+              "p99": 6.67385
+            },
+            "staging_copy_ms": {
+              "count": 3748,
+              "max": 0,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "submit_fence_wait_ms": {
+              "count": 3748,
+              "max": 2.09797,
+              "min": 0.119792,
+              "p50": 0.350729,
+              "p95": 1.18021,
+              "p99": 1.56573
+            }
+          },
+          "warm_unique_pairs": 1874
+        },
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "output",
+          "cpu_output": "mapped-direct",
+          "decoder_observed": {
+            "cpu_output_mode": [
+              "mapped-direct"
+            ],
+            "cpu_vector_backend": [
+              "aarch64-neon"
+            ],
+            "staging_memory_flags": [
+              15
+            ],
+            "staging_memory_type": [
+              4
+            ]
+          },
+          "finish_utc": "2026-10-09T13:22:35.641787+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "24430",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 17.822346,
+            "stereo_receive_to_submit_ms_p95": 20.870054,
+            "stereo_receive_to_submit_ms_p99": 22.669116,
+            "unique_stereo_submission_hz": 89.1577184308973
+          },
+          "mode": "custom-vr444",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "fail",
+          "replayed_runtime_status": "pass",
+          "run": "03-mapped",
+          "selection_policy": "closest-target",
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1900,
+              "max": 29.849378,
+              "min": 0.073125,
+              "p50": 14.388856,
+              "p95": 17.637398,
+              "p99": 19.174013
+            },
+            "receipt_to_ready_ms": {
+              "count": 1900,
+              "max": 15.985053,
+              "min": 0.885156,
+              "p50": 1.764114,
+              "p95": 7.955209,
+              "p99": 9.291147
+            },
+            "selection_to_submit_ms": {
+              "count": 1900,
+              "max": 10.508908,
+              "min": 0.945209,
+              "p50": 1.410052,
+              "p95": 1.74125,
+              "p99": 2.164167
+            }
+          },
+          "start_utc": "2026-10-09T13:21:47.006696+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": false,
+          "warm_period_ns": {
+            "count": 1900,
+            "max": 11111494,
+            "min": 11110677,
+            "p50": 11111117,
+            "p95": 11111347,
+            "p99": 11111403
+          },
+          "warm_presentations": 1900,
+          "warm_seconds": 21.299333736,
+          "warm_selected_eye_decoder_ms": {
+            "capture_snapshot_ms": {
+              "count": 3800,
+              "max": 3.4638,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "cpu_decode_ms": {
+              "count": 3800,
+              "max": 1.67885,
+              "min": 0.199688,
+              "p50": 0.612136,
+              "p95": 0.90875,
+              "p99": 1.07922
+            },
+            "decode_upload_ms": {
+              "count": 3800,
+              "max": 4.40552,
+              "min": 0.411302,
+              "p50": 1.13833,
+              "p95": 2.02365,
+              "p99": 2.65724
+            },
+            "decompression_ms": {
+              "count": 3800,
+              "max": 0.270312,
+              "min": 0.00552,
+              "p50": 0.020209,
+              "p95": 0.029323,
+              "p99": 0.050313
+            },
+            "queue_wait_ms": {
+              "count": 3800,
+              "max": 14.765,
+              "min": 0.014636,
+              "p50": 0.250886,
+              "p95": 5.72167,
+              "p99": 7.25583
+            },
+            "staging_copy_ms": {
+              "count": 3800,
+              "max": 0,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "submit_fence_wait_ms": {
+              "count": 3800,
+              "max": 2.26021,
+              "min": 0.132916,
+              "p50": 0.346094,
+              "p95": 1.18708,
+              "p99": 1.48385
+            }
+          },
+          "warm_unique_pairs": 1900
+        },
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "output",
+          "cpu_output": "cached-copy",
+          "decoder_observed": {
+            "cpu_output_mode": [
+              "cached-copy"
+            ],
+            "cpu_vector_backend": [
+              "aarch64-neon"
+            ],
+            "staging_memory_flags": [
+              15
+            ],
+            "staging_memory_type": [
+              4
+            ]
+          },
+          "finish_utc": "2026-10-09T13:23:25.283846+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "24845",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 18.569794,
+            "stereo_receive_to_submit_ms_p95": 24.217086,
+            "stereo_receive_to_submit_ms_p99": 26.031045,
+            "unique_stereo_submission_hz": 89.85943886242299
+          },
+          "mode": "custom-vr444",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "fail",
+          "replayed_runtime_status": "pass",
+          "run": "04-cached",
+          "selection_policy": "closest-target",
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1912,
+              "max": 23.904169,
+              "min": 1.680156,
+              "p50": 14.119116,
+              "p95": 19.838179,
+              "p99": 21.958075
+            },
+            "receipt_to_ready_ms": {
+              "count": 1912,
+              "max": 13.930626,
+              "min": 1.558959,
+              "p50": 2.207657,
+              "p95": 8.652032,
+              "p99": 10.167605
+            },
+            "selection_to_submit_ms": {
+              "count": 1912,
+              "max": 4.127969,
+              "min": 0.951407,
+              "p50": 1.429114,
+              "p95": 1.803855,
+              "p99": 2.05724
+            }
+          },
+          "start_utc": "2026-10-09T13:22:36.161032+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": false,
+          "warm_period_ns": {
+            "count": 1912,
+            "max": 11111522,
+            "min": 11110748,
+            "p50": 11111120,
+            "p95": 11111351,
+            "p99": 11111421
+          },
+          "warm_presentations": 1912,
+          "warm_seconds": 21.266547223,
+          "warm_selected_eye_decoder_ms": {
+            "capture_snapshot_ms": {
+              "count": 3824,
+              "max": 0,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "cpu_decode_ms": {
+              "count": 3824,
+              "max": 1.99365,
+              "min": 0.503385,
+              "p50": 0.776354,
+              "p95": 1.12625,
+              "p99": 1.37984
+            },
+            "decode_upload_ms": {
+              "count": 3824,
+              "max": 4.2701,
+              "min": 1.09432,
+              "p50": 1.55651,
+              "p95": 2.42615,
+              "p99": 2.96458
+            },
+            "decompression_ms": {
+              "count": 3824,
+              "max": 0.396615,
+              "min": 0.013333,
+              "p50": 0.022813,
+              "p95": 0.030573,
+              "p99": 0.05901
+            },
+            "queue_wait_ms": {
+              "count": 3824,
+              "max": 12.0456,
+              "min": 0.015729,
+              "p50": 0.274636,
+              "p95": 5.9838,
+              "p99": 7.25662
+            },
+            "staging_copy_ms": {
+              "count": 3824,
+              "max": 1.36974,
+              "min": 0.125886,
+              "p50": 0.22151,
+              "p95": 0.535573,
+              "p99": 0.803854
+            },
+            "submit_fence_wait_ms": {
+              "count": 3824,
+              "max": 2.52365,
+              "min": 0.138281,
+              "p50": 0.369583,
+              "p95": 1.15187,
+              "p99": 1.44198
+            }
+          },
+          "warm_unique_pairs": 1912
+        }
+      ],
+      "status": "complete"
+    },
+    "selector": {
+      "build_verification_scope": "Saved acquisition receipts; replay does not rebuild or rehash external binaries/native checkout.",
+      "physical_serial": "230YC01D8W000E",
+      "postconditions": {
+        "analysis_sources_unchanged": true,
+        "dedicated_app_stopped": true,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "production_package_unchanged": true
+      },
+      "recorded_build_files_verified_before_and_after": 70,
+      "runs": [
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "selector",
+          "cpu_output": "cached-copy",
+          "finish_utc": "2026-10-09T13:15:05.256372+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "20621",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 13.797345,
+            "stereo_receive_to_submit_ms_p95": 15.812293,
+            "stereo_receive_to_submit_ms_p99": 16.530262,
+            "unique_stereo_submission_hz": 89.74802296080642
+          },
+          "hevc_reference": {
+            "eyes": [
+              {
+                "codec": "hevc",
+                "decoded_frames": 2065,
+                "height": 640,
+                "pixel_format": "yuvj420p",
+                "profile": "Main",
+                "width": 576
+              },
+              {
+                "codec": "hevc",
+                "decoded_frames": 2065,
+                "height": 640,
+                "pixel_format": "yuvj420p",
+                "profile": "Main",
+                "width": 576
+              }
+            ],
+            "quality_equivalent_to_rgb444": false,
+            "scope": "host elementary bitstreams, independently software decoded; not displayed-image quality or network wire bytes"
+          },
+          "mode": "native-hevc",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "pass",
+          "replayed_runtime_status": "pass",
+          "run": "01-hevc-before",
+          "selection_policy": "closest-target",
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1864,
+              "max": 12.573022,
+              "min": 0.088333,
+              "p50": 7.83099,
+              "p95": 10.771146,
+              "p99": 11.691355
+            },
+            "receipt_to_ready_ms": {
+              "count": 1864,
+              "max": 13.166199,
+              "min": 2.285625,
+              "p50": 3.089792,
+              "p95": 9.530887,
+              "p99": 10.768178
+            },
+            "selection_to_submit_ms": {
+              "count": 1864,
+              "max": 3.74099,
+              "min": 0.988438,
+              "p50": 1.400469,
+              "p95": 1.964167,
+              "p99": 2.326615
+            }
+          },
+          "start_utc": "2026-10-09T13:14:22.208359+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": false,
+          "warm_period_ns": {
+            "count": 1864,
+            "max": 11111490,
+            "min": 11110724,
+            "p50": 11111116,
+            "p95": 11111362,
+            "p99": 11111426
+          },
+          "warm_presentations": 1864,
+          "warm_seconds": 20.758117433,
+          "warm_unique_pairs": 1864
+        },
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "selector",
+          "candidate": {
+            "render_attempt_coverage": "not_recorded",
+            "runtime_target_minus_submit_ms": {
+              "count": 1882,
+              "max": 20.512088,
+              "min": 16.271462,
+              "p50": 18.11841,
+              "p95": 19.198326,
+              "p99": 19.774439
+            },
+            "selected_target_minus_ready_ms": {
+              "count": 1882,
+              "max": 36.44067,
+              "min": 19.537757,
+              "p50": 31.002296,
+              "p95": 34.263894,
+              "p99": 34.869212
+            },
+            "selected_target_minus_runtime_ms": {
+              "count": 1882,
+              "max": 0.253728,
+              "min": -0.382461,
+              "p50": -0.002036,
+              "p95": 0.11849,
+              "p99": 0.174086
+            },
+            "status": "pass",
+            "warm_differs_from_closest": 0
+          },
+          "cpu_output": "cached-copy",
+          "decoder_observed": {
+            "cpu_output_mode": [
+              "cached-copy"
+            ],
+            "cpu_vector_backend": [
+              "aarch64-neon"
+            ],
+            "staging_memory_flags": [
+              15
+            ],
+            "staging_memory_type": [
+              4
+            ]
+          },
+          "finish_utc": "2026-10-09T13:16:00.810406+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "21208",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 15.641199,
+            "stereo_receive_to_submit_ms_p95": 18.010575,
+            "stereo_receive_to_submit_ms_p99": 19.116617,
+            "unique_stereo_submission_hz": 89.09667513060545
+          },
+          "mode": "custom-vr444",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "pass",
+          "replayed_runtime_status": "pass",
+          "run": "02-closest-traced",
+          "selection_policy": "closest-target",
+          "source_selected_history": {
+            "earliest_known_receipt_to_submit_ms": {
+              "count": 1882,
+              "max": 21.496461,
+              "min": 4.629115,
+              "p50": 15.643908,
+              "p95": 18.018647,
+              "p99": 19.201409
+            },
+            "older_known_receipt_count": 3,
+            "replayed_status": "pass",
+            "scope": "Hindsight earliest receipt among previously or later selected frames sharing validated app-frame set, including prewarm. Not complete arrival supply, simulation age or host-to-display latency."
+          },
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1882,
+              "max": 16.8737,
+              "min": 0.114427,
+              "p50": 11.245262,
+              "p95": 14.403023,
+              "p99": 15.256356
+            },
+            "receipt_to_ready_ms": {
+              "count": 1882,
+              "max": 13.110939,
+              "min": 1.065365,
+              "p50": 2.430625,
+              "p95": 8.487761,
+              "p99": 10.238335
+            },
+            "selection_to_submit_ms": {
+              "count": 1882,
+              "max": 4.005886,
+              "min": 0.943906,
+              "p50": 1.456094,
+              "p95": 1.961615,
+              "p99": 2.38401
+            }
+          },
+          "start_utc": "2026-10-09T13:15:05.808686+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": true,
+          "warm_period_ns": {
+            "count": 1882,
+            "max": 11111544,
+            "min": 11110750,
+            "p50": 11111112,
+            "p95": 11111354,
+            "p99": 11111423
+          },
+          "warm_presentations": 1882,
+          "warm_seconds": 21.111898926,
+          "warm_selected_eye_decoder_ms": {
+            "capture_snapshot_ms": {
+              "count": 3764,
+              "max": 0,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "cpu_decode_ms": {
+              "count": 3764,
+              "max": 2.26151,
+              "min": 0.248906,
+              "p50": 0.749375,
+              "p95": 1.21703,
+              "p99": 1.50646
+            },
+            "decode_upload_ms": {
+              "count": 3764,
+              "max": 4.15771,
+              "min": 0.731614,
+              "p50": 1.65599,
+              "p95": 2.8275,
+              "p99": 3.28859
+            },
+            "decompression_ms": {
+              "count": 3764,
+              "max": 1.71057,
+              "min": 0.006927,
+              "p50": 0.020781,
+              "p95": 0.033229,
+              "p99": 0.06776
+            },
+            "queue_wait_ms": {
+              "count": 3764,
+              "max": 10.3796,
+              "min": 0.014687,
+              "p50": 0.130573,
+              "p95": 5.95099,
+              "p99": 7.44656
+            },
+            "staging_copy_ms": {
+              "count": 3764,
+              "max": 1.52417,
+              "min": 0.128959,
+              "p50": 0.259011,
+              "p95": 0.664479,
+              "p99": 0.964011
+            },
+            "submit_fence_wait_ms": {
+              "count": 3764,
+              "max": 2.45578,
+              "min": 0.138073,
+              "p50": 0.385,
+              "p95": 1.58062,
+              "p99": 2.00755
+            }
+          },
+          "warm_unique_pairs": 1882
+        },
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "selector",
+          "candidate": {
+            "render_attempt_coverage": "not_recorded",
+            "runtime_target_minus_submit_ms": {
+              "count": 1792,
+              "max": 55.235684,
+              "min": 16.664287,
+              "p50": 19.153496,
+              "p95": 29.618632,
+              "p99": 46.648369
+            },
+            "selected_target_minus_ready_ms": {
+              "count": 1792,
+              "max": 74.294101,
+              "min": 1.661054,
+              "p50": 45.366568,
+              "p95": 55.628545,
+              "p99": 67.575461
+            },
+            "selected_target_minus_runtime_ms": {
+              "count": 1792,
+              "max": 13.861915,
+              "min": -22.07219,
+              "p50": 10.460686,
+              "p95": 11.077,
+              "p99": 12.225597
+            },
+            "status": "pass",
+            "warm_differs_from_closest": 1017
+          },
+          "cpu_output": "cached-copy",
+          "decoder_observed": {
+            "cpu_output_mode": [
+              "cached-copy"
+            ],
+            "cpu_vector_backend": [
+              "aarch64-neon"
+            ],
+            "staging_memory_flags": [
+              15
+            ],
+            "staging_memory_type": [
+              4
+            ]
+          },
+          "finish_utc": "2026-10-09T13:16:59.568054+00:00",
+          "first_non_90hz_after_warm_s": 3.884253242,
+          "fixed_90hz_comparison_eligible": false,
+          "focus": {
+            "continuously_focused_observed": false,
+            "pid": "21636",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": [
+              {
+                "from": "XR_SESSION_STATE_FOCUSED",
+                "to": "XR_SESSION_STATE_VISIBLE",
+                "xr_ns": 1968933072806
+              },
+              {
+                "from": "XR_SESSION_STATE_VISIBLE",
+                "to": "XR_SESSION_STATE_FOCUSED",
+                "xr_ns": 1970668369802
+              }
+            ]
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 21.178752,
+            "stereo_receive_to_submit_ms_p95": 32.469118,
+            "stereo_receive_to_submit_ms_p99": 35.708389,
+            "unique_stereo_submission_hz": 83.98781512768927
+          },
+          "mode": "custom-vr444",
+          "non_90hz_warm_presentations": 124,
+          "provisional_latency_gate": "fail",
+          "replayed_runtime_status": "pass",
+          "run": "03-bounded-traced",
+          "selection_policy": "bounded-newest",
+          "source_selected_history": {
+            "earliest_known_receipt_to_submit_ms": {
+              "count": 1792,
+              "max": 43.097296,
+              "min": 3.145312,
+              "p50": 21.256825,
+              "p95": 32.946618,
+              "p99": 36.658389
+            },
+            "older_known_receipt_count": 32,
+            "replayed_status": "pass",
+            "scope": "Hindsight earliest receipt among previously or later selected frames sharing validated app-frame set, including prewarm. Not complete arrival supply, simulation age or host-to-display latency."
+          },
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1792,
+              "max": 34.293233,
+              "min": 0.034948,
+              "p50": 16.621044,
+              "p95": 28.518128,
+              "p99": 32.075003
+            },
+            "receipt_to_ready_ms": {
+              "count": 1792,
+              "max": 19.963648,
+              "min": 1.075313,
+              "p50": 2.580469,
+              "p95": 8.592292,
+              "p99": 10.576668
+            },
+            "selection_to_submit_ms": {
+              "count": 1792,
+              "max": 4.918386,
+              "min": 0.944687,
+              "p50": 1.47323,
+              "p95": 2.018594,
+              "p99": 2.538333
+            }
+          },
+          "start_utc": "2026-10-09T13:16:01.387492+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": true,
+          "warm_period_ns": {
+            "count": 1792,
+            "max": 13888990,
+            "min": 11110577,
+            "p50": 11111128,
+            "p95": 13888553,
+            "p99": 13888798
+          },
+          "warm_presentations": 1792,
+          "warm_seconds": 21.324521864,
+          "warm_selected_eye_decoder_ms": {
+            "capture_snapshot_ms": {
+              "count": 3584,
+              "max": 0,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "cpu_decode_ms": {
+              "count": 3584,
+              "max": 8.41641,
+              "min": 0.22073,
+              "p50": 0.86,
+              "p95": 1.31911,
+              "p99": 1.58536
+            },
+            "decode_upload_ms": {
+              "count": 3584,
+              "max": 16.8882,
+              "min": 0.690781,
+              "p50": 1.77932,
+              "p95": 3.18677,
+              "p99": 4.58943
+            },
+            "decompression_ms": {
+              "count": 3584,
+              "max": 0.969167,
+              "min": 0.006771,
+              "p50": 0.022343,
+              "p95": 0.038281,
+              "p99": 0.072812
+            },
+            "queue_wait_ms": {
+              "count": 3584,
+              "max": 14.9997,
+              "min": 0.014531,
+              "p50": 0.167187,
+              "p95": 1.58073,
+              "p99": 7.05172
+            },
+            "staging_copy_ms": {
+              "count": 3584,
+              "max": 3.79495,
+              "min": 0.120364,
+              "p50": 0.249271,
+              "p95": 0.613541,
+              "p99": 1.02937
+            },
+            "submit_fence_wait_ms": {
+              "count": 3584,
+              "max": 16.2825,
+              "min": 0.129843,
+              "p50": 0.378854,
+              "p95": 1.76245,
+              "p99": 3.2676
+            }
+          },
+          "warm_unique_pairs": 1792
+        },
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "selector",
+          "candidate": {
+            "render_attempt_coverage": "not_recorded",
+            "runtime_target_minus_submit_ms": {
+              "count": 1826,
+              "max": 40.762496,
+              "min": 16.683241,
+              "p50": 18.880442,
+              "p95": 23.197622,
+              "p99": 26.999424
+            },
+            "selected_target_minus_ready_ms": {
+              "count": 1826,
+              "max": 63.985803,
+              "min": 5.00098,
+              "p50": 43.1535,
+              "p95": 48.412525,
+              "p99": 52.196223
+            },
+            "selected_target_minus_runtime_ms": {
+              "count": 1826,
+              "max": 11.111169,
+              "min": -22.266066,
+              "p50": 10.675838,
+              "p95": 11.077491,
+              "p99": 11.101133
+            },
+            "status": "pass",
+            "warm_differs_from_closest": 1078
+          },
+          "cpu_output": "cached-copy",
+          "decoder_observed": {
+            "cpu_output_mode": [
+              "cached-copy"
+            ],
+            "cpu_vector_backend": [
+              "aarch64-neon"
+            ],
+            "staging_memory_flags": [
+              15
+            ],
+            "staging_memory_type": [
+              4
+            ]
+          },
+          "finish_utc": "2026-10-09T13:18:02.280928+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "22167",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 18.134637,
+            "stereo_receive_to_submit_ms_p95": 28.729743,
+            "stereo_receive_to_submit_ms_p99": 30.340888,
+            "unique_stereo_submission_hz": 86.20244173006422
+          },
+          "mode": "custom-vr444",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "fail",
+          "replayed_runtime_status": "pass",
+          "run": "04-bounded-traced",
+          "selection_policy": "bounded-newest",
+          "source_selected_history": {
+            "earliest_known_receipt_to_submit_ms": {
+              "count": 1826,
+              "max": 43.362921,
+              "min": 3.809896,
+              "p50": 18.225002,
+              "p95": 28.903909,
+              "p99": 31.778701
+            },
+            "older_known_receipt_count": 19,
+            "replayed_status": "pass",
+            "scope": "Hindsight earliest receipt among previously or later selected frames sharing validated app-frame set, including prewarm. Not complete arrival supply, simulation age or host-to-display latency."
+          },
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1826,
+              "max": 31.144431,
+              "min": 0.060886,
+              "p50": 14.319637,
+              "p95": 24.962815,
+              "p99": 27.150055
+            },
+            "receipt_to_ready_ms": {
+              "count": 1826,
+              "max": 13.000366,
+              "min": 1.294948,
+              "p50": 2.168125,
+              "p95": 7.759324,
+              "p99": 9.670365
+            },
+            "selection_to_submit_ms": {
+              "count": 1826,
+              "max": 3.916094,
+              "min": 0.968542,
+              "p50": 1.462136,
+              "p95": 1.881614,
+              "p99": 2.318646
+            }
+          },
+          "start_utc": "2026-10-09T13:17:00.113413+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": true,
+          "warm_period_ns": {
+            "count": 1826,
+            "max": 11111893,
+            "min": 11110391,
+            "p50": 11111116,
+            "p95": 11111373,
+            "p99": 11111475
+          },
+          "warm_presentations": 1826,
+          "warm_seconds": 21.171094036,
+          "warm_selected_eye_decoder_ms": {
+            "capture_snapshot_ms": {
+              "count": 3652,
+              "max": 0,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "cpu_decode_ms": {
+              "count": 3652,
+              "max": 2.27865,
+              "min": 0.343854,
+              "p50": 0.650416,
+              "p95": 1.04396,
+              "p99": 1.25338
+            },
+            "decode_upload_ms": {
+              "count": 3652,
+              "max": 5.05484,
+              "min": 0.933594,
+              "p50": 1.54474,
+              "p95": 2.85182,
+              "p99": 3.53818
+            },
+            "decompression_ms": {
+              "count": 3652,
+              "max": 0.545469,
+              "min": 0.008698,
+              "p50": 0.017812,
+              "p95": 0.025989,
+              "p99": 0.056927
+            },
+            "queue_wait_ms": {
+              "count": 3652,
+              "max": 10.752,
+              "min": 0.013854,
+              "p50": 0.193437,
+              "p95": 0.549739,
+              "p99": 6.98771
+            },
+            "staging_copy_ms": {
+              "count": 3652,
+              "max": 1.21177,
+              "min": 0.133073,
+              "p50": 0.235781,
+              "p95": 0.558907,
+              "p99": 0.854427
+            },
+            "submit_fence_wait_ms": {
+              "count": 3652,
+              "max": 3.73417,
+              "min": 0.13875,
+              "p50": 0.384479,
+              "p95": 1.62854,
+              "p99": 2.05969
+            }
+          },
+          "warm_unique_pairs": 1826
+        },
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "selector",
+          "candidate": {
+            "render_attempt_coverage": "not_recorded",
+            "runtime_target_minus_submit_ms": {
+              "count": 1881,
+              "max": 22.975342,
+              "min": 15.040516,
+              "p50": 18.728133,
+              "p95": 20.654832,
+              "p99": 22.549937
+            },
+            "selected_target_minus_ready_ms": {
+              "count": 1881,
+              "max": 56.888186,
+              "min": 4.843737,
+              "p50": 46.014656,
+              "p95": 51.227931,
+              "p99": 53.63876
+            },
+            "selected_target_minus_runtime_ms": {
+              "count": 1881,
+              "max": 11.15974,
+              "min": -22.202742,
+              "p50": -6.7e-05,
+              "p95": 0.294101,
+              "p99": 10.537075
+            },
+            "status": "pass",
+            "warm_differs_from_closest": 0
+          },
+          "cpu_output": "cached-copy",
+          "decoder_observed": {
+            "cpu_output_mode": [
+              "cached-copy"
+            ],
+            "cpu_vector_backend": [
+              "aarch64-neon"
+            ],
+            "staging_memory_flags": [
+              15
+            ],
+            "staging_memory_type": [
+              4
+            ]
+          },
+          "finish_utc": "2026-10-09T13:18:59.629033+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "22599",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 29.672451,
+            "stereo_receive_to_submit_ms_p95": 34.98167,
+            "stereo_receive_to_submit_ms_p99": 36.277087,
+            "unique_stereo_submission_hz": 88.49239106139773
+          },
+          "mode": "custom-vr444",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "fail",
+          "replayed_runtime_status": "pass",
+          "run": "05-closest-traced",
+          "selection_policy": "closest-target",
+          "source_selected_history": {
+            "earliest_known_receipt_to_submit_ms": {
+              "count": 1881,
+              "max": 45.68563,
+              "min": 5.485886,
+              "p50": 29.741357,
+              "p95": 35.091202,
+              "p99": 37.696827
+            },
+            "older_known_receipt_count": 24,
+            "replayed_status": "pass",
+            "scope": "Hindsight earliest receipt among previously or later selected frames sharing validated app-frame set, including prewarm. Not complete arrival supply, simulation age or host-to-display latency."
+          },
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1881,
+              "max": 33.562556,
+              "min": 0.065313,
+              "p50": 25.776721,
+              "p95": 30.515315,
+              "p99": 32.175524
+            },
+            "receipt_to_ready_ms": {
+              "count": 1881,
+              "max": 16.423803,
+              "min": 1.023073,
+              "p50": 1.8875,
+              "p95": 6.459532,
+              "p99": 9.20198
+            },
+            "selection_to_submit_ms": {
+              "count": 1881,
+              "max": 4.377813,
+              "min": 0.945677,
+              "p50": 1.457917,
+              "p95": 1.977605,
+              "p99": 2.414219
+            }
+          },
+          "start_utc": "2026-10-09T13:18:02.850767+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": true,
+          "warm_period_ns": {
+            "count": 1881,
+            "max": 11111573,
+            "min": 11110766,
+            "p50": 11111114,
+            "p95": 11111369,
+            "p99": 11111434
+          },
+          "warm_presentations": 1881,
+          "warm_seconds": 21.244764408,
+          "warm_selected_eye_decoder_ms": {
+            "capture_snapshot_ms": {
+              "count": 3762,
+              "max": 0,
+              "min": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0
+            },
+            "cpu_decode_ms": {
+              "count": 3762,
+              "max": 2.25797,
+              "min": 0.246458,
+              "p50": 0.54151,
+              "p95": 0.960833,
+              "p99": 1.23297
+            },
+            "decode_upload_ms": {
+              "count": 3762,
+              "max": 4.06286,
+              "min": 0.661563,
+              "p50": 1.33891,
+              "p95": 2.61958,
+              "p99": 3.23313
+            },
+            "decompression_ms": {
+              "count": 3762,
+              "max": 0.628021,
+              "min": 0.006927,
+              "p50": 0.014167,
+              "p95": 0.023594,
+              "p99": 0.049896
+            },
+            "queue_wait_ms": {
+              "count": 3762,
+              "max": 13.6765,
+              "min": 0.016511,
+              "p50": 0.129531,
+              "p95": 0.650209,
+              "p99": 6.45953
+            },
+            "staging_copy_ms": {
+              "count": 3762,
+              "max": 1.59714,
+              "min": 0.123073,
+              "p50": 0.223229,
+              "p95": 0.536979,
+              "p99": 0.871562
+            },
+            "submit_fence_wait_ms": {
+              "count": 3762,
+              "max": 2.39125,
+              "min": 0.146459,
+              "p50": 0.362709,
+              "p95": 1.42547,
+              "p99": 1.82141
+            }
+          },
+          "warm_unique_pairs": 1881
+        },
+        {
+          "acquisition_evidence_status": "pass",
+          "actual_stream_sizes": [
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              640
+            ],
+            [
+              576,
+              320
+            ]
+          ],
+          "campaign": "selector",
+          "cpu_output": "cached-copy",
+          "finish_utc": "2026-10-09T13:19:46.140099+00:00",
+          "first_non_90hz_after_warm_s": null,
+          "fixed_90hz_comparison_eligible": true,
+          "focus": {
+            "continuously_focused_observed": true,
+            "pid": "23037",
+            "scope": "Same application PID session events, XR timestamp compared with warm submission window; no cause attribution.",
+            "state_at_warm_start": "XR_SESSION_STATE_FOCUSED",
+            "warm_transitions": []
+          },
+          "full_stereo_metrics": {
+            "stereo_receive_to_submit_ms_p50": 15.115366,
+            "stereo_receive_to_submit_ms_p95": 17.497189,
+            "stereo_receive_to_submit_ms_p99": 18.798231,
+            "unique_stereo_submission_hz": 87.90226374245592
+          },
+          "hevc_reference": {
+            "eyes": [
+              {
+                "codec": "hevc",
+                "decoded_frames": 2093,
+                "height": 640,
+                "pixel_format": "yuvj420p",
+                "profile": "Main",
+                "width": 576
+              },
+              {
+                "codec": "hevc",
+                "decoded_frames": 2093,
+                "height": 640,
+                "pixel_format": "yuvj420p",
+                "profile": "Main",
+                "width": 576
+              }
+            ],
+            "quality_equivalent_to_rgb444": false,
+            "scope": "host elementary bitstreams, independently software decoded; not displayed-image quality or network wire bytes"
+          },
+          "mode": "native-hevc",
+          "non_90hz_warm_presentations": 0,
+          "provisional_latency_gate": "fail",
+          "replayed_runtime_status": "pass",
+          "run": "06-hevc-after",
+          "selection_policy": "closest-target",
+          "stage_ms": {
+            "ready_to_selection_ms": {
+              "count": 1853,
+              "max": 15.900001,
+              "min": 0.037136,
+              "p50": 7.620313,
+              "p95": 11.511511,
+              "p99": 12.718022
+            },
+            "receipt_to_ready_ms": {
+              "count": 1853,
+              "max": 51.436099,
+              "min": 2.215886,
+              "p50": 3.248698,
+              "p95": 9.425001,
+              "p99": 11.735209
+            },
+            "selection_to_submit_ms": {
+              "count": 1853,
+              "max": 3.906511,
+              "min": 0.982083,
+              "p50": 1.484844,
+              "p95": 1.867864,
+              "p99": 2.188594
+            }
+          },
+          "start_utc": "2026-10-09T13:19:00.144778+00:00",
+          "sub15_and_88hz_observed": false,
+          "traced": false,
+          "warm_period_ns": {
+            "count": 1853,
+            "max": 11111581,
+            "min": 11110671,
+            "p50": 11111110,
+            "p95": 11111362,
+            "p99": 11111437
+          },
+          "warm_presentations": 1853,
+          "warm_seconds": 21.068854443,
+          "warm_unique_pairs": 1853
+        }
+      ],
+      "status": "complete"
+    }
+  },
+  "decoder_stage_scope": "Pooled per-eye events joined by exact frame/eye/warp to warm first stereo use. Durations are not summed into stereo latency. Quantiles of telescoping presentation stages are not additive.",
+  "drift_analysis": {
+    "closest_bracket_ready_to_selection_median_delta_ms": 14.531458999999998,
+    "closest_bracket_receipt_to_ready_median_delta_ms": -0.5431250000000001,
+    "closest_bracket_selection_to_submit_median_delta_ms": 0.001822999999999908,
+    "interpretation": "Descriptive stage shifts, not additive percentile attribution or a causal scheduling diagnosis. Selected-source reuse is small relative to the bracket-wide age change. Runtime target/submit phase and selected target/readiness phase are separate in each candidate record."
+  },
+  "input_manifest": {
+    "inputs/build-receipt.json": {
+      "bytes": 7948,
+      "path": "build-receipt.json",
+      "sha256": "39b299718a74fbee6d2b98813377a5037e75af68f2f44636f89a5569b2ac4bf0"
+    },
+    "inputs/native_campaign.py.txt": {
+      "bytes": 9663,
+      "path": "native_campaign.py.txt",
+      "sha256": "b2cf6a837b482ebe676290f8199589a2ef94263049afac462ea60525da4972f9"
+    },
+    "inputs/output-plan.json": {
+      "bytes": 10261,
+      "path": "output-plan.json",
+      "sha256": "fd96a378b0ba8f33c64227b927494140ef6ca7a64db3acda6528dd2ddada76cf"
+    },
+    "inputs/selector-plan.json": {
+      "bytes": 12540,
+      "path": "selector-plan.json",
+      "sha256": "06c572702b14890093d578b767d6f7cd60fa579e79ca07451be28c1179453798"
+    },
+    "output/01-cached/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "01-cached/app-pid-receipt.json",
+      "sha256": "c0bd2fecfcbde9fe910c8c31912861825d8b5a150b65435fb4c4708ceb800d6a"
+    },
+    "output/01-cached/app-pid.txt": {
+      "bytes": 6,
+      "path": "01-cached/app-pid.txt",
+      "sha256": "b05b798265d722915158b2accccf35bad3cf8b44b4d19312b8be9336e4cc95c4"
+    },
+    "output/01-cached/cleanup.json": {
+      "bytes": 187,
+      "path": "01-cached/cleanup.json",
+      "sha256": "6c2a76fe3202f30a28410c3b3c13f2d7133c2f6401ab6a549a92e9f54b0e262d"
+    },
+    "output/01-cached/client/codec-test-present.jsonl": {
+      "bytes": 1570865,
+      "path": "01-cached/client/codec-test-present.jsonl",
+      "sha256": "f0f8f9531854cae5b982d15f6dc4a2c2a846dfec969ff151a95a27e3e88cd399"
+    },
+    "output/01-cached/client/codec-test/decode-0.jsonl": {
+      "bytes": 1836354,
+      "path": "01-cached/client/codec-test/decode-0.jsonl",
+      "sha256": "63a27911b45db23d8924a3bcb6c518a0c1edd7f0f6f74d72eefeebeadba9e047"
+    },
+    "output/01-cached/client/codec-test/decode-1.jsonl": {
+      "bytes": 1836762,
+      "path": "01-cached/client/codec-test/decode-1.jsonl",
+      "sha256": "921501be9d7fa38fd766741cc5c61ae786a868c73faad745b40276c76873ae3e"
+    },
+    "output/01-cached/client/codec-test/decode-2.jsonl": {
+      "bytes": 0,
+      "path": "01-cached/client/codec-test/decode-2.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "output/01-cached/custom-evidence.json": {
+      "bytes": 28775,
+      "path": "01-cached/custom-evidence.json",
+      "sha256": "f084f1f5df6bbb4bb0eff04d39e42bbe7743ca914499be8ea89781f5e77a2ca1"
+    },
+    "output/01-cached/hashes.json": {
+      "bytes": 29074,
+      "path": "01-cached/hashes.json",
+      "sha256": "6e8dd38df674bba1a095e930dec90c309d5b818a77b7ca27f42af645e0170157"
+    },
+    "output/01-cached/provenance.json": {
+      "bytes": 4193,
+      "path": "01-cached/provenance.json",
+      "sha256": "43e0b26c0983200e8702ce724bd259f0f925e6f016456d298b0d609b4b80cb43"
+    },
+    "output/01-cached/server.log": {
+      "bytes": 8424,
+      "path": "01-cached/server.log",
+      "sha256": "7d236cd930927fcbecb5ea7b9000f58e4e652a14b2b8e447cc6dda84afb1515d"
+    },
+    "output/01-cached/summary.json": {
+      "bytes": 44252,
+      "path": "01-cached/summary.json",
+      "sha256": "bbba3583ccc8210f625f2709c273b1c7254a92111e16488f02d5fe3f7a8b3f95"
+    },
+    "output/01-cached/wivrn-live-logcat.txt": {
+      "bytes": 83586,
+      "path": "01-cached/wivrn-live-logcat.txt",
+      "sha256": "56d866841c957da8e8bba73d4b7a87dca4c12eac8c244339444fd7c3f6e7270c"
+    },
+    "output/02-mapped/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "02-mapped/app-pid-receipt.json",
+      "sha256": "c6b9345be156d8839c5c892848f43d10ede4011ae6c9ed6bc1f7e17c62021bcb"
+    },
+    "output/02-mapped/app-pid.txt": {
+      "bytes": 6,
+      "path": "02-mapped/app-pid.txt",
+      "sha256": "0a446b88f6a05779bd286a6955a83b2fa38fc33810420f940762db474b66eba0"
+    },
+    "output/02-mapped/cleanup.json": {
+      "bytes": 187,
+      "path": "02-mapped/cleanup.json",
+      "sha256": "6c2a76fe3202f30a28410c3b3c13f2d7133c2f6401ab6a549a92e9f54b0e262d"
+    },
+    "output/02-mapped/client/codec-test-present.jsonl": {
+      "bytes": 1566345,
+      "path": "02-mapped/client/codec-test-present.jsonl",
+      "sha256": "3b6b772578d61a32db48ed9e4739690cfb8c2a19fdb0bd31924f0e684fa82bcc"
+    },
+    "output/02-mapped/client/codec-test/decode-0.jsonl": {
+      "bytes": 1829512,
+      "path": "02-mapped/client/codec-test/decode-0.jsonl",
+      "sha256": "9cdf1ba7bf7ccd209cdaefb9292deb7d398779105697be62fd1a01802f4fc2c4"
+    },
+    "output/02-mapped/client/codec-test/decode-1.jsonl": {
+      "bytes": 1829509,
+      "path": "02-mapped/client/codec-test/decode-1.jsonl",
+      "sha256": "ef43eb95e33bdffe9d9db049250bdc72a611af35d66c4029f3e7ef603effe60f"
+    },
+    "output/02-mapped/client/codec-test/decode-2.jsonl": {
+      "bytes": 0,
+      "path": "02-mapped/client/codec-test/decode-2.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "output/02-mapped/custom-evidence.json": {
+      "bytes": 28735,
+      "path": "02-mapped/custom-evidence.json",
+      "sha256": "29383cb7b8c94c305a3e213b8fcd8aaaaad8468b41a0e9db2d55c3b169d7d624"
+    },
+    "output/02-mapped/hashes.json": {
+      "bytes": 29074,
+      "path": "02-mapped/hashes.json",
+      "sha256": "b643ffa1bde7ee46c4bc714ea9ecaa4dd55a0847f6f590b0c36e0e8aff08e811"
+    },
+    "output/02-mapped/provenance.json": {
+      "bytes": 4195,
+      "path": "02-mapped/provenance.json",
+      "sha256": "fb0b33698291da7c5a7f54bc426352b0a66ceb8b1e1da72850bd2716dac48185"
+    },
+    "output/02-mapped/server.log": {
+      "bytes": 8955,
+      "path": "02-mapped/server.log",
+      "sha256": "46542890104059081ed667b246161d38fed94156d1817ce369b0229fff13ecfb"
+    },
+    "output/02-mapped/summary.json": {
+      "bytes": 44195,
+      "path": "02-mapped/summary.json",
+      "sha256": "60df2bea5b4f51a3302e2542ee7dd690b82c9de60d5ed824e6bbdd65e449e864"
+    },
+    "output/02-mapped/wivrn-live-logcat.txt": {
+      "bytes": 83584,
+      "path": "02-mapped/wivrn-live-logcat.txt",
+      "sha256": "e48ac1b4c427c56f0e4237e7074e5f75a3ed88bd09a2285fe633c0266ddd530a"
+    },
+    "output/03-mapped/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "03-mapped/app-pid-receipt.json",
+      "sha256": "9c171705f131e224683eb6ef5f1e06205aa701cc537c98fe7547af114594f492"
+    },
+    "output/03-mapped/app-pid.txt": {
+      "bytes": 6,
+      "path": "03-mapped/app-pid.txt",
+      "sha256": "4d77dec34fb6b94d956cdc937a7fd6d402cdf6ab0e3d09879bd76b59221c9979"
+    },
+    "output/03-mapped/cleanup.json": {
+      "bytes": 187,
+      "path": "03-mapped/cleanup.json",
+      "sha256": "6c2a76fe3202f30a28410c3b3c13f2d7133c2f6401ab6a549a92e9f54b0e262d"
+    },
+    "output/03-mapped/client/codec-test-present.jsonl": {
+      "bytes": 1583939,
+      "path": "03-mapped/client/codec-test-present.jsonl",
+      "sha256": "c20ab8cb8decbae62918d6f17da383af348c0a8f695ff3d1a8ecfd221dca5ff3"
+    },
+    "output/03-mapped/client/codec-test/decode-0.jsonl": {
+      "bytes": 1859207,
+      "path": "03-mapped/client/codec-test/decode-0.jsonl",
+      "sha256": "e72f4d70a45823a8d2e5190c2f2ed8c8221a61693bac72a3dd0eb6c9c74c85c1"
+    },
+    "output/03-mapped/client/codec-test/decode-1.jsonl": {
+      "bytes": 1859441,
+      "path": "03-mapped/client/codec-test/decode-1.jsonl",
+      "sha256": "fb77af483a155329ebcd4b4bb7796322f013b55dc0ad6dbeee791eed1c72fb2f"
+    },
+    "output/03-mapped/client/codec-test/decode-2.jsonl": {
+      "bytes": 0,
+      "path": "03-mapped/client/codec-test/decode-2.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "output/03-mapped/custom-evidence.json": {
+      "bytes": 28724,
+      "path": "03-mapped/custom-evidence.json",
+      "sha256": "dbf2ec31d28c3d4274a83e0da7f78ecaf754335d2ca07138920b3303c2eb3185"
+    },
+    "output/03-mapped/hashes.json": {
+      "bytes": 29074,
+      "path": "03-mapped/hashes.json",
+      "sha256": "aee526bfd5a75d1344e9a52de21dc65f98950f4b530f1535276005711f250e7e"
+    },
+    "output/03-mapped/provenance.json": {
+      "bytes": 4195,
+      "path": "03-mapped/provenance.json",
+      "sha256": "24ac730f5236ac03abe2f2b9d22340d1e39e50f139984eee8b23585c6cd24708"
+    },
+    "output/03-mapped/server.log": {
+      "bytes": 8871,
+      "path": "03-mapped/server.log",
+      "sha256": "893c571d3bad9357a337bbbafa224b1d20eabe9a4d3d9e18fefb5d3d850b0958"
+    },
+    "output/03-mapped/summary.json": {
+      "bytes": 43915,
+      "path": "03-mapped/summary.json",
+      "sha256": "5d7273bbfbabc060b7a79361d3a3b180d6495f897c13be5e27efbeb9625f67fa"
+    },
+    "output/03-mapped/wivrn-live-logcat.txt": {
+      "bytes": 76858,
+      "path": "03-mapped/wivrn-live-logcat.txt",
+      "sha256": "c3f2833b1439678ed75848efcdeab471cb663e768db8572d2080891546b27358"
+    },
+    "output/04-cached/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "04-cached/app-pid-receipt.json",
+      "sha256": "c58396fcc28b166bf0b0bf5bde1d084b25a36912f999b3ffc6c18300b8992c5d"
+    },
+    "output/04-cached/app-pid.txt": {
+      "bytes": 6,
+      "path": "04-cached/app-pid.txt",
+      "sha256": "3846cab9639141f9e3b220b14c88fccc896dbab0cf47fe1337369348ae8f6da1"
+    },
+    "output/04-cached/cleanup.json": {
+      "bytes": 187,
+      "path": "04-cached/cleanup.json",
+      "sha256": "6c2a76fe3202f30a28410c3b3c13f2d7133c2f6401ab6a549a92e9f54b0e262d"
+    },
+    "output/04-cached/client/codec-test-present.jsonl": {
+      "bytes": 1598445,
+      "path": "04-cached/client/codec-test-present.jsonl",
+      "sha256": "7e3f5fc1c36aaf8be86f56f1bae15d445c62fa9c171fed683e347341c6ec0297"
+    },
+    "output/04-cached/client/codec-test/decode-0.jsonl": {
+      "bytes": 1862732,
+      "path": "04-cached/client/codec-test/decode-0.jsonl",
+      "sha256": "1a23e9a48d4e5fc7d0e0380c3253b0fd414a70bf7d424b84569b164e2b394481"
+    },
+    "output/04-cached/client/codec-test/decode-1.jsonl": {
+      "bytes": 1862765,
+      "path": "04-cached/client/codec-test/decode-1.jsonl",
+      "sha256": "471a34171e82e91762a6450b8b90bb12671c1de67e1363a8e86526198c99881b"
+    },
+    "output/04-cached/client/codec-test/decode-2.jsonl": {
+      "bytes": 0,
+      "path": "04-cached/client/codec-test/decode-2.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "output/04-cached/custom-evidence.json": {
+      "bytes": 28754,
+      "path": "04-cached/custom-evidence.json",
+      "sha256": "5c3bd588430214764c9a3aeb4ee6aacb9683d0227244ea7ed1f94696945a4d6e"
+    },
+    "output/04-cached/hashes.json": {
+      "bytes": 29074,
+      "path": "04-cached/hashes.json",
+      "sha256": "39a318745adc45a1623384554234e16256eff89928094b372b0d1a1151cff189"
+    },
+    "output/04-cached/provenance.json": {
+      "bytes": 4193,
+      "path": "04-cached/provenance.json",
+      "sha256": "6dbb872c9342b088eba788bd25d2f80e017bdf2bb76d42fb491432132f891ec3"
+    },
+    "output/04-cached/server.log": {
+      "bytes": 8640,
+      "path": "04-cached/server.log",
+      "sha256": "93d07fb1e34b170a4dd83474fd938539b3fcbb113210f27534d14c08fb3653cf"
+    },
+    "output/04-cached/summary.json": {
+      "bytes": 44184,
+      "path": "04-cached/summary.json",
+      "sha256": "3b621439a87dc7b15d44fc83e1f63647a7a44badda34c7d1c16e3a2c9a38e709"
+    },
+    "output/04-cached/wivrn-live-logcat.txt": {
+      "bytes": 77532,
+      "path": "04-cached/wivrn-live-logcat.txt",
+      "sha256": "789ed5ef1fa16c131d49c48da61a360871abdd9a7c3251b6033fcca796a6323d"
+    },
+    "output/campaign.json": {
+      "bytes": 28405,
+      "path": "campaign.json",
+      "sha256": "04c979293ad08b6d2cac46bddf2f3ec58372ebf9fed3deba518d52d2e94f0678"
+    },
+    "output/preflight/serial.stderr": {
+      "bytes": 0,
+      "path": "preflight/serial.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "output/preflight/serial.stdout": {
+      "bytes": 15,
+      "path": "preflight/serial.stdout",
+      "sha256": "c1bc05a54512f062e20d07657dea4d33cf7571c32f9fd60803beea95626c57d6"
+    },
+    "repo/prototypes/vr444/experiments/compositor_freshness/analyze.py": {
+      "bytes": 13394,
+      "path": "prototypes/vr444/experiments/compositor_freshness/analyze.py",
+      "sha256": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10"
+    },
+    "repo/prototypes/vr444/experiments/native_selection_summary/summarize.py": {
+      "bytes": 26190,
+      "path": "prototypes/vr444/experiments/native_selection_summary/summarize.py",
+      "sha256": "c83f84684dea6aa336ea4f1023128b8c20694a1619431e8b45f60807397f72d0"
+    },
+    "repo/validation/wivrn-codecs/adapter_template.py": {
+      "bytes": 1460,
+      "path": "validation/wivrn-codecs/adapter_template.py",
+      "sha256": "6c7d507d2294a4e128b92400b62659131f2585a279eb107ba2d0b0324edfee7f"
+    },
+    "repo/validation/wivrn-codecs/collect.py": {
+      "bytes": 2999,
+      "path": "validation/wivrn-codecs/collect.py",
+      "sha256": "c63c3dfe1e83bd68b9b562abcdb9ba06c1671b535e4d0e501a2de0b7c6fc1b36"
+    },
+    "repo/validation/wivrn-codecs/hardware.py": {
+      "bytes": 21273,
+      "path": "validation/wivrn-codecs/hardware.py",
+      "sha256": "23c0953367f65f7fc2d16282d2f4d0e4a38e499c94a0e2c763cf871f093b04f7"
+    },
+    "repo/validation/wivrn-codecs/impairment.py": {
+      "bytes": 2063,
+      "path": "validation/wivrn-codecs/impairment.py",
+      "sha256": "71cababd2d2f74f642a844e0dc7e778e0966944009bca3a017b44bbc55f05afa"
+    },
+    "repo/validation/wivrn-codecs/integration/LATENCY-POLICY.json": {
+      "bytes": 1377,
+      "path": "validation/wivrn-codecs/integration/LATENCY-POLICY.json",
+      "sha256": "1f8cef44961ddc1ee330e2221fd95cbeaaad8d94b4164041dd599bc8e82c40cd"
+    },
+    "repo/validation/wivrn-codecs/integration/adapter.py": {
+      "bytes": 3882,
+      "path": "validation/wivrn-codecs/integration/adapter.py",
+      "sha256": "d8b46f2cec830737f6383fa2668f428066ba03af4cd1c20461a7847336b661f7"
+    },
+    "repo/validation/wivrn-codecs/integration/apply_overlay.py": {
+      "bytes": 1147,
+      "path": "validation/wivrn-codecs/integration/apply_overlay.py",
+      "sha256": "b7aa494d2f37d5dddcdc4d7627ba507e09eac99c0c41f7cfae6b5e92be7a8fbf"
+    },
+    "repo/validation/wivrn-codecs/integration/candidate_trace.py": {
+      "bytes": 17791,
+      "path": "validation/wivrn-codecs/integration/candidate_trace.py",
+      "sha256": "2e6d838c6d67d33c28c40d1599a2296f5ace25605bf0d21752af87aa01851ef6"
+    },
+    "repo/validation/wivrn-codecs/integration/cpu_target.py": {
+      "bytes": 1418,
+      "path": "validation/wivrn-codecs/integration/cpu_target.py",
+      "sha256": "814676c6a89f42c4034ceaea677843b27134a130ea82ba7414c39eacb2e63707"
+    },
+    "repo/validation/wivrn-codecs/integration/gaze_metrics.py": {
+      "bytes": 5585,
+      "path": "validation/wivrn-codecs/integration/gaze_metrics.py",
+      "sha256": "a64df518f48b37bcc246267f6ea1e215249f22f6fb6a7317dc8d611da020e1ed"
+    },
+    "repo/validation/wivrn-codecs/integration/latency_policy.py": {
+      "bytes": 19246,
+      "path": "validation/wivrn-codecs/integration/latency_policy.py",
+      "sha256": "caeac5d26b9844201cf3d5ffb4ef8e1eb9ee88c48dd53fec9827fc0c71d8a1c8"
+    },
+    "repo/validation/wivrn-codecs/integration/latency_runtime.py": {
+      "bytes": 12123,
+      "path": "validation/wivrn-codecs/integration/latency_runtime.py",
+      "sha256": "52849a220316633e2fb20fb92c314f6a87dd618cc6422bd38bab024fc9eb1628"
+    },
+    "repo/validation/wivrn-codecs/integration/live.py": {
+      "bytes": 28018,
+      "path": "validation/wivrn-codecs/integration/live.py",
+      "sha256": "c52f327a6bf3907a16843a24d66ca0c32113e94ffd4a15a60b532595b6197892"
+    },
+    "repo/validation/wivrn-codecs/integration/native_compare.py": {
+      "bytes": 33589,
+      "path": "validation/wivrn-codecs/integration/native_compare.py",
+      "sha256": "56c219fe637c7bca67b069b40098bdb89f98e97a7fac0c0be73cbcdf172a3b2d"
+    },
+    "repo/validation/wivrn-codecs/integration/native_evidence.py": {
+      "bytes": 4236,
+      "path": "validation/wivrn-codecs/integration/native_evidence.py",
+      "sha256": "9885a823302b708fc69a919e21bf8cdb18e44bd35ec1687f00768b46aa965481"
+    },
+    "repo/validation/wivrn-codecs/integration/native_metrics.py": {
+      "bytes": 10948,
+      "path": "validation/wivrn-codecs/integration/native_metrics.py",
+      "sha256": "0075fd06c5fcc1045785e104ed74a03db0fbd3130d3edc11a9cc10abd99f5825"
+    },
+    "repo/validation/wivrn-codecs/integration/quest_options.py": {
+      "bytes": 3379,
+      "path": "validation/wivrn-codecs/integration/quest_options.py",
+      "sha256": "f445b8fe6064ee2c5a6772b9360397874626f3034d2cde6a1927b13f8eb1533a"
+    },
+    "repo/validation/wivrn-codecs/integration/selection_replay.py": {
+      "bytes": 5934,
+      "path": "validation/wivrn-codecs/integration/selection_replay.py",
+      "sha256": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b"
+    },
+    "repo/validation/wivrn-codecs/integration/transfer_analyze.py": {
+      "bytes": 2323,
+      "path": "validation/wivrn-codecs/integration/transfer_analyze.py",
+      "sha256": "8556c0d44aceae52df1490609428aae354df1f501e1b06bf48aba1d5bed1658f"
+    },
+    "repo/validation/wivrn-codecs/optical.py": {
+      "bytes": 9626,
+      "path": "validation/wivrn-codecs/optical.py",
+      "sha256": "91fe897fd92c0214e6a82b16c07f8270d2cb6eae153d7d506eb33d5d7228e099"
+    },
+    "repo/validation/wivrn-codecs/package.py": {
+      "bytes": 4099,
+      "path": "validation/wivrn-codecs/package.py",
+      "sha256": "d692f2306cf620aab5162a79b2618a95f26918f2477069f33450304ebc23c9b4"
+    },
+    "repo/validation/wivrn-codecs/plans.py": {
+      "bytes": 6008,
+      "path": "validation/wivrn-codecs/plans.py",
+      "sha256": "8a60c64f988cf9228f9cd28631b1c22494bea63e094da9bdd02325282d15558e"
+    },
+    "repo/validation/wivrn-codecs/runner.py": {
+      "bytes": 9972,
+      "path": "validation/wivrn-codecs/runner.py",
+      "sha256": "2309a3310b14e2d997ec6483ab278e6db84ad5d68c8c0ec8595777b8b54fb259"
+    },
+    "repo/validation/wivrn-codecs/stimuli.py": {
+      "bytes": 4075,
+      "path": "validation/wivrn-codecs/stimuli.py",
+      "sha256": "9a17a0c8b50565e542255a517688168531b77378592bc970697ed5e7acbab5c9"
+    },
+    "repo/validation/wivrn-codecs/suite.py": {
+      "bytes": 6666,
+      "path": "validation/wivrn-codecs/suite.py",
+      "sha256": "e7085baf871460ef01b0c5b6ce9326b72ec6aa6d83a6cc7790aa0775e07c0bf6"
+    },
+    "repo/validation/wivrn-codecs/tests/test_candidate_trace.py": {
+      "bytes": 22383,
+      "path": "validation/wivrn-codecs/tests/test_candidate_trace.py",
+      "sha256": "121970ec7135529c8856bb2ced7c02b8a4ad96fde0aca87c6a1ba7bf607d1b3d"
+    },
+    "repo/validation/wivrn-codecs/tests/test_compression.py": {
+      "bytes": 7390,
+      "path": "validation/wivrn-codecs/tests/test_compression.py",
+      "sha256": "bd664d2532c0ec819baa61443e1b2c7c78c6c96571c08eae1a6ea7ceec8cae95"
+    },
+    "repo/validation/wivrn-codecs/tests/test_cpu_target.py": {
+      "bytes": 1648,
+      "path": "validation/wivrn-codecs/tests/test_cpu_target.py",
+      "sha256": "01e90d493837207930655af20920630d08e317d0b0d07a07f5943c87eb30ec90"
+    },
+    "repo/validation/wivrn-codecs/tests/test_decoder_selection.py": {
+      "bytes": 1258,
+      "path": "validation/wivrn-codecs/tests/test_decoder_selection.py",
+      "sha256": "0367c7bddb62e7114e5a5f689c6015fba7da594cbde57253a1d41a811d69bd5f"
+    },
+    "repo/validation/wivrn-codecs/tests/test_gaze_metrics.py": {
+      "bytes": 6813,
+      "path": "validation/wivrn-codecs/tests/test_gaze_metrics.py",
+      "sha256": "e387eaebeb5beaf8c358c37c623e5322c09663e58cca22a4324b3cea861f4d71"
+    },
+    "repo/validation/wivrn-codecs/tests/test_hardware.py": {
+      "bytes": 3815,
+      "path": "validation/wivrn-codecs/tests/test_hardware.py",
+      "sha256": "1ffe4ca62ec423a03f09d69c71b3653f81fdd8428492ad961bf9e9fde1b5bb88"
+    },
+    "repo/validation/wivrn-codecs/tests/test_latency_policy.py": {
+      "bytes": 15842,
+      "path": "validation/wivrn-codecs/tests/test_latency_policy.py",
+      "sha256": "e743dc0a88ab2ed6a9f8d6b3caa104ca648f23e1242ab80b6eb47553279c21c5"
+    },
+    "repo/validation/wivrn-codecs/tests/test_latency_runtime.py": {
+      "bytes": 14312,
+      "path": "validation/wivrn-codecs/tests/test_latency_runtime.py",
+      "sha256": "e2b91feaa6930b9b39432352bb08847733e29d08b7dc766da39db46da6839573"
+    },
+    "repo/validation/wivrn-codecs/tests/test_live_integration.py": {
+      "bytes": 4985,
+      "path": "validation/wivrn-codecs/tests/test_live_integration.py",
+      "sha256": "c3e711d0bf0a341665077c5a3fb619d60e5f45b1077811206429f304f0cbb812"
+    },
+    "repo/validation/wivrn-codecs/tests/test_meta_sr.py": {
+      "bytes": 2660,
+      "path": "validation/wivrn-codecs/tests/test_meta_sr.py",
+      "sha256": "b107bf7b1ac9d097a84f5b9f61af54ca1e3a57991155a5f17955f916d5c76e4a"
+    },
+    "repo/validation/wivrn-codecs/tests/test_native_compare.py": {
+      "bytes": 10869,
+      "path": "validation/wivrn-codecs/tests/test_native_compare.py",
+      "sha256": "b04a9ab8a796208ed55877b5a280821ef8c14f94b4e11a9a955eea8113bd8e72"
+    },
+    "repo/validation/wivrn-codecs/tests/test_native_metrics.py": {
+      "bytes": 8882,
+      "path": "validation/wivrn-codecs/tests/test_native_metrics.py",
+      "sha256": "a1413e2167ffc9cd03efab947cb554012b4552223a9d9c170b766a65865e4f96"
+    },
+    "repo/validation/wivrn-codecs/tests/test_optical.py": {
+      "bytes": 5863,
+      "path": "validation/wivrn-codecs/tests/test_optical.py",
+      "sha256": "db70f554dbd0cb43e17a1411c43e7cf1529756de2496247965dc520b90063e31"
+    },
+    "repo/validation/wivrn-codecs/tests/test_suite.py": {
+      "bytes": 12721,
+      "path": "validation/wivrn-codecs/tests/test_suite.py",
+      "sha256": "b1b51a67d6bf916b6c7f6dd84e52e660aebbf9acec59a34691fdcc9bf0c240ad"
+    },
+    "repo/validation/wivrn-codecs/tests/test_trace_reanalysis.py": {
+      "bytes": 5128,
+      "path": "validation/wivrn-codecs/tests/test_trace_reanalysis.py",
+      "sha256": "8409d81eae3321e4617c6cb49174a2ec6a8b34f2ce9a519c3774c1ed8de47eb0"
+    },
+    "repo/validation/wivrn-codecs/trace.py": {
+      "bytes": 13102,
+      "path": "validation/wivrn-codecs/trace.py",
+      "sha256": "547c9674f98dfc478c41caf35a14bdb16268118da0c4201f3f94feb9430b82ec"
+    },
+    "selector/01-hevc-before/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "01-hevc-before/app-pid-receipt.json",
+      "sha256": "b74f7cf033542306f5ca368ef6aab083e8c65927f6db94eae8be3dec08630653"
+    },
+    "selector/01-hevc-before/app-pid.txt": {
+      "bytes": 6,
+      "path": "01-hevc-before/app-pid.txt",
+      "sha256": "129cad5dde77879a61826ae1c6bb7f95f6e52d5a1f37ca60aaa39747496d2c6f"
+    },
+    "selector/01-hevc-before/cleanup.json": {
+      "bytes": 187,
+      "path": "01-hevc-before/cleanup.json",
+      "sha256": "6c2a76fe3202f30a28410c3b3c13f2d7133c2f6401ab6a549a92e9f54b0e262d"
+    },
+    "selector/01-hevc-before/client/codec-test-present.jsonl": {
+      "bytes": 1552491,
+      "path": "01-hevc-before/client/codec-test-present.jsonl",
+      "sha256": "87eac7f2d72cf6f4159c49f0606b36e7726fe30aa8355b0c9df32aaf37e95b26"
+    },
+    "selector/01-hevc-before/hashes.json": {
+      "bytes": 3368,
+      "path": "01-hevc-before/hashes.json",
+      "sha256": "efa822ac14840e1fe9c54e2f991600b05fbd690f3aee8197517a52fa928a55a6"
+    },
+    "selector/01-hevc-before/native-bitstream-evidence.json": {
+      "bytes": 29527,
+      "path": "01-hevc-before/native-bitstream-evidence.json",
+      "sha256": "5d12da800211ef34dd92930979cd0e5e5a159065a868feef2e2f5de5962837c2"
+    },
+    "selector/01-hevc-before/provenance.json": {
+      "bytes": 4192,
+      "path": "01-hevc-before/provenance.json",
+      "sha256": "9138202e8ccec5de26d80b2fa58477395acca975a46fd6e6fd892a674152e770"
+    },
+    "selector/01-hevc-before/server.log": {
+      "bytes": 11548,
+      "path": "01-hevc-before/server.log",
+      "sha256": "a3dc0b040fd09f8ca5f92521e68d240b19a7cecbfd2c0876cce4360363ad3bbb"
+    },
+    "selector/01-hevc-before/summary.json": {
+      "bytes": 40817,
+      "path": "01-hevc-before/summary.json",
+      "sha256": "49da677c9b73fea9bbd9162b6129ec8996569e800985ac53cc9196b272fdaab6"
+    },
+    "selector/01-hevc-before/wivrn-live-logcat.txt": {
+      "bytes": 83414,
+      "path": "01-hevc-before/wivrn-live-logcat.txt",
+      "sha256": "b7423692a1ed0777885a1479d1c2435e294895514c95ff9f8361ad6c2d0bd4fb"
+    },
+    "selector/02-closest-traced/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "02-closest-traced/app-pid-receipt.json",
+      "sha256": "c47253532bd34c4561c28d1b849014f51364b5c602cf6f31140f112d008c6390"
+    },
+    "selector/02-closest-traced/app-pid.txt": {
+      "bytes": 6,
+      "path": "02-closest-traced/app-pid.txt",
+      "sha256": "b7fae548326bf2d7301bd69eba4fa031e3677ebf6e6894531f6ec719b0c2f683"
+    },
+    "selector/02-closest-traced/cleanup.json": {
+      "bytes": 238,
+      "path": "02-closest-traced/cleanup.json",
+      "sha256": "2eaece59fd67bfbb5257a9d02aac954c2ca40b3fd329b4952dffe4169383c3b9"
+    },
+    "selector/02-closest-traced/client/codec-test-present.jsonl": {
+      "bytes": 1828786,
+      "path": "02-closest-traced/client/codec-test-present.jsonl",
+      "sha256": "52fdde46e4cf26a6376ba8c7e26d7618c6df1af4f45d7a7e4c6bc7a70c8fb564"
+    },
+    "selector/02-closest-traced/client/codec-test/decode-0.jsonl": {
+      "bytes": 1852845,
+      "path": "02-closest-traced/client/codec-test/decode-0.jsonl",
+      "sha256": "be8e3d5cfe327e3d5bfeeb9d12c35d58f3f6b350e8d2273d186b34357ded0a44"
+    },
+    "selector/02-closest-traced/client/codec-test/decode-1.jsonl": {
+      "bytes": 1853028,
+      "path": "02-closest-traced/client/codec-test/decode-1.jsonl",
+      "sha256": "7da33635a73c177354310b604a95223fa9fcc0103a0c62cac54196fdd743c833"
+    },
+    "selector/02-closest-traced/client/codec-test/decode-2.jsonl": {
+      "bytes": 0,
+      "path": "02-closest-traced/client/codec-test/decode-2.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "selector/02-closest-traced/client/codec-test/selection-trace.jsonl": {
+      "bytes": 6471637,
+      "path": "02-closest-traced/client/codec-test/selection-trace.jsonl",
+      "sha256": "8b5b2ba00a181ce53eaddf8d790fc1d96157470dbfb86c8d592273f82aa21a39"
+    },
+    "selector/02-closest-traced/custom-evidence.json": {
+      "bytes": 28786,
+      "path": "02-closest-traced/custom-evidence.json",
+      "sha256": "9c376caf236956988d559c8eeca897c1c1ba640f8ecb2e8493c5cfc702d5cf0e"
+    },
+    "selector/02-closest-traced/hashes.json": {
+      "bytes": 29284,
+      "path": "02-closest-traced/hashes.json",
+      "sha256": "41481526c4cc636d1f26625a8936a680efa5bb61b67cc6c77f734a5947306030"
+    },
+    "selector/02-closest-traced/host/source-trace.jsonl": {
+      "bytes": 8008015,
+      "path": "02-closest-traced/host/source-trace.jsonl",
+      "sha256": "c83f19ad7c63c6bd49b86eec358b01c298b34b197f9891260b8f566c7ff3c88e"
+    },
+    "selector/02-closest-traced/provenance.json": {
+      "bytes": 4191,
+      "path": "02-closest-traced/provenance.json",
+      "sha256": "0994ebfedbaf59691e8caa54609f4215c910a5d1a3257375ff6ae633697f3fc3"
+    },
+    "selector/02-closest-traced/server.log": {
+      "bytes": 8933,
+      "path": "02-closest-traced/server.log",
+      "sha256": "c04428fbba04c6ef3060edfe7f45a6a010466bc1c04534e1a875c8c98ef751c0"
+    },
+    "selector/02-closest-traced/summary.json": {
+      "bytes": 390696,
+      "path": "02-closest-traced/summary.json",
+      "sha256": "46e84135c963bbc9c5b5813bb454a008452b927e042347bde499160f22c509bc"
+    },
+    "selector/02-closest-traced/wivrn-live-logcat.txt": {
+      "bytes": 76986,
+      "path": "02-closest-traced/wivrn-live-logcat.txt",
+      "sha256": "c88091c01d312b6823249682498deaf6c8c79e1aafee0c961ff59c3a6ef3b046"
+    },
+    "selector/03-bounded-traced/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "03-bounded-traced/app-pid-receipt.json",
+      "sha256": "c06beebd5be2d1c3354e43754837a15862a326ac6d30cd644bb352ed27b5edef"
+    },
+    "selector/03-bounded-traced/app-pid.txt": {
+      "bytes": 6,
+      "path": "03-bounded-traced/app-pid.txt",
+      "sha256": "1cb1738f2092fa280b329dac0e392e386773c7cc506b3c66bdb6a0e189c894ee"
+    },
+    "selector/03-bounded-traced/cleanup.json": {
+      "bytes": 238,
+      "path": "03-bounded-traced/cleanup.json",
+      "sha256": "2eaece59fd67bfbb5257a9d02aac954c2ca40b3fd329b4952dffe4169383c3b9"
+    },
+    "selector/03-bounded-traced/client/codec-test-present.jsonl": {
+      "bytes": 1747716,
+      "path": "03-bounded-traced/client/codec-test-present.jsonl",
+      "sha256": "80952644ca0a934cbec39667a617e0780e8b9cc09170875c8ab640d0cdc37fdc"
+    },
+    "selector/03-bounded-traced/client/codec-test/decode-0.jsonl": {
+      "bytes": 1809291,
+      "path": "03-bounded-traced/client/codec-test/decode-0.jsonl",
+      "sha256": "e8cf9d55d2ac2280cc22e474ba8487872bc103632486e58324ad92d51c7e24bc"
+    },
+    "selector/03-bounded-traced/client/codec-test/decode-1.jsonl": {
+      "bytes": 1809497,
+      "path": "03-bounded-traced/client/codec-test/decode-1.jsonl",
+      "sha256": "8e6b6c5d851c354ccd40b64ec42bb151cb62f4e47658c8bc13a4f22dea167933"
+    },
+    "selector/03-bounded-traced/client/codec-test/decode-2.jsonl": {
+      "bytes": 0,
+      "path": "03-bounded-traced/client/codec-test/decode-2.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "selector/03-bounded-traced/client/codec-test/selection-trace.jsonl": {
+      "bytes": 6187669,
+      "path": "03-bounded-traced/client/codec-test/selection-trace.jsonl",
+      "sha256": "c584d6bdcc495b91adfb8df6654f30164c56bed0647b194bb20ec5b89ed5a6c0"
+    },
+    "selector/03-bounded-traced/custom-evidence.json": {
+      "bytes": 26911,
+      "path": "03-bounded-traced/custom-evidence.json",
+      "sha256": "73fc4b3c059bd96f81fee844e9d9f62ca3074a721b81bd319aca64d9f08ec924"
+    },
+    "selector/03-bounded-traced/hashes.json": {
+      "bytes": 28118,
+      "path": "03-bounded-traced/hashes.json",
+      "sha256": "d38c4e7116ad26c92699507f27fe6cf5bc5a41d13aae798f049e6df78541c9c4"
+    },
+    "selector/03-bounded-traced/host/source-trace.jsonl": {
+      "bytes": 7915502,
+      "path": "03-bounded-traced/host/source-trace.jsonl",
+      "sha256": "3458db2504d0e7fa800d0cffed15ae1f3051450797ed76fc812cc320202622ea"
+    },
+    "selector/03-bounded-traced/provenance.json": {
+      "bytes": 4191,
+      "path": "03-bounded-traced/provenance.json",
+      "sha256": "4808bc7caf30ff84d918f02237c2a8c829e4aa921d6423845e345a11ea1f7c2d"
+    },
+    "selector/03-bounded-traced/server.log": {
+      "bytes": 9461,
+      "path": "03-bounded-traced/server.log",
+      "sha256": "72017b1dbe97e12f6d755614aa9675fdb5d24451ca87de674d34664c1bf21ee0"
+    },
+    "selector/03-bounded-traced/summary.json": {
+      "bytes": 374106,
+      "path": "03-bounded-traced/summary.json",
+      "sha256": "4d952d7f66520da210c13509c552771b0b8a0b02bf7af2a8205fdbe78bc38c67"
+    },
+    "selector/03-bounded-traced/wivrn-live-logcat.txt": {
+      "bytes": 85318,
+      "path": "03-bounded-traced/wivrn-live-logcat.txt",
+      "sha256": "c3b949424247e6698295fef5d4ea8dd6415c8f11e4a1d8401486aec75fecbb85"
+    },
+    "selector/04-bounded-traced/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "04-bounded-traced/app-pid-receipt.json",
+      "sha256": "0049ba5b37f0fac25fb1d48b244b93635345338a1ba18be806197906370ca111"
+    },
+    "selector/04-bounded-traced/app-pid.txt": {
+      "bytes": 6,
+      "path": "04-bounded-traced/app-pid.txt",
+      "sha256": "2e9eb3a327379a3f0c1d2390cf356bae6d1be94dbc142956835268a0fa9bc282"
+    },
+    "selector/04-bounded-traced/cleanup.json": {
+      "bytes": 238,
+      "path": "04-bounded-traced/cleanup.json",
+      "sha256": "2eaece59fd67bfbb5257a9d02aac954c2ca40b3fd329b4952dffe4169383c3b9"
+    },
+    "selector/04-bounded-traced/client/codec-test-present.jsonl": {
+      "bytes": 1769122,
+      "path": "04-bounded-traced/client/codec-test-present.jsonl",
+      "sha256": "2dbe6ebea8f20db6b55bc750213997158ef69fce480890082c8add9ca4651234"
+    },
+    "selector/04-bounded-traced/client/codec-test/decode-0.jsonl": {
+      "bytes": 1833558,
+      "path": "04-bounded-traced/client/codec-test/decode-0.jsonl",
+      "sha256": "f133dd92df99561d6306ebe71836a89b37c9e301b7c5ad24ccfb8f741aff9572"
+    },
+    "selector/04-bounded-traced/client/codec-test/decode-1.jsonl": {
+      "bytes": 1833779,
+      "path": "04-bounded-traced/client/codec-test/decode-1.jsonl",
+      "sha256": "23a58ec6d86a76134ebd3c1508c0000007a30a255f9f297018bdd4e142a0dd5f"
+    },
+    "selector/04-bounded-traced/client/codec-test/decode-2.jsonl": {
+      "bytes": 0,
+      "path": "04-bounded-traced/client/codec-test/decode-2.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "selector/04-bounded-traced/client/codec-test/selection-trace.jsonl": {
+      "bytes": 6263508,
+      "path": "04-bounded-traced/client/codec-test/selection-trace.jsonl",
+      "sha256": "640aff7d2f130ed7bacbf87f11dbe1a391361f5c17f5014db2afc1cbd6c6b241"
+    },
+    "selector/04-bounded-traced/custom-evidence.json": {
+      "bytes": 28773,
+      "path": "04-bounded-traced/custom-evidence.json",
+      "sha256": "bee0676ad525bfc23a8193be0b9223b833a3c71290d5d127a57cc32a5c7d3a7f"
+    },
+    "selector/04-bounded-traced/hashes.json": {
+      "bytes": 29284,
+      "path": "04-bounded-traced/hashes.json",
+      "sha256": "89eaed970adb4552e049be4df3542e6c20aa42673cd0c8d8419dbea1244ac8b5"
+    },
+    "selector/04-bounded-traced/host/source-trace.jsonl": {
+      "bytes": 7992867,
+      "path": "04-bounded-traced/host/source-trace.jsonl",
+      "sha256": "0b1073aef71e41c4eeae22015019fdae9e5134386528b18d1a32bb0712bba6a4"
+    },
+    "selector/04-bounded-traced/provenance.json": {
+      "bytes": 4191,
+      "path": "04-bounded-traced/provenance.json",
+      "sha256": "2dcfbf8845b1c551412eff894253d4f91a97e40ee407742317e3a7351d5e2cc4"
+    },
+    "selector/04-bounded-traced/server.log": {
+      "bytes": 9017,
+      "path": "04-bounded-traced/server.log",
+      "sha256": "cc06d8032cd8773e968954343c561b2e94d209531d8e22296aabf9a210c96f53"
+    },
+    "selector/04-bounded-traced/summary.json": {
+      "bytes": 380064,
+      "path": "04-bounded-traced/summary.json",
+      "sha256": "9e15dc1c2a90f99e66d6690f41349c5bd13ff3cd6dfd779e718fdd6c9b01ae07"
+    },
+    "selector/04-bounded-traced/wivrn-live-logcat.txt": {
+      "bytes": 83584,
+      "path": "04-bounded-traced/wivrn-live-logcat.txt",
+      "sha256": "e98573f9217e0dab596609e5ade9db9187980794947915c1f66da0778203cb9e"
+    },
+    "selector/05-closest-traced/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "05-closest-traced/app-pid-receipt.json",
+      "sha256": "7fc8d1994660f40b1fa1fc95a5f5fc31682e0b591cdca64c1fa1943d4e1a90d3"
+    },
+    "selector/05-closest-traced/app-pid.txt": {
+      "bytes": 6,
+      "path": "05-closest-traced/app-pid.txt",
+      "sha256": "a32e9ec83b7f7bb7f4df08c673dc1d486f6ab457609aa682467bd071fb57daf2"
+    },
+    "selector/05-closest-traced/cleanup.json": {
+      "bytes": 238,
+      "path": "05-closest-traced/cleanup.json",
+      "sha256": "2eaece59fd67bfbb5257a9d02aac954c2ca40b3fd329b4952dffe4169383c3b9"
+    },
+    "selector/05-closest-traced/client/codec-test-present.jsonl": {
+      "bytes": 1826198,
+      "path": "05-closest-traced/client/codec-test-present.jsonl",
+      "sha256": "289a8e87dbe7cdb93a242a366e586732e7337aeb5fd8fa4d177bcc02460e6122"
+    },
+    "selector/05-closest-traced/client/codec-test/decode-0.jsonl": {
+      "bytes": 1836638,
+      "path": "05-closest-traced/client/codec-test/decode-0.jsonl",
+      "sha256": "db64d1773b425a252b5e23b39a354c2c93f9d28df5ae8b8d2e983783f0b36cd3"
+    },
+    "selector/05-closest-traced/client/codec-test/decode-1.jsonl": {
+      "bytes": 1836767,
+      "path": "05-closest-traced/client/codec-test/decode-1.jsonl",
+      "sha256": "7e419b7a30f9d2b990bd5d078257a8d707b541b1b16a648d74d1670c7193e869"
+    },
+    "selector/05-closest-traced/client/codec-test/decode-2.jsonl": {
+      "bytes": 0,
+      "path": "05-closest-traced/client/codec-test/decode-2.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "selector/05-closest-traced/client/codec-test/selection-trace.jsonl": {
+      "bytes": 6462627,
+      "path": "05-closest-traced/client/codec-test/selection-trace.jsonl",
+      "sha256": "2726d1b92c3a70bfad01bc7eea3c967f7d03f527a9989aaf44d800b0a7e2c4a5"
+    },
+    "selector/05-closest-traced/custom-evidence.json": {
+      "bytes": 28755,
+      "path": "05-closest-traced/custom-evidence.json",
+      "sha256": "48b6b1f3bd169746c71b6df77125224bd4a429e09f7eca2b8c22a592b6456d10"
+    },
+    "selector/05-closest-traced/hashes.json": {
+      "bytes": 29284,
+      "path": "05-closest-traced/hashes.json",
+      "sha256": "b3a1cc38ac0fb3094bbfcafd32703dc7835c910d84820527e09c23e0488f7fd6"
+    },
+    "selector/05-closest-traced/host/source-trace.jsonl": {
+      "bytes": 8008024,
+      "path": "05-closest-traced/host/source-trace.jsonl",
+      "sha256": "2b3251357fd6f7d6d894f74d925b203a5dcc1a068c5d8477203dba05f7f0e96d"
+    },
+    "selector/05-closest-traced/provenance.json": {
+      "bytes": 4191,
+      "path": "05-closest-traced/provenance.json",
+      "sha256": "cdc31c8d47df823add326f3e9331f816167489d661089c3b84ba96308f2bfb20"
+    },
+    "selector/05-closest-traced/server.log": {
+      "bytes": 9028,
+      "path": "05-closest-traced/server.log",
+      "sha256": "eb7117efdaa27b7de4b6e1e387dc7fe06335770361b51e82035021a211730ffe"
+    },
+    "selector/05-closest-traced/summary.json": {
+      "bytes": 390606,
+      "path": "05-closest-traced/summary.json",
+      "sha256": "4625b8e00cc2e39228629f322f609116487da843f48fe6bb13b6a8fd68ad2b56"
+    },
+    "selector/05-closest-traced/wivrn-live-logcat.txt": {
+      "bytes": 84134,
+      "path": "05-closest-traced/wivrn-live-logcat.txt",
+      "sha256": "be6089f0d69116a92334546a401b0f31e6ba67a0543c37ac6c7a06723ee0dde4"
+    },
+    "selector/06-hevc-after/app-pid-receipt.json": {
+      "bytes": 80,
+      "path": "06-hevc-after/app-pid-receipt.json",
+      "sha256": "f320bbab8e4dbb6cc24af3985895617db813914261dca322df42a94887262e9c"
+    },
+    "selector/06-hevc-after/app-pid.txt": {
+      "bytes": 6,
+      "path": "06-hevc-after/app-pid.txt",
+      "sha256": "9f15b9d47e448225c0c2afbf58f474c2d7c7be76b84d0efc81319ea91fd952fa"
+    },
+    "selector/06-hevc-after/cleanup.json": {
+      "bytes": 187,
+      "path": "06-hevc-after/cleanup.json",
+      "sha256": "6c2a76fe3202f30a28410c3b3c13f2d7133c2f6401ab6a549a92e9f54b0e262d"
+    },
+    "selector/06-hevc-after/client/codec-test-present.jsonl": {
+      "bytes": 1538747,
+      "path": "06-hevc-after/client/codec-test-present.jsonl",
+      "sha256": "5551d125410b3aa112e6031ff0487a665d4cc8b968652ef0cbdb1bed9cf42ee8"
+    },
+    "selector/06-hevc-after/hashes.json": {
+      "bytes": 3368,
+      "path": "06-hevc-after/hashes.json",
+      "sha256": "f826290d1739c95c7df3b94435cbcc17ba6aa7dd0b932a7237ebbd0ca46fd6d8"
+    },
+    "selector/06-hevc-after/native-bitstream-evidence.json": {
+      "bytes": 29503,
+      "path": "06-hevc-after/native-bitstream-evidence.json",
+      "sha256": "ac4214937bd619982fe915e933a2b9fb7ce15dfdbf0afee223dedde99d735745"
+    },
+    "selector/06-hevc-after/provenance.json": {
+      "bytes": 4192,
+      "path": "06-hevc-after/provenance.json",
+      "sha256": "8a14e986ef5f96dbf1b074e8a97c1954e7cd1cd9a3ced82affa0eb304cd554c9"
+    },
+    "selector/06-hevc-after/server.log": {
+      "bytes": 11537,
+      "path": "06-hevc-after/server.log",
+      "sha256": "0876215aad366309f837f3eb40806e010d81a886835ee18f010e48802d6aa50b"
+    },
+    "selector/06-hevc-after/summary.json": {
+      "bytes": 40756,
+      "path": "06-hevc-after/summary.json",
+      "sha256": "8d820d2965c907b96bf92ab273961237d28cb7a8203c25168823e2263d63d2b5"
+    },
+    "selector/06-hevc-after/wivrn-live-logcat.txt": {
+      "bytes": 83414,
+      "path": "06-hevc-after/wivrn-live-logcat.txt",
+      "sha256": "3d3fe5c41d601d5ccb4087d26a334670d6116ee1123814a7d58d9b46dc25d7fc"
+    },
+    "selector/campaign.json": {
+      "bytes": 33454,
+      "path": "campaign.json",
+      "sha256": "4113077dc2ef8b0fc730d5a04f32bb052943cd5349e5c21e11f8c6fa3d19c26f"
+    },
+    "selector/preflight/serial.stderr": {
+      "bytes": 0,
+      "path": "preflight/serial.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "selector/preflight/serial.stdout": {
+      "bytes": 15,
+      "path": "preflight/serial.stdout",
+      "sha256": "c1bc05a54512f062e20d07657dea4d33cf7571c32f9fd60803beea95626c57d6"
+    }
+  },
+  "input_roots": {
+    "inputs": "--inputs",
+    "output": "--output-root",
+    "repo": "repository containing this script",
+    "selector": "--selector-root"
+  },
+  "metric": "Nearest-rank p50/p95/p99 of first successful encoded stereo submission minus earliest eye receipt; two-second warmup; global prewarm seen-frame history retained.",
+  "period_classification": "Descriptive 90 Hz band 11000000..11200000 ns; no original policy alteration.",
+  "promotion_eligible": false,
+  "recommendations": [
+    {
+      "choice": "Retain closest-target cached-copy as control; do not promote bounded-newest.",
+      "reason": "One bounded run contains focus loss and 72 Hz periods and is excluded from fixed-90 comparisons. The other stays 90 Hz but misses 88 unique stereo Hz. Closest brackets drift substantially; no stable causal selector win is established."
+    },
+    {
+      "choice": "Continue native mapped-direct as an opt-in decoder/output investigation, keep cached-copy control.",
+      "reason": "Both output arms have substantial session drift; these four runs do not establish an end-to-end winner. Compare joined decode/copy stages separately. Native VR444 NEON mapped RGBA output is distinct from RRF/RRB LZ4-to-mapped-RGB prototypes."
+    },
+    {
+      "choice": "Prioritize default-off publication/pacer diagnostics for the next native integration.",
+      "commit": "be5fd0bddfc471c8f2243f93b22a85283e618a32",
+      "reason": "Closest bracket age increase is observed chiefly between publication and selection, with target/supply phase changing. This does not establish cause or removability. Diagnostic branch needs synchronized overlay/patch and a fresh build; not present in this APK. Do not take the early pacer trace without its initialization fix."
+    },
+    {
+      "choice": "Retain repaired schema-2 trace analysis and preserve all original evidence statuses.",
+      "commit": "92e8f3f26f7b8fc16f2f3f92fe1e3f388929f85c",
+      "reason": "Replay validates successful-submission traces; intervening/terminal render attempts remain unrecorded. No original failed historical capture is relabeled."
+    },
+    {
+      "choice": "Keep HEVC as a native hardware compression reference, not RGB444 quality equivalence.",
+      "reason": "Actual per-eye streams are 576x640 HEVC Main yuvj420p. No run reaches p95 strictly below 15 ms; traces, samples and these short repeats cannot establish release readiness."
+    }
+  ],
+  "schema": 1,
+  "scope": "Read-only integrity replay and development triage of ten fixed native headset runs; no new acquisition, optical latency or promotion.",
+  "status": "pass",
+  "transport": "TCP over ADB reverse over wireless ADB; not direct codec Wi-Fi transport."
+}

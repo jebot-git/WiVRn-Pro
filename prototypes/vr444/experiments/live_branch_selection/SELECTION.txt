@@ -1,0 +1,147 @@
+Live branch selection — Quest Pro, 2026-10-09
+===========================================
+
+Select publication/pacer diagnostics and four-worker RRB32 integration first.
+Continue native VR444 mapped RGBA output as an opt-in candidate. Keep staged
+RRB32 shaders and Vulkan timeline/synchronization2 as secondary integration
+work. Keep TCP and closest-target/cached-copy as controls. These are development
+choices: no default change, production promotion, or sub-15 ms result follows.
+
+What ran
+--------
+Root alone used the rooted Quest Pro at 192.168.1.105:5555, serial 230YC01D8W000E,
+Android 14 / Adreno 650, over wireless ADB. Device operations needed no privileged
+mutation. The other reachable headset was not used. Six native selector/HEVC
+runs and four native output runs completed; their evidence and cleanup passed.
+The first bounded-selector run lost focus and spent 124 warm presentation rows
+near 72 Hz. Preserve its correctness pass but exclude it from fixed 90 Hz ranking.
+
+Separately completed: 744 measured CPU stereo decodes plus correctness/stress,
+two GPU comparison processes (252 measured, 360 total valid invocations and 36
+right-eye omission controls), two actual Vulkan queue-lifetime paths, and ten
+direct LAN TCP/UDP pairs of endpoint processes delivering 970/970 exact stereo
+pairs (960 main observations plus 10 smoke). Component tests are not native
+end-to-end measurements. Native used TCP over wireless ADB reverse; the new
+network diagnostic used direct host Ethernet 192.168.1.106 to Quest wlan0.
+
+Native full-stereo gate and its limit
+------------------------------------
+Age is headset-local earliest eye receipt to post-successful-xrEndFrame for
+first stereo use, after a 2 s warmup; it is not optical motion-to-photon latency.
+Actual encoded eyes were 576x640. Render swapchains 1800x1980 are a separate
+geometry. HEVC Main/yuvj420p is a hardware reference, not RGB444 equivalence.
+
+run                         stereo p95 ms   unique stereo Hz   fixed90 focused
+HEVC before                       15.812             89.748              yes
+closest-target traced before      18.011             89.097              yes
+bounded-newest traced1            32.469             83.988               no
+bounded-newest traced2            28.730             86.202              yes
+closest-target traced after       34.982             88.492              yes
+HEVC after                        17.497             87.902              yes
+cached-copy output1               30.674             88.588              yes
+mapped-direct output1             31.894             88.241              yes
+mapped-direct output2             20.870             89.158              yes
+cached-copy output2               24.217             89.859              yes
+
+No p95 is strictly below 15 ms. Strong bracket drift prevents a causal selector
+or overall output-path ranking. Closest ready-to-selection median rose from
+11.245 to 25.777 ms, while receipt-to-ready fell from 2.431 to 1.887 ms and
+selection-to-submit stayed near 1.46 ms. This locates the observed change after
+publication without establishing its cause or how much can be removed.
+
+Selected development order
+--------------------------
+1. Compositor publication/pacer diagnostics.
+   research/sub15-20261009/compositor-publication-capture
+   be5fd0bddfc471c8f2243f93b22a85283e618a32
+   Include its render-attempt capture and pacer initialization fix. Reconcile
+   the shared source overlay and patch, rebuild client/server, then compare
+   interleaved fixed 90 Hz captures with focus/cadence and full stereo gates.
+   The tested APK does not contain these diagnostics. Current schema 2 traces
+   omit intervening/terminal attempts; preserve repaired continuity analysis
+   from 92e8f3f (root branch cherry-pick 5ce9642e). Offline selector/phase oracles
+   remain bounds, not tested native replacements. Do not promote bounded-newest.
+
+2. RRB32 CPU client/server integration with VR444 control and wire fallback.
+   research/sub15-20261009/rowblocks-workers
+   260a1a2244b2381270398b65a1d3d2d282867508
+   research/sub15-20261009/rowblocks-band-views
+   a55dff163e3defa5d5be2e600b8d9a7829a8f7a1
+   Four-worker Quest client p95 was 1.063/1.496/1.529 ms on the three captured
+   pairs versus VR444 2.096/2.361/2.517 ms. Retain two workers as a lower CPU
+   control. Four-worker process CPU demand increased; the two Q8 payloads grew
+   42.4% and45.2%. These costs can erase the decoder benefit on a live pipeline.
+   Band-view server evidence is separate desktop work beginning with encoded
+   VR444, not original render pixels. Integrate explicit payload negotiation,
+   native owner lifetime and complete-stereo publication; preserve the 262144 B
+   whole-pair cap and per-eye pixel bounds. Never sum component quantiles.
+   Retain SIMD primitives at 895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8.
+
+3. Native VR444 NEON mapped RGBA output, opt-in.
+   Preserve the tested implementation in research/sub15-20261009/base
+   87cdb175bba0caaaca74b7ca1e07db985aebcef6, option cpu-output=mapped-direct,
+   and the exact 70-file build receipt supplied with native_selection_summary.
+   Warm selected-eye decode/upload medians were 1.097/1.138 ms mapped versus
+   1.477/1.557 ms cached; mapped staging-copy was zero. This is repeated stage
+   evidence, not an end-to-end win. Continue under the same publication/pacer
+   instrumentation, with cached-copy control and full stereo identity gates.
+   This native RGBA destination is distinct from LZ4-to-mapped-RGB prototypes.
+
+4. Staged RRB32 shader plus explicit Vulkan lifetime integration, secondary.
+   research/sub15-20261009/rowblocks-image-timing
+   ef628f4344a073707db014eb5446f0324bf9908d
+   Qualified shared consumer source c4dc09128e45fc5bda71fa0588e40d2077678b9b.
+   RRB32 shader spans were about 0.262–0.289 ms, but complete readiness plus
+   consumer time did not consistently beat CPU RGBA upload. Keep CPU control.
+   research/sub15-20261009/vulkan-extensions
+   00939ca2c504a525e69c173221e1afb67b5be6bc
+   Both actual vkQueueSubmit and sync2 paths passed exact content and complete
+   retirement accounting for three private buffer slots. Carry frame/image
+   ownership, cancellation and generation identity into a native prototype.
+   This establishes queue feature compatibility, not renderer speedup.
+
+Transport decision
+------------------
+Keep TCP. The direct ordinary TCP/UDP diagnostic's high-load p95 sender RTT
+was 10.399/9.904 ms TCP and 10.057/10.062 ms UDP, with 180/180 complete pairs in
+each arm. This is no decisive UDP advantage. No measured pair loss does not
+establish sustained reliability or an FEC requirement.
+
+The nominal 90 Hz setting achieved roughly 86.3–86.9 Hz. The harness waits for an
+ACK, sleeps to its next start, then generates the next synthetic pair before
+starting its clock: both stop-and-wait and preparation can reduce cadence.
+Do not attribute the gap to the wireless link. RTT includes receiver validation
+and the return ACK; receiver assembly uses its own local clock. Neither equals
+one-way delivery or native latency. Short synthetic bursts did not test codecs,
+overlapping production pacing, batching, GSO/GRO, FEC, encryption, or OpenXR.
+
+Retain research/sub15-20261009/wireless-pair-probe (executed source 9ec0b0d1)
+as a diagnostic. If investigating UDP further, first qualify preparation-aware
+pacing and overlapping complete-pair ownership, then realistic loss/FEC. The
+older udp-batch 3075ff7c and udp-offload 74e678a1 evidence remains loopback only.
+
+Hold or deprioritize
+-------------------
+- Specific direct LZ4-to-mapped RGB paths: mapped-input-consumer 068dd29d and
+  mapped-input-decode 24d0b3ca. Every matched median was 2.79–10.72x slower than
+  staged equivalents. Both requested cache modes used memory type 4 / flags 15,
+  so this does not isolate a cache-policy cause or apply to native mapped RGBA.
+- Bounded-newest promotion: no demonstrated benefit; one valid 90 Hz run below
+  88 unique stereo Hz, one interrupted, and drifting closest controls.
+- Host image copy on this device: extension absent. Keep timeline/sync2 work.
+- Static dictionaries/channel planes/palette as immediate latency candidates:
+  previous byte/host-cost negatives remain; no new live adapter merits a run.
+- Neural research PR deployment: prior PR review found missing evidence
+  contracts and no trained native adapter. Repair those before device testing.
+  PR 1 snapshot/accounting, PRs 2–4 read-byte/hash binding, and PR 4 pixel-limit
+  findings remain in ../headset_review_smoke/PR-REVIEW.txt. No PR was merged.
+
+Evidence and replay
+-------------------
+The neighboring README.txt describes the 572-file, hash-manifested compressed
+replay archive. Full original native acquisition roots remain locally intact.
+Detailed reports: ../native_selection_summary, ../android_gpu_comparison,
+../android_timeline_qualification, and ../wireless_pair_probe. The native
+pixel/elementary-stream gates and external build verification are acquisition
+evidence; telemetry replay does not independently repeat them. Short captures,
+trace observer costs, small fixed corpora and session drift limit conclusions.

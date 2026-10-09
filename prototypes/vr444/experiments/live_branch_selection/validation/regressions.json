@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "scope": "Read-only consolidated checkout regressions; no device operations.",
+  "results": [
+    {
+      "name": "gpu",
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "prototypes/vr444/experiments/android_gpu_comparison",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "started_utc": "2026-10-09T13:43:22.638802+00:00",
+      "returncode": 0,
+      "log": "gpu.log",
+      "log_sha256": "7d11fee450345aac1c2d1931d5bd0ccdb9efc5bcf13add8a6584208ea89d8623",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 11 tests in 0.046s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "timeline",
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "prototypes/vr444/experiments/android_timeline_qualification",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "started_utc": "2026-10-09T13:43:22.638938+00:00",
+      "returncode": 0,
+      "log": "timeline.log",
+      "log_sha256": "19cfdf8eca5051cbed57929c493bf834d0ec2fadc038a27a64e315981c6b0e63",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 6 tests in 0.001s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "native-summary",
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "prototypes/vr444/experiments/native_selection_summary",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "started_utc": "2026-10-09T13:43:22.639073+00:00",
+      "returncode": 0,
+      "log": "native-summary.log",
+      "log_sha256": "55b3dccf010838e38515b1df6ada7b4f063b264801c7fec09356d0e9c68e52a7",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 4 tests in 0.001s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "candidate-trace",
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_candidate_trace.py",
+        "-v"
+      ],
+      "started_utc": "2026-10-09T13:43:22.640039+00:00",
+      "returncode": 0,
+      "log": "candidate-trace.log",
+      "log_sha256": "e168e2a0fbd7965ffd020645cfdd0e42c9c77fe329af06d0c00bcd35773cfa69",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 28 tests in 0.886s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "trace-reanalysis",
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_trace_reanalysis.py",
+        "-v"
+      ],
+      "started_utc": "2026-10-09T13:43:22.640343+00:00",
+      "returncode": 0,
+      "log": "trace-reanalysis.log",
+      "log_sha256": "33c144c174bbd92ae0d9f286e40288584d2de544f8bc37041beb539de628d588",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 5 tests in 0.087s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "native-compare",
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_native_compare.py",
+        "-v"
+      ],
+      "started_utc": "2026-10-09T13:43:22.640894+00:00",
+      "returncode": 0,
+      "log": "native-compare.log",
+      "log_sha256": "cb37256cfca7c50a01312d013ce2db8575f90f96f8b802d706a8bdcdc457c672",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 10 tests in 0.007s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "wireless",
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "prototypes/vr444/experiments/wireless_pair_probe",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "started_utc": "2026-10-09T13:48:30.454435+00:00",
+      "returncode": 0,
+      "log": "wireless.log",
+      "log_sha256": "6682873a82ae4a57cf5ad5f2a4edeebd1271fcabe409de551de38cf61b274fbf",
+      "summary": [
+        "----------------------------------------------------------------------",
+        "Ran 12 tests in 0.002s",
+        "",
+        "OK"
+      ]
+    }
+  ]
+}
