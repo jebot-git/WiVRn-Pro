@@ -13,6 +13,8 @@ work remains suspended. No original capture or summary is rewritten. There
 is no new timing measurement, linked native build, installation or launch.
 
 Files and integration boundary
+The later CONSTRUCTOR-ORDER.txt fix is required before integration; do not
+integrate the initial trace milestone without its error-path ordering repair.
 New overlay files:
   server/compositor/pacer.cpp
   server/compositor/pacer.h

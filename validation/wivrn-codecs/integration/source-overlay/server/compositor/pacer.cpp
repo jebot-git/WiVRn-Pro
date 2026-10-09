@@ -40,6 +40,11 @@ static const int64_t margin_ns = 3'000'000;
 static const int64_t slop_ns = 500'000;
 
 pacer::pacer(uint64_t frame_duration) :
+#ifdef WIVRN_CODEC_TESTS
+        // Allocate/open diagnostics before the worker member starts. A path
+        // error must not unwind a jthread blocked on the compute condition.
+        codec_test_pacer_id(codec_test::pacer_trace().enabled() ? codec_test::next_pacer_trace_id() : 0),
+#endif
         frame_duration_ns(frame_duration),
         client_margin_ms{
                 .val = debug_get_float_option_client_margin_ms(),
@@ -73,11 +78,6 @@ pacer::pacer(uint64_t frame_duration) :
 	        }
         })
 {
-#ifdef WIVRN_CODEC_TESTS
-	// Initialize storage/file before predict callbacks; no output on hot path.
-	if (codec_test::pacer_trace().enabled())
-		codec_test_pacer_id = codec_test::next_pacer_trace_id();
-#endif
 	u_var_add_root(this, "Pacer", false);
 	u_var_add_draggable_f32(this, &client_margin_ms, "headset margin (ms)");
 }
