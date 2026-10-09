@@ -12,6 +12,10 @@ The user has declared rooted Quest Pro eye tracking decoupled for research: **in
 
 The user has also authorized dedicated parallel research on alternate host/client protocols for a Magisk/Singularity-rooted Quest Pro, Intel NUC 12 Extreme i7, and user-confirmed direct 2.5 GbE Ethernet to an ASUS RT-AXE7800 with 6 GHz available. Read [PROTOCOL-RESEARCH.md](PROTOCOL-RESEARCH.md), the [initial four-agent study](protocol-research/20261009T090350Z.md), and [protocol-research-plan.json](protocol-research-plan.json). Carry the transport, topology, Linux/radio and integration hypotheses into rolling reviews while preserving the same evidence and qualification boundaries.
 
+## Neural research branches
+
+The authorized three-track neural workflow starts from the completed checkpoint. See [NEURAL-WORKFLOW.md](NEURAL-WORKFLOW.md) for pinned encoder-decision, intra-codec and advisory-ranker branches, CI evidence, and manual hardware hooks. These are isolated research starters; the original prototypes and strict v1 experiment contract remain unchanged.
+
 ## Research window
 
 The user described 270 minutes remaining at 2026-10-09 07:02:40 UTC. The reconciliation checkpoint is **2026-10-09 13:32:40 Europe/Prague (11:32:40 UTC)**. See [window.json](window.json). This checkpoint organizes evidence; it does not terminate other agents or promote a branch.
