@@ -10,13 +10,13 @@
       "agent": "root",
       "role": "integration and qualification",
       "branch": "research/sub15-20261009/dual-goal-integration",
-      "stage": "Native CPU/GPU evidence collected; Q1 submitted-reference replay in progress"
+      "stage": "Building next isolated native union; prior LOCAL visible fixture passed; prompt user before next worn-headset window"
     },
     {
       "agent": "identify_sub15",
       "role": "compositor and publication",
       "branch": "research/sub15-20261009/pacer-recent-tail",
-      "stage": "Opt-in bounded-age pacer estimator and exact source/pacer joins"
+      "stage": "Recent-tail estimator sealed and host build underway; explicit harness helper pending"
     },
     {
       "agent": "transport_compression",
@@ -28,7 +28,7 @@
       "agent": "gpu_pipeline",
       "role": "GPU images and independent review",
       "branch": "research/sub15-20261009/submitted-replay-capture",
-      "stage": "Native GPU audit and physical-headset-bound independent reference replay"
+      "stage": "Explicit native quality geometry implementation and translation-unit validation"
     }
   ],
   "device_owner": "root",
@@ -40,5 +40,11 @@
     "Independent same-headset native shader replay and central10 exact comparison",
     "Pacer-tail candidate review, isolated build and bounded A/B tests"
   ],
-  "known_quality_gap": "User observed black display; confirmed VIEW/world space-contract mismatch requires new LOCAL fixture test. Stream-scale experiment ineffective due fixed native codec dimensions; captured byte equality remains component-only."
+  "known_quality_gap": "Current LOCAL fixture visible and user reports no artifacts; one submitted stereo replay exact. Native576x640 geometry has insufficient1:1 core for full10-degree original-source target; larger native controls and repeated fixture suite remain.",
+  "headset_readiness": {
+    "instruction": "Prompt when headset needs to be worn again.",
+    "wearing_required_for_next_live_test": true,
+    "next_live_readiness_confirmed": false,
+    "current_work_requires_wearing": false
+  }
 }
