@@ -6,6 +6,11 @@ HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[3]
 QUALIFIED='508c290be9c3a02d28a5162fbad1a1d8674ebfe1'
 RUNNER_SHA='e495081a5bdbbef3aa94cff0082b700516740dca711d10d3ec9dedb143e4c64a'
 CAMPAIGN_RUNNER_SHA='b2cf6a837b482ebe676290f8199589a2ef94263049afac462ea60525da4972f9'
+# The v2 runner (48925582) adds the worn-headset readiness gate, broader source
+# hashing and gzip/60s previous-capture backup. Identity and cleanup joins are
+# unchanged. Keep the exact historical digest for immutable earlier captures.
+CAMPAIGN_RUNNER_V2_SHA='7071ec7f1bd7f99e7b4e4bafeb3387f02db53e0d30b9b2ea3b34662fbe9525ca'
+CAMPAIGN_RUNNERS=(CAMPAIGN_RUNNER_SHA,CAMPAIGN_RUNNER_V2_SHA)
 EXP='prototypes/vr444/experiments/submitted_image_replay/'
 MAX_IMAGE=16*1024*1024
 
@@ -66,7 +71,7 @@ def campaign_identity(adapter,serial,adb_target,bridge):
         path=Path(path).resolve();raw=read(path,limit,sha,allow_empty);bindings[str(path)]=digest(raw);return raw
     cpath=Path(bridge['campaign']['path']).resolve();campaign=strict(item(cpath,bridge['campaign']['sha256']))
     plan=strict(item(bridge['plan']['path'],bridge['plan']['sha256']))
-    need(campaign['status']=='complete'and campaign['headset_used']is True and campaign['runner_sha256']==CAMPAIGN_RUNNER_SHA,'native campaign completion/runner')
+    need(campaign['status']=='complete'and campaign['headset_used']is True and campaign['runner_sha256'] in CAMPAIGN_RUNNERS,'native campaign completion/runner')
     need(campaign['plan_sha256']==bridge['plan']['sha256']and plan['build_receipt_sha256']==adapter['build_receipt_sha256'],'campaign plan/build join')
     need(recorded==adb_target==plan['adb_target_last_observed']and plan['expected_physical_serial']==serial,'native recorded endpoint/physical identity')
     need(campaign['analysis_sources_unchanged']is True and campaign['analysis_source_sha256_before']==campaign['analysis_source_sha256_after'],'campaign analysis source change')

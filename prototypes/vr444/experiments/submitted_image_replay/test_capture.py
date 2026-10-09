@@ -132,7 +132,7 @@ class ReplayCapture(unittest.TestCase):
             bindings=capture.campaign_identity(adapter,serial,target,bridge)
             self.assertEqual(len(bindings),7);self.assertEqual(adapter['candidate_capture_audit']['headset_serial_recorded'],target)
     def test_campaign_bridge_rejects_rebound_wrong_evidence(self):
-        for mode in range(9):
+        for mode in range(10):
             with self.subTest(mode=mode),tempfile.TemporaryDirectory()as t:
                 root=Path(t)/'campaign';adapter,serial,target,bridge,c=bridge_fixture(root)
                 if mode==0:c['commands'][0]['argv'][2]='192.0.2.2:5555'
@@ -145,8 +145,15 @@ class ReplayCapture(unittest.TestCase):
                 if mode==7:
                     raw=b'OTHER_HEADSET\n';(root/'preflight/serial.stdout').write_bytes(raw);c['commands'][0]['stdout_sha256']=sha(raw)
                 if mode==8:c['final_config_matches_initial']=False
+                if mode==9:c['runner_sha256']='0'*64
                 put(root/'campaign.json',c);bridge['campaign']['sha256']=sha((root/'campaign.json').read_bytes())
                 with self.assertRaises(ValueError):capture.campaign_identity(adapter,serial,target,bridge)
+    def test_campaign_bridge_accepts_exact_v2_runner(self):
+        with tempfile.TemporaryDirectory()as t:
+            root=Path(t)/'campaign';adapter,serial,target,bridge,c=bridge_fixture(root)
+            c['runner_sha256']=capture.CAMPAIGN_RUNNER_V2_SHA
+            put(root/'campaign.json',c);bridge['campaign']['sha256']=sha((root/'campaign.json').read_bytes())
+            self.assertEqual(len(capture.campaign_identity(adapter,serial,target,bridge)),7)
     def test_full_output_audit_preserves_legacy_and_physical_identities(self):
         with tempfile.TemporaryDirectory()as t:
             root=Path(t);directory,plan,r=self.fixture(root);adapter_path=root/'adapter.json';adapter=json.loads(adapter_path.read_bytes())

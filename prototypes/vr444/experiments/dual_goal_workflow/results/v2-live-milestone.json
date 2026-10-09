@@ -1,0 +1,792 @@
+{
+  "schema": 1,
+  "recorded_utc": "2026-10-09T15:57:37.778956+00:00",
+  "scope": "V2 worn-headset acquisition milestone; independent latency and quality routes remain unqualified",
+  "build_receipt": {
+    "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/build-receipt.json",
+    "sha256": "2a8a39094e4537e7057f772409e4a7ebae7b0bb054a9b9237479ac34cece4e7e"
+  },
+  "qualification_operator": "OR",
+  "latency_route_qualified": false,
+  "quality_route_qualified": false,
+  "promotion_eligible": false,
+  "campaigns": [
+    {
+      "name": "native-pacer-abba",
+      "receipt": {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba/campaign.json",
+        "sha256": "45afaba625b87640b1d488b2eed9932650ada2d79d40180f32d6d5c584a153c7"
+      },
+      "status": "stopped",
+      "error": "Command '['adb', '-s', '192.168.1.105:5555', 'exec-out', 'run-as', 'org.meumeu.wivrn.codectest', 'tar', '-C', 'files', '-cf', '-', 'codec-test', 'codec-test-present.jsonl']' timed out after 30 seconds",
+      "postconditions": {
+        "analysis_sources_unchanged": true,
+        "build_files_verified_after": 1895,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "dedicated_app_stopped": true,
+        "production_package_unchanged": true,
+        "final_check_errors": []
+      },
+      "runs": []
+    },
+    {
+      "name": "native-pacer-abba-retry",
+      "receipt": {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/campaign.json",
+        "sha256": "68de9632adce4237692117e773c9c71e6f82ced115edcd1b137bd1544b9e1ce2"
+      },
+      "status": "complete",
+      "error": null,
+      "postconditions": {
+        "analysis_sources_unchanged": true,
+        "build_files_verified_after": 1895,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "dedicated_app_stopped": true,
+        "production_package_unchanged": true,
+        "final_check_errors": []
+      },
+      "runs": [
+        {
+          "name": "rrb4-tail-0-1",
+          "manifest": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/hashes.json",
+            "sha256": "15182b8b9fb663780046bfbf97d127d0673db6d03fc836610b4269cae0e91ca8"
+          },
+          "summary": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-1/summary.json",
+            "sha256": "4d070fe3e35de0a6d4acbd73add7f55110abc26584441d30b48664a2204464c1"
+          },
+          "acquisition_status": "pass",
+          "trace_gates": {
+            "custom_evidence": "pass",
+            "source_trace": "pass",
+            "pacer_trace": "pass",
+            "pacer_tail": "off",
+            "candidate_trace": "pass",
+            "publication_trace": "pass"
+          },
+          "latency": {
+            "status": "fail",
+            "priority": "mission_critical",
+            "policy_id": "quest-pro-small-scene-latency-v1",
+            "errors": [
+              "stereo_receive_to_submit_ms_p50: 21.419378 violates max 17",
+              "stereo_receive_to_submit_ms_p95: 25.541200 violates max 21",
+              "stereo_receive_to_submit_ms_p99: 27.200419 violates max 25",
+              "complete stereo receive-to-submit p95 must be strictly below 15 ms"
+            ],
+            "observed": {
+              "unique_stereo_submission_hz": 89.6184467404348,
+              "stereo_receive_to_submit_ms_p50": 21.419378,
+              "stereo_receive_to_submit_ms_p95": 25.5412,
+              "stereo_receive_to_submit_ms_p99": 27.200419
+            },
+            "limits": {
+              "stereo_receive_to_submit_ms_p50_max": 17,
+              "stereo_receive_to_submit_ms_p95_max": 21,
+              "stereo_receive_to_submit_ms_p99_max": 25,
+              "unique_stereo_submission_hz_min": 88
+            },
+            "unique_pairs": 1898,
+            "measured_seconds": 21.167517057,
+            "promotion_eligible": false,
+            "promotion_scope": "One run only; repeated current-build correctness/quality and hardware evidence are also required.",
+            "optical_motion_to_photon_verified": false,
+            "metric": "First successful stereo submission minus earliest packet receipt among the two eyes, headset-local clock.",
+            "threshold_status": "provisional_engineering_targets",
+            "target_id": "selected-candidates-sub15-single-run-v1",
+            "target": {
+              "policy": "LATENCY-POLICY.json",
+              "strict_p95_upper_bound_ms": 15,
+              "minimum_repeated_runs": 2,
+              "metric": "First complete stereo successful submission minus earliest eye receipt, headset-local clock",
+              "optical": false
+            },
+            "goal_verified": false,
+            "evidence_integrity_verified": false,
+            "release_ready": false,
+            "scope": "Single-run software score only. Independent raw correctness, current build identity, complete repeated runs and freshness validation remain required for research qualification; no quality or photon claim."
+          }
+        },
+        {
+          "name": "rrb4-tail-900-2",
+          "manifest": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/hashes.json",
+            "sha256": "5f0545253bf581fc5cd0e22243215a02fe4dd5d3c3346ec9d05461d5aa5b555b"
+          },
+          "summary": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-2/summary.json",
+            "sha256": "958a02845ea3b40b96ee619ea395bb1db9869034ad8359079e4e00e52ff1f33a"
+          },
+          "acquisition_status": "pass",
+          "trace_gates": {
+            "custom_evidence": "pass",
+            "source_trace": "pass",
+            "pacer_trace": "pass",
+            "pacer_tail": "pass",
+            "candidate_trace": "pass",
+            "publication_trace": "pass"
+          },
+          "latency": {
+            "status": "fail",
+            "priority": "mission_critical",
+            "policy_id": "quest-pro-small-scene-latency-v1",
+            "errors": [
+              "stereo_receive_to_submit_ms_p50: 20.637867 violates max 17",
+              "stereo_receive_to_submit_ms_p95: 23.539586 violates max 21",
+              "complete stereo receive-to-submit p95 must be strictly below 15 ms"
+            ],
+            "observed": {
+              "unique_stereo_submission_hz": 89.66235747975645,
+              "stereo_receive_to_submit_ms_p50": 20.637867,
+              "stereo_receive_to_submit_ms_p95": 23.539586,
+              "stereo_receive_to_submit_ms_p99": 24.360679
+            },
+            "limits": {
+              "stereo_receive_to_submit_ms_p50_max": 17,
+              "stereo_receive_to_submit_ms_p95_max": 21,
+              "stereo_receive_to_submit_ms_p99_max": 25,
+              "unique_stereo_submission_hz_min": 88
+            },
+            "unique_pairs": 1889,
+            "measured_seconds": 21.056774025,
+            "promotion_eligible": false,
+            "promotion_scope": "One run only; repeated current-build correctness/quality and hardware evidence are also required.",
+            "optical_motion_to_photon_verified": false,
+            "metric": "First successful stereo submission minus earliest packet receipt among the two eyes, headset-local clock.",
+            "threshold_status": "provisional_engineering_targets",
+            "target_id": "selected-candidates-sub15-single-run-v1",
+            "target": {
+              "policy": "LATENCY-POLICY.json",
+              "strict_p95_upper_bound_ms": 15,
+              "minimum_repeated_runs": 2,
+              "metric": "First complete stereo successful submission minus earliest eye receipt, headset-local clock",
+              "optical": false
+            },
+            "goal_verified": false,
+            "evidence_integrity_verified": false,
+            "release_ready": false,
+            "scope": "Single-run software score only. Independent raw correctness, current build identity, complete repeated runs and freshness validation remain required for research qualification; no quality or photon claim."
+          }
+        },
+        {
+          "name": "rrb4-tail-900-3",
+          "manifest": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/hashes.json",
+            "sha256": "4c097141971936a5aa47146403ed0d02ec30e07de09b60b00d3feae40a93b4e1"
+          },
+          "summary": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-900-3/summary.json",
+            "sha256": "99394c1d7b3d1ae6f587193071155c69c03ea32012d41c78fdf01eb3942309cb"
+          },
+          "acquisition_status": "pass",
+          "trace_gates": {
+            "custom_evidence": "pass",
+            "source_trace": "pass",
+            "pacer_trace": "pass",
+            "pacer_tail": "pass",
+            "candidate_trace": "pass",
+            "publication_trace": "pass"
+          },
+          "latency": {
+            "status": "fail",
+            "priority": "mission_critical",
+            "policy_id": "quest-pro-small-scene-latency-v1",
+            "errors": [
+              "stereo_receive_to_submit_ms_p50: 18.516929 violates max 17",
+              "stereo_receive_to_submit_ms_p95: 21.309169 violates max 21",
+              "complete stereo receive-to-submit p95 must be strictly below 15 ms"
+            ],
+            "observed": {
+              "unique_stereo_submission_hz": 88.86203065466094,
+              "stereo_receive_to_submit_ms_p50": 18.516929,
+              "stereo_receive_to_submit_ms_p95": 21.309169,
+              "stereo_receive_to_submit_ms_p99": 23.481513
+            },
+            "limits": {
+              "stereo_receive_to_submit_ms_p50_max": 17,
+              "stereo_receive_to_submit_ms_p95_max": 21,
+              "stereo_receive_to_submit_ms_p99_max": 25,
+              "unique_stereo_submission_hz_min": 88
+            },
+            "unique_pairs": 1897,
+            "measured_seconds": 21.336446917,
+            "promotion_eligible": false,
+            "promotion_scope": "One run only; repeated current-build correctness/quality and hardware evidence are also required.",
+            "optical_motion_to_photon_verified": false,
+            "metric": "First successful stereo submission minus earliest packet receipt among the two eyes, headset-local clock.",
+            "threshold_status": "provisional_engineering_targets",
+            "target_id": "selected-candidates-sub15-single-run-v1",
+            "target": {
+              "policy": "LATENCY-POLICY.json",
+              "strict_p95_upper_bound_ms": 15,
+              "minimum_repeated_runs": 2,
+              "metric": "First complete stereo successful submission minus earliest eye receipt, headset-local clock",
+              "optical": false
+            },
+            "goal_verified": false,
+            "evidence_integrity_verified": false,
+            "release_ready": false,
+            "scope": "Single-run software score only. Independent raw correctness, current build identity, complete repeated runs and freshness validation remain required for research qualification; no quality or photon claim."
+          }
+        },
+        {
+          "name": "rrb4-tail-0-4",
+          "manifest": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/hashes.json",
+            "sha256": "e3c80b80551f1ca49127566268ea9b4a23ddcac6b476cc650eb391009dfe7584"
+          },
+          "summary": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-pacer-abba-retry/rrb4-tail-0-4/summary.json",
+            "sha256": "539c5656e219c4c8300858334fbbf82aef20084a9a79feff4588d2e3b0809ca0"
+          },
+          "acquisition_status": "pass",
+          "trace_gates": {
+            "custom_evidence": "pass",
+            "source_trace": "pass",
+            "pacer_trace": "pass",
+            "pacer_tail": "off",
+            "candidate_trace": "pass",
+            "publication_trace": "pass"
+          },
+          "latency": {
+            "status": "fail",
+            "priority": "mission_critical",
+            "policy_id": "quest-pro-small-scene-latency-v1",
+            "errors": [
+              "stereo_receive_to_submit_ms_p50: 18.178283 violates max 17",
+              "stereo_receive_to_submit_ms_p95: 24.017190 violates max 21",
+              "stereo_receive_to_submit_ms_p99: 25.659429 violates max 25",
+              "complete stereo receive-to-submit p95 must be strictly below 15 ms"
+            ],
+            "observed": {
+              "unique_stereo_submission_hz": 89.53270390580556,
+              "stereo_receive_to_submit_ms_p50": 18.178283,
+              "stereo_receive_to_submit_ms_p95": 24.01719,
+              "stereo_receive_to_submit_ms_p99": 25.659429
+            },
+            "limits": {
+              "stereo_receive_to_submit_ms_p50_max": 17,
+              "stereo_receive_to_submit_ms_p95_max": 21,
+              "stereo_receive_to_submit_ms_p99_max": 25,
+              "unique_stereo_submission_hz_min": 88
+            },
+            "unique_pairs": 1910,
+            "measured_seconds": 21.321817802,
+            "promotion_eligible": false,
+            "promotion_scope": "One run only; repeated current-build correctness/quality and hardware evidence are also required.",
+            "optical_motion_to_photon_verified": false,
+            "metric": "First successful stereo submission minus earliest packet receipt among the two eyes, headset-local clock.",
+            "threshold_status": "provisional_engineering_targets",
+            "target_id": "selected-candidates-sub15-single-run-v1",
+            "target": {
+              "policy": "LATENCY-POLICY.json",
+              "strict_p95_upper_bound_ms": 15,
+              "minimum_repeated_runs": 2,
+              "metric": "First complete stereo successful submission minus earliest eye receipt, headset-local clock",
+              "optical": false
+            },
+            "goal_verified": false,
+            "evidence_integrity_verified": false,
+            "release_ready": false,
+            "scope": "Single-run software score only. Independent raw correctness, current build identity, complete repeated runs and freshness validation remain required for research qualification; no quality or photon claim."
+          }
+        }
+      ]
+    },
+    {
+      "name": "native-quality-960",
+      "receipt": {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/campaign.json",
+        "sha256": "7b00f159790870691f93c4dd990001869d4181ab328c9356bee518ce9776a1ec"
+      },
+      "status": "complete",
+      "error": null,
+      "postconditions": {
+        "analysis_sources_unchanged": true,
+        "build_files_verified_after": 1895,
+        "final_config_matches_initial": true,
+        "own_reverse_absent": true,
+        "dedicated_app_stopped": true,
+        "production_package_unchanged": true,
+        "final_check_errors": []
+      },
+      "runs": [
+        {
+          "name": "rrb4-q1-chroma-grid",
+          "manifest": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/hashes.json",
+            "sha256": "229c1c1d5a90dae9456ed9e494a6a771ded423cdf847cc2416ae5eae8275ddb3"
+          },
+          "summary": {
+            "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/summary.json",
+            "sha256": "0a49b494169e37cf8022162008cf5eaad969f199861a3da0a1828c16cb51d37b"
+          },
+          "acquisition_status": "pass",
+          "trace_gates": {
+            "custom_evidence": "pass",
+            "source_trace": "pass",
+            "pacer_trace": "off",
+            "pacer_tail": "off",
+            "candidate_trace": "off",
+            "publication_trace": "off"
+          },
+          "latency": {
+            "status": "fail",
+            "priority": "mission_critical",
+            "policy_id": "quest-pro-small-scene-latency-v1",
+            "errors": [
+              "profile mismatch or missing: geometry",
+              "stereo_receive_to_submit_ms_p50: 23.485940 violates max 17",
+              "stereo_receive_to_submit_ms_p95: 31.861254 violates max 21",
+              "stereo_receive_to_submit_ms_p99: 33.586982 violates max 25",
+              "application quality fixtures use a separate profile and cannot qualify the latency target",
+              "complete stereo receive-to-submit p95 must be strictly below 15 ms"
+            ],
+            "observed": {
+              "unique_stereo_submission_hz": 88.91930503633367,
+              "stereo_receive_to_submit_ms_p50": 23.48594,
+              "stereo_receive_to_submit_ms_p95": 31.861254,
+              "stereo_receive_to_submit_ms_p99": 33.586982
+            },
+            "limits": {
+              "stereo_receive_to_submit_ms_p50_max": 17,
+              "stereo_receive_to_submit_ms_p95_max": 21,
+              "stereo_receive_to_submit_ms_p99_max": 25,
+              "unique_stereo_submission_hz_min": 88
+            },
+            "unique_pairs": 1125,
+            "measured_seconds": 12.640674593,
+            "promotion_eligible": false,
+            "promotion_scope": "One run only; repeated current-build correctness/quality and hardware evidence are also required.",
+            "optical_motion_to_photon_verified": false,
+            "metric": "First successful stereo submission minus earliest packet receipt among the two eyes, headset-local clock.",
+            "threshold_status": "provisional_engineering_targets",
+            "target_id": "selected-candidates-sub15-single-run-v1",
+            "target": {
+              "policy": "LATENCY-POLICY.json",
+              "strict_p95_upper_bound_ms": 15,
+              "minimum_repeated_runs": 2,
+              "metric": "First complete stereo successful submission minus earliest eye receipt, headset-local clock",
+              "optical": false
+            },
+            "goal_verified": false,
+            "evidence_integrity_verified": false,
+            "release_ready": false,
+            "scope": "Single-run software score only. Independent raw correctness, current build identity, complete repeated runs and freshness validation remain required for research qualification; no quality or photon claim."
+          }
+        }
+      ]
+    }
+  ],
+  "failed_preflight_scope": "Initial ABBA attempt timed out preserving previous capture before any measurement. Retained unchanged; gzip backup fixed in48925582; all measured arms belong to fresh retry campaign.",
+  "pacer_decision": "Keep recent-tail default-off for further diagnostic development: both enabled p95/p99 improved versus both controls, but control drift and cadence differences prevent causal effect-size or goal claims. All p95 remain above15ms.",
+  "quality_decision": "Keep Q1 native geometry and source-mapping research, reject960 profile as full central10 quality gate: some protected cells still span multiple original pixels; user reports visible banding.",
+  "quality960": {
+    "encoded_stereo_pairs": 1342,
+    "decoded_stereo_pairs": 1339,
+    "presentations": 1275,
+    "maximum_encoded_stereo_envelope_bytes": 56525,
+    "shared_pair_decode_ms": {
+      "count": 1339,
+      "p50": 2.30089,
+      "p95": 3.5013,
+      "p99": 3.95432,
+      "max": 9.20469
+    },
+    "captured_payload_eyes": 30,
+    "exact_original_post_foveation_eyes": 30,
+    "mapping_diagnostics": [
+      {
+        "capture_id": 1,
+        "frame": 180,
+        "warp": 14164215646400192162,
+        "eye": 0,
+        "reconstructed_geometry": [
+          1800,
+          1980
+        ],
+        "encoded_geometry": [
+          960,
+          1056
+        ],
+        "encoded_input_fov_left_right_down_up_radians": [
+          -0.942477763,
+          0.69813168,
+          -0.942477763,
+          0.733038306
+        ],
+        "foveation_x": [
+          4,
+          12,
+          16,
+          24,
+          31,
+          55,
+          138,
+          502,
+          134,
+          43,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "foveation_y": [
+          0,
+          13,
+          35,
+          58,
+          145,
+          534,
+          146,
+          57,
+          35,
+          24,
+          9
+        ],
+        "ratio1_encoded_run_xy": [
+          502,
+          534
+        ],
+        "central10_encoded_cells": 67008,
+        "central10_cells_with_source_span_above1": 2698,
+        "central10_all_cells_ratio1": false,
+        "mask_sha256": "e926371af9b94297efca5b1dfdfe33c11093af3cf1bb1793e7b58af4ef9b78d4",
+        "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+      },
+      {
+        "capture_id": 1,
+        "frame": 180,
+        "warp": 14164215646400192162,
+        "eye": 1,
+        "reconstructed_geometry": [
+          1800,
+          1980
+        ],
+        "encoded_geometry": [
+          960,
+          1056
+        ],
+        "encoded_input_fov_left_right_down_up_radians": [
+          -0.69813168,
+          0.942477763,
+          -0.942477763,
+          0.733038306
+        ],
+        "foveation_x": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          43,
+          134,
+          502,
+          138,
+          55,
+          31,
+          24,
+          16,
+          12,
+          4
+        ],
+        "foveation_y": [
+          0,
+          13,
+          35,
+          58,
+          145,
+          534,
+          146,
+          57,
+          35,
+          24,
+          9
+        ],
+        "ratio1_encoded_run_xy": [
+          502,
+          534
+        ],
+        "central10_encoded_cells": 67008,
+        "central10_cells_with_source_span_above1": 2698,
+        "central10_all_cells_ratio1": false,
+        "mask_sha256": "6df8acc52440dc7230ca1a6eb95b5f090aca7ac99be281d4b0e5ed1604f7b481",
+        "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+      },
+      {
+        "capture_id": 2,
+        "frame": 270,
+        "warp": 2429679475233061020,
+        "eye": 0,
+        "reconstructed_geometry": [
+          1800,
+          1980
+        ],
+        "encoded_geometry": [
+          960,
+          1056
+        ],
+        "encoded_input_fov_left_right_down_up_radians": [
+          -0.942477763,
+          0.69813168,
+          -0.942477763,
+          0.733038306
+        ],
+        "foveation_x": [
+          4,
+          12,
+          16,
+          24,
+          31,
+          55,
+          138,
+          502,
+          134,
+          43,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "foveation_y": [
+          0,
+          13,
+          35,
+          58,
+          145,
+          534,
+          146,
+          57,
+          35,
+          24,
+          9
+        ],
+        "ratio1_encoded_run_xy": [
+          502,
+          534
+        ],
+        "central10_encoded_cells": 67008,
+        "central10_cells_with_source_span_above1": 2698,
+        "central10_all_cells_ratio1": false,
+        "mask_sha256": "e926371af9b94297efca5b1dfdfe33c11093af3cf1bb1793e7b58af4ef9b78d4",
+        "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+      },
+      {
+        "capture_id": 2,
+        "frame": 270,
+        "warp": 2429679475233061020,
+        "eye": 1,
+        "reconstructed_geometry": [
+          1800,
+          1980
+        ],
+        "encoded_geometry": [
+          960,
+          1056
+        ],
+        "encoded_input_fov_left_right_down_up_radians": [
+          -0.69813168,
+          0.942477763,
+          -0.942477763,
+          0.733038306
+        ],
+        "foveation_x": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          43,
+          134,
+          502,
+          138,
+          55,
+          31,
+          24,
+          16,
+          12,
+          4
+        ],
+        "foveation_y": [
+          0,
+          13,
+          35,
+          58,
+          145,
+          534,
+          146,
+          57,
+          35,
+          24,
+          9
+        ],
+        "ratio1_encoded_run_xy": [
+          502,
+          534
+        ],
+        "central10_encoded_cells": 67008,
+        "central10_cells_with_source_span_above1": 2698,
+        "central10_all_cells_ratio1": false,
+        "mask_sha256": "6df8acc52440dc7230ca1a6eb95b5f090aca7ac99be281d4b0e5ed1604f7b481",
+        "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+      },
+      {
+        "capture_id": 3,
+        "frame": 360,
+        "warp": 1237735021813137235,
+        "eye": 0,
+        "reconstructed_geometry": [
+          1800,
+          1980
+        ],
+        "encoded_geometry": [
+          960,
+          1056
+        ],
+        "encoded_input_fov_left_right_down_up_radians": [
+          -0.942477763,
+          0.69813168,
+          -0.942477763,
+          0.733038306
+        ],
+        "foveation_x": [
+          4,
+          12,
+          16,
+          24,
+          31,
+          55,
+          138,
+          502,
+          134,
+          43,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "foveation_y": [
+          0,
+          13,
+          35,
+          58,
+          145,
+          534,
+          146,
+          57,
+          35,
+          24,
+          9
+        ],
+        "ratio1_encoded_run_xy": [
+          502,
+          534
+        ],
+        "central10_encoded_cells": 67008,
+        "central10_cells_with_source_span_above1": 2698,
+        "central10_all_cells_ratio1": false,
+        "mask_sha256": "e926371af9b94297efca5b1dfdfe33c11093af3cf1bb1793e7b58af4ef9b78d4",
+        "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+      },
+      {
+        "capture_id": 3,
+        "frame": 360,
+        "warp": 1237735021813137235,
+        "eye": 1,
+        "reconstructed_geometry": [
+          1800,
+          1980
+        ],
+        "encoded_geometry": [
+          960,
+          1056
+        ],
+        "encoded_input_fov_left_right_down_up_radians": [
+          -0.69813168,
+          0.942477763,
+          -0.942477763,
+          0.733038306
+        ],
+        "foveation_x": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          43,
+          134,
+          502,
+          138,
+          55,
+          31,
+          24,
+          16,
+          12,
+          4
+        ],
+        "foveation_y": [
+          0,
+          13,
+          35,
+          58,
+          145,
+          534,
+          146,
+          57,
+          35,
+          24,
+          9
+        ],
+        "ratio1_encoded_run_xy": [
+          502,
+          534
+        ],
+        "central10_encoded_cells": 67008,
+        "central10_cells_with_source_span_above1": 2698,
+        "central10_all_cells_ratio1": false,
+        "mask_sha256": "6df8acc52440dc7230ca1a6eb95b5f090aca7ac99be281d4b0e5ed1604f7b481",
+        "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+      }
+    ],
+    "independent_audit": {
+      "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-native-audit.json",
+      "sha256": "c75f02e380f6f79286d9cc3dba00b442cf7a95cafe42aa94c2864143d06376d0"
+    },
+    "visual_observation": {
+      "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/prototypes/vr444/experiments/dual_goal_workflow/results/v2-quality960-visible-observation.json",
+      "sha256": "e91c00496faf2a6799780ce9871a17cfaeb2b48bc829e6de11ff778cb34affe8"
+    },
+    "submitted_replay_comparisons": [
+      {
+        "path": "prototypes/vr444/experiments/dual_goal_workflow/results/v2-quality960-submitted-comparison-1.json",
+        "sha256": "ac2807195f5971c8aafd79c90bf477342ef7c2e42a783b53ec9855071391b20c",
+        "capture_id": 1,
+        "status": "pass",
+        "exact_submitted_replay_rgb": true,
+        "full_goal_qualified": false
+      },
+      {
+        "path": "prototypes/vr444/experiments/dual_goal_workflow/results/v2-quality960-submitted-comparison-2.json",
+        "sha256": "c93248b43cbeb772d6d5228bd8a1c043004981b6f4371d82bd5164b58beb27fb",
+        "capture_id": 2,
+        "status": "pass",
+        "exact_submitted_replay_rgb": true,
+        "full_goal_qualified": false
+      },
+      {
+        "path": "prototypes/vr444/experiments/dual_goal_workflow/results/v2-quality960-submitted-comparison-3.json",
+        "sha256": "c6c742e9e543edde4720c2f995035aff48583119cf2442a1b38024147d818b0e",
+        "capture_id": 3,
+        "status": "pass",
+        "exact_submitted_replay_rgb": true,
+        "full_goal_qualified": false
+      }
+    ]
+  }
+}

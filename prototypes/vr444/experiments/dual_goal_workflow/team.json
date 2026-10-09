@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_utc": "2026-10-09T15:13:16.932086+00:00",
+  "updated_utc": "2026-10-09T15:57:37.778956+00:00",
   "base_commit": "8e4d7a862591b3a5d2d9fc888da967fde0cb9165",
   "qualification_operator": "OR",
   "central_foveal_radius_degrees": 10,
@@ -10,25 +10,25 @@
       "agent": "root",
       "role": "integration and qualification",
       "branch": "research/sub15-20261009/dual-goal-integration",
-      "stage": "Building next isolated native union; prior LOCAL visible fixture passed; prompt user before next worn-headset window"
+      "stage": "V2 ABBA and960 acquisition complete; saved submitted-image replay and source mapping integration"
     },
     {
       "agent": "identify_sub15",
       "role": "compositor and publication",
       "branch": "research/sub15-20261009/pacer-recent-tail",
-      "stage": "Recent-tail estimator sealed and host build underway; explicit harness helper pending"
+      "stage": "ABBA independent audit complete; coherent rolling feedback candidate preparation"
     },
     {
       "agent": "transport_compression",
       "role": "codec and admission",
-      "branch": "research/sub15-20261009/quality-stimuli",
-      "stage": "Q1 source/codec audit, source-to-foveation scope and independent peer review"
+      "branch": "research/sub15-20261009/native-source-mapping",
+      "stage": "Actual consumed UBO source-map capture, exact monotonic app-frame joins and original-source pixel audit"
     },
     {
       "agent": "gpu_pipeline",
       "role": "GPU images and independent review",
       "branch": "research/sub15-20261009/submitted-replay-capture",
-      "stage": "Explicit native quality geometry implementation and translation-unit validation"
+      "stage": "Independent source-map review, banding diagnosis and protected-fovea allocation coverage"
     }
   ],
   "device_owner": "root",
@@ -36,15 +36,17 @@
   "host_gpu_reservation": "released by gpu_pipeline after correctness checks",
   "production_promotion": false,
   "next_handoffs": [
-    "Strict physical identity binding to current immutable quality capture",
-    "Independent same-headset native shader replay and central10 exact comparison",
-    "Pacer-tail candidate review, isolated build and bounded A/B tests"
+    "All3 submitted quality960 capture pairs versus same-device independent shader replay",
+    "Actual source-map and schema3 monotonic fixture branch review/build",
+    "Coherent rolling feedback snapshot candidate and independent review"
   ],
-  "known_quality_gap": "Current LOCAL fixture visible and user reports no artifacts; one submitted stereo replay exact. Native576x640 geometry has insufficient1:1 core for full10-degree original-source target; larger native controls and repeated fixture suite remain.",
+  "known_quality_gap": "V2 actual960x1056 expands1:1 core to502x534 but2698 of67008 central10 encoded cells still span multiple pixels per eye.30/30codec samples exact post-foveation. User reports visible banding; fullQ false.",
   "headset_readiness": {
     "instruction": "Prompt when headset needs to be worn again.",
     "wearing_required_for_next_live_test": true,
     "next_live_readiness_confirmed": false,
-    "current_work_requires_wearing": false
+    "current_work_requires_wearing": false,
+    "last_live_readiness_response": "Ready\u2014headset worn and tracking active",
+    "last_live_window_finished": true
   }
 }

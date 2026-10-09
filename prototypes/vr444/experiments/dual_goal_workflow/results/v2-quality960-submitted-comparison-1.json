@@ -1,0 +1,182 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "evidence_integrity_verified": true,
+  "capture_id": 1,
+  "frame": 180,
+  "warp": 14164215646400192162,
+  "geometry": [
+    1800,
+    1980
+  ],
+  "eyes": [
+    {
+      "eye": 0,
+      "protected_pixels": 69612,
+      "protected_exact": true,
+      "protected_changed_pixels": 0,
+      "protected_max_absolute_code_error": 0,
+      "full_rgb_exact": true,
+      "full_rgb_changed_pixels": 0,
+      "opaque_alpha_reference": true,
+      "opaque_alpha_candidate": true,
+      "reference_sha256": "1b6cd8214310d3f2b4c831e2dea6ec90ad4153939d9f3e8487723b3d1b89ee7f",
+      "candidate_sha256": "1b6cd8214310d3f2b4c831e2dea6ec90ad4153939d9f3e8487723b3d1b89ee7f",
+      "mask_sha256": "9fa919dbde264040980b4269cccff36d6884b0b3e681358406996c38c9f6dfa1",
+      "scope": "Exact RGB at the explicitly identified capture boundary; no physical display inference",
+      "full_alpha_exact": true,
+      "protected_alpha_exact": true,
+      "raw_reference_sha256": "1b6cd8214310d3f2b4c831e2dea6ec90ad4153939d9f3e8487723b3d1b89ee7f",
+      "reference_channel_permutation": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "candidate_input": {
+        "path": "capture-1-eye-0.rgba",
+        "sha256": "1b6cd8214310d3f2b4c831e2dea6ec90ad4153939d9f3e8487723b3d1b89ee7f"
+      },
+      "projection_input": {
+        "path": "capture-1-eye-0-projection.json",
+        "sha256": "9e6f8618c939f258dab7ebf351be4206c6f391a6dd50911eda1fd36105b75f77"
+      },
+      "reference_input": {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-replay-audit-1/eye-0.raw",
+        "sha256": "1b6cd8214310d3f2b4c831e2dea6ec90ad4153939d9f3e8487723b3d1b89ee7f",
+        "bytes": 14256000,
+        "channel_order": "RGBA"
+      }
+    },
+    {
+      "eye": 1,
+      "protected_pixels": 69612,
+      "protected_exact": true,
+      "protected_changed_pixels": 0,
+      "protected_max_absolute_code_error": 0,
+      "full_rgb_exact": true,
+      "full_rgb_changed_pixels": 0,
+      "opaque_alpha_reference": true,
+      "opaque_alpha_candidate": true,
+      "reference_sha256": "9a61a6c7d86ec9efffbbc7a230622e9b64b4a4ef7475e6534ce731ccc67580d5",
+      "candidate_sha256": "9a61a6c7d86ec9efffbbc7a230622e9b64b4a4ef7475e6534ce731ccc67580d5",
+      "mask_sha256": "5a135153cfc35118f6be34a02d9c19aca1f7f2659e2265ab35924fb307ef4a93",
+      "scope": "Exact RGB at the explicitly identified capture boundary; no physical display inference",
+      "full_alpha_exact": true,
+      "protected_alpha_exact": true,
+      "raw_reference_sha256": "9a61a6c7d86ec9efffbbc7a230622e9b64b4a4ef7475e6534ce731ccc67580d5",
+      "reference_channel_permutation": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "candidate_input": {
+        "path": "capture-1-eye-1.rgba",
+        "sha256": "9a61a6c7d86ec9efffbbc7a230622e9b64b4a4ef7475e6534ce731ccc67580d5"
+      },
+      "projection_input": {
+        "path": "capture-1-eye-1-projection.json",
+        "sha256": "81f4e1ce0bfd3bbb44e2415a26b0d78ef9aa00e9110157bfb213c16e44061bb5"
+      },
+      "reference_input": {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-replay-audit-1/eye-1.raw",
+        "sha256": "9a61a6c7d86ec9efffbbc7a230622e9b64b4a4ef7475e6534ce731ccc67580d5",
+        "bytes": 14256000,
+        "channel_order": "RGBA"
+      }
+    }
+  ],
+  "protected_radius_degrees": 10,
+  "gaze_mode": "fixed-center",
+  "rgb_code_tolerance": 0,
+  "exact_submitted_replay_rgb": true,
+  "native_audit_sha256": "6f349bf07c4562b0d25179eeb1336a67be607ad71999c78bb72b9111e7b27751",
+  "job_audit_sha256": "34d15794303b2b0b97453bec64b73adcdeda72d5c63f4b6f25ad0b9b5b505d1f",
+  "replay_audit_sha256": "83ca40c7272687e85973d8a25109c0b231117b008cb2655d7ce0feb9f51aeb24",
+  "replay_plan_sha256": "440d4be392a89371db42bb4f8ed0fd53d5e50354cded2959dcdfc337943b4955",
+  "run_hashes_sha256": "229c1c1d5a90dae9456ed9e494a6a771ded423cdf847cc2416ae5eae8275ddb3",
+  "build_receipt_sha256": "2a8a39094e4537e7057f772409e4a7ebae7b0bb054a9b9237479ac34cece4e7e",
+  "headset_physical_serial": "230YC01D8W000E",
+  "physical_identity_method": "pinned_campaign_serial_bridge",
+  "physical_identity_scope": "Relies on explicitly pinned upstream collector serial/campaign audit",
+  "source_boundary": "post-host-foveation-codec-input",
+  "geometry_reconstructed_from_metadata": true,
+  "actual_native_vertex_bytes_captured": false,
+  "actual_native_push_constant_bytes_captured": false,
+  "aarch64_raster_geometry_bit_equivalence_verified": false,
+  "original_application_rgb_verified": false,
+  "displayed_pixels_verified": false,
+  "visual_assessment": "not supplied to this byte comparator",
+  "full_goal_qualified": false,
+  "quality_route_qualified": false,
+  "latency_eligible": false,
+  "promotion_eligible": false,
+  "input_artifacts": {
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-submitted-audit/audit.json": {
+      "sha256": "6f349bf07c4562b0d25179eeb1336a67be607ad71999c78bb72b9111e7b27751",
+      "bytes": 22846
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-reference-job-1/audit.json": {
+      "sha256": "34d15794303b2b0b97453bec64b73adcdeda72d5c63f4b6f25ad0b9b5b505d1f",
+      "bytes": 41479
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-replay-audit-1/audit.json": {
+      "sha256": "83ca40c7272687e85973d8a25109c0b231117b008cb2655d7ce0feb9f51aeb24",
+      "bytes": 6834
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-replay-bundle-1/plan.json": {
+      "sha256": "440d4be392a89371db42bb4f8ed0fd53d5e50354cded2959dcdfc337943b4955",
+      "bytes": 8017
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-reference-job-1/capture-1-independent-host-input.rlp": {
+      "sha256": "829150d040cca74eaa1f295ce58e08d2ecdea8a4dd8951108440310be65720bd",
+      "bytes": 8110584
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-replay-bundle-1/reprojection.vert.spv": {
+      "sha256": "7a3c42e786031471c65e6fc7380c3966b4bda56ac035f689d378e1468c4da8f8",
+      "bytes": 2140
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-replay-bundle-1/reprojection.frag.spv": {
+      "sha256": "a2cd27117ca0cb4f939625ce1ac9d6305d4318df9f136be75172be01c101b4d0",
+      "bytes": 5788
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-submitted-audit/capture-1-eye-0-projection.json": {
+      "sha256": "9e6f8618c939f258dab7ebf351be4206c6f391a6dd50911eda1fd36105b75f77",
+      "bytes": 418
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-submitted-audit/capture-1-eye-0-central10-mask.u8": {
+      "sha256": "9fa919dbde264040980b4269cccff36d6884b0b3e681358406996c38c9f6dfa1",
+      "bytes": 3564000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-submitted-audit/capture-1-eye-0.rgba": {
+      "sha256": "1b6cd8214310d3f2b4c831e2dea6ec90ad4153939d9f3e8487723b3d1b89ee7f",
+      "bytes": 14256000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-replay-audit-1/eye-0.raw": {
+      "sha256": "1b6cd8214310d3f2b4c831e2dea6ec90ad4153939d9f3e8487723b3d1b89ee7f",
+      "bytes": 14256000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-submitted-audit/capture-1-eye-1-projection.json": {
+      "sha256": "81f4e1ce0bfd3bbb44e2415a26b0d78ef9aa00e9110157bfb213c16e44061bb5",
+      "bytes": 418
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-submitted-audit/capture-1-eye-1-central10-mask.u8": {
+      "sha256": "5a135153cfc35118f6be34a02d9c19aca1f7f2659e2265ab35924fb307ef4a93",
+      "bytes": 3564000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-submitted-audit/capture-1-eye-1.rgba": {
+      "sha256": "9a61a6c7d86ec9efffbbc7a230622e9b64b4a4ef7475e6534ce731ccc67580d5",
+      "bytes": 14256000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/quality960-replay-audit-1/eye-1.raw": {
+      "sha256": "9a61a6c7d86ec9efffbbc7a230622e9b64b4a4ef7475e6534ce731ccc67580d5",
+      "bytes": 14256000
+    }
+  },
+  "sources_sha256": {
+    "submitted_comparison.py": "36a4621d51cda1197ad0f7933137864b779ee5160a82f00d7bf3cf682cbe57e2",
+    "research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281"
+  },
+  "scope": "Exact submitted bytes versus independently sourced post-foveation same-device replay; reconstructed geometry and upstream audited acquisition, no original-app or optical-display qualification"
+}

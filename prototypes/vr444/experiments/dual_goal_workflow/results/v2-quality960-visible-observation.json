@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "recorded_utc": "2026-10-09T15:55:11.116798+00:00",
+  "run": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid",
+  "run_manifest_sha256": "229c1c1d5a90dae9456ed9e494a6a771ded423cdf847cc2416ae5eae8275ddb3",
+  "native_build_receipt_sha256": "2a8a39094e4537e7057f772409e4a7ebae7b0bb054a9b9237479ac34cece4e7e",
+  "user_verbatim": "Grid visible, some banding artifacts between pixels",
+  "grid_visible": true,
+  "visible_artifacts_reported": true,
+  "visible_artifact_free_gate": "fail",
+  "artifact_origin": "undetermined; no source/compression/shader/compositor/optics attribution from observation alone",
+  "native_capture_gate": "pass",
+  "full_quality_gate": false,
+  "prior_LOCAL_576_observation_preserved": true,
+  "wearing_window_finished": true,
+  "next_worn_run_requires_prompt_and_readiness": true
+}
