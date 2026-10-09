@@ -1,0 +1,19 @@
+# Neural research workflow
+
+Three isolated, runnable research tracks now start from checkpoint commit `205e172f20044d717eb15cd3419981756be847f1`. Their launch inventory and evidence are frozen in [the intake](snapshots/20261009T120954Z.json) and [commit-scoped review](reviews/20261009T120954Z.md). These are research starters; no trained research model, codec/protocol selection, native integration or headset qualification is established.
+
+| Track and usage | Pinned launch head | Review | Synthetic CI |
+| --- | --- | --- | --- |
+| [Learned encoder decisions](https://github.com/jebot-git/WiVRn-Pro/blob/056c3349b61c929f5882e734d6513c01ab3930c5/validation/wivrn-codecs/neural_encoder_decisions/README.md) | `056c3349b61c929f5882e734d6513c01ab3930c5` | [Draft #4](https://github.com/jebot-git/WiVRn-Pro/pull/4) | [Passed](https://github.com/jebot-git/WiVRn-Pro/actions/runs/37928007256): 13 track + 44 shared tests |
+| [Small intra-only codec](https://github.com/jebot-git/WiVRn-Pro/blob/e25b33a853a575a7232e9109b3eb9233687310eb/validation/wivrn-codecs/neural_intra_codec/README.md) | `e25b33a853a575a7232e9109b3eb9233687310eb` | [Draft #3](https://github.com/jebot-git/WiVRn-Pro/pull/3) | [Passed](https://github.com/jebot-git/WiVRn-Pro/actions/runs/37928035519): 13 track + 44 shared tests |
+| [Advisory experiment ranker](https://github.com/jebot-git/WiVRn-Pro/blob/e3e6a45b69d702ad3ffac63d9f25f7708c2d18a8/validation/wivrn-codecs/neural_experiment_ranker/README.md) | `e3e6a45b69d702ad3ffac63d9f25f7708c2d18a8` | [Draft #2](https://github.com/jebot-git/WiVRn-Pro/pull/2) | [Passed](https://github.com/jebot-git/WiVRn-Pro/actions/runs/37928062521): 12 track + 44 shared tests |
+
+Each track contains a dependency-free Python neural model, train/evaluate or encode/decode commands, tests, a small synthetic demo and its own CI workflow. The architectures are replaceable starting implementations. Synthetic training checks ran in CI; no research corpus or expensive training job was launched. Keep the drafts unmerged while their experiments evolve.
+
+Start with the README linked above from the corresponding exact commit. The encoder track predicts raw/plain/up with RRB32 fixed and exposes a pinned native adapter boundary. The intra track writes actual NIC1 bytes and reconstructs independently, explicitly changing quality to `new_lossy`. The ranker only suggests which compatible experiment to measure; it abstains on insufficient independent data and never dispatches hardware.
+
+[Manual live hardware hooks](https://github.com/jebot-git/WiVRn-Pro/blob/056c3349b61c929f5882e734d6513c01ab3930c5/validation/wivrn-codecs/research_workflow/NEURAL-HARDWARE-HOOKS.md) are identical on all three launch heads. The commands are `neural_hooks.py plan`, `run` and `import`. The example is intentionally unbound. Supply an explicit native adapter, exact code/model/configuration/dataset pins, observed runtime metadata and raw event artifacts before collecting. No native headset adapter is bundled; configuring the plan alone does not implement the device path. Offline file-codec timing remains separate from the live pipeline.
+
+Preserve [the strict experiment contract](CONTRACT.md), [eye-tracking assumptions](EYE-TRACKING-RESEARCH.md) and [protocol comparisons](PROTOCOL-RESEARCH.md). The workflow and advisory ranker are infrastructure, excluded from codec ranking. The two candidate tracks need matched native measurements before any performance ordering. Freeze whole scene/session splits and retain correlated eyes/frames; no mixed evidence or future-gaze inputs. Do not feed reused qualification rows to the ranker as independent experiments.
+
+The next useful work is to collect a suitably separated dataset, implement pinned native action/capture adapters, and run fixed/adaptive controls on actual bytes. Target trials remain manual and retain the unchanged latency, cadence, quality and repeated-run policy. Other researchers continue independently.

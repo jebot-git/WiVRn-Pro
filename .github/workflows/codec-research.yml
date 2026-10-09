@@ -1,0 +1,22 @@
+name: Codec research tooling
+on:
+  push:
+    branches: ['research/sub15-20261009/research-workflow']
+    paths: ['validation/wivrn-codecs/research_workflow/**', '.github/workflows/codec-research.yml']
+  pull_request:
+    paths: ['validation/wivrn-codecs/research_workflow/**', '.github/workflows/codec-research.yml']
+permissions:
+  contents: read
+concurrency:
+  group: codec-research-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  standalone-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test intake, manifests and actual-byte adapters
+        run: python3 -m unittest discover -s validation/wivrn-codecs/research_workflow -p 'test_*.py' -v
+      - name: Validate planned example
+        run: python3 validation/wivrn-codecs/research_workflow/manifest.py validation/wivrn-codecs/research_workflow/example-run.json

@@ -1,0 +1,1092 @@
+{
+  "schema_version": 1,
+  "repository": {
+    "remote": "origin",
+    "remote_url": "https://github.com/jebot-git/WiVRn-Pro.git",
+    "object_format": "sha1"
+  },
+  "scope": {
+    "prefix": "research/sub15-20261009/",
+    "reference_branches": [
+      "feature/custom-codec"
+    ]
+  },
+  "collection": {
+    "started_at_utc": "2026-10-09T07:06:28Z",
+    "finished_at_utc": "2026-10-09T07:11:31Z",
+    "source": "github_api",
+    "remote_discovery_complete": true,
+    "graph_complete": true,
+    "command_timeout_seconds": 60,
+    "max_graph_commits": 128,
+    "errors": []
+  },
+  "branches": [
+    {
+      "name": "feature/custom-codec",
+      "commit_sha": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "family": "reference",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": false
+    },
+    {
+      "name": "research/sub15-20261009/base",
+      "commit_sha": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "family": "reference",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": false
+    },
+    {
+      "name": "research/sub15-20261009/compositor",
+      "commit_sha": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-attempts",
+      "commit_sha": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-oracle",
+      "commit_sha": "ecec3fd338447cfa126316839cfe0c2289185422",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-pacer-capture",
+      "commit_sha": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-pacer-init",
+      "commit_sha": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-pacer-trace",
+      "commit_sha": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-pacing",
+      "commit_sha": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-reserve",
+      "commit_sha": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-selection-audit",
+      "commit_sha": "1733d189ee5e270eeb2d59323e89758c3d3d9893",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-target-envelope",
+      "commit_sha": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/compositor-timeline",
+      "commit_sha": "1ad36651f61a844d2960230f918fd8f4e65a66a8",
+      "family": "compositor",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/datagram-xor",
+      "commit_sha": "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df",
+      "family": "transport",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/differential-fuzz",
+      "commit_sha": "01663069b2e92f1fc7aa0af421b74fb4f6d03250",
+      "family": "validation",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": false
+    },
+    {
+      "name": "research/sub15-20261009/gpu",
+      "commit_sha": "702698e6b7f0a159f535168edb9d3c8649f22bc9",
+      "family": "gpu",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/integration",
+      "commit_sha": "01663069b2e92f1fc7aa0af421b74fb4f6d03250",
+      "family": "validation",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": false
+    },
+    {
+      "name": "research/sub15-20261009/palette-gpu",
+      "commit_sha": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8",
+      "family": "gpu",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/palette-gpu-encode",
+      "commit_sha": "145310492b351e1d17e9cdfbb8ac34129e097096",
+      "family": "gpu",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/palette-host-timing",
+      "commit_sha": "969c93e6e92031d6a909f19cd7adf7c7a3544632",
+      "family": "gpu",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/palette-output-memory",
+      "commit_sha": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd",
+      "family": "gpu",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/rgb-palette",
+      "commit_sha": "a686dfe3b5cd9e2b6f81f90cf2d5a87e8bda6106",
+      "family": "format",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/rgb-rowfilter",
+      "commit_sha": "2773a29a179cbab87bbeb31c4a7303eb565a77fa",
+      "family": "format",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/rgb-rowfilter-simd",
+      "commit_sha": "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8",
+      "family": "format",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/static-dictionary",
+      "commit_sha": "5eb6ac1470dc1c1a7caeecd0e7877d44eb8a6440",
+      "family": "format",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/transport",
+      "commit_sha": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "family": "transport",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/transport-queue",
+      "commit_sha": "512f3b893da4901a84fa06c2a6fd323f35f12389",
+      "family": "transport",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/udp-batch",
+      "commit_sha": "3075ff7c72e53ab83a77bd56e6fef2a50708b654",
+      "family": "transport",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/udp-offload",
+      "commit_sha": "74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f",
+      "family": "transport",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    },
+    {
+      "name": "research/sub15-20261009/vulkan-extensions",
+      "commit_sha": "00939ca2c504a525e69c173221e1afb67b5be6bc",
+      "family": "gpu",
+      "classification": "advisory",
+      "review_needed": true,
+      "candidate": true
+    }
+  ],
+  "commits": {
+    "37c4a88bea1ff053f4f921266033b1bda50c9bf7": {
+      "parents": [
+        "2de2823e6ddf0ffa93de995b3fab5d0dfc4152e3"
+      ]
+    },
+    "87cdb175bba0caaaca74b7ca1e07db985aebcef6": {
+      "parents": [
+        "37c4a88bea1ff053f4f921266033b1bda50c9bf7"
+      ]
+    },
+    "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1": {
+      "parents": [
+        "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+      ]
+    },
+    "ff669ce78dda99cd748a20f46f6e739a5919f975": {
+      "parents": [
+        "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1"
+      ]
+    },
+    "ecec3fd338447cfa126316839cfe0c2289185422": {
+      "parents": [
+        "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+      ]
+    },
+    "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea": {
+      "parents": [
+        "47a5677a961401483522c9ce410143f875d0671a"
+      ]
+    },
+    "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a": {
+      "parents": [
+        "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+      ]
+    },
+    "23ac404c9c23e11e2f0a74ee996826f20b59e8c9": {
+      "parents": [
+        "7e7b43a0241d96e348fd3659b2310676476d6b94"
+      ]
+    },
+    "747a9ed4232f5d472b3400f924164b009d85a750": {
+      "parents": [
+        "ff669ce78dda99cd748a20f46f6e739a5919f975"
+      ]
+    },
+    "7e7b43a0241d96e348fd3659b2310676476d6b94": {
+      "parents": [
+        "747a9ed4232f5d472b3400f924164b009d85a750"
+      ]
+    },
+    "1733d189ee5e270eeb2d59323e89758c3d3d9893": {
+      "parents": [
+        "23ac404c9c23e11e2f0a74ee996826f20b59e8c9"
+      ]
+    },
+    "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a": {
+      "parents": [
+        "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+      ]
+    },
+    "1ad36651f61a844d2960230f918fd8f4e65a66a8": {
+      "parents": [
+        "ecec3fd338447cfa126316839cfe0c2289185422"
+      ]
+    },
+    "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df": {
+      "parents": [
+        "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+      ]
+    },
+    "01663069b2e92f1fc7aa0af421b74fb4f6d03250": {
+      "parents": [
+        "92e8f3f26f7b8fc16f2f3f92fe1e3f388929f85c"
+      ]
+    },
+    "702698e6b7f0a159f535168edb9d3c8649f22bc9": {
+      "parents": [
+        "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+      ]
+    },
+    "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8": {
+      "parents": [
+        "20caff6dd7163d913f675b75502bdcb70c5fde1e"
+      ]
+    },
+    "145310492b351e1d17e9cdfbb8ac34129e097096": {
+      "parents": [
+        "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8"
+      ]
+    },
+    "969c93e6e92031d6a909f19cd7adf7c7a3544632": {
+      "parents": [
+        "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd"
+      ]
+    },
+    "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd": {
+      "parents": [
+        "145310492b351e1d17e9cdfbb8ac34129e097096"
+      ]
+    },
+    "a686dfe3b5cd9e2b6f81f90cf2d5a87e8bda6106": {
+      "parents": [
+        "d6af4c879d10a97cb107d3f3fa2811b5eb0bc193"
+      ]
+    },
+    "2773a29a179cbab87bbeb31c4a7303eb565a77fa": {
+      "parents": [
+        "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+      ]
+    },
+    "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8": {
+      "parents": [
+        "2773a29a179cbab87bbeb31c4a7303eb565a77fa"
+      ]
+    },
+    "5eb6ac1470dc1c1a7caeecd0e7877d44eb8a6440": {
+      "parents": [
+        "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+      ]
+    },
+    "512f3b893da4901a84fa06c2a6fd323f35f12389": {
+      "parents": [
+        "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df"
+      ]
+    },
+    "3075ff7c72e53ab83a77bd56e6fef2a50708b654": {
+      "parents": [
+        "d7d4e06d03a2092a87d29493184d3dad34425885"
+      ]
+    },
+    "74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f": {
+      "parents": [
+        "3075ff7c72e53ab83a77bd56e6fef2a50708b654"
+      ]
+    },
+    "00939ca2c504a525e69c173221e1afb67b5be6bc": {
+      "parents": [
+        "702698e6b7f0a159f535168edb9d3c8649f22bc9"
+      ]
+    },
+    "2de2823e6ddf0ffa93de995b3fab5d0dfc4152e3": {
+      "parents": []
+    },
+    "47a5677a961401483522c9ce410143f875d0671a": {
+      "parents": [
+        "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+      ]
+    },
+    "92e8f3f26f7b8fc16f2f3f92fe1e3f388929f85c": {
+      "parents": [
+        "49db983e5559d0655705f268432206b823b7d5ea"
+      ]
+    },
+    "20caff6dd7163d913f675b75502bdcb70c5fde1e": {
+      "parents": [
+        "2113177b28debfe0179fa077eccfc85acc8c94b3"
+      ]
+    },
+    "d6af4c879d10a97cb107d3f3fa2811b5eb0bc193": {
+      "parents": [
+        "8fd9c864c492d52de084ed7e09492aba91a8b5fb"
+      ]
+    },
+    "d7d4e06d03a2092a87d29493184d3dad34425885": {
+      "parents": [
+        "a1e08f2e53b322e8ebab2f6c11f2d93f8dbb2e83"
+      ]
+    },
+    "49db983e5559d0655705f268432206b823b7d5ea": {
+      "parents": [
+        "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+      ]
+    },
+    "2113177b28debfe0179fa077eccfc85acc8c94b3": {
+      "parents": [
+        "acab93e8f46b841bd16fd8902ddbf438907677a8"
+      ]
+    },
+    "8fd9c864c492d52de084ed7e09492aba91a8b5fb": {
+      "parents": [
+        "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+      ]
+    },
+    "a1e08f2e53b322e8ebab2f6c11f2d93f8dbb2e83": {
+      "parents": [
+        "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+      ]
+    },
+    "acab93e8f46b841bd16fd8902ddbf438907677a8": {
+      "parents": [
+        "00939ca2c504a525e69c173221e1afb67b5be6bc"
+      ]
+    }
+  },
+  "tip_aliases": {
+    "37c4a88bea1ff053f4f921266033b1bda50c9bf7": [
+      "feature/custom-codec"
+    ],
+    "87cdb175bba0caaaca74b7ca1e07db985aebcef6": [
+      "research/sub15-20261009/base",
+      "research/sub15-20261009/transport"
+    ],
+    "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1": [
+      "research/sub15-20261009/compositor"
+    ],
+    "ff669ce78dda99cd748a20f46f6e739a5919f975": [
+      "research/sub15-20261009/compositor-attempts"
+    ],
+    "ecec3fd338447cfa126316839cfe0c2289185422": [
+      "research/sub15-20261009/compositor-oracle"
+    ],
+    "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea": [
+      "research/sub15-20261009/compositor-pacer-capture"
+    ],
+    "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a": [
+      "research/sub15-20261009/compositor-pacer-init"
+    ],
+    "23ac404c9c23e11e2f0a74ee996826f20b59e8c9": [
+      "research/sub15-20261009/compositor-pacer-trace"
+    ],
+    "747a9ed4232f5d472b3400f924164b009d85a750": [
+      "research/sub15-20261009/compositor-pacing"
+    ],
+    "7e7b43a0241d96e348fd3659b2310676476d6b94": [
+      "research/sub15-20261009/compositor-reserve"
+    ],
+    "1733d189ee5e270eeb2d59323e89758c3d3d9893": [
+      "research/sub15-20261009/compositor-selection-audit"
+    ],
+    "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a": [
+      "research/sub15-20261009/compositor-target-envelope"
+    ],
+    "1ad36651f61a844d2960230f918fd8f4e65a66a8": [
+      "research/sub15-20261009/compositor-timeline"
+    ],
+    "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df": [
+      "research/sub15-20261009/datagram-xor"
+    ],
+    "01663069b2e92f1fc7aa0af421b74fb4f6d03250": [
+      "research/sub15-20261009/differential-fuzz",
+      "research/sub15-20261009/integration"
+    ],
+    "702698e6b7f0a159f535168edb9d3c8649f22bc9": [
+      "research/sub15-20261009/gpu"
+    ],
+    "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8": [
+      "research/sub15-20261009/palette-gpu"
+    ],
+    "145310492b351e1d17e9cdfbb8ac34129e097096": [
+      "research/sub15-20261009/palette-gpu-encode"
+    ],
+    "969c93e6e92031d6a909f19cd7adf7c7a3544632": [
+      "research/sub15-20261009/palette-host-timing"
+    ],
+    "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd": [
+      "research/sub15-20261009/palette-output-memory"
+    ],
+    "a686dfe3b5cd9e2b6f81f90cf2d5a87e8bda6106": [
+      "research/sub15-20261009/rgb-palette"
+    ],
+    "2773a29a179cbab87bbeb31c4a7303eb565a77fa": [
+      "research/sub15-20261009/rgb-rowfilter"
+    ],
+    "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8": [
+      "research/sub15-20261009/rgb-rowfilter-simd"
+    ],
+    "5eb6ac1470dc1c1a7caeecd0e7877d44eb8a6440": [
+      "research/sub15-20261009/static-dictionary"
+    ],
+    "512f3b893da4901a84fa06c2a6fd323f35f12389": [
+      "research/sub15-20261009/transport-queue"
+    ],
+    "3075ff7c72e53ab83a77bd56e6fef2a50708b654": [
+      "research/sub15-20261009/udp-batch"
+    ],
+    "74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f": [
+      "research/sub15-20261009/udp-offload"
+    ],
+    "00939ca2c504a525e69c173221e1afb67b5be6bc": [
+      "research/sub15-20261009/vulkan-extensions"
+    ]
+  },
+  "ancestor_pairs": [
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "87cdb175bba0caaaca74b7ca1e07db985aebcef6"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "ff669ce78dda99cd748a20f46f6e739a5919f975"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "747a9ed4232f5d472b3400f924164b009d85a750"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "7e7b43a0241d96e348fd3659b2310676476d6b94"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "01663069b2e92f1fc7aa0af421b74fb4f6d03250"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "702698e6b7f0a159f535168edb9d3c8649f22bc9"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "145310492b351e1d17e9cdfbb8ac34129e097096"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "969c93e6e92031d6a909f19cd7adf7c7a3544632"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "a686dfe3b5cd9e2b6f81f90cf2d5a87e8bda6106"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "2773a29a179cbab87bbeb31c4a7303eb565a77fa"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "5eb6ac1470dc1c1a7caeecd0e7877d44eb8a6440"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "512f3b893da4901a84fa06c2a6fd323f35f12389"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "3075ff7c72e53ab83a77bd56e6fef2a50708b654"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f"
+    },
+    {
+      "ancestor": "37c4a88bea1ff053f4f921266033b1bda50c9bf7",
+      "descendant": "00939ca2c504a525e69c173221e1afb67b5be6bc"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "ff669ce78dda99cd748a20f46f6e739a5919f975"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "747a9ed4232f5d472b3400f924164b009d85a750"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "7e7b43a0241d96e348fd3659b2310676476d6b94"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "01663069b2e92f1fc7aa0af421b74fb4f6d03250"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "702698e6b7f0a159f535168edb9d3c8649f22bc9"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "145310492b351e1d17e9cdfbb8ac34129e097096"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "969c93e6e92031d6a909f19cd7adf7c7a3544632"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "a686dfe3b5cd9e2b6f81f90cf2d5a87e8bda6106"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "2773a29a179cbab87bbeb31c4a7303eb565a77fa"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "5eb6ac1470dc1c1a7caeecd0e7877d44eb8a6440"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "512f3b893da4901a84fa06c2a6fd323f35f12389"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "3075ff7c72e53ab83a77bd56e6fef2a50708b654"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f"
+    },
+    {
+      "ancestor": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+      "descendant": "00939ca2c504a525e69c173221e1afb67b5be6bc"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "ff669ce78dda99cd748a20f46f6e739a5919f975"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "747a9ed4232f5d472b3400f924164b009d85a750"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "7e7b43a0241d96e348fd3659b2310676476d6b94"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "420b6025e3055fe122eadf1c3b5cca4e1ecd97e1",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "747a9ed4232f5d472b3400f924164b009d85a750"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "7e7b43a0241d96e348fd3659b2310676476d6b94"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "ff669ce78dda99cd748a20f46f6e739a5919f975",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "ecec3fd338447cfa126316839cfe0c2289185422",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "ecec3fd338447cfa126316839cfe0c2289185422",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "ecec3fd338447cfa126316839cfe0c2289185422",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "ecec3fd338447cfa126316839cfe0c2289185422",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+      "descendant": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "ancestor": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+      "descendant": "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+    },
+    {
+      "ancestor": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "descendant": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "ancestor": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "descendant": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9"
+    },
+    {
+      "ancestor": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "descendant": "7e7b43a0241d96e348fd3659b2310676476d6b94"
+    },
+    {
+      "ancestor": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "descendant": "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+    },
+    {
+      "ancestor": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "descendant": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "ancestor": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "descendant": "23ac404c9c23e11e2f0a74ee996826f20b59e8c9"
+    },
+    {
+      "ancestor": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "descendant": "1733d189ee5e270eeb2d59323e89758c3d3d9893"
+    },
+    {
+      "ancestor": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "1733d189ee5e270eeb2d59323e89758c3d3d9893",
+      "descendant": "ecec3fd338447cfa126316839cfe0c2289185422"
+    },
+    {
+      "ancestor": "1733d189ee5e270eeb2d59323e89758c3d3d9893",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "1733d189ee5e270eeb2d59323e89758c3d3d9893",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "1733d189ee5e270eeb2d59323e89758c3d3d9893",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "1733d189ee5e270eeb2d59323e89758c3d3d9893",
+      "descendant": "1ad36651f61a844d2960230f918fd8f4e65a66a8"
+    },
+    {
+      "ancestor": "1ad36651f61a844d2960230f918fd8f4e65a66a8",
+      "descendant": "bc869a5c170a0cfa1150d160bfe0229bf0dd79ea"
+    },
+    {
+      "ancestor": "1ad36651f61a844d2960230f918fd8f4e65a66a8",
+      "descendant": "7d3dfbe416ae6f1ecaa83dd6daad33bf40f67d6a"
+    },
+    {
+      "ancestor": "1ad36651f61a844d2960230f918fd8f4e65a66a8",
+      "descendant": "60ee8cb8bc1616464eab3b255dd2dcf83e02f33a"
+    },
+    {
+      "ancestor": "726d7c394e5e9ec07cd78d95ca7ffe3f2bc1b5df",
+      "descendant": "512f3b893da4901a84fa06c2a6fd323f35f12389"
+    },
+    {
+      "ancestor": "702698e6b7f0a159f535168edb9d3c8649f22bc9",
+      "descendant": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8"
+    },
+    {
+      "ancestor": "702698e6b7f0a159f535168edb9d3c8649f22bc9",
+      "descendant": "145310492b351e1d17e9cdfbb8ac34129e097096"
+    },
+    {
+      "ancestor": "702698e6b7f0a159f535168edb9d3c8649f22bc9",
+      "descendant": "969c93e6e92031d6a909f19cd7adf7c7a3544632"
+    },
+    {
+      "ancestor": "702698e6b7f0a159f535168edb9d3c8649f22bc9",
+      "descendant": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd"
+    },
+    {
+      "ancestor": "702698e6b7f0a159f535168edb9d3c8649f22bc9",
+      "descendant": "00939ca2c504a525e69c173221e1afb67b5be6bc"
+    },
+    {
+      "ancestor": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8",
+      "descendant": "145310492b351e1d17e9cdfbb8ac34129e097096"
+    },
+    {
+      "ancestor": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8",
+      "descendant": "969c93e6e92031d6a909f19cd7adf7c7a3544632"
+    },
+    {
+      "ancestor": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8",
+      "descendant": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd"
+    },
+    {
+      "ancestor": "145310492b351e1d17e9cdfbb8ac34129e097096",
+      "descendant": "969c93e6e92031d6a909f19cd7adf7c7a3544632"
+    },
+    {
+      "ancestor": "145310492b351e1d17e9cdfbb8ac34129e097096",
+      "descendant": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd"
+    },
+    {
+      "ancestor": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd",
+      "descendant": "969c93e6e92031d6a909f19cd7adf7c7a3544632"
+    },
+    {
+      "ancestor": "2773a29a179cbab87bbeb31c4a7303eb565a77fa",
+      "descendant": "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8"
+    },
+    {
+      "ancestor": "3075ff7c72e53ab83a77bd56e6fef2a50708b654",
+      "descendant": "74e678a1d3ca8d27e8ced4b9043f81ac4c37b30f"
+    },
+    {
+      "ancestor": "00939ca2c504a525e69c173221e1afb67b5be6bc",
+      "descendant": "9d5fdd3e6959b141869e5074062b25ee7a7ff1b8"
+    },
+    {
+      "ancestor": "00939ca2c504a525e69c173221e1afb67b5be6bc",
+      "descendant": "145310492b351e1d17e9cdfbb8ac34129e097096"
+    },
+    {
+      "ancestor": "00939ca2c504a525e69c173221e1afb67b5be6bc",
+      "descendant": "969c93e6e92031d6a909f19cd7adf7c7a3544632"
+    },
+    {
+      "ancestor": "00939ca2c504a525e69c173221e1afb67b5be6bc",
+      "descendant": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd"
+    }
+  ],
+  "changes": {
+    "new": [
+      "feature/custom-codec",
+      "research/sub15-20261009/base",
+      "research/sub15-20261009/compositor",
+      "research/sub15-20261009/compositor-attempts",
+      "research/sub15-20261009/compositor-oracle",
+      "research/sub15-20261009/compositor-pacer-capture",
+      "research/sub15-20261009/compositor-pacer-init",
+      "research/sub15-20261009/compositor-pacer-trace",
+      "research/sub15-20261009/compositor-pacing",
+      "research/sub15-20261009/compositor-reserve",
+      "research/sub15-20261009/compositor-selection-audit",
+      "research/sub15-20261009/compositor-target-envelope",
+      "research/sub15-20261009/compositor-timeline",
+      "research/sub15-20261009/datagram-xor",
+      "research/sub15-20261009/differential-fuzz",
+      "research/sub15-20261009/gpu",
+      "research/sub15-20261009/integration",
+      "research/sub15-20261009/palette-gpu",
+      "research/sub15-20261009/palette-gpu-encode",
+      "research/sub15-20261009/palette-host-timing",
+      "research/sub15-20261009/palette-output-memory",
+      "research/sub15-20261009/rgb-palette",
+      "research/sub15-20261009/rgb-rowfilter",
+      "research/sub15-20261009/rgb-rowfilter-simd",
+      "research/sub15-20261009/static-dictionary",
+      "research/sub15-20261009/transport",
+      "research/sub15-20261009/transport-queue",
+      "research/sub15-20261009/udp-batch",
+      "research/sub15-20261009/udp-offload",
+      "research/sub15-20261009/vulkan-extensions"
+    ],
+    "moved": [],
+    "removed": [],
+    "unconfirmed_missing": []
+  }
+}

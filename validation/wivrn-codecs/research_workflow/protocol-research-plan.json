@@ -1,0 +1,372 @@
+{
+  "schema_version": 1,
+  "document_type": "protocol_research_plan",
+  "workstream_id": "quest-pro-linux-6ghz-protocols-v1",
+  "created_at_utc": "2026-10-09T09:03:50Z",
+  "status": "source_research_and_planned_experiments",
+  "repository": "jebot-git/WiVRn-Pro",
+  "workflow_branch": "research/sub15-20261009/research-workflow",
+  "workflow_basis_sha": "f391c9c82c6173187652ce795426b6d0b603b7a1",
+  "authorized_scope": "Parallel alternate-protocol research alongside active codec research; no final protocol or codec selection, merge, deployment, active prototype modification, or termination of other research.",
+  "environment": {
+    "linux_host": "Intel NUC 12 Extreme i7 (user-declared baseline)",
+    "quest_pro_rooted": "Magisk through Singularity root (user-declared)",
+    "six_ghz_network": "user_declared_available",
+    "execution_environment_available": false,
+    "headset_access": false,
+    "observed_device_receipt": null,
+    "ap_model": "ASUS RT-AXE7800 (user-declared)",
+    "ap_firmware": null,
+    "headset_os_build": null,
+    "headset_kernel": null,
+    "host_nic": null,
+    "host_ap_link": "Direct 2.5GbE Ethernet (user-confirmed)",
+    "host_ethernet_port": null,
+    "host_ethernet_negotiated_mbps": 2500,
+    "ap_ethernet_port": null,
+    "host_ethernet_rate_provenance": "user_confirmed_not_locally_measured"
+  },
+  "metric_reference": {
+    "target_id": "cpu-rgb444-sub15-v1",
+    "width_per_eye": 576,
+    "height_per_eye": 640,
+    "offered_hz": 90,
+    "complete_stereo_receive_to_submit_p95_ms_strictly_below": 15,
+    "minimum_unique_stereo_submissions_per_s": 88,
+    "inherited_policy_sha": "01663069b2e92f1fc7aa0af421b74fb4f6d03250",
+    "scope": "Earliest headset packet receipt to observation after successful xrEndFrame; host processing and transfer before first receipt excluded.",
+    "separate_metrics": [
+      "source_age_with_clock_uncertainty",
+      "gaze_age_with_clock_uncertainty",
+      "server_encode_cost",
+      "host_and_AP_queue_residence",
+      "network_transit_with_clock_uncertainty",
+      "offered_rejected_stale_late_and_fallback_populations",
+      "application_content_novelty",
+      "cpu_gpu_thermal_cost",
+      "wire_bytes_at_declared_layer"
+    ]
+  },
+  "lanes": [
+    {
+      "id": "transport",
+      "agent": "intake_tool",
+      "assignment": "Compare UDP/VXF, QUIC DATAGRAM, RTP/SRTP, and diagnostic reliable/partially reliable alternatives."
+    },
+    {
+      "id": "endpoint",
+      "agent": "assess_prototype",
+      "assignment": "Verify Quest Pro/Android capabilities and separate infrastructure, P2P/SoftAP and wired diagnostic topologies."
+    },
+    {
+      "id": "host_radio",
+      "agent": "adapter_runner",
+      "assignment": "Evaluate Linux pacing, batching, queue timestamps and controlled 6GHz airtime experiments."
+    },
+    {
+      "id": "contract_integration",
+      "agent": "manifest_contract",
+      "assignment": "Define pinned adapter boundary, stereo/deadline tests, fair comparisons and receipt fields."
+    }
+  ],
+  "protocol_arms": [
+    {
+      "id": "existing_tcp_adb_control",
+      "status": "planned_comparison",
+      "description": "Preserve inherited TCP over ADB reverse as a separately labeled historical/diagnostic transport; reacquire matched evidence before comparison."
+    },
+    {
+      "id": "existing_tcp_same_6ghz_control",
+      "status": "planned_comparison",
+      "description": "Reacquire the pinned custom-codec TCP path on the same physical6GHz route; distinct from historical ADB reverse."
+    },
+    {
+      "id": "udp_vxf_paced",
+      "status": "planned",
+      "description": "Start from pinned actual-byte UDP/VXF correctness path; compare bounded pacing/batching and explicitly specify authenticated security profile."
+    },
+    {
+      "id": "quic_datagram",
+      "status": "planned",
+      "description": "Unreliable DATAGRAM media/gaze with reliable authenticated control; bounded expiry/priority queues and application fragmentation; verify selected library APIs."
+    },
+    {
+      "id": "rtp_srtp",
+      "status": "planned",
+      "description": "Explicit experimental codec payload mapping, shared stereo identity, RTCP feedback and deadline-bounded NACK/RTX/FEC."
+    },
+    {
+      "id": "quic_per_frame_stream_control",
+      "status": "diagnostic_only",
+      "description": "Independent frame streams/reset as a reliable transport control; measure residual retransmission/congestion delay. Use a separate hashed sidecar; strict v1 transport enum does not accurately represent this arm."
+    },
+    {
+      "id": "pr_sctp_control",
+      "status": "diagnostic_only",
+      "description": "Unordered partial-reliability and abandonment, conditional on library fragmentation/interleaving support; assess only if leading datagram arms leave a concrete gap."
+    },
+    {
+      "id": "usb_network_control",
+      "status": "capability_gated_diagnostic",
+      "description": "Verify upstream/fork and device USB-networking compatibility separately from ADB reverse and generic USB Ethernet adapters."
+    }
+  ],
+  "initial_topology": "User-confirmed Intel NUC12 Extreme i7 directly connected at2.5GbE to ASUS RT-AXE7800; Magisk/Singularity-rooted QuestPro; actual Quest association frequency/width unmeasured.",
+  "topology_alternates": [
+    {
+      "id": "host_softap_or_p2p",
+      "status": "capability_gated",
+      "requires": [
+        "driver_firmware_and_regulatory_support",
+        "actual_6GHz_association_receipt",
+        "measured_queue_and_link_behavior"
+      ]
+    }
+  ],
+  "payload_regressions": {
+    "application_cap_bytes": 262144,
+    "historical_rpt_stereo_bytes": 2223424,
+    "cap_is_universal_udp_limit": false,
+    "rpt_reproduced_this_workstream": false,
+    "rpt_payload_only_bits_per_s_at_90_hz": 1600865280,
+    "cap_payload_only_bits_per_s_at_90_hz": 188743680,
+    "derived_values_are_hardware_measurements": false,
+    "rule": "Preserve dense cases. Keep cap fixed for matched protocol comparisons; any changed cap, quality or fallback is an explicit arm with memory/cadence accounting."
+  },
+  "eye_tracking": {
+    "assumption_id": "quest-pro-decoupled-eye-tracking-v1",
+    "status": "assumed_for_research",
+    "arms": [
+      "shared_gaze",
+      "independent_current_gaze",
+      "independent_predicted_gaze"
+    ],
+    "preserve": [
+      "per_eye_timestamp_clock_calibration",
+      "validity_confidence",
+      "causal_prediction_horizon_uncertainty_fallback",
+      "shared_presentation_target",
+      "coherent_stereo_source_warp_identity"
+    ],
+    "no_device_capture_claim": true
+  },
+  "evidence": {
+    "source_review_only": true,
+    "candidate_tests_reproduced": false,
+    "hardware_measurements": [],
+    "strict_v1_manifest_changed": false,
+    "planned_sidecar_only": true
+  },
+  "staged_next_actions": [
+    "Collect device/topology capability receipt when access becomes available.",
+    "Implement isolated explicit candidate adapters at pinned SHAs; preserve production defaults.",
+    "Run actual-byte correctness and malformed/stereo/deadline checks.",
+    "Run host/localhost diagnostics without relabeling them headset evidence.",
+    "Run matched headset and radio trials with inherited repeated-run policy.",
+    "Join protocol, codec and gaze comparisons only across compatible quality/data/clock populations."
+  ],
+  "rolling_policy": {
+    "checkpoint_at_utc": "2026-10-09T11:32:40Z",
+    "checkpoint_is_stop_instruction": false,
+    "notifications": "Meaningful result, changed conclusion, validated compatibility change, completion, failure needing attention, or required user action only.",
+    "future_review": "Read PROTOCOL-RESEARCH.md and this plan; refresh pins and keep provisional capability assumptions separate from observed device receipts."
+  },
+  "primary_sources": [
+    {
+      "title": "UDP application guidelines",
+      "url": "https://www.rfc-editor.org/rfc/rfc8085.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "DTLS 1.3",
+      "url": "https://www.rfc-editor.org/rfc/rfc9147.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "QUIC DATAGRAM",
+      "url": "https://www.rfc-editor.org/rfc/rfc9221.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "QUIC transport",
+      "url": "https://www.rfc-editor.org/rfc/rfc9000.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "WebRTC RTP",
+      "url": "https://www.rfc-editor.org/rfc/rfc8834.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "WebRTC data channels",
+      "url": "https://www.rfc-editor.org/rfc/rfc8831.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Datagram PLPMTUD",
+      "url": "https://www.rfc-editor.org/rfc/rfc8899.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "RTP retransmission",
+      "url": "https://www.rfc-editor.org/rfc/rfc4588.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "WebRTC FEC",
+      "url": "https://www.rfc-editor.org/rfc/rfc8854.html",
+      "evidence": "primary_standard",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Meta Quest v53 release notes",
+      "url": "https://communityforums.atmeta.com/blog/AnnouncementsBlog/meta-quest-build-v53-release-notes/1046442",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "ASUS RT-AXE7800 specifications",
+      "url": "https://www.asus.com/ca-en/networking-iot-servers/wifi-routers/asus-wifi-routers/rt-axe7800/techspec/",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "ASUS quick start guide",
+      "url": "https://dlcdnets.asus.com/pub/ASUS/wireless/RT-AXE7800/E21333_RT-AXE7800_one-page_QSG_v2_WEB.pdf?model=RT-AXE7800",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Intel NUC12 technical product specification",
+      "url": "https://www.intel.com/content/dam/support/us/en/documents/intel-nuc/NUC12DCM_NUC12EDB_TechProdSpec.pdf",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Linux fq",
+      "url": "https://man7.org/linux/man-pages/man8/tc-fq.8.html",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Linux ETF",
+      "url": "https://man7.org/linux/man-pages/man8/tc-etf.8.html",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Linux UDP",
+      "url": "https://man7.org/linux/man-pages/man7/udp.7.html",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Kernel timestamping",
+      "url": "https://docs.kernel.org/networking/timestamping.html",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Android low latency WiFi lock",
+      "url": "https://developer.android.com/reference/android/net/wifi/WifiManager#WIFI_MODE_FULL_LOW_LATENCY",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    },
+    {
+      "title": "Singularity root documentation",
+      "url": "https://github.com/Lumince/singularity/blob/main/README.md",
+      "evidence": "primary_documentation",
+      "reviewed_on_utc": "2026-10-09"
+    }
+  ],
+  "pinned_research_sources": [
+    {
+      "role": "workflow",
+      "sha": "f391c9c82c6173187652ce795426b6d0b603b7a1"
+    },
+    {
+      "role": "production_reference",
+      "sha": "37c4a88bea1ff053f4f921266033b1bda50c9bf7"
+    },
+    {
+      "role": "integration_policy",
+      "sha": "01663069b2e92f1fc7aa0af421b74fb4f6d03250"
+    },
+    {
+      "role": "actual_byte_udp_interop",
+      "sha": "f1fe2e43924de5202de6bcffc0710639714003df"
+    },
+    {
+      "role": "upstream_usb_networking_candidate_not_inherited_fork_functionality",
+      "repository": "WiVRn/WiVRn",
+      "sha": "dc14ced68f98d211dccb92a60107177b3278b9ae"
+    }
+  ],
+  "adapter_contract": [
+    "negotiate_capabilities_and_authenticated_session",
+    "offer_owned_immutable_stereo_pair",
+    "bounded_send_receive_progress",
+    "expire_without_extending_deadline",
+    "explicit_abandonment_reason",
+    "deliver_complete_validated_pair_only"
+  ],
+  "receipt_sidecar_fields": [
+    "protocol_library_version_and_source_binary_hashes",
+    "session_config_epochs_security_and_negotiation",
+    "actual_payload_datagram_PMTU_framing_limits",
+    "FEC_repair_pacing_congestion_policies",
+    "queue_memory_and_packet_bounds",
+    "stereo_source_warp_target_identity_and_clock",
+    "codec_model_quality_and_temporal_dependencies",
+    "per_eye_used_gaze_samples",
+    "payload_security_control_FEC_retry_wire_bytes_by_layer",
+    "timestamped_enqueue_departure_receipt_assembly_decode_publication",
+    "offered_admitted_rejected_overcap_superseded_expired_late_fallback_counts",
+    "clock_mapping_uncertainty_instrumentation_and_thermal_context"
+  ],
+  "hardware_documented_capabilities": {
+    "source_kind": "manufacturer_specifications_not_device_measurements",
+    "nuc": {
+      "conditional_sku": "NUC12DCMi7",
+      "ethernet_controller": "Marvell AQC113C",
+      "supported_mbps": [
+        100,
+        1000,
+        2500,
+        5000,
+        10000
+      ],
+      "actual_sku_and_nic_verified": false
+    },
+    "ap": {
+      "model": "ASUS RT-AXE7800",
+      "two_point_five_gbe_wan_lan_ports": 1,
+      "one_gbe_wan_lan_ports": 1,
+      "one_gbe_lan_ports": 3,
+      "six_ghz_spatial_streams": 2,
+      "advertised_six_ghz_max_phy_mbps": 2402,
+      "max_channel_width_mhz": 160,
+      "advertised_rate_is_application_throughput": false,
+      "actual_port_role_and_link_verified": false,
+      "link_rate_user_confirmed_mbps": 2500
+    },
+    "next_receipt": [
+      "exact_NUC_SKU_NIC_driver",
+      "connected_ASUS_port_and_role",
+      "Archive_Ethernet_2500Mb_s_full_duplex_readback_and_AP_port_role",
+      "Quest_association_frequency_width",
+      "Quest_OS_kernel_Magisk_Singularity_versions_modules_tweaks",
+      "AP_firmware"
+    ]
+  },
+  "initial_research_agents_completed": true,
+  "source_review_completed_at_utc": "2026-10-09T09:12:26Z"
+}
