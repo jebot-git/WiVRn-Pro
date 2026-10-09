@@ -250,11 +250,22 @@ struct App {
         XrFrameBeginInfo begin{XR_TYPE_FRAME_BEGIN_INFO};XC(xrBeginFrame(session,&begin));++frames;
         std::array<XrCompositionLayerProjectionView,2> layer_views{{{XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW},{XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW}}};
         XrCompositionLayerProjection layer{XR_TYPE_COMPOSITION_LAYER_PROJECTION};layer.space=space;layer.viewCount=2;layer.views=layer_views.data();
-        bool rendered=false;json details=json::array();
+        bool rendered=false,located=false;uint64_t view_flags=0;json details=json::array();
+        std::string skip_reason="should_render_false";
+        auto gate=[&] {
+            // Emit before image work/end-frame so a blocked/empty run still
+            // exposes the first bounded validity decisions. Never force flags.
+            if(frames<=32) record({{"type","frame_gate"},{"sequence",frames},
+                {"should_render",bool(fs.shouldRender)},{"locate_called",located},
+                {"view_state_flags",view_flags},{"required_valid_flags",3},
+                {"decision",skip_reason},{"session_state",int(state)}});
+        };
         if(fs.shouldRender) {
             XrViewLocateInfo li{XR_TYPE_VIEW_LOCATE_INFO};li.viewConfigurationType=XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;li.displayTime=fs.predictedDisplayTime;li.space=space;
             XrViewState vs{XR_TYPE_VIEW_STATE};std::array<XrView,2> views{{{XR_TYPE_VIEW},{XR_TYPE_VIEW}}};uint32_t n=0;XC(xrLocateViews(session,&li,&vs,2,&n,views.data()));require(n==2,"locate views changed count");
+            located=true;view_flags=vs.viewStateFlags;
             const auto needed=XR_VIEW_STATE_POSITION_VALID_BIT|XR_VIEW_STATE_ORIENTATION_VALID_BIT;
+            skip_reason=(vs.viewStateFlags&needed)==needed?"admitted":"view_pose_invalid";gate();
             if((vs.viewStateFlags&needed)==needed) {
                 std::array<uint32_t,2> indices{};
                 for(unsigned i=0;i<2;++i) {XrSwapchainImageAcquireInfo ai{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};XC(xrAcquireSwapchainImage(eyes[i].swap,&ai,&indices[i]));XrSwapchainImageWaitInfo wa{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};wa.timeout=1000000000ll;const auto r=xrWaitSwapchainImage(eyes[i].swap,&wa);require(r==XR_SUCCESS,"swapchain wait did not complete successfully");}
@@ -266,11 +277,11 @@ struct App {
                 }
                 rendered=true;
             }
-        }
+        } else gate();
         const XrCompositionLayerBaseHeader* layers[]={reinterpret_cast<XrCompositionLayerBaseHeader*>(&layer)};
         XrFrameEndInfo end{XR_TYPE_FRAME_END_INFO};end.displayTime=fs.predictedDisplayTime;end.environmentBlendMode=XR_ENVIRONMENT_BLEND_MODE_OPAQUE;end.layerCount=rendered?1:0;end.layers=rendered?layers:nullptr;XC(xrEndFrame(session,&end));
         if(rendered)++submitted;
-        record({{"type","frame"},{"sequence",frames},{"predicted_display_time",fs.predictedDisplayTime},{"predicted_display_period",fs.predictedDisplayPeriod},{"should_render",bool(fs.shouldRender)},{"projection_submitted",rendered},{"views",details}});
+        record({{"type","frame"},{"sequence",frames},{"predicted_display_time",fs.predictedDisplayTime},{"predicted_display_period",fs.predictedDisplayPeriod},{"should_render",bool(fs.shouldRender)},{"locate_called",located},{"view_state_flags",view_flags},{"decision",skip_reason},{"projection_submitted",rendered},{"views",details}});
     }
     void run() {
         deadline=Clock::now()+std::chrono::seconds(opt.seconds);init();

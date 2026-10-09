@@ -1,0 +1,22 @@
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":1,"openxr_exercised":false,"pattern":"chroma-grid","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":1,"openxr_exercised":false,"pattern":"rgb-ramp","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":1,"openxr_exercised":false,"pattern":"fine-detail","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":129,"openxr_exercised":false,"pattern":"chroma-grid","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":129,"openxr_exercised":false,"pattern":"rgb-ramp","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":129,"openxr_exercised":false,"pattern":"fine-detail","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":33,"openxr_exercised":false,"pattern":"chroma-grid","vendor_id":32902,"width":17}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":33,"openxr_exercised":false,"pattern":"rgb-ramp","vendor_id":32902,"width":17}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":33,"openxr_exercised":false,"pattern":"fine-detail","vendor_id":32902,"width":17}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":65,"openxr_exercised":false,"pattern":"chroma-grid","vendor_id":32902,"width":129}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":65,"openxr_exercised":false,"pattern":"rgb-ramp","vendor_id":32902,"width":129}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":65,"openxr_exercised":false,"pattern":"fine-detail","vendor_id":32902,"width":129}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":1,"openxr_exercised":false,"pattern":"chroma-grid","vendor_id":32902,"width":4096}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":1,"openxr_exercised":false,"pattern":"rgb-ramp","vendor_id":32902,"width":4096}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":1,"openxr_exercised":false,"pattern":"fine-detail","vendor_id":32902,"width":4096}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":4096,"openxr_exercised":false,"pattern":"chroma-grid","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":4096,"openxr_exercised":false,"pattern":"rgb-ramp","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":4096,"openxr_exercised":false,"pattern":"fine-detail","vendor_id":32902,"width":1}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":640,"openxr_exercised":false,"pattern":"chroma-grid","vendor_id":32902,"width":576}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":640,"openxr_exercised":false,"pattern":"rgb-ramp","vendor_id":32902,"width":576}
+{"device":"Intel(R) Arc(tm) A770 Graphics (DG2)","device_id":22176,"height":640,"openxr_exercised":false,"pattern":"fine-detail","vendor_id":32902,"width":576}
+{"cases":21,"complete":true,"exact_stereo_transfers":63,"headset_exercised":false,"openxr_exercised":false,"performance_claim":false,"wrong_eye_rejections":21}

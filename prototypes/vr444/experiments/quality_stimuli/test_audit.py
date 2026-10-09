@@ -29,8 +29,10 @@ def fixture(path):
         views.append(dict(eye=eye, image_index=0, width=17, height=33, source_sha256=audit.sha(data), readback_exact=True,
             pose=dict(orientation=[0.,0.,0.,1.], orientation_bits=floats([0,0,0,1]), position=[0.,0.,0.], position_bits=floats([0,0,0])),
             fov=dict(radians=[-.5,.5,.5,-.5], bits=floats([-.5,.5,.5,-.5]))))
+    rows.append(dict(type='frame_gate', sequence=1, should_render=True, locate_called=True,
+                     view_state_flags=3, required_valid_flags=3, decision='admitted', session_state=5))
     rows.append(dict(type='frame', sequence=1, predicted_display_time=10000000, predicted_display_period=11111111,
-                     should_render=True, projection_submitted=True, views=views))
+                     should_render=True, locate_called=True, view_state_flags=3, decision='admitted', projection_submitted=True, views=views))
     rows.append(dict(type='footer', complete=True, frames=1, submitted=1, stop_reason='frame_limit', session_ended=True, quality_only=True, latency_comparable=False))
     return rows
 
@@ -73,7 +75,9 @@ class Audit(unittest.TestCase):
             lambda r:r[-2]['views'][1]['fov']['radians'].__setitem__(0,float('nan')),
             lambda r:r[-2].update(projection_submitted=False), lambda r:r[-2].update(sequence=2),
             lambda r:r.pop(4), lambda r:r[-1].update(frames=0), lambda r:r[0].update(schema=True),
-            lambda r:r[-1].update(submitted=True)]
+            lambda r:r[-1].update(submitted=True), lambda r:r[-2].update(view_state_flags=1),
+            lambda r:r[-2].update(locate_called=False), lambda r:r[-3].update(required_valid_flags=1),
+            lambda r:r.pop(-3)]
         for change in changes:
             with tempfile.TemporaryDirectory() as temp:
                 path=Path(temp);rows=fixture(path);change(rows);save(path,rows)
@@ -89,6 +93,15 @@ class Audit(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp);rows=fixture(path);save(path,rows)
             src=path/'eye1-image0.readback.rgba';src.unlink();src.symlink_to(path/'eye1.source.rgba')
+            with self.assertRaises(ValueError):audit.application(path)
+
+    def test_rehashed_source_and_readback_still_require_original_oracle(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp);rows=fixture(path)
+            data=bytearray((path/'eye0.source.rgba').read_bytes());data[9]^=1;data=bytes(data)
+            (path/'eye0.source.rgba').write_bytes(data);(path/'eye0-image0.readback.rgba').write_bytes(data)
+            rows[1]['source_sha256']=audit.sha(data);rows[2]['sha256']=audit.sha(data);rows[-2]['views'][0]['source_sha256']=audit.sha(data)
+            save(path,rows)
             with self.assertRaises(ValueError):audit.application(path)
             save(path,rows[:-1])
             with self.assertRaises(ValueError):audit.application(path)

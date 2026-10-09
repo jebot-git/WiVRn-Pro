@@ -1,36 +1,42 @@
 {
-  "schema": 1,
+  "schema": 2,
   "status": "pass",
   "scope": "Bounded offline application source/byte transfer qualification; no OpenXR/headset app run",
   "source_sha256": {
-    "README.txt": "92ebb9c129d77034a76119c2236d59ee68ecb5652638da2afb3f8f8eff014d52",
-    "app.cpp": "93684d553f4754907b9ba91214a1cd474fe4af7294aa761191cef6fa9f0d415e",
-    "audit.py": "4f109ff748b3c2ca7a7ab965c32209bbad33039ec8de387e9c1c3819ac83c887",
+    "README.txt": "b24ebfd474f839181af516c450825b9ba3d8364ddcc80ccbe27aa27a393adc91",
+    "app.cpp": "a5aa77ba419cdd381411794da6e837b89fc290ec59fa30221512984c0391cfa8",
+    "audit.py": "8a41e766a309eec2d74081c6078e8a5d7ec6a45df3df1b51afc6f58cad81395c",
     "build.py": "81936a1bae15e6d2ec30eeb55b2a76a3dca188d592a62c17a40d7ce0dc9fd84d",
     "build.sh": "11c2486183b4aabcad0d2cefd7a5bf91f009001f529f039e27eed2289eed35ab",
     "pattern.hpp": "19b5bf7a118e5231ff28bb28b2c3796524858d70bcf6a644cbaf27fbfb3c6d58",
     "plan.py": "37449e4e3b7bef7e36349882659980f61bf41f008b0a6235933be4fbb305f22e",
-    "test_audit.py": "2720e6eaedbbff5846a2c6beb36ed34723bb69ed30139137b72a4eb4d238265b",
+    "test_audit.py": "7ca7b82fd3a1b8f8eb08375de2b82cb6ae70d4d3b12370cf854ae9a4e04c6360",
     "test_transfer.cpp": "c0e13448c1945870a7e8ec29ffbe539961f4020d5f33d6ab91ab76290a10db45"
   },
   "evidence_sha256": {
     "build-receipt.json": "d91a30a71cfd3a2461beaea919802ce10f28f332f7564f59df3f9045b695a19c",
+    "gate-build-receipt.json": "674dd23283b311c2b03ec580a434885feeab4dacb55285a1d9514e7cc3643718",
+    "gate-python-test.stderr": "04d2f24a36dcaff94608b86787c61a536f8978deedb5167be8a22c41ca078396",
+    "gate-python-test.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "gpu-test.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "gpu-test.stdout": "20556ce896f7adefa9500d8b50ba826a0eec38bab7246b0853f951d41c9e4a8f",
+    "helper-test.stderr": "067e7cf35ca3f5077c74db275756d77cb09248dd3d3761da410b404476781a77",
+    "helper-test.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "python-test.stderr": "6455de1a0f385a9e1e8d663b4fb0a39314b4649a6485dac48f1372303a97544f",
     "python-test.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "binary_sha256": {
-    "quality-stimuli": "768621976665bbf9991c610aaab22f7724f4ea266bddcc73a3882218b1a725c7",
-    "test-transfer": "ffbd440c861e88d94b033068ba641f49c2db8c69d5f1cd24f9135c0c277f5d62"
+    "quality-stimuli": "e62938c646fd46cc3bfe660c14684420aa448012341e5970fe7ec442627f657d",
+    "test-transfer": "ce3e239e0fa277610a9ca74a179a6f0d9c0e9cf65b09e55a99048470f0e22c88"
   },
-  "external_build_directory": "/tmp/sub15-quality-stimuli-final",
+  "external_build_directory": "/tmp/sub15-quality-stimuli-gates",
   "cpu": {
-    "python_tests": 8,
+    "python_tests": 9,
     "independent_cpp_stereo_fixtures": 18,
     "patterns": 3,
     "shapes": 6,
-    "execution": "CPU fixture emission only; no runtime creation"
+    "execution": "CPU fixture emission only; no runtime creation",
+    "native_helper_tests": 6
   },
   "gpu": {
     "device": "Intel Arc A770",
@@ -49,7 +55,12 @@
     ],
     "exit_code": 0,
     "stderr_empty": true,
-    "exact_application_transfer_function": true
+    "exact_application_transfer_function": true,
+    "source_commit": "a4804006a510a56792841c1c7cddb7e315a3c72a",
+    "qualified_binary_sha256": "ffbd440c861e88d94b033068ba641f49c2db8c69d5f1cd24f9135c0c277f5d62",
+    "current_transfer_function_identical": true,
+    "transfer_function_sha256": "a817078d00c7ab0402046af2dad9603e04204d980d81421336d94f5f8d90dc4e",
+    "current_binary_gpu_execution": false
   },
   "peer_review": {
     "reviewer": "gpu_pipeline",
@@ -66,5 +77,10 @@
     "All fixture bytes are directly uploaded encoded SRGB codes, not shader-rasterized pixels.",
     "Build binds local compiler/source/binary; no complete runtime environment reproduction.",
     "Complete app evidence must additionally be joined to actual root runner command/binary/source receipts."
-  ]
+  ],
+  "followup_scope": "Frame gate diagnostics, independent validity audit and native pinned application adapter; GPU transfer code unchanged from exact prior Git pin.",
+  "integration_source_sha256": {
+    "validation/wivrn-codecs/integration/quality_application.py": "8c42f6b235ea8ba125ed5ee48beda0e8d630643f42f4d6bf5cb32b9dca2698bc",
+    "validation/wivrn-codecs/tests/test_quality_application.py": "66d23d7c1e8ac4c483a58125a965322ccac54317eefddaf181ca868224a4941e"
+  }
 }
