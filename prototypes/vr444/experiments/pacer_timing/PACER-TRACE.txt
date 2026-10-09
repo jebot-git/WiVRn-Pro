@@ -29,8 +29,9 @@ The validation receipt binds native header and cached compiler flags too.
 Activation and isolation
 WIVRN_CODEC_TESTS and WIVRN_CODEC_PACER_TRACE=/absolute/new/file.jsonl are both
 required. Storage and exclusive file creation happen at pacer construction.
-The existing comparison runner explicitly removes an inherited pacer trace
-variable; this branch does not add a runner option. The promotion evaluator
+The initial trace milestone only removed an inherited pacer trace variable
+from the comparison runner. The later CAPTURE-CONTRACT.txt milestone adds an
+explicit, diagnostic-only runner option and exact host source joins. The promotion evaluator
 rejects a declared pacer trace, a non-off summary, or a host/pacer-trace.jsonl
 artifact. Existing candidate/source trace schemas are unchanged.
 

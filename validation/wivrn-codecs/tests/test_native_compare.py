@@ -94,6 +94,61 @@ class NativeComparisonGates(unittest.TestCase):
             _,_,env = compare.build_configuration(args, Path('/runtime'), Path('/source'), Path('/result'))
             self.assertEqual(env['WIVRN_CODEC_SOURCE_TRACE'], '/result/host/source-trace.jsonl')
 
+    def test_pacer_diagnostics_require_explicit_combined_controls_and_source_preflight(self):
+        from argparse import Namespace
+        args = Namespace(mode='custom-vr444', decoder_backend='cpu-neon', seconds=30, port=9767,
+                         fps_divider=1, bitrate=20_000_000, q=8, compression='lz4', source_trace=True,
+                         candidate_trace=True, pacer_trace=True)
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder)
+            with self.assertRaisesRegex(ValueError, 'overlay is absent'):
+                compare.pacer_trace_helpers(args, source)
+            for name in compare.pacer_trace_helpers(args):
+                p = source/name; p.parent.mkdir(parents=True, exist_ok=True); p.write_text('test fixture')
+            self.assertEqual(len(compare.pacer_trace_helpers(args, source)), 3)
+            _, _, env = compare.build_configuration(args, Path('/runtime'), source, Path('/result'))
+            self.assertEqual(env['WIVRN_CODEC_PACER_TRACE'], '/result/host/pacer-trace.jsonl')
+        for change in (dict(mode='native-hevc'), dict(decoder_backend='resident'), dict(candidate_trace=False),
+                       dict(source_trace=False), dict(pacer_trace=1)):
+            with self.assertRaises(ValueError):
+                compare.pacer_trace_helpers(Namespace(**(vars(args) | change)))
+        args.pacer_trace = False
+        self.assertEqual(compare.pacer_trace_helpers(args, Path('/nonexistent')), ())
+
+    def test_absent_pacer_overlay_stops_before_any_device_command(self):
+        from argparse import Namespace
+        with tempfile.TemporaryDirectory() as folder:
+            args = Namespace(mode='custom-vr444', decoder_backend='cpu-neon', seconds=30, port=9767,
+                fps_divider=1, bitrate=20_000_000, q=8, compression='lz4', source_trace=True,
+                candidate_trace=True, pacer_trace=True, selection_phase='early',
+                cpu_output='cached-copy', selection_policy='closest-target',
+                source=Path(folder)/'not-integrated', out=Path(folder)/'unused', serial='not-queried')
+            with patch.object(compare, 'command') as device, patch.object(compare.subprocess, 'run') as subprocess:
+                with self.assertRaisesRegex(ValueError, 'overlay is absent'):
+                    compare.run(args)
+                device.assert_not_called()
+                subprocess.assert_not_called()
+                self.assertFalse(args.out.exists())
+
+    def test_pacer_diagnostic_file_evaluation_requires_exact_source_join(self):
+        from test_pacer_source_join import fixture
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder)
+            (output/'host').mkdir(); (output/'client').mkdir()
+            self.assertEqual(compare.evaluate_pacer_trace(output, False)['status'], 'off')
+            self.assertEqual(compare.evaluate_pacer_trace(output, 1)['status'], 'fail')
+            self.assertEqual(compare.evaluate_pacer_trace(output, True)['status'], 'fail')
+            p, s = fixture()
+            for path, rows in (('host/pacer-trace.jsonl', p), ('host/source-trace.jsonl', s),
+                               ('client/codec-test-present.jsonl', [{'left': 0}])):
+                (output/path).write_text(''.join(json.dumps(row)+'\n' for row in rows))
+            result = compare.evaluate_pacer_trace(output, True)
+            self.assertEqual(result['status'], 'pass', result)
+            self.assertEqual(len(result['analyzer_sources_sha256']), 3)
+            self.assertEqual(compare.evaluate_pacer_trace(output, False)['status'], 'fail')
+            (output/'host/pacer-trace.jsonl').write_text('{}\n')
+            self.assertEqual(compare.evaluate_pacer_trace(output, True)['status'], 'fail')
+
     def test_source_footer_wait_never_accepts_partial_or_false_completion(self):
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)/'trace.jsonl'

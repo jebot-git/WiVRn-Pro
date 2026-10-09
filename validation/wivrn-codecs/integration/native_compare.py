@@ -58,6 +58,46 @@ def experimental_settings(args):
     return {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection}
 
 
+
+def pacer_trace_helpers(args, source=None):
+    """Pure opt-in validation; optional source preflight occurs before ADB."""
+    enabled = getattr(args, 'pacer_trace', False)
+    if type(enabled) is not bool:
+        raise ValueError('pacer trace control must be boolean')
+    if not enabled:
+        return ()
+    if (args.mode != 'custom-vr444' or args.decoder_backend != 'cpu-neon'
+            or getattr(args, 'candidate_trace', False) is not True
+            or getattr(args, 'source_trace', False) is not True):
+        raise ValueError('pacer tracing requires custom CPU NEON plus candidate and source diagnostics')
+    names = ('server/compositor/pacer.cpp', 'server/compositor/pacer.h', 'server/compositor/codec_pacer_trace.h')
+    if source is not None and any(not (Path(source)/name).is_file() for name in names):
+        raise ValueError('pacer diagnostic overlay is absent; native integration/build required before acquisition')
+    return names
+
+
+def evaluate_pacer_trace(output, requested):
+    """Pure file-based diagnostic evaluation; never starts native/device work."""
+    output = Path(output)
+    if type(requested) is not bool:
+        return {'status': 'fail', 'errors': ['pacer trace request must be boolean']}
+    path = output/'host/pacer-trace.jsonl'
+    if not requested:
+        return {'status': 'fail' if path.exists() else 'off'}
+    try:
+        analyzer = Path(__file__).resolve().parents[3]/'prototypes/vr444/experiments/pacer_timing/join_source.py'
+        spec = importlib.util.spec_from_file_location('codec_pacer_source_join', analyzer)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        result = module.evaluate(read_rows(path), read_rows(output/'host/source-trace.jsonl'),
+                                 [r['left'] for r in read_rows(output/'client/codec-test-present.jsonl')])
+        result['analyzer_sources_sha256'] = {str(p.relative_to(Path(__file__).resolve().parents[3])): sha(p)
+            for p in (analyzer, Path(module.pacer.__file__), Path(module.source.__file__))}
+        return result
+    except Exception as exc:
+        return {'status': 'fail', 'diagnostic_only': True, 'promotion_blocked': True, 'errors': [str(exc)]}
+
+
 def source_trace_complete(path):
     """Bounded footer probe used only while waiting for graceful test teardown."""
     try:
@@ -73,6 +113,7 @@ def source_trace_complete(path):
 
 def build_configuration(args, runtime, source, output):
     """Pure configuration builder, also usable by offline tests/review."""
+    pacer_trace_helpers(args)
     custom = args.mode == 'custom-vr444'
     codec = 'h264' if args.mode == 'native-h264' else 'h265'
     server_config = {
@@ -102,6 +143,8 @@ def build_configuration(args, runtime, source, output):
                 'XRT_COMPOSITOR_FORCE_GPU_INDEX': '0', 'WIVRN_CODEC_COMPARE': '1'})
     if getattr(args, 'source_trace', False):
         env['WIVRN_CODEC_SOURCE_TRACE'] = str(output/'host/source-trace.jsonl')
+    if getattr(args, 'pacer_trace', False):
+        env['WIVRN_CODEC_PACER_TRACE'] = str(output/'host/pacer-trace.jsonl')
     if custom:
         env.update({'WIVRN_CODEC_TEST': 'vulkan-vr444', 'WIVRN_CODEC_TEST_Q': str(args.q),
                     'WIVRN_CODEC_TEST_FRAME_STRIDE': '1', 'VR444_KERNEL': 'baseline',
@@ -152,6 +195,7 @@ def run(args):
     if args.compression not in ('none', 'lz4'):
         raise ValueError('invalid custom compression')
     source, output = args.source.resolve(), args.out.resolve()
+    pacer_helpers = pacer_trace_helpers(args, source)
     server = source/'build/codec-server/server/wivrn-pro-server'
     manifest = source/'build/codec-server/openxr_wivrn-dev.json'
     apk = source/'build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk'
@@ -209,7 +253,7 @@ def run(args):
                    'client/decoder/android/android_decoder.cpp', 'client/scenes/stream.cpp',
                    'server/compositor/foveation.cpp', 'server/compositor/compositor.cpp',
                    'server/driver/app_pacer.cpp', 'server/driver/codec_source_trace.h',
-                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h')
+                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers
         save(output/'provenance.json', {
             'schema': 1, 'mode': args.mode, 'source': str(source), 'server_sha256': sha(server),
             'installed_apk_sha256': apk_hash, 'runtime_manifest_sha256': sha(manifest),
@@ -229,7 +273,7 @@ def run(args):
             'custom_decoder': kernel, 'decoder_backend': args.decoder_backend,
             'selection_phase': args.selection_phase, 'candidate_trace': args.candidate_trace,
             'cpu_output': args.cpu_output, 'selection_policy': args.selection_policy,
-            'source_trace': args.source_trace,
+            'source_trace': args.source_trace, 'pacer_trace': getattr(args, 'pacer_trace', False),
             'scene_reference_space': 'Local',
             'application_source_sha256': sha(source/'client/application.cpp'),
             'application_header_sha256': sha(source/'client/application.h'),
@@ -315,6 +359,8 @@ def run(args):
                         break
                     time.sleep(.1)
                 state['source_trace_footer_before_termination'] = source_trace_complete(output/'host/source-trace.jsonl')
+                if getattr(args, 'pacer_trace', False):
+                    state['pacer_trace_footer_before_termination'] = source_trace_complete(output/'host/pacer-trace.jsonl')
             if process and process.poll() is None:
                 cleanup('stop private server', lambda: os.killpg(process.pid, signal.SIGTERM))
                 try:
@@ -498,7 +544,11 @@ def run(args):
         result['source_trace'] = {'status': 'fail' if source_trace_file.exists() else 'off'}
         if source_trace_file.exists():
             result['status'] = 'fail'
-    if args.source_trace or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
+    result['pacer_trace'] = evaluate_pacer_trace(output, getattr(args, 'pacer_trace', False))
+    if result['pacer_trace']['status'] not in ('pass', 'off'):
+        result['status'] = 'fail'
+        result['promotion_status'] = 'blocked'
+    if args.source_trace or getattr(args, 'pacer_trace', False) or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
         result['promotion_status'] = 'blocked_experimental_path'
         result['release_ready'] = False
     # Preserve matching log lines for review without treating a support probe or
@@ -535,6 +585,8 @@ def main():
     parser.add_argument('--selection-policy', choices=('closest-target', 'bounded-newest'), default='closest-target',
                         help='bounded-newest requires --candidate-trace and cannot be promoted')
     parser.add_argument('--source-trace', action='store_true', help='Bounded host app/compositor mapping trace; diagnostic only')
+    parser.add_argument('--pacer-trace', action='store_true',
+                        help='Host pacer budget diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
     args = parser.parse_args()
     result = run(args)
     print(json.dumps(result, indent=2))
