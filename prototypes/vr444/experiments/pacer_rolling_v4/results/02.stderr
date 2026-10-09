@@ -1,0 +1,13 @@
+test_coalescing_empty_reset_and_terminal_pending_are_not_hidden (test_analyze.RollingTailAudit.test_coalescing_empty_reset_and_terminal_pending_are_not_hidden) ... ok
+test_forged_mode_clock_counts_and_complete_eye_claim_reject (test_analyze.RollingTailAudit.test_forged_mode_clock_counts_and_complete_eye_claim_reject) ... ok
+test_mode_and_accounting_are_explicit (test_analyze.RollingTailAudit.test_mode_and_accounting_are_explicit) ... ok
+test_complete_trace_and_typed_header (test_analyze.TailAudit.test_complete_trace_and_typed_header) ... ok
+test_epoch_reset_retains_budget_but_clears_watermark (test_analyze.TailAudit.test_epoch_reset_retains_budget_but_clears_watermark) ... ok
+test_rehashed_semantics_reject (test_analyze.TailAudit.test_rehashed_semantics_reject) ... ok
+test_subset_tail_can_exceed_legacy_tail (test_analyze.TailAudit.test_subset_tail_can_exceed_legacy_tail) ... ok
+test_supported_slew_and_sparse_fallback (test_analyze.TailAudit.test_supported_slew_and_sparse_fallback) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.001s
+
+OK

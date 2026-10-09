@@ -530,6 +530,7 @@ def run(args):
             'source_mapping': getattr(args, 'source_mapping', False),
             **mapping_provenance,
             'pacer_window_frames': getattr(args, 'pacer_window_frames', 0),
+            'pacer_feedback_bank': getattr(args, 'pacer_feedback_bank', 'alternating'),
             'pacer_tail_adapter_sha256': sha(Path(__file__).with_name('pacer_tail.py')),
             'publication_trace': getattr(args, 'publication_trace', False),
             'quality_capture': getattr(args, 'quality_capture', False),
@@ -875,7 +876,8 @@ def run(args):
     if result['source_mapping']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
         result['promotion_status'] = 'blocked'
-    result['pacer_tail'] = pacer_tail_adapter().evaluate(output, getattr(args, 'pacer_window_frames', 0))
+    result['pacer_tail'] = pacer_tail_adapter().evaluate(output, getattr(args, 'pacer_window_frames', 0),
+                                                      getattr(args, 'pacer_feedback_bank', 'alternating'))
     if result['pacer_tail']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
         result['promotion_status'] = 'blocked'
@@ -927,6 +929,8 @@ def main():
                         help='Host pacer budget diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
     parser.add_argument('--pacer-window-frames', type=int, default=0,
                         help='Opt-in recent feedback window, 360..1800; 0 preserves original pacing')
+    parser.add_argument('--pacer-feedback-bank', choices=('alternating', 'rolling'), default='alternating',
+                        help='Opt-in rolling feedback snapshot requires a nonzero pacer window; diagnostic only')
     parser.add_argument('--publication-trace', action='store_true',
                         help='Client publication/eviction prefix diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
     parser.add_argument('--quality-capture', action='store_true', help='Bounded submitted swapchain readback; diagnostic, not latency eligible')

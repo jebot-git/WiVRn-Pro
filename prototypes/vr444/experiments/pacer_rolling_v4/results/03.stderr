@@ -1,0 +1,9 @@
+test_changed_receipt_rejected_before_contents_are_trusted (test_native_campaign.CampaignAdmission.test_changed_receipt_rejected_before_contents_are_trusted) ... ok
+test_missing_wear_readiness_stops_before_output_or_commands (test_native_campaign.CampaignAdmission.test_missing_wear_readiness_stops_before_output_or_commands) ... ok
+test_native_and_external_inputs_are_both_checked (test_native_campaign.CampaignAdmission.test_native_and_external_inputs_are_both_checked) ... ok
+test_repaired_receipt_hash_cannot_admit_relative_external_path (test_native_campaign.CampaignAdmission.test_repaired_receipt_hash_cannot_admit_relative_external_path) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+OK

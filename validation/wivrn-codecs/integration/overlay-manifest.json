@@ -317,7 +317,7 @@
   },
   "server/compositor/codec_pacer_tail.h": {
     "before_sha256": null,
-    "after_sha256": "7e8de43fdbb4d0ced732e6300aad5e707f9fde23e5d557a7cc7bab3c864487c4"
+    "after_sha256": "98afd954274b0eeaa2eb74e731e63911b8e69e94c37efa577a0b1712ef5d2b5b"
   },
   "server/compositor/codec_pacer_trace.h": {
     "before_sha256": null,
@@ -337,11 +337,11 @@
   },
   "server/compositor/pacer.cpp": {
     "before_sha256": "2fd824158a9e49022e93c2e92c2ad4b0e1fd8e71491cfa8868fd68312938d1b6",
-    "after_sha256": "48e2a42c72f113dd25edbf84e81045556bd7fcb590535a5a351ae1e57a1d2434"
+    "after_sha256": "527df38c14026dd6c825eaac49b4240b834dbc90f8881ac9e5a5fa4031f23326"
   },
   "server/compositor/pacer.h": {
     "before_sha256": "2ec4c1c64a27ab65fd18b53e493dec2997a82bde521152f1009706405c967f81",
-    "after_sha256": "a9076b5e0ab5247c52d43366e4920f1d868b1e150100d5360bb8b3b2eb502be1"
+    "after_sha256": "1fa32e30e20dc806f6802453159cae924a86a200a47b56d26780d77df7fdeb3a"
   },
   "server/compositor/shaders/foveation_rgb.comp": {
     "before_sha256": null,

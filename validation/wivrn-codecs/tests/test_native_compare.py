@@ -1,5 +1,6 @@
 """Guard against cross-mode configuration leakage and insufficient comparison evidence."""
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -72,6 +73,51 @@ class NativeComparisonConfiguration(unittest.TestCase):
 
 
 class NativeComparisonGates(unittest.TestCase):
+    def test_pacer_bank_cli_default_and_explicit_selection(self):
+        base = ['native_compare.py', '--source', '/not-read', '--out', '/not-created',
+                '--serial', 'not-queried', '--mode', 'custom-rrb32']
+        for option, expected in (([], 'alternating'), (['--pacer-feedback-bank', 'rolling'], 'rolling')):
+            with self.subTest(expected=expected), patch('sys.argv', base + option), \
+                 patch('sys.stdout', new_callable=io.StringIO), \
+                 patch.object(compare, 'run', return_value={'status': 'pass'}) as run:
+                self.assertEqual(compare.main(), 0)
+                self.assertEqual(run.call_args.args[0].pacer_feedback_bank, expected)
+        with patch('sys.argv', base + ['--pacer-feedback-bank', 'unknown']), \
+             patch('sys.stderr', new_callable=io.StringIO), patch.object(compare, 'run') as run:
+            with self.assertRaises(SystemExit) as caught: compare.main()
+            self.assertEqual(caught.exception.code, 2); run.assert_not_called()
+
+    def test_pacer_bank_config_clears_inherited_activation(self):
+        from argparse import Namespace
+        args = Namespace(mode='custom-vr444', decoder_backend='cpu-neon', seconds=30, port=9767,
+                         fps_divider=1, bitrate=20_000_000, q=8, compression='lz4', source_trace=True,
+                         candidate_trace=True, pacer_trace=True, pacer_window_frames=900)
+        inherited = {'WIVRN_CODEC_TEST_PACER_BANK_MODE': 'rolling',
+                     'WIVRN_CODEC_TEST_PACER_WINDOW_FRAMES': '1800',
+                     'WIVRN_CODEC_TEST_PACER_TAIL_TRACE': '/unrelated'}
+        with patch.dict(compare.os.environ, inherited):
+            for bank in ('alternating', 'rolling'):
+                args.pacer_feedback_bank = bank
+                _, _, env = compare.build_configuration(args, Path('/runtime'), Path('/source'), Path('/result'))
+                self.assertEqual(env['WIVRN_CODEC_TEST_PACER_WINDOW_FRAMES'], '900')
+                self.assertEqual(env['WIVRN_CODEC_TEST_PACER_TAIL_TRACE'], '/result/host/pacer-tail.jsonl')
+                self.assertEqual(env.get('WIVRN_CODEC_TEST_PACER_BANK_MODE'), 'rolling' if bank == 'rolling' else None)
+            args.pacer_window_frames = 0; args.pacer_feedback_bank = 'alternating'
+            _, _, env = compare.build_configuration(args, Path('/runtime'), Path('/source'), Path('/result'))
+            self.assertFalse(any(k.startswith('WIVRN_CODEC_TEST_PACER') for k in env))
+
+    def test_rolling_without_window_or_diagnostics_rejects_before_device_access(self):
+        from argparse import Namespace
+        for changes in ({'pacer_window_frames': 0}, {'source_trace': False}, {'candidate_trace': False}):
+            args = Namespace(**(dict(mode='custom-vr444', decoder_backend='cpu-neon',
+                cpu_output='cached-copy', selection_policy='closest-target', pacer_trace=True,
+                source_trace=True, candidate_trace=True, pacer_feedback_bank='rolling',
+                pacer_window_frames=900) | changes))
+            with self.subTest(changes=changes), patch.object(compare, 'command') as device, \
+                 patch.object(compare.subprocess, 'run') as subprocess:
+                with self.assertRaises(ValueError): compare.run(args)
+                device.assert_not_called(); subprocess.assert_not_called()
+
     def test_longer_visible_window_is_only_an_explicit_quality_application(self):
         from argparse import Namespace
         for seconds in (10, 30):
