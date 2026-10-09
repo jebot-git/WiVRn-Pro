@@ -1,0 +1,69 @@
+Known application-source receipt age, 2026-10-09
+
+This diagnostic measures submission minus the earliest known headset-local
+receipt of an encoded frame carrying the same canonical set of latched
+(pacer, application-frame) identities. A newer encoded frame cannot reset
+that known source origin. The original encoded-frame metric, policy and
+runtime behavior are unchanged. No host timestamp is subtracted from a
+headset timestamp. Source IDs establish provenance, not identical pixels
+or an input-event timestamp; missing earlier encoded frames can still make
+this diagnostic underestimate complete application age.
+
+Immutable source: cpu-sub15-live-20261009T051345Z/05-closest-traced.
+All 300 acquisition-manifest files were checked before/after; the original
+failed summary remains unchanged. All 2,094 known encoded pairs join to
+2,071 application-source sets. Actual warm membership is fixed by the
+original two-second warmup, including actual pre-warm selected identities.
+
+Actual warm first-encoded submissions (1,900):
+                              original encoded age   known source age
+  p50, milliseconds                  18.075523            18.095523
+  p95, milliseconds                  26.927659            27.037346
+  p99, milliseconds                  29.827295            29.902659
+  strict age below 15 ms                   184                  176
+
+Fourteen encoded submissions have an older known source origin; their
+maximum extra age is 15.906929 ms. All origin metadata was already visible
+by the actual selection. The 1,888 first selected-source submissions have
+two older known origins, because an earlier received source need not have
+been selected. First selected source, first known receipt, and first host
+latch are deliberately separate populations.
+
+The four exact-phase winning paths from EXACT-PHASE.txt are independently
+rechecked and rescored. These are still paths optimized for encoded age;
+this analysis does not establish minima for known source age:
+
+  model                 phase ns    encoded p95 ms   source p95 ms
+  encoded_one_horizon          0      19.241095        19.311512
+  encoded_unbounded      4387188      14.852189        14.974637
+  source_two_horizons    5488282      15.924690        15.998856
+  source_unbounded      5488282      15.924690        15.998856
+
+Each path has 1,875 choices. The count is independently reconstructed as
+ceil(88 * original warm deadline span / 1e9) + 1, not trusted from a result
+field. Models, controls, exact integer types, certificate hashes, strict
+frame/deadline order, fixed target ceilings, original receipt-floor
+admission, pre-warm history, source novelty when required, and original
+encoded-age p95 are rechecked. Origin metadata can be from later recorded
+snapshots for these optimistic paths: 21, 259, 260 and 260 choices,
+respectively. This remains hindsight analysis, not an online selector.
+
+Validation: 323 Python tests passed, including eight focused tests and 13
+certificate/control mutations. Tests cover canonical multi-pacer identity,
+receipt tie ordering, missing/future/invalid origins, independent host and
+client clock translations, changed certificate scores/IDs/hashes, and an
+internally rehashed shortened path with a rewritten claimed count. A
+transport-team read-only review found no arithmetic or metric-separation
+blocker and prompted the independent full-window cadence-count check.
+
+Reproduce from this worktree, writing new files outside the acquisition:
+
+  python3 prototypes/vr444/experiments/selection_policy/validate_source_receipt_age.py --out /tmp/source-age-validation.json
+  python3 prototypes/vr444/experiments/selection_policy/source_receipt_age.py /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced --exact-phase prototypes/vr444/experiments/selection_policy/phase-exact-20261009.json --out /tmp/source-age.json
+
+source-receipt-age-20261009.json retains every actual and hypothetical
+sample, acquisition and implementation hashes, and the exact-phase artifact
+hash. source-receipt-age-validation-20261009.json records the full suite
+command, output and test/source hashes. Neither artifact is a native build,
+headset measurement, policy pass, production promotion, or optical-latency
+claim. No device operations were performed.
