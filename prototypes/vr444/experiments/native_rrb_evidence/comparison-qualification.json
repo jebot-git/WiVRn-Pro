@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "tests": 10,
+  "actual_capture_pairs": 1,
+  "actual_eyes": 2,
+  "protected_pixels_per_eye": 69612,
+  "full_rgb_exact": true,
+  "full_alpha_exact": true,
+  "artifact_sha256": {
+    "validation/wivrn-codecs/integration/submitted_comparison.py": "36a4621d51cda1197ad0f7933137864b779ee5160a82f00d7bf3cf682cbe57e2",
+    "validation/wivrn-codecs/tests/test_submitted_comparison.py": "c696425a1e05cc2a834976ec92d0eca0abf1d37bed9c99a71446a7b3a254c7f6",
+    "prototypes/vr444/experiments/native_rrb_evidence/submitted-replay-1.json": "325186f9752a028cf577bee14b380856045a85de633c56ca30d969d7e774d4e3",
+    "prototypes/vr444/experiments/native_rrb_evidence/comparison-tests.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prototypes/vr444/experiments/native_rrb_evidence/comparison-tests.stderr": "b0bb3f5f6aef1f11078246e82e36a4c72b255b5b9225f6f998de29a17c093429"
+  },
+  "new_device_execution": false,
+  "full_goal_qualified": false
+}

@@ -1,0 +1,182 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "evidence_integrity_verified": true,
+  "capture_id": 1,
+  "frame": 90,
+  "warp": 13149394681561239981,
+  "geometry": [
+    1800,
+    1980
+  ],
+  "eyes": [
+    {
+      "eye": 0,
+      "protected_pixels": 69612,
+      "protected_exact": true,
+      "protected_changed_pixels": 0,
+      "protected_max_absolute_code_error": 0,
+      "full_rgb_exact": true,
+      "full_rgb_changed_pixels": 0,
+      "opaque_alpha_reference": true,
+      "opaque_alpha_candidate": true,
+      "reference_sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad",
+      "candidate_sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad",
+      "mask_sha256": "9fa919dbde264040980b4269cccff36d6884b0b3e681358406996c38c9f6dfa1",
+      "scope": "Exact RGB at the explicitly identified capture boundary; no physical display inference",
+      "full_alpha_exact": true,
+      "protected_alpha_exact": true,
+      "raw_reference_sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad",
+      "reference_channel_permutation": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "candidate_input": {
+        "path": "capture-1-eye-0.rgba",
+        "sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad"
+      },
+      "projection_input": {
+        "path": "capture-1-eye-0-projection.json",
+        "sha256": "ab219f61b0f637869bb757f38027994497738cb8bf98731bba46c558d980f4ae"
+      },
+      "reference_input": {
+        "path": "validation/results/dual-goal-20261009/quality-replay-audit-1/eye-0.raw",
+        "sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad",
+        "bytes": 14256000,
+        "channel_order": "RGBA"
+      }
+    },
+    {
+      "eye": 1,
+      "protected_pixels": 69612,
+      "protected_exact": true,
+      "protected_changed_pixels": 0,
+      "protected_max_absolute_code_error": 0,
+      "full_rgb_exact": true,
+      "full_rgb_changed_pixels": 0,
+      "opaque_alpha_reference": true,
+      "opaque_alpha_candidate": true,
+      "reference_sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8",
+      "candidate_sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8",
+      "mask_sha256": "5a135153cfc35118f6be34a02d9c19aca1f7f2659e2265ab35924fb307ef4a93",
+      "scope": "Exact RGB at the explicitly identified capture boundary; no physical display inference",
+      "full_alpha_exact": true,
+      "protected_alpha_exact": true,
+      "raw_reference_sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8",
+      "reference_channel_permutation": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "candidate_input": {
+        "path": "capture-1-eye-1.rgba",
+        "sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8"
+      },
+      "projection_input": {
+        "path": "capture-1-eye-1-projection.json",
+        "sha256": "c7287fe910e2ca09bf6ccc6628359999b0cbbccc2c5b6acf1682aa3c5a2f7df1"
+      },
+      "reference_input": {
+        "path": "validation/results/dual-goal-20261009/quality-replay-audit-1/eye-1.raw",
+        "sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8",
+        "bytes": 14256000,
+        "channel_order": "RGBA"
+      }
+    }
+  ],
+  "protected_radius_degrees": 10,
+  "gaze_mode": "fixed-center",
+  "rgb_code_tolerance": 0,
+  "exact_submitted_replay_rgb": true,
+  "native_audit_sha256": "33a9cf4d415c32dc9ca7eb016401630937b9e595a88fe4d5e7569953b1b5b780",
+  "job_audit_sha256": "666b1dab2d16a185b6124ba840d1709620bbc0d7782efe65fbeef404f0edfd50",
+  "replay_audit_sha256": "eba69a29815fc2583b3526c199fef21abac561ab729c855ac9293104058681fe",
+  "replay_plan_sha256": "def2ca0c3ff3fd1059e865de9339a729545679329060f0378683d836f5866195",
+  "run_hashes_sha256": "d781bc11e345ed2253e69fd24015824554e64dae47fcc3a18ddce6201eed4c0e",
+  "build_receipt_sha256": "d6be1ee952a93a967cc6d3492edd89abe7e8fa49e25ad77df0f37dcbee82ec8f",
+  "headset_physical_serial": "230YC01D8W000E",
+  "physical_identity_method": "pinned_campaign_serial_bridge",
+  "physical_identity_scope": "Relies on explicitly pinned upstream collector serial/campaign audit",
+  "source_boundary": "post-host-foveation-codec-input",
+  "geometry_reconstructed_from_metadata": true,
+  "actual_native_vertex_bytes_captured": false,
+  "actual_native_push_constant_bytes_captured": false,
+  "aarch64_raster_geometry_bit_equivalence_verified": false,
+  "original_application_rgb_verified": false,
+  "displayed_pixels_verified": false,
+  "visual_assessment": "not supplied to this byte comparator",
+  "full_goal_qualified": false,
+  "quality_route_qualified": false,
+  "latency_eligible": false,
+  "promotion_eligible": false,
+  "input_artifacts": {
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-submitted-audit/audit.json": {
+      "sha256": "33a9cf4d415c32dc9ca7eb016401630937b9e595a88fe4d5e7569953b1b5b780",
+      "bytes": 22682
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-reference-job-1/audit.json": {
+      "sha256": "666b1dab2d16a185b6124ba840d1709620bbc0d7782efe65fbeef404f0edfd50",
+      "bytes": 41132
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-replay-audit-1/audit.json": {
+      "sha256": "eba69a29815fc2583b3526c199fef21abac561ab729c855ac9293104058681fe",
+      "bytes": 6704
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-replay-bundle-1/plan.json": {
+      "sha256": "def2ca0c3ff3fd1059e865de9339a729545679329060f0378683d836f5866195",
+      "bytes": 7798
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-reference-job-1/capture-1-independent-host-input.rlp": {
+      "sha256": "c79052d0828f82fc4d4998bb178f83d66d028e448fe782bb6582df3acef9f279",
+      "bytes": 2950168
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-replay-bundle-1/reprojection.vert.spv": {
+      "sha256": "7a3c42e786031471c65e6fc7380c3966b4bda56ac035f689d378e1468c4da8f8",
+      "bytes": 2140
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-replay-bundle-1/reprojection.frag.spv": {
+      "sha256": "a2cd27117ca0cb4f939625ce1ac9d6305d4318df9f136be75172be01c101b4d0",
+      "bytes": 5788
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-submitted-audit/capture-1-eye-0-projection.json": {
+      "sha256": "ab219f61b0f637869bb757f38027994497738cb8bf98731bba46c558d980f4ae",
+      "bytes": 417
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-submitted-audit/capture-1-eye-0-central10-mask.u8": {
+      "sha256": "9fa919dbde264040980b4269cccff36d6884b0b3e681358406996c38c9f6dfa1",
+      "bytes": 3564000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-submitted-audit/capture-1-eye-0.rgba": {
+      "sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad",
+      "bytes": 14256000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-replay-audit-1/eye-0.raw": {
+      "sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad",
+      "bytes": 14256000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-submitted-audit/capture-1-eye-1-projection.json": {
+      "sha256": "c7287fe910e2ca09bf6ccc6628359999b0cbbccc2c5b6acf1682aa3c5a2f7df1",
+      "bytes": 417
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-submitted-audit/capture-1-eye-1-central10-mask.u8": {
+      "sha256": "5a135153cfc35118f6be34a02d9c19aca1f7f2659e2265ab35924fb307ef4a93",
+      "bytes": 3564000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-submitted-audit/capture-1-eye-1.rgba": {
+      "sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8",
+      "bytes": 14256000
+    },
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/quality-replay-audit-1/eye-1.raw": {
+      "sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8",
+      "bytes": 14256000
+    }
+  },
+  "sources_sha256": {
+    "submitted_comparison.py": "36a4621d51cda1197ad0f7933137864b779ee5160a82f00d7bf3cf682cbe57e2",
+    "research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281"
+  },
+  "scope": "Exact submitted bytes versus independently sourced post-foveation same-device replay; reconstructed geometry and upstream audited acquisition, no original-app or optical-display qualification"
+}

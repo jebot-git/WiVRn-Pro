@@ -1,0 +1,44 @@
+Submitted-image comparison adapter
+
+validation/wivrn-codecs/integration/submitted_comparison.py joins three explicitly
+SHA256-pinned audit receipts: native submitted capture, independent RLP source
+job, and actual-device replay collector. The collector-pinned replay plan binds
+uploaded job and shader digests; the comparator also reads actual job/shader,
+projection, mask, canonical candidate and retained reference bytes. Every read
+is hash-bound and rechecked after comparison. Explicit replay_root confines
+absolute as well as relative collector product paths; links/escapes fail.
+
+The standalone native and embedded job audits must match all semantic capture,
+run, build and renderer fields. Job input supersets preserve every native input;
+only the job's two declared additional build-source dependencies are permitted.
+Both eyes are required for the selected capture/frame/warp. Physical identity
+relies on the explicit-hash upstream collector's direct-serial or pinned-campaign
+bridge audit. This tool does not rerun the acquisition auditors or devices.
+
+The projection mask is independently recomputed from the captured actual FOV
+and viewport; saved masks must match it exactly. Only declared RGBA8/BGRA8 byte
+permutation is allowed, with no color transformation. Protected RGB tolerance
+is exactly0. Full RGB equality and alpha equality/opacity are separately
+reported. A one-code protected RGB difference fails even with repaired hashes.
+
+Historical VIEW capture1: both69,612-pixel masks are exact; full RGB and alpha
+arrays are also identical. The source boundary is POST-HOST-FOVEATION input.
+Native geometry is reconstructed from metadata, not captured VBO/push bytes;
+AArch64 geometry bit-equivalence remains unverified. This is a component pixel
+comparison, not original-app preservation, runtime timewarp/display visibility,
+all-fixture/repeat quality qualification, or a latency result. Prior physical
+black feedback remains valid. Every output keeps full_goal_qualified=false.
+
+CLI (all receipt SHAs explicit; plan SHA comes from the pinned collector):
+  python3 validation/wivrn-codecs/integration/submitted_comparison.py
+    --native-audit NATIVE_AUDIT --native-audit-sha256 SHA
+    --job-audit JOB_AUDIT --job-audit-sha256 SHA
+    --replay-audit REPLAY_AUDIT --replay-audit-sha256 SHA
+    --replay-plan PLAN --replay-root EXPLICIT_PRODUCT_ROOT --out NEW_JSON
+
+Ten test groups cover both channel orders, missing/aliased right output,
+identity/device/source/build/hash mutations, repaired control hashes, geometry
+and mask changes, symlink/escape rejection, valid absolute paths, legitimate
+build dependency supersets, one-code failure and separate alpha reporting.
+Read-only compositor peer review found no remaining material blocker after
+the absolute-path and build-input-superset compatibility fixes.
