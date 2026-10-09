@@ -46,6 +46,7 @@
 #include "codec_test/selection_policy.h"
 #include <fstream>
 namespace wivrn { class test_stereo_state; }
+class stream_quality_capture;
 #endif
 
 namespace scenes
@@ -128,6 +129,10 @@ private:
 
 	vk::raii::Fence fence = nullptr;
 	vk::raii::CommandBuffer command_buffer = nullptr;
+#ifdef WIVRN_CODEC_TESTS
+    // Destroy readback allocations before the fence; terminal queue drain first.
+    std::unique_ptr<stream_quality_capture> test_quality_capture;
+#endif
 
 	struct haptics_action
 	{

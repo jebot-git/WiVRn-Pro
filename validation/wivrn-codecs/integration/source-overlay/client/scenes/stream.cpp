@@ -42,6 +42,7 @@
 #include "decoder/shard_accumulator.h"
 #ifdef WIVRN_CODEC_TESTS
 #include "decoder/test_decoder.h"
+#include "stream_quality_capture.h"
 #endif
 #include "inplace_vector.hpp"
 #include "spdlog/spdlog.h"
@@ -201,6 +202,7 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
 	width = views[0].recommendedImageRectWidth;
 	height = views[0].recommendedImageRectHeight;
 #ifdef WIVRN_CODEC_TESTS
+    test_quality_capture = std::make_unique<stream_quality_capture>(application::get_config_path());
     std::ifstream selection_file(application::get_config_path() / "codec-test-selection.txt");
     std::string selection;
     if (selection_file >> selection) {
@@ -1340,7 +1342,17 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		assert(swapchain);
 		// defoveate the image, apply scale/bias
 		int image_index = swapchain.acquire();
-		swapchain.wait();
+#ifdef WIVRN_CODEC_TESTS
+        const bool image_waited = swapchain.wait();
+        if (test_quality_capture->enabled() && !image_waited)
+            throw std::runtime_error("quality capture swapchain wait did not complete");
+#else
+        swapchain.wait();
+#endif
+        const bool room_capture = spatial && spatial->capture_active();
+#ifdef WIVRN_CODEC_TESTS
+        test_quality_capture->cancel_ready();
+#endif
 
 		switch (gui_status)
 		{
@@ -1371,7 +1383,22 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		                      {bias, bias, bias, 0.},
 		                      image_index, cutout_masks);
 
-		command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, *query_pool, 1);
+#ifdef WIVRN_CODEC_TESTS
+        if (test_quality_capture->enabled() && !room_capture) {
+            const auto& left = current_blit_handles[0]; const auto& right = current_blit_handles[1];
+            if (!left || !right || left->feedback.frame_index != right->feedback.frame_index
+                || !codec_test::stereo_publication::same_view(left->view_info,right->view_info))
+                throw std::runtime_error("quality capture requires a coherent full stereo view");
+            for (unsigned eye=0;eye<2;++eye) {
+                const auto natural = stream_defoveator::defoveated_size(foveation[eye]);
+                if (natural.width != extents[eye].width || natural.height != extents[eye].height)
+                    throw std::runtime_error("quality capture clamped viewport has no verified ray mapping");
+            }
+            test_quality_capture->record(device,command_buffer,swapchain.image(image_index),swapchain.format(),image_index,
+                std::array<XrExtent2Di,2>{extents[0],extents[1]},left->feedback.frame_index);
+        }
+#endif
+        command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, *query_pool, 1);
 
 		command_buffer.end();
 		vk::SubmitInfo submit_info;
@@ -1399,13 +1426,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		submit_info.pNext = &sem_info;
 
 		device.resetFences(*fence);
-		queue.lock()->submit(submit_info, *fence);
+#ifdef WIVRN_CODEC_TESTS
+        test_quality_capture->before_submit();
+#endif
+        queue.lock()->submit(submit_info, *fence);
+#ifdef WIVRN_CODEC_TESTS
+        test_quality_capture->observe(device,*fence);
+#endif
 #if WIVRN_FEATURE_RENDERDOC
 		renderdoc_end(*vk_instance);
 #endif
 		swapchain.release();
 
-		const bool room_capture = spatial && spatial->capture_active();
 		if (output_alpha || room_capture)
 			session.enable_passthrough(system);
 		else
@@ -1467,6 +1499,9 @@ void scenes::stream::render(const XrFrameState & frame_state)
             const auto actual_filter_flags = !room_capture && projection_layer_index
                 && layers[projection_layer_index - 1].settings
                 ? layers[projection_layer_index - 1].settings->layerFlags : 0;
+            if (!room_capture) test_quality_capture->finish(current_blit_handles,images,cutout_masks,*video_stream_description,
+                layer_view,test_end_frame_return,frame_state.predictedDisplayTime,scale,bias,output_alpha,
+                requested_filter_flags,actual_filter_flags,filter_extension_enabled,application::get_hmd_traits().needs_srgb_conversion);
             if (test_layer_filter.observe({requested_filter_flags, actual_filter_flags, filter_extension_enabled, !room_capture})) {
                 std::ofstream filter_log(application::get_config_path() / "codec-test/layer-filter.jsonl", std::ios::app);
                 filter_log << "{\"generation\":" << test_layer_filter.generation
@@ -1699,7 +1734,16 @@ void scenes::stream::setup_reprojection_swapchain(uint32_t swapchain_width, uint
 
 	auto views = system.view_configuration_views(viewconfig);
 
-	swapchain = xr::swapchain(instance, session, device, swapchain_format, swapchain_width, swapchain_height, 1, views.size());
+    XrSwapchainUsageFlags additional_usage = 0;
+#ifdef WIVRN_CODEC_TESTS
+    if (test_quality_capture->enabled()) {
+        (void)codec_test::submitted_capture::bytes(swapchain_width,swapchain_height);
+        if (!(physical_device.getFormatProperties(swapchain_format).optimalTilingFeatures & vk::FormatFeatureFlagBits::eTransferSrc))
+            throw std::runtime_error("quality capture format lacks transfer-source support");
+        additional_usage = XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT;
+    }
+#endif
+    swapchain = xr::swapchain(instance, session, device, swapchain_format, swapchain_width, swapchain_height, 1, views.size(),additional_usage);
 	spdlog::info("Created stream swapchain: {}x{}", swapchain.width(), swapchain.height());
 	for (auto view: views)
 	{
