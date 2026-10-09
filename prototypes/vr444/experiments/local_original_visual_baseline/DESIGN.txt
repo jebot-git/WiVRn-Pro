@@ -1,0 +1,131 @@
+Local original-source visual comparison — implementation deferred
+===============================================================
+
+The 960x1056 Q1 run was visible, and the user reported "some banding artifacts
+between pixels". That is an unresolved negative visual observation. Codec and
+submitted-image byte comparisons do not erase it. This proposal does not
+change a renderer, start a device, or qualify either research goal.
+
+The next experiment would compare the normal Q1 stream with independently
+captured original application pixels displayed locally through the dedicated
+APK's existing first-consumer and XR submission path. Implementation begins
+only after the first formal source-map audit identifies source-stage fidelity.
+The source-map result can identify a failing stage; it need not be a quality pass
+to justify this controlled visual comparison. The current v3 build stays frozen.
+
+Use the seam immediately before stream_defoveator::defoveate, where both selected
+blit handles, native output swapchain, image input layouts, FOV, and world-space
+projection poses are already known. Keep the stream running to provide the same
+pose/frame-selection route and lifetime controls. Only the actual renderer input
+pair and its explicit foveation metadata change between arms:
+
+ A. normal-stream: the selected complete RRB32 Q1 CPU4 pair, with its actual
+    1152x1280 encoded extent and received foveation vectors. Preserve the codec's
+    262,144-byte complete-stereo cap and all runtime admission checks.
+ B. local-original: exact independent original application RGBA bytes for both
+    eyes, uploaded once to private R8G8B8A8_SRGB images. Use full 1800x1980 input
+    rects and identity foveation vectors {1800} and {1980}. Retain the same native
+    1800x1980 output swapchain, current selected-frame FOV/poses, shader binaries,
+    alpha specialization 0, sampled_rgb_is_linear=true, shader_srgb_decode=false,
+    scale 1/bias 0/no cutout and existing LINEAR/clamp sampler contract.
+
+This keeps the actual downstream consumer and runtime optics in both arms.
+It deliberately removes host foveation as well as compression from B. If B
+removes bands, the source-map and byte audits must distinguish host sampling
+from codec damage; a visual A/B difference alone cannot identify which stage.
+If both show bands, shared filtering/runtime/optics and intentional fixture
+content remain candidates. The chroma grid itself has four horizontal bands
+with 1/2/4/8-pixel cells. No nearest-filter or shader modification is proposed.
+
+Both arms use current selected-frame world poses and the same conversion into
+application::space(world). Do not freeze an old capture's pose or introduce
+VIEW-space projection. Temporal A/B frames will not have numerically identical
+poses: record every actual pose/FOV and any motion rather than claiming exact
+pose equality. The original fixture is static, eye-specific and orientation-
+marked. FOV and output geometry must match exactly; motion/timewarp remains a
+limitation of the paired visual observation.
+
+Input and ownership contract
+----------------------------
+
+Use literal eye0.source.rgba and eye1.source.rgba from the independent quality
+application. The plan pins a prior actual application readback inventory and
+its run manifest. A new acquisition must additionally join those same bytes to
+its own source-map application audit and original image readbacks. Never use
+<frame>-<eye>.reference.rgba, decoder output, an encoded payload reconstruction,
+or the submitted candidate as the original reference. Root must validate the
+complete original application audit and independent pattern oracle before upload.
+
+Before any GPU work, load both complete files, verify exact size/hash/eye/format,
+opaque alpha and the fixed 4MP-per-eye bounds. Bound cached original bytes
+to 32 MiB and additional private GPU/mapped allocations to 128 MiB using actual
+VkMemoryRequirements; record actual allocation sizes and reject before submit
+if the budget is exceeded. Existing submitted-capture storage is separately
+counted. A failure in either eye rejects
+the entire override. Source bytes are copied to private staging owned by the
+pair. Allocate two private images/views and a producer command/fence owner on
+the same application queue. Serialize submit through the existing queue lock;
+wait outside that lock. Publish the pair only after the actual fence succeeds.
+
+Perform both-eye image readback and same-device first-consumer comparison before
+making the pair eligible. Keep private upload resources alive while work is
+submitted; keep the image pair and sampler/layout dependencies alive through
+every consumer fence. The owner-thread prepare_exit drain remains the terminal
+fallback for disconnect/error/device loss. No resource is reclaimed on a timeout
+or ordinary error while completion is unknown. Failed initial upload, partial
+publication, stale generation, decoder reset or a missing coherent pose pair
+ends the baseline acquisition; it must not silently display one old eye or
+continue B when the stream's pose/admission source has failed.
+
+The immutable-sampler pipeline cache needs explicit implementation review:
+ensure_pipeline currently caches per view/alpha/sRGB mode. Reuse the existing
+owned sampler contract and keep its actual dependencies alive, or use a separately
+owned compatible pipeline whose lifetime is reviewed. Merely supplying a new
+VkSampler handle does not change an already cached immutable sampler.
+
+Keep original normal-stream handles retained independently; changing the input
+pair must not consume or release their actual render fence lease early. Do not
+edit wire bytes, decoder publication, pacing, or the production package.
+
+Capture and acquisition gates
+-----------------------------
+
+The adjacent acquisition-plan.json is a non-executable design record. It has no
+binary/APK pins or launch commands because the implementation is deferred.
+Root alone may materialize a new bound plan after implementation and independent
+review. Root prompts the user to wear the headset before that live acquisition.
+
+Use one connection, at most 30 seconds, and a 25-second static fixture. Allow no
+more than 5 seconds to establish a valid complete pair and the local pair's
+readiness, then four 4-second intervals A/B/B/A. If readiness does not fit those
+bounds, stop; do not quietly shorten an arm. An arm changes only on a successful
+complete projection submission. Record scheduled and effective start/end frame
+IDs, actual mode per successful frame, skipped/failed frames and transitions.
+No latency comparison is allowed because this is a diagnostic capture profile.
+
+Capture exactly one complete submitted pair per interval, on the absolute 90-frame
+source cadence and after at least 0.5 seconds of that interval. Any missing capture
+or absent positive exposure time fails the acquisition. Existing capture schemas
+must be extended explicitly: identify renderer_input_mode, literal original
+source pair hashes, actual input extent/rect/foveation, output extent/format,
+selected stream generation/frame/warp used for pose, actual render poses/FOV,
+sampler and shader specialization, filter flags and observed consumer fence.
+Do not label B as a decoded frame or let the old post-foveation job adapter silently
+substitute its host <frame>-<eye>.rgba files for B's original source.
+
+A's capture gate stays the current independent post-foveation same-headset replay.
+B's gate uses the original literal RGBA through an explicitly identified identity
+replay job with the same actual shader/color/geometry settings. Require full RGBA
+and central 10 RGB exactness against that independent replay, both-eye snapshots,
+and a poisoned-right-eye omission negative control in an offscreen target only;
+never submit the deliberately omitted eye to the user. Capture the actual local
+input image too; it must exactly equal the original app bytes before first use.
+The original app→identity output code equality is evaluated separately and is
+not assumed from sRGB roundtrip. Retain failures and the user's visual judgment.
+
+Archive sources/build/APK/installation identity, shader literal↔SPIR-V bindings,
+original app audit + current source-map audit, literal source hashes, plan/control
+readback, mode schedule, all captures/replay receipts and cleanup/config restoration.
+The user report should state whether the same bands are visible in A and B and
+where they appear; absence/presence is a visual observation, not an optical pixel
+measurement. Until that report is supplied, visible quality remains unresolved.

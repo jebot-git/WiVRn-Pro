@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "status": "design_only_not_executable",
+  "implementation_deferred": true,
+  "device_actions_authorized_by_this_file": false,
+  "source_acquisition": {
+    "run_root": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid",
+    "run_manifest_sha256": "229c1c1d5a90dae9456ed9e494a6a771ded423cdf847cc2416ae5eae8275ddb3",
+    "inputs": [
+      {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/app-source/app.jsonl",
+        "relative_path": "app-source/app.jsonl",
+        "sha256": "1de727cd084e82e70bbca7c9b9fc50dfda0faf6b4784331af99a53da803fb5db",
+        "bytes": 1994104
+      },
+      {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/app-source/eye0.source.rgba",
+        "relative_path": "app-source/eye0.source.rgba",
+        "sha256": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238",
+        "bytes": 14256000
+      },
+      {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/app-source/eye1.source.rgba",
+        "relative_path": "app-source/eye1.source.rgba",
+        "sha256": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e",
+        "bytes": 14256000
+      },
+      {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/quality-application-plan.json",
+        "relative_path": "quality-application-plan.json",
+        "sha256": "448a3dd17c99ab596186a3e5d020c29a6b25413f3ec8e70be69850ae6a006db9",
+        "bytes": 2285
+      },
+      {
+        "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/provenance.json",
+        "relative_path": "provenance.json",
+        "sha256": "7317664e379b2848e09e33185a7cd9043c0ebb2559433f3c57e902d63383d7b5",
+        "bytes": 9067
+      }
+    ],
+    "independent_app_audit_required": true,
+    "new_acquisition_source_map_join_required": true
+  },
+  "fixed_source": {
+    "pattern": "chroma-grid",
+    "format": "RGBA8_SRGB",
+    "width": 1800,
+    "height": 1980,
+    "eyes": 2,
+    "opaque": true,
+    "source_boundary": "application_swapchain_before_compositor",
+    "decoder_output_allowed": false
+  },
+  "prerequisites": [
+    "First formal source-map audit localizes source-stage fidelity",
+    "Implementation and independent lifetime/capture review",
+    "Root builds and pins APK/shaders/host helper and verifies installation",
+    "Root prompts user to wear headset before any OpenXR acquisition"
+  ],
+  "arms": {
+    "A": {
+      "name": "normal-stream",
+      "mode": "custom-rrb32",
+      "rrb_source": "q1",
+      "q": 1,
+      "rrb_workers": 4,
+      "rrb_output": "cpu",
+      "geometry_token": "q1-1152x1280",
+      "stereo_envelope_cap": 262144
+    },
+    "B": {
+      "name": "local-original",
+      "source_pair": "literal pinned independent app RGBA",
+      "input_extent": [
+        1800,
+        1980
+      ],
+      "identity_foveation_x": [
+        1800
+      ],
+      "identity_foveation_y": [
+        1980
+      ],
+      "complete_pair_preflight": true,
+      "producer_fence_required": true,
+      "consumer_fence_retention_required": true
+    }
+  },
+  "shared_renderer": {
+    "output_extent": [
+      1800,
+      1980
+    ],
+    "vk_format": 43,
+    "input_vk_format": 43,
+    "alpha_specialization": 0,
+    "shader_srgb_decode": false,
+    "scale": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "bias": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "cutout_enabled": false,
+    "sampler": "existing source-bound LINEAR/clamp contract",
+    "pose_source": "current coherent selected-stream frame in existing world space",
+    "numerically_identical_temporal_pose_claim": false
+  },
+  "bounds": {
+    "native_seconds": 30,
+    "application_seconds": 25,
+    "startup_seconds_max": 5,
+    "interval_seconds": 4,
+    "sequence": [
+      "A",
+      "B",
+      "B",
+      "A"
+    ],
+    "exposure_seconds_max": 16,
+    "submitted_pairs_captured": 4,
+    "source_frame_stride": 90,
+    "min_capture_delay_in_interval_seconds": 0.5,
+    "overall_root_watchdog_seconds": 65,
+    "local_original_bytes": 28512000,
+    "original_cached_bytes_max": 33554432,
+    "additional_private_allocation_bytes_max": 134217728
+  },
+  "gates": {
+    "all_intervals_exposed": true,
+    "exactly_one_complete_capture_per_interval": true,
+    "actual_two_eye_upload_readback_exact": true,
+    "independent_per_arm_first_consumer_reference": true,
+    "omitted_right_eye_negative_control": true,
+    "cleanup_and_config_restore": true,
+    "omission_control_offscreen_only": true
+  },
+  "existing_visual_observation": {
+    "run_manifest_sha256": "229c1c1d5a90dae9456ed9e494a6a771ded423cdf847cc2416ae5eae8275ddb3",
+    "text": "Grid visible, some banding artifacts between pixels",
+    "classification": "unresolved negative visual observation",
+    "retroactively_passed": false,
+    "visual_gate_passed": false
+  },
+  "executable_plan": null,
+  "apk_sha256": null,
+  "implementation_commit": null,
+  "source_stage_qualified": false,
+  "quality_route_qualified": false,
+  "latency_eligible": false,
+  "displayed_pixels_verified": false,
+  "full_goal_qualified": false
+}

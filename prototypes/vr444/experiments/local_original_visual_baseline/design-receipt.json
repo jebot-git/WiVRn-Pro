@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "status": "design-input-binding-pass",
+  "input_bytes_rehashed": true,
+  "source_manifest_sha256": "229c1c1d5a90dae9456ed9e494a6a771ded423cdf847cc2416ae5eae8275ddb3",
+  "input_count": 5,
+  "design_sha256": "cd03abca03b590aceffaf71afb3f3a6dad923a59ba76bcfb3d6a6ec42b29af04",
+  "plan_sha256": "01faf77548c495abf12ea93abb959d9821b671c0e4009b928a924b70c6c51ed4",
+  "source_inputs": [
+    {
+      "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/app-source/app.jsonl",
+      "relative_path": "app-source/app.jsonl",
+      "sha256": "1de727cd084e82e70bbca7c9b9fc50dfda0faf6b4784331af99a53da803fb5db",
+      "bytes": 1994104
+    },
+    {
+      "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/app-source/eye0.source.rgba",
+      "relative_path": "app-source/eye0.source.rgba",
+      "sha256": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238",
+      "bytes": 14256000
+    },
+    {
+      "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/app-source/eye1.source.rgba",
+      "relative_path": "app-source/eye1.source.rgba",
+      "sha256": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e",
+      "bytes": 14256000
+    },
+    {
+      "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/quality-application-plan.json",
+      "relative_path": "quality-application-plan.json",
+      "sha256": "448a3dd17c99ab596186a3e5d020c29a6b25413f3ec8e70be69850ae6a006db9",
+      "bytes": 2285
+    },
+    {
+      "path": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid/provenance.json",
+      "relative_path": "provenance.json",
+      "sha256": "7317664e379b2848e09e33185a7cd9043c0ebb2559433f3c57e902d63383d7b5",
+      "bytes": 9067
+    }
+  ],
+  "implementation_tested": false,
+  "device_exercised": false,
+  "gpu_exercised": false,
+  "full_goal_qualified": false
+}
