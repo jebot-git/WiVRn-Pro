@@ -700,6 +700,22 @@ scenes::stream::~stream()
 
 	if (network_thread.joinable())
 		network_thread.join();
+#ifdef WIVRN_CODEC_TESTS
+    // Decoder image leases are members destroyed after this body. The GUI
+    // renderer waits only its own fences, not the stream defoveation submit.
+    // Wait the actual shared queue before releasing any consumer-held lease.
+    // Queue idle also covers a fence reset followed by a failed submit, where
+    // waiting that never-submitted fence could hang indefinitely.
+    try {
+        queue.lock()->waitIdle();
+    } catch (const vk::DeviceLostError&) {
+        // A lost device cannot continue consuming the referenced resources.
+        spdlog::error("Codec test stream terminal drain: device lost");
+    } catch (...) {
+        spdlog::critical("Codec test stream terminal queue drain failed");
+        std::terminate(); // Never destroy possibly in-use decoder images.
+    }
+#endif
 }
 
 void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_ptr<shard_accumulator::blit_handle> handle)
