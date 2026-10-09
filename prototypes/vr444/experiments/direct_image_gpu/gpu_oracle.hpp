@@ -54,7 +54,7 @@ inline void extension_gate_test() {
     require(enabled_extensions(true,&advertised).size()==1,"advertised extension rejected");
 }
 struct Buffer { VkBuffer handle{}; VkDeviceMemory memory{}; void* mapped{}; VkDeviceSize bytes{}; unsigned type{},flags{}; };
-struct Image { VkImage handle{}; VkDeviceMemory memory{}; VkImageView storage{},sample{}; VkImageLayout layout=VK_IMAGE_LAYOUT_UNDEFINED; };
+struct Image { VkImage handle{}; VkDeviceMemory memory{}; VkImageView storage{},sample{}; VkImageLayout layout=VK_IMAGE_LAYOUT_UNDEFINED; unsigned memory_type{},memory_flags{},memory_type_bits{}; VkDeviceSize allocation_bytes{}; };
 struct Pipeline { VkDescriptorSetLayout descriptors{}; VkPipelineLayout layout{}; VkShaderModule shader{}; VkPipeline handle{}; };
 struct Owner {
     VkInstance instance{}; VkDevice device{};
@@ -225,6 +225,7 @@ struct Session {
         check(vkCreateImage(o.device,&ii,nullptr,&image.handle));
         VkMemoryRequirements req{}; vkGetImageMemoryRequirements(o.device,image.handle,&req);
         VkMemoryAllocateInfo ai{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}; ai.allocationSize=req.size; ai.memoryTypeIndex=memory_type(req.memoryTypeBits,VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        image.memory_type=ai.memoryTypeIndex;image.memory_flags=memory.memoryTypes[ai.memoryTypeIndex].propertyFlags;image.memory_type_bits=req.memoryTypeBits;image.allocation_bytes=req.size;
         check(vkAllocateMemory(o.device,&ai,nullptr,&image.memory)); check(vkBindImageMemory(o.device,image.handle,image.memory,0));
         auto view=[&](VkFormat format,VkImageUsageFlags usage,VkImageView& handle) {
             // SRGB has no storage usage. Per-view usage restriction is core Vulkan 1.1.
