@@ -1,0 +1,98 @@
+FINITE POSITIVE-PHASE / EXACT-COUNT GRID -- 2026-10-09
+
+Question
+The half-period scenario missed the strict-under-15ms p95 count requirement by
+16 choices at the sufficient 88Hz count. This branch checks whether another
+positive sampling phase changes that result. It reuses the validated exact
+cardinality solver and independent certificate auditor without modifying them.
+
+Declared grid
+25 positive-or-zero phase values: every 0.5ms from 0 through 11ms, plus the
+explicit 5.555555ms and 11.111111ms reference values. Five hypothetical per-eye
+publication advances: 0, 1, 2, 4 and 8ms, clipped at each participating eye's
+receipt. The phase moves selection and submission together and preserves the
+observed selection-to-submit gap and recorded lower admission constraints.
+
+Each of the 125 cells solves every exact count from 1,900 down to 1,875 on the
+same 1,900 warm deadlines. The actual pre-warm submission prefix is preserved.
+The original span is 21.284347901 seconds, so 1,875 is a sufficient fixed-window
+count for 88Hz; shorter endpoint intervals below that count remain untested.
+The model retains unlimited known-pair retention, later-observed metadata and
+NO future-target ceiling. These are counterfactual relaxations, not a policy.
+
+Results
+At 1,875 choices, p95 strictly under 15ms needs at least 1,782 good choices.
+Best tested phase for each publication advance:
+
+  advance       phase          good / 1875       margin against 1782
+    0ms         5.555555ms         1600                  -182
+    1ms         5.000000ms         1709                   -73
+    2ms         4.000000ms         1774                    -8
+    4ms         4.000000ms         1791                    +9
+    8ms         4.000000ms         1791                    +9
+
+Exactly four tested cells have a conditional encoded-frame age/cadence
+certificate: phase 4.0 or 4.5ms combined with publication advance 4 or 8ms.
+All require the full 25-skip budget; no 1,876..1,900 count qualifies.
+
+At phase 4ms / advance 4ms, the retained certificate has 1,875 encoded identities,
+p50/p95/p99 receive age 10.895105/14.874793/20.461459ms and conditional encoded
+first-use cadence 88.087856Hz. The 8ms advance selects the exact same path.
+At phase 4.5ms / advance 4ms, good count is exactly 1,782 and p95 is 14.965001ms.
+These percentiles describe the chosen maximum-good path; they are not globally
+minimized percentiles or measured improvements.
+
+Why this does not establish the requested live result
+The phase 4ms / advance 4ms path uses 236 frames before their first recorded
+candidate snapshot. Its selected source-target lead relative to the original
+runtime target has p95 21.829318ms, exceeding the native one-period guard for
+many choices. Handle retention, ownership, revised GPU scheduling, pose quality
+and runtime feedback remain unqualified. Every tested shifted submit still
+precedes its original predicted display timestamp, but that prediction is not
+an independently proven latest admission deadline or optical presentation.
+
+The path contains only 1,868 distinct joined host application-frame sets among
+its 1,875 encoded identities (1,867 at phase 4.5ms). Thus even its encoded-frame
+cadence must not be relabeled new application-content cadence. Those host IDs
+are also not simulation/input epochs. Source freshness and target constraints
+need separate analysis before considering any implementable control.
+
+This finite grid does not prove a continuous phase optimum. Negative cells
+exclude only their declared exact-count model. Positive cells prove only that
+the relaxed frozen model has an audited encoded-frame witness. Neither result
+changes the original failed acquisition, qualification thresholds or device
+state. No measurement, native change or sub15 qualification is claimed.
+
+Validation and artifacts
+phase-frontier-validation-20261009.json binds 284 passing Python tests and the
+unchanged exact solver/auditor to cardinality-validation-20261009.json, whose
+1,024 exhaustive sanitizer populations and malformed CLI cases still apply.
+New tests reject omitted/reordered/mislabeled cells, false conditional solution
+declarations, invalid grid axes and age-only certificates below the cadence
+reference.
+
+phase-frontier-20261009.json verifies all 300 original manifest entries,
+rechecks raw inputs/manifest/binary/build receipt/loaded source hashes, and
+audits every returned sequence. All paths have exact hashes. Endpoint and
+highest qualifying-count paths are retained for the best tested phase at each
+advance; other full paths can be reproduced deterministically.
+
+phase-frontier-20261009.png renders the signed maximum-good surplus in every
+cell. The four conditional cells are outlined. The final figure's source/data/
+image hashes and visual layout check are in phase-frontier-figure-20261009.json.
+Only its footer spacing changed after the test receipt; the test receipt keeps
+its original plotting-source hash, while the figure receipt binds final layout.
+
+Reproduce offline with new output paths:
+  python3 prototypes/vr444/experiments/selection_policy/phase_frontier.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+    --build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+    --out /tmp/phase-frontier-new.json
+  python3 prototypes/vr444/experiments/selection_policy/plot_phase_frontier.py \
+    /tmp/phase-frontier-new.json --out /tmp/phase-frontier-new.png
+
+Use validate_cardinality.py to rebuild the solver when its preserved executable
+is absent. Use validate_phase_frontier.py for the current full offline suite.
+The next useful restriction is restoring the native future-target guard; the
+current positive cells deliberately do not imply they satisfy that guard.

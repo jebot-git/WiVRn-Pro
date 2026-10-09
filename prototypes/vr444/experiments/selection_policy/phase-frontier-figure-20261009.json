@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "kind": "figure_render_review",
+  "sha256": {
+    "prototypes/vr444/experiments/selection_policy/phase-frontier-20261009.json": "5c69ae08dc23daf4988ee8e92b7ac01fc86fadb8483e4e082910b3a6e1cb920c",
+    "prototypes/vr444/experiments/selection_policy/plot_phase_frontier.py": "7c95865e9e2b6a63ab8219e88376c43ba473d406555b0bc0dd41fbe6e5a3e2d6",
+    "prototypes/vr444/experiments/selection_policy/phase-frontier-20261009.png": "a4e1694c162f1b4a99c3b7b973bfde0469e48bca72f3b97affe46bd10be938e2"
+  },
+  "inspection": "Rendered PNG visually inspected after moving footer below xlabel; labels, all125numeric cells and conditional outlines are legible.",
+  "change_after_test_receipt": "Plot layout only; grid data and solver/auditor sources unchanged. The earlier validation receipt retains its original pre-layout plot hash.",
+  "new_latency_or_physical_claim": false
+}
