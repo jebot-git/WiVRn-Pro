@@ -1,0 +1,187 @@
+{
+  "schema": 1,
+  "experiment": "rowblocks-image-timing",
+  "headset_used": false,
+  "qualification_pass": true,
+  "promotion_blocked": true,
+  "qualification": [
+    {
+      "name": "arc-qualification",
+      "pass_": true,
+      "profiles": 170,
+      "arms": 10,
+      "recorded_repetitions": 1,
+      "warmups": 1,
+      "total_invocations": 3400,
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "raw_sha256": "8b7d048dc7dd8014ca9374ff0347365555a4fd81bfce13ba59e5b171a1cc4149",
+      "audit_sha256": "482ce5d9d83ee5c5423690852af5e9b9c34012ed14cdeadf1fcefdab439c979a",
+      "stderr_bytes": 0,
+      "performance_evidence": false
+    },
+    {
+      "name": "uhd-paired",
+      "pass_": true,
+      "profiles": 26,
+      "arms": 10,
+      "recorded_repetitions": 1,
+      "warmups": 3,
+      "total_invocations": 1040,
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "raw_sha256": "e19a8199bdddaeaf56ab7d7e39b9c7827af9e9b941c1002e3d29af868ebac5ba",
+      "audit_sha256": "a0ff7265316ee658992974daf2e58675a8affcd36e6edfaa29684153714bf3f3",
+      "stderr_bytes": 0,
+      "performance_evidence": false
+    },
+    {
+      "name": "asan-paired",
+      "pass_": true,
+      "profiles": 26,
+      "arms": 10,
+      "recorded_repetitions": 1,
+      "warmups": 3,
+      "total_invocations": 1040,
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "raw_sha256": "c8f9e6c073949b80bc915437c976402802f13214ba7b4b3e55068c5fee318eae",
+      "audit_sha256": "d01e1244ccbe2a03784fddcd3ecd19e374f1ab635e51c686e47fffe8473b88e2",
+      "stderr_bytes": 0,
+      "performance_evidence": false
+    }
+  ],
+  "source_sha256": {
+    "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp": "2280ba86a0b5473de51280457330b7d23a95aa7d527ced3ded301a86dfb5b9cc",
+    "prototypes/vr444/experiments/direct_image_gpu/host_copy.hpp": "b45c592543bdb386bccc4173d8b6d732d93a5ebf8287504cd10756285779afe5",
+    "prototypes/vr444/experiments/direct_image_gpu/sample.comp": "b146b902a79640cdd887061a9475217aa156a763ee04bbfa521e20be2f32938c",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "311f1e8f0880e401f61823d0461dfa60931db7abbc7b6b707f1ed45f9773d6e5",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/rowblocks_gpu/decode.comp": "562364be82fcf3c6bd352d3478aff749bc6ad4703c8cd7d48a5cc720a19ef918",
+    "prototypes/vr444/experiments/rowblocks_gpu/fixtures.hpp": "aa184e09104059e1904e26661ba625630ebf32afbb3bfcccba4171cd703e6117",
+    "prototypes/vr444/experiments/rowblocks_image_timing/fixtures.hpp": "05b8603b392ea512fa33b328191586237647444ef337c6e15facdd4edf258bbf",
+    "prototypes/vr444/experiments/rowblocks_image_timing/pipeline.hpp": "a02b74a7eec0c412fd1bb667d878be9115cb3a1b2bb5cc787e88071f82622e47",
+    "prototypes/vr444/experiments/rowblocks_image_timing/probe.cpp": "093b8b40dcd649d6c705ae91c7c451c2073c91ea91da1f9a9fb5d9f41a54409a",
+    "prototypes/vr444/experiments/rowfilter_gpu/decode.comp": "2a019063b41a630d4f447e62e8bd9af91c6aacad76142003c701bf5a5db9c9b6",
+    "prototypes/vr444/experiments/rowfilter_gpu/fixtures.hpp": "2869b89c5d69606ffe3dd9462f67c4ae1b2b3b6009806e3744ec02a5d8f38263",
+    "prototypes/vr444/experiments/rowfilter_image_timing/pipeline.hpp": "5ff57e0d772ede9ec47ac1b182e482f85be5a7bf6458be435bbbab736dca46ad",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706"
+  },
+  "shaders": {
+    "rrb/shaders/buffer.spv": {
+      "sha256": "b408089ce94765a38c30f2e98f2f6881c209646da10353ceef30ea22ead867ca",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrb/shaders/sample.spv": {
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrb/shaders/uint.spv": {
+      "sha256": "076230140137e8b10b6a6f085b028b021f9d419b742906cefdfd41cd7d3ef416",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrb/shaders/unorm.spv": {
+      "sha256": "2ec428dab6a4dc25188ee57b42464c511b5c2d99fcfd563916ac188c60c3b087",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrf/shaders-4/buffer.spv": {
+      "sha256": "1ef691b6e9291826cadfabe86ddb99725fa6787b5e4e9b7d97d88cb410ee95c0",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrf/shaders-4/sample.spv": {
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrf/shaders-4/uint.spv": {
+      "sha256": "f42443cf8ba2ce3cabd16a061d8c8a0f2252cc209d95309397683ba030ac700b",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    },
+    "rrf/shaders-4/unorm.spv": {
+      "sha256": "f963502ec2f189a50dcdcbad1f1abe92f28f301e8155eb3ecc77a1febf5c54e6",
+      "capabilities": [
+        1
+      ],
+      "spirv_val_vulkan11_pass": true
+    }
+  },
+  "binaries": {
+    "rowblocks-image-android": {
+      "sha256": "4d94e170fc8c0384aade8f93457c2bc1075ef59c31df17d5f4e1583f4deb3540",
+      "bytes": 7003256,
+      "android_compile_only": true
+    },
+    "rowblocks-image-asan": {
+      "sha256": "be3183c5cf41204b2cb4d956349e839b5245c9a3a7cecf321792cd2fd8095f24",
+      "bytes": 5177488,
+      "android_compile_only": false
+    },
+    "rowblocks-image-host": {
+      "sha256": "e02c6d7e7a70085d72801b5b8c7384060c0866158fd8c3db7d2f5d86fce0d3d4",
+      "bytes": 303648,
+      "android_compile_only": false
+    }
+  },
+  "audit_tests": {
+    "unit_tests": 5,
+    "rejection_mutations": 52,
+    "pass_": true
+  },
+  "independent_review": {
+    "agent": "identify_sub15",
+    "scope": "Source pairing, complete admission, workspace reuse, per-block CPU restoration and whole outer wall; read-only",
+    "blockers": 0
+  },
+  "corpus_manifests": {
+    "rrf": {
+      "path": "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json",
+      "sha256": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f"
+    },
+    "rrb": {
+      "path": "prototypes/vr444/experiments/rgb_rowblocks/results/corpus-hashes.json",
+      "sha256": "c732fffe2a24894c487b11e5552098cd9531d6c29e5f52a63ae2865445af99b4"
+    }
+  },
+  "scope": [
+    "No headset, XR, network, native renderer or optical measurement.",
+    "ASan+UBSan reused paired GPU workspaces with detect_leaks=0 under ptrace; no diagnostics; process paused briefly for coordinated sibling timing.",
+    "Correctness batches may overlap other host work; none of their clock fields are performance evidence.",
+    "Arc qualification includes 170 profiles and asymmetric eye row partitions; UHD and sanitizer use all26 matched profiles.",
+    "Shared Vulkan byte/color oracle unchanged; every invocation checks exact reference RGBA and same-device sampled bits.",
+    "Vulkan validation layer unavailable; runtime Vulkan checks, sanitizer, shader validation and explicit synchronization review recorded."
+  ]
+}
