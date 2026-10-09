@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "created_utc": "2026-10-09T08:34:14.085399+00:00",
+  "qualification_sha256": "8cb640243128f03a6ed5af46029790c55117fa385f26e3e076155763784d7f66",
+  "source_sha256": {
+    "prototypes/vr444/experiments/codec_udp_interop/relay.cpp": "18814463fb4d46865a2f0403a0dfb7f34184673f3013ba842f7a7bdf037522f0",
+    "prototypes/vr444/experiments/codec_udp_interop/decode.cpp": "2a0562f4c3fff7a461b52c090e6d6883e369a546711970945510fb2445c89426",
+    "prototypes/vr444/experiments/codec_udp_interop/qualify.py": "c39d4652c08970638a05ca81e0672cc2380269af934e7746de94333cb219092c",
+    "prototypes/vr444/experiments/codec_udp_interop/test_interop.py": "d18612e8f2156c88620c4ac3e609aec327e298b969f319c27405b1be42699974",
+    "prototypes/vr444/experiments/codec_udp_interop/build.py": "f4b9fe86bca08270fbed9c85cca03510464f5f47ea315db3d29e4a65c18284b3",
+    "prototypes/vr444/experiments/codec_udp_interop/build.sh": "bfa9098261e46fecc69e9ad1d3566604b6a4175cc6bb077a876d61f137ec9def",
+    "prototypes/vr444/experiments/codec_udp_interop/build-android.sh": "06a9ce639972faef53cc67771aeca336ea44ef00ef456547e68c101a87372587",
+    "prototypes/vr444/experiments/codec_udp_interop/README.txt": "f72a292709a56bf9a5810dbc4ab97ede9668518ccb02999d6f72ed5c8d757263"
+  },
+  "binary_sha256": {
+    "relay": "716e7532abd5dd0841a8d3ef4950a3d0391e1f923cab848549573cf842cc90ef",
+    "decode": "8ea4876674421b41fce439eaad8c76a2e26e4de88862da7bdf9102f970e1632f",
+    "relay-android": "2d184228890baab0485874c3a03f31a151127e758864c967c3bffbaf6fe1e552",
+    "decode-android": "73c984ffaef91d5961e2d8c5a2e416dcc715efb797988707186553c6af0d8e25"
+  },
+  "host_sanitizers": [
+    "address",
+    "undefined"
+  ],
+  "successful_native_stderr_required_empty": true,
+  "expected_rejection_requires_exit1_and_no_sanitizer_diagnostic": true,
+  "focused_python_native_tests": 13,
+  "inherited_batch_regression": {
+    "loopback_roundtrips": 9,
+    "forced_partial_syscalls": true,
+    "foreign_peer_and_truncation_rejected": true
+  },
+  "inherited_offload_regression": {
+    "loopback_roundtrips": 232,
+    "rejections": 19,
+    "gso_supported": true,
+    "gro_supported": true
+  },
+  "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "android_api": 29,
+  "android_cross_compile_only": true,
+  "headset_accessed": false,
+  "new_performance_measurement": false,
+  "source_images_committed": false,
+  "prior_qualification_runs_superseded": [
+    "/tmp/sub15-codec-udp-interop.json",
+    "/tmp/sub15-codec-udp-interop-final.json",
+    "/tmp/sub15-codec-udp-interop-audited.json"
+  ],
+  "build_receipt_sha256": "18610a565f1a5424296e05138c2483b404fd7a10d2a2d567bfc76d344a1a5c0a",
+  "build_receipt_negative_mutations": 4,
+  "independent_review": "Compositor team found no byte-flow/containment blocker; requested full control/build/source binding, now implemented and requalified.",
+  "all_native_source_sha256": {
+    "prototypes/vr444/experiments/codec_udp_interop/build.sh": "bfa9098261e46fecc69e9ad1d3566604b6a4175cc6bb077a876d61f137ec9def",
+    "prototypes/vr444/experiments/codec_udp_interop/build.py": "f4b9fe86bca08270fbed9c85cca03510464f5f47ea315db3d29e4a65c18284b3",
+    "prototypes/vr444/experiments/codec_udp_interop/relay.cpp": "18814463fb4d46865a2f0403a0dfb7f34184673f3013ba842f7a7bdf037522f0",
+    "prototypes/vr444/experiments/codec_udp_interop/decode.cpp": "2a0562f4c3fff7a461b52c090e6d6883e369a546711970945510fb2445c89426",
+    "prototypes/vr444/experiments/udp_batch/probe.cpp": "b49df155e8ffa6b09cc05f2109cf350f5cbddeb8394e16c2af3f9e332737653e",
+    "prototypes/vr444/experiments/udp_offload/offload.hpp": "6da91fba4dd19410184259ca576d066144c4ec98929b4ac52a737cfaa1cf52ad",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "ea35ce11cd12a690db5ec7187bc20689a56288a25c01fd1229056e67d38f9dbe",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff"
+  }
+}

@@ -81,7 +81,7 @@ static bool same_packets(Packets actual,Packets expected){std::sort(actual.begin
 // to fill a batch: a final partial batch is sent immediately. This intentionally
 // measures syscall/loopback work, not independently scheduled endpoints or WiFi.
 static Result run(Sockets& sockets,const Packets& packets,size_t burst,bool batched,
-                  size_t forced_send_cap=max_batch,size_t forced_receive_cap=max_batch){
+                  size_t forced_send_cap=max_batch,size_t forced_receive_cap=max_batch,Packets* delivered=nullptr){
     validate_input(packets,burst);Packets received(packets.size(),Packet(max_packet+1));
     need(forced_send_cap>0&&forced_send_cap<=max_batch&&forced_receive_cap>0&&forced_receive_cap<=max_batch,"test syscall caps");
     std::vector<size_t> lengths(packets.size());Counters counters;size_t total_bytes=0;
@@ -124,7 +124,11 @@ static Result run(Sockets& sockets,const Packets& packets,size_t burst,bool batc
     auto finish=Clock::now();
     // Exact multiset verification is deliberately outside the timed interval.
     for(size_t i=0;i<received.size();++i)received[i].resize(lengths[i]);
+    // Optional correctness-only snapshot, after the measured interval. Never
+    // expose it until the complete multiset has independently passed below.
+    Packets snapshot;if(delivered)snapshot=received;
     need(same_packets(std::move(received),packets),"datagram content/count mismatch");
+    if(delivered)*delivered=std::move(snapshot);
     return {std::chrono::duration<double,std::milli>(finish-start).count(),counters,total_bytes};
 }
 template<class Fn>static void rejects(Fn fn){bool bad=false;try{fn();}catch(const std::runtime_error&){bad=true;}need(bad,"expected rejection");}

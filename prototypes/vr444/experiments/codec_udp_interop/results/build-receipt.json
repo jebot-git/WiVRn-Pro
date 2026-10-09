@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "configuration": "host_address_undefined",
+  "created_utc": "2026-10-09T08:32:45.591755+00:00",
+  "successful_compiler_argv": [
+    [
+      "clang",
+      "-O1",
+      "-g",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-c",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/native_lz4/vendor/lz4.c",
+      "-o",
+      "/tmp/wivrn-codec-udp-interop-build/lz4-test.o"
+    ],
+    [
+      "clang++",
+      "-std=c++20",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wno-missing-field-initializers",
+      "-I",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/native_lz4",
+      "-I",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444",
+      "-O1",
+      "-g",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/codec_udp_interop/relay.cpp",
+      "-o",
+      "/tmp/wivrn-codec-udp-interop-build/relay"
+    ],
+    [
+      "clang++",
+      "-std=c++20",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wno-missing-field-initializers",
+      "-I",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/native_lz4",
+      "-I",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444",
+      "-O1",
+      "-g",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/codec_udp_interop/decode.cpp",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp",
+      "/tmp/wivrn-codec-udp-interop-build/lz4-test.o",
+      "-o",
+      "/tmp/wivrn-codec-udp-interop-build/decode"
+    ]
+  ],
+  "source_sha256": {
+    "prototypes/vr444/experiments/codec_udp_interop/build.sh": "bfa9098261e46fecc69e9ad1d3566604b6a4175cc6bb077a876d61f137ec9def",
+    "prototypes/vr444/experiments/codec_udp_interop/build.py": "f4b9fe86bca08270fbed9c85cca03510464f5f47ea315db3d29e4a65c18284b3",
+    "prototypes/vr444/experiments/codec_udp_interop/relay.cpp": "18814463fb4d46865a2f0403a0dfb7f34184673f3013ba842f7a7bdf037522f0",
+    "prototypes/vr444/experiments/codec_udp_interop/decode.cpp": "2a0562f4c3fff7a461b52c090e6d6883e369a546711970945510fb2445c89426",
+    "prototypes/vr444/experiments/udp_batch/probe.cpp": "b49df155e8ffa6b09cc05f2109cf350f5cbddeb8394e16c2af3f9e332737653e",
+    "prototypes/vr444/experiments/udp_offload/offload.hpp": "6da91fba4dd19410184259ca576d066144c4ec98929b4ac52a737cfaa1cf52ad",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "ea35ce11cd12a690db5ec7187bc20689a56288a25c01fd1229056e67d38f9dbe",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff"
+  },
+  "source_unchanged": true,
+  "binary_sha256": {
+    "relay": "716e7532abd5dd0841a8d3ef4950a3d0391e1f923cab848549573cf842cc90ef",
+    "decode": "8ea4876674421b41fce439eaad8c76a2e26e4de88862da7bdf9102f970e1632f"
+  },
+  "compiler_versions": {
+    "clang": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+    "clang++": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)"
+  }
+}

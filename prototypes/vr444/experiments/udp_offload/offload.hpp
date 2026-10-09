@@ -61,7 +61,7 @@ struct Result {::Result base;double planning_ms=0;size_t aggregate_receives=0,ma
 
 // GSO performs no wait-to-fill: each already available bounded burst is sent
 // immediately. It does not pad, merge, rewrite, or truncate application records.
-static Result run(Sockets&s,const Packets&packets,size_t burst,bool gro){
+static Result run(Sockets&s,const Packets&packets,size_t burst,bool gro,Packets*delivered=nullptr){
     validate_input(packets,burst);Packets received(packets.size(),Packet(max_packet+1));
     std::vector<size_t> lengths(packets.size());
     std::array<iovec,max_batch> vectors{};std::array<mmsghdr,max_batch> messages{};std::array<sockaddr_in,max_batch> peers{};
@@ -119,7 +119,9 @@ static Result run(Sockets&s,const Packets&packets,size_t burst,bool gro){
         base+=window;
     }
     auto finish=Clock::now();for(size_t i=0;i<received.size();++i)received[i].resize(lengths[i]);
+    Packets snapshot;if(delivered)snapshot=received;
     need(same_packets(std::move(received),packets),"offload exact packet multiset mismatch");
+    if(delivered)*delivered=std::move(snapshot);
     out.base.elapsed_ms=std::chrono::duration<double,std::milli>(finish-start).count();
     out.planning_ms=std::chrono::duration<double,std::milli>(planned-start).count();return out;
 }
