@@ -1,14 +1,13 @@
 {
   "schema": 1,
   "status": "pass",
-  "audit_sha256": "62c835af3de13e344a33c9f148e7e300cb2c4793ffc277372f70751f7ecfb744",
-  "positive_report_sha256": "41e34595794710b1cf6be292065341e9ba4bfca1b0b47a600e704afd437d2ab7",
+  "audit_sha256": "371c8a2431fcda93621ab44c136095eaf13a824319d1bcc2d27457bee04c32fa",
+  "positive_report_sha256": "2dc63d638a72aa22402e2640970c120b7df0d81b7b6387c9aae1cd7f9aa5e597",
   "disposable_repaired_hash_negative_controls": [
     {
       "case": "misjoined-right-eye",
       "exit_code": 1,
       "output_created": false,
-      "error": "stereo identity rejected",
       "semantically_modified_input_hash_repaired": true,
       "original_summary_left_pass": true
     },
@@ -16,12 +15,19 @@
       "case": "repaired-hash-invalid-tail",
       "exit_code": 1,
       "output_created": false,
-      "error": "invalid source-produced tail update rejected",
+      "semantically_modified_input_hash_repaired": true,
+      "original_summary_left_pass": true
+    },
+    {
+      "case": "repaired-hash-focus-loss",
+      "exit_code": 1,
+      "output_created": false,
       "semantically_modified_input_hash_repaired": true,
       "original_summary_left_pass": true
     }
   ],
   "optimized_assertion_bypass_rejected": true,
   "original_acquisition_unchanged": true,
-  "device_used": false
+  "device_used": false,
+  "independent_read_only_review": "Transport team found no arithmetic/interpretation blocker; warm-focus enforcement gap fixed and tested"
 }
