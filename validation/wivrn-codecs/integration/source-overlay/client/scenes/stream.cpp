@@ -1,5 +1,6 @@
 #ifdef WIVRN_CODEC_TESTS
 #include "codec_test/metadata.h"
+#include "codec_test/stereo_publication.h"
 #include <filesystem>
 #include <fstream>
 #endif
@@ -741,6 +742,46 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
 		send_feedback(handle->feedback);
 	}
 }
+
+#ifdef WIVRN_CODEC_TESTS
+bool scenes::stream::push_test_blit_pair(
+        std::array<shard_accumulator*, 2> producers,
+        std::array<std::shared_ptr<shard_accumulator::blit_handle>, 2> handles)
+{
+    if (!application::is_visible() || !producers[0] || !producers[1]
+        || producers[0] == producers[1] || !handles[0] || !handles[1]) return false;
+    // These are already completed producer images, never prospective slots.
+    if (!handles[0]->image || !handles[1]->image || !handles[0]->image_view || !handles[1]->image_view
+        || !handles[0]->extent.width || !handles[0]->extent.height
+        || handles[0]->extent != handles[1]->extent
+        || handles[0]->sampled_rgb_is_linear != handles[1]->sampled_rgb_is_linear) return false;
+    {
+        std::shared_lock decoder_lock(decoder_mutex);
+        std::unique_lock frame_lock(frames_mutex);
+        if (state_ == state::shutdown || producers[0] != decoders[0].decoder.get()
+            || producers[1] != decoders[1].decoder.get()) return false;
+        const auto now = instance.now(); // May fail before either history changes.
+        using Handle = std::shared_ptr<shard_accumulator::blit_handle>;
+        const std::array<std::span<Handle>, 2> histories{
+            decoders[0].latest_frames, decoders[1].latest_frames};
+        if (!codec_test::stereo_publication::replace_pair(histories, handles, now)) return false;
+        // Selection/checkpoint capture cannot interleave with these two events.
+        if (test_publication_ledger)
+            for (unsigned eye = 0; eye < 2; ++eye)
+                test_publication_ledger->publish(eye, codec_test_trace_frame(decoders[eye].latest_frames.back()),
+                                                 codec_test_trace_frame(handles[eye]));
+        set_state(state::streaming);
+    }
+    for (const auto& evicted : handles) {
+        if (evicted && !evicted->feedback.blitted) {
+            // Publication is committed. A broken feedback channel cannot turn
+            // its result into a false rejection or release the retained pair.
+            try { send_feedback(evicted->feedback); } catch (...) {}
+        }
+    }
+    return true;
+}
+#endif
 
 bool scenes::stream::accumulator_images::empty() const
 {

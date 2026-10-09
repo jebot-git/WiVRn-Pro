@@ -290,6 +290,13 @@ public:
 	std::shared_ptr<wivrn::test_stereo_state> codec_test_stereo_state() const { return test_stereo_generation; }
 #endif
 	void push_blit_handle(wivrn::shard_accumulator * decoder, std::shared_ptr<wivrn::shard_accumulator::blit_handle> handle);
+#ifdef WIVRN_CODEC_TESTS
+    // Both uploads must be fence-complete before this call. False retains both
+    // old histories; true publishes the RGB pair under one frames lock. Any
+    // required alpha stream remains subject to the existing selection gate.
+    bool push_test_blit_pair(std::array<wivrn::shard_accumulator*, 2> producers,
+                            std::array<std::shared_ptr<wivrn::shard_accumulator::blit_handle>, 2> handles);
+#endif
 
 	void send_feedback(const wivrn::from_headset::feedback & feedback);
 

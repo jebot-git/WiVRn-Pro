@@ -1,0 +1,52 @@
+Atomic RGB pair publication — follow-up to diagnostic milestone929f9314
+
+The current overlay has69 files (the earlier README/receipts describe the
+initial68-file diagnostic milestone at its exact commit). Added test-only API:
+
+  bool stream::push_test_blit_pair(
+      std::array<shard_accumulator*,2> producers,
+      std::array<std::shared_ptr<shard_accumulator::blit_handle>,2> handles);
+
+The caller must finish both producer uploads and retain both image leases before
+calling. The codec team's separate ready collector supplies both or neither;
+this method does not itself prove Vulkan completion or whole-decoder teardown.
+
+The wrapper checks visibility, nonnull/distinct accumulators, image/view handles,
+matching nonempty extents and matching sampled-color contracts. It takes the
+existing shared decoder lock then exclusive frames lock and checks shutdown
+and both current accumulator identities. Decoder lifetime/join still ensures
+old callbacks cannot outlive/reuse a retired accumulator address.
+
+The shared transaction helper checks eye0/1, equal frame, exact complete view
+metadata including float bit patterns and vector contents (never padding),
+positive receipt clocks no later than readiness, and strict frame advance
+relative to every retained history item. Failure changes neither history nor
+incoming readiness. Both FIFO rotations and one common readiness timestamp
+complete under the same lock, then both noexcept ledger events append before
+selection/checkpoint capture can resume. Evicted handles survive the lock for
+feedback; feedback failure cannot relabel committed publication as rejected.
+
+The existing per-eye publication path is unchanged. If alpha is required, the
+existing selector must still find the matching alpha stream; this API publishes
+two RGB eyes and does not invent a third completed image. Both decoder and
+render consumers must continue retaining leases through their own completion.
+
+Fresh ASan/UBSan and TSan executions each pass42 rejection cases,5000 concurrent
+locked pair updates and exact evicted-lease retention checks. Full Android
+stream syntax passes with diagnostics enabled and disabled. The native view
+type is instantiated by that compile. No new device or producer-fence execution
+occurred. Codec-team read-only review found no blocker and confirmed strict
+frame advance matches its admission retirement semantics.
+
+Reproduce the standalone transaction checks (use a fresh build directory):
+  clang++ -std=c++20 -O1 -g -pthread -Wall -Wextra -Werror -pedantic \
+    -fsanitize=address,undefined -fno-omit-frame-pointer \
+    -Ivalidation/wivrn-codecs/integration/source-overlay/common \
+    prototypes/vr444/experiments/native_publication_integration/stereo_publication_test.cpp \
+    -o /tmp/stereo-publication-asan
+  /tmp/stereo-publication-asan
+Repeat with -fsanitize=thread for TSan. Exact compiler invocations/native VFS
+mapping sources and outputs are in atomic-pair-validation-20261009.json.
+The69-file patch and manifest were regenerated; atomic-overlay-parity-20261009.json
+records independent reverse/forward patch and overlay application equivalence.
+This remains source integration and offline validation, not a native live gate.

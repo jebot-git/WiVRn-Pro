@@ -984,19 +984,20 @@ index 0c209aa..3386c2d 100644
  	        .type = XR_TYPE_COMPOSITION_LAYER_SETTINGS_FB,
  	        .layerFlags = flags,
 diff --git a/client/scenes/stream.cpp b/client/scenes/stream.cpp
-index 509b924..306f149 100644
+index 509b924..b865f5f 100644
 --- a/client/scenes/stream.cpp
 +++ b/client/scenes/stream.cpp
-@@ -1,3 +1,8 @@
+@@ -1,3 +1,9 @@
 +#ifdef WIVRN_CODEC_TESTS
 +#include "codec_test/metadata.h"
++#include "codec_test/stereo_publication.h"
 +#include <filesystem>
 +#include <fstream>
 +#endif
  /*
   * WiVRn VR streaming
   * Copyright (C) 2022  Guillaume Meunier <guillaume.meunier@centraliens.net>
-@@ -34,6 +39,9 @@
+@@ -34,6 +40,9 @@
  #include "audio/audio.h"
  #include "boost/pfr/core.hpp"
  #include "decoder/shard_accumulator.h"
@@ -1006,7 +1007,7 @@ index 509b924..306f149 100644
  #include "inplace_vector.hpp"
  #include "spdlog/spdlog.h"
  #include "utils/named_thread.h"
-@@ -173,6 +181,17 @@ static const std::array supported_depth_formats{
+@@ -173,6 +182,17 @@ static const std::array supported_depth_formats{
          vk::Format::eX8D24UnormPack32,
  };
  
@@ -1024,7 +1025,7 @@ index 509b924..306f149 100644
  scenes::stream::stream(std::string server_name, scene & parent_scene) :
          scene_impl<stream>(supported_color_formats, supported_depth_formats, parent_scene),
          apps{*this, std::move(server_name)}
-@@ -180,6 +199,57 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
+@@ -180,6 +200,57 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
  	auto views = system.view_configuration_views(viewconfig);
  	width = views[0].recommendedImageRectWidth;
  	height = views[0].recommendedImageRectHeight;
@@ -1082,7 +1083,7 @@ index 509b924..306f149 100644
  }
  
  static from_headset::visibility_mask_changed::masks get_visibility_mask(xr::instance & inst, xr::session & session, int view)
-@@ -249,6 +319,10 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
+@@ -249,6 +320,10 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
  			auto scale = config.get_stream_scale();
  			info.stream_eye_width = info.render_eye_width * scale;
  			info.stream_eye_height = info.render_eye_height * scale;
@@ -1093,7 +1094,7 @@ index 509b924..306f149 100644
  		}
  
  		if (self->instance.has_extension(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME))
-@@ -352,6 +426,14 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
+@@ -352,6 +427,14 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
  	self->network_session->send_control(from_headset::session_state_changed{
  	        .state = application::get_session_state(),
  	});
@@ -1108,7 +1109,7 @@ index 509b924..306f149 100644
  	self->network_session->send_control(from_headset::stream_tab_changed{
  	        .tab = self->gui_status,
  	});
-@@ -634,7 +716,17 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+@@ -634,7 +717,17 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
  			if (decoder != decoders[stream].decoder.get())
  				return;
  			handle->feedback.received_from_decoder = instance.now();
@@ -1126,7 +1127,54 @@ index 509b924..306f149 100644
  		}
  
  		if (state_ != state::streaming and not(decoders[0].empty() or decoders[1].empty()))
-@@ -660,11 +752,57 @@ bool scenes::stream::accumulator_images::empty() const
+@@ -650,6 +743,46 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+ 	}
+ }
+ 
++#ifdef WIVRN_CODEC_TESTS
++bool scenes::stream::push_test_blit_pair(
++        std::array<shard_accumulator*, 2> producers,
++        std::array<std::shared_ptr<shard_accumulator::blit_handle>, 2> handles)
++{
++    if (!application::is_visible() || !producers[0] || !producers[1]
++        || producers[0] == producers[1] || !handles[0] || !handles[1]) return false;
++    // These are already completed producer images, never prospective slots.
++    if (!handles[0]->image || !handles[1]->image || !handles[0]->image_view || !handles[1]->image_view
++        || !handles[0]->extent.width || !handles[0]->extent.height
++        || handles[0]->extent != handles[1]->extent
++        || handles[0]->sampled_rgb_is_linear != handles[1]->sampled_rgb_is_linear) return false;
++    {
++        std::shared_lock decoder_lock(decoder_mutex);
++        std::unique_lock frame_lock(frames_mutex);
++        if (state_ == state::shutdown || producers[0] != decoders[0].decoder.get()
++            || producers[1] != decoders[1].decoder.get()) return false;
++        const auto now = instance.now(); // May fail before either history changes.
++        using Handle = std::shared_ptr<shard_accumulator::blit_handle>;
++        const std::array<std::span<Handle>, 2> histories{
++            decoders[0].latest_frames, decoders[1].latest_frames};
++        if (!codec_test::stereo_publication::replace_pair(histories, handles, now)) return false;
++        // Selection/checkpoint capture cannot interleave with these two events.
++        if (test_publication_ledger)
++            for (unsigned eye = 0; eye < 2; ++eye)
++                test_publication_ledger->publish(eye, codec_test_trace_frame(decoders[eye].latest_frames.back()),
++                                                 codec_test_trace_frame(handles[eye]));
++        set_state(state::streaming);
++    }
++    for (const auto& evicted : handles) {
++        if (evicted && !evicted->feedback.blitted) {
++            // Publication is committed. A broken feedback channel cannot turn
++            // its result into a false rejection or release the retained pair.
++            try { send_feedback(evicted->feedback); } catch (...) {}
++        }
++    }
++    return true;
++}
++#endif
++
+ bool scenes::stream::accumulator_images::empty() const
+ {
+ 	for (const auto & frame: latest_frames)
+@@ -660,11 +793,57 @@ bool scenes::stream::accumulator_images::empty() const
  	return true;
  }
  
@@ -1185,7 +1233,7 @@ index 509b924..306f149 100644
  	inplace_vector<shard_accumulator::blit_handle *, decoder_count> common_frames;
  	const bool alpha = decoders[0].latest_frames[0] and decoders[0].latest_frames[0]->view_info.alpha;
  	for (size_t i = 0; i < view_count + alpha; ++i)
-@@ -742,14 +880,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
+@@ -742,14 +921,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
  		}
  	}
  	return result;
@@ -1208,7 +1256,7 @@ index 509b924..306f149 100644
  }
  
  void scenes::stream::update_gui_position(xr::spaces controller, float predicted_display_period)
-@@ -838,6 +984,25 @@ bool scenes::stream::is_gui_interactable() const
+@@ -838,6 +1025,25 @@ bool scenes::stream::is_gui_interactable() const
  
  void scenes::stream::render(const XrFrameState & frame_state)
  {
@@ -1234,7 +1282,7 @@ index 509b924..306f149 100644
  	if (state_ == state::shutdown)
  		application::pop_scene();
  
-@@ -882,6 +1047,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -882,6 +1088,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		// TODO: stop/restart video stream
  		session.begin_frame();
  		session.end_frame(frame_state.predictedDisplayTime, {});
@@ -1247,7 +1295,7 @@ index 509b924..306f149 100644
  		return;
  	}
  
-@@ -897,11 +1068,42 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -897,11 +1109,42 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		application::pop_scene();
  	}
  
@@ -1290,7 +1338,7 @@ index 509b924..306f149 100644
  
  	gpu_timestamps timestamps;
  	if (query_pool_filled)
-@@ -940,7 +1142,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -940,7 +1183,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
  
  	// Search for frame with desired display time on all decoders
  	// If no such frame exists, use the latest frame for each decoder
@@ -1302,7 +1350,7 @@ index 509b924..306f149 100644
  	std::array<XrPosef, view_count> pose{};
  	std::array<XrFovf, view_count> fov{};
  	std::array<wivrn::to_headset::foveation_parameter, view_count> foveation;
-@@ -997,6 +1203,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -997,6 +1244,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			                .extent = blit_handle->extent,
  			        },
  			        .layout_rgb = blit_handle->current_layout,
@@ -1310,7 +1358,7 @@ index 509b924..306f149 100644
  			};
  		}
  		else
-@@ -1175,9 +1382,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1175,9 +1423,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			        application::space(xr::spaces::world),
  			        layer_view);
  
@@ -1332,7 +1380,7 @@ index 509b924..306f149 100644
  
  		accumulate_metrics(frame_state.predictedDisplayTime, current_blit_handles, timestamps);
  
-@@ -1186,6 +1402,91 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1186,6 +1443,91 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		try
  		{
  			render_end();
@@ -1424,7 +1472,7 @@ index 509b924..306f149 100644
  		}
  		catch (std::system_error & e)
  		{
-@@ -1195,6 +1496,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1195,6 +1537,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
  				throw;
  		}
  	}
@@ -1438,7 +1486,7 @@ index 509b924..306f149 100644
  
  	// Network operations may be blocking, do them once everything was submitted
  	{
-@@ -1287,12 +1595,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1287,12 +1636,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  		current_blit_handles.fill(nullptr);
  		retired.swap(decoders);
  		video_stream_description.reset();
@@ -1461,7 +1509,7 @@ index 509b924..306f149 100644
  		for (const auto & [stream_index, item]: utils::enumerate(replacement))
  			item.decoder = std::make_unique<shard_accumulator>(device, physical_device, instance, queue_family_index, description, shared_from_this(), stream_index);
  	}
-@@ -1306,6 +1624,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1306,6 +1665,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  	{
  		std::unique_lock lock(decoder_mutex);
  		decoders.swap(replacement);
@@ -1472,7 +1520,7 @@ index 509b924..306f149 100644
  		if (defoveator)
  			defoveator->reset_pipelines();
 diff --git a/client/scenes/stream.h b/client/scenes/stream.h
-index a7d95ff..e014741 100644
+index a7d95ff..7781a27 100644
 --- a/client/scenes/stream.h
 +++ b/client/scenes/stream.h
 @@ -39,6 +39,15 @@
@@ -1526,7 +1574,7 @@ index a7d95ff..e014741 100644
  	std::array<accumulator_images, decoder_count> decoders; // Locked by decoder_mutex
  
  	std::optional<stream_defoveator> defoveator;
-@@ -257,6 +285,10 @@ public:
+@@ -257,7 +285,18 @@ public:
  	void operator()(to_headset::running_applications &&);
  	void operator()(audio_data &&);
  
@@ -1535,8 +1583,16 @@ index a7d95ff..e014741 100644
 +	std::shared_ptr<wivrn::test_stereo_state> codec_test_stereo_state() const { return test_stereo_generation; }
 +#endif
  	void push_blit_handle(wivrn::shard_accumulator * decoder, std::shared_ptr<wivrn::shard_accumulator::blit_handle> handle);
++#ifdef WIVRN_CODEC_TESTS
++    // Both uploads must be fence-complete before this call. False retains both
++    // old histories; true publishes the RGB pair under one frames lock. Any
++    // required alpha stream remains subject to the existing selection gate.
++    bool push_test_blit_pair(std::array<wivrn::shard_accumulator*, 2> producers,
++                            std::array<std::shared_ptr<wivrn::shard_accumulator::blit_handle>, 2> handles);
++#endif
  
  	void send_feedback(const wivrn::from_headset::feedback & feedback);
+ 
 diff --git a/client/scenes/stream_defoveator.cpp b/client/scenes/stream_defoveator.cpp
 index ad6588e..7db2687 100644
 --- a/client/scenes/stream_defoveator.cpp
@@ -6683,6 +6739,74 @@ index 0000000..128dadd
 +    }
 +};
 +}
+diff --git a/common/codec_test/stereo_publication.h b/common/codec_test/stereo_publication.h
+new file mode 100644
+index 0000000..002bb9d
+--- /dev/null
++++ b/common/codec_test/stereo_publication.h
+@@ -0,0 +1,62 @@
++// SPDX-License-Identifier: MIT
++#pragma once
++#include <algorithm>
++#include <array>
++#include <bit>
++#include <cstdint>
++#include <span>
++
++namespace wivrn::codec_test::stereo_publication {
++
++// Compare every serialized view field, including float bit patterns, not padding
++// or a probabilistic hash. The native translation-unit check instantiates this
++// with video_stream_data_shard::view_info_t.
++template<class View>
++bool same_view(const View& a, const View& b) noexcept {
++    if (a.display_time != b.display_time || a.alpha != b.alpha) return false;
++    const auto same_float = [](float x, float y) { return std::bit_cast<uint32_t>(x) == std::bit_cast<uint32_t>(y); };
++    for (unsigned eye = 0; eye < 2; ++eye) {
++        const auto& p = a.pose[eye]; const auto& q = b.pose[eye];
++        const auto& f = a.fov[eye]; const auto& g = b.fov[eye];
++        if (!same_float(p.orientation.x, q.orientation.x) || !same_float(p.orientation.y, q.orientation.y)
++            || !same_float(p.orientation.z, q.orientation.z) || !same_float(p.orientation.w, q.orientation.w)
++            || !same_float(p.position.x, q.position.x) || !same_float(p.position.y, q.position.y)
++            || !same_float(p.position.z, q.position.z) || !same_float(f.angleLeft, g.angleLeft)
++            || !same_float(f.angleRight, g.angleRight) || !same_float(f.angleUp, g.angleUp)
++            || !same_float(f.angleDown, g.angleDown) || a.foveation[eye].x != b.foveation[eye].x
++            || a.foveation[eye].y != b.foveation[eye].y) return false;
++    }
++    return true;
++}
++
++// Caller holds the existing decoder shared lock and frames exclusive lock, and
++// has checked both accumulator identities. Both producer uploads must already
++// have completed. No callback, allocation, I/O or throwing work occurs between
++// the first history change and completion of the second history change.
++// On false, incoming handles and both histories are unchanged. On true, incoming
++// holds the evicted objects so their feedback/lifetime can be handled unlocked.
++template<class Handle>
++bool replace_pair(std::array<std::span<Handle>, 2> histories,
++                  std::array<Handle, 2>& incoming, int64_t ready) noexcept {
++    if (!incoming[0] || !incoming[1] || histories[0].empty() || histories[1].empty() || ready <= 0)
++        return false;
++    const auto& left = *incoming[0]; const auto& right = *incoming[1];
++    if (left.feedback.stream_index != 0 || right.feedback.stream_index != 1
++        || left.feedback.frame_index != right.feedback.frame_index
++        || !same_view(left.view_info, right.view_info)
++        || left.feedback.received_first_packet <= 0 || right.feedback.received_first_packet <= 0
++        || left.feedback.received_first_packet > ready || right.feedback.received_first_packet > ready)
++        return false;
++    for (unsigned eye = 0; eye < 2; ++eye)
++        for (const auto& retained : histories[eye])
++            if (retained && retained->feedback.frame_index >= left.feedback.frame_index) return false;
++    incoming[0]->feedback.received_from_decoder = ready;
++    incoming[1]->feedback.received_from_decoder = ready;
++    for (unsigned eye = 0; eye < 2; ++eye) {
++        auto history = histories[eye];
++        std::rotate(history.begin(), history.begin() + 1, history.end());
++        std::swap(incoming[eye], history.back());
++    }
++    return true;
++}
++} // namespace wivrn::codec_test::stereo_publication
 diff --git a/common/codec_test/vr444/codec.cpp b/common/codec_test/vr444/codec.cpp
 new file mode 100644
 index 0000000..af034b1
