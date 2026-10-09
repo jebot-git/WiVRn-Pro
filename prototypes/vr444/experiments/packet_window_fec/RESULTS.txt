@@ -1,0 +1,72 @@
+VWG1 exact-byte and matched-erasure qualification, 2026-10-09
+============================================================
+
+22 protocol tests pass, including every source-record loss in the bounded test
+fixture, one loss per window, two source losses, source plus parity loss, 500
+record mutations, full eye withholding, arbitrary block order, maximum block
+count, handle/deadline/configuration binding, fixed payload caps, and permanent
+sender abort. The peer-reviewed canonical parity-length ordering is covered by
+a final-missing-record negative test: overlong zero-padded parity is rejected
+before it can publish stereo. Fresh expiry during recovered decoding also passes.
+
+Actual immutable-corpus qualification passed:
+  312 profile/row/K cases (26 profiles x 4 row sizes x K=4/8/16)
+  282 eligible; 30 oversized canonical stereo cases rejected
+ 3102 ordinary logical delivery replays
+ 6360 additional matched codec-fragment-erasure replays (3180 two-format cases)
+  282 native ASan/UBSan independent original-VR444/RGBA/RRB stereo oracles
+
+All successful publications equal the original canonical RRB bytes. Every native
+oracle checks both eyes before reporting success. All bound implementation,
+corpus, helper, binary and build-receipt hashes were unchanged. The corpus is
+24 captured eyes (12 actual stereo pairs) plus 14 explicitly duplicated-eye
+synthetic profiles; it is not 38 captured eyes. No socket/headset work or timed
+performance comparison occurred.
+
+Offered UDP byte tradeoff across the 12 captured pairs
+-----------------------------------------------------
+
+Each cell is VWG excess over VXB no-recovery, followed by its reduction versus
+VXP per-block parity. These are aggregate byte totals at matching row/K settings;
+source wrappers and all trailing parity count even after stereo publication.
+
+Rows       K=4                 K=8                 K=16
+ 16    +37.885% / -24.483%   +23.529% / -32.346%   +15.485% / -36.751%
+ 32    +35.554% / -15.676%   +21.059% / -24.338%   +13.389% / -29.132%
+ 64    +34.254% /  -9.513%   +19.668% / -15.735%   +12.021% / -20.868%
+128    +32.702% /  -4.129%   +18.304% /  -9.313%   +11.292% / -11.963%
+
+VWG uses fewer bytes in 143 of 144 individual captured row/K comparisons. The
+128-row K=4 setting has one exception; the full per-case byte table is retained.
+This does not establish latency or queueing gains: the group can wait for later
+blocks before repair, and the formats protect different source combinations.
+
+Matched-erasure results reveal the recovery cost
+-----------------------------------------------
+
+The comparison erases identical consecutive CODEC DATA identities, choosing
+first/middle/last starts and lengths 1/2/4/8. All manifests and parity remain.
+This is not an equal contiguous on-wire burst or an assumed loss distribution.
+
+Across 1728 captured two-format cases:
+  Erased identities   Cases    VWG complete    VXP complete
+          1             432        432             432
+          2             432         38             301
+          4             432          0             223
+          8             432          0             165
+
+456 captured cases complete in both formats, 665 only with per-block repair,
+14 only with packet-window repair, and 593 with neither. Across all 3180
+captured+synthetic cases, the corresponding counts are 862 / 1218 / 17 / 1083.
+Every successful result was exact; failed candidates expired without publication.
+The source grouping therefore trades a substantial reduction in repair bytes
+for much weaker recovery in this declared multi-fragment-erasure matrix.
+
+Maximum observed combined retained payload was 409750 bytes. The conservative
+1741488-byte theoretical bound includes two repair windows plus inner assembly;
+it is not peak RSS and excludes temporary copies/previously published pairs.
+
+No format is promoted. Physical link behavior, congestion, authenticated handle
+negotiation, actual server/transfer/client overlap, device support and original
+headset receipt-to-post-xrEndFrame latency remain untested. This branch preserves
+the exact alternative and its measured byte/recovery tradeoff for later selection.
