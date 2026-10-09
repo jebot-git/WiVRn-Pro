@@ -1,0 +1,68 @@
+// SPDX-License-Identifier: MIT
+#version 450
+#ifndef COLUMNS
+#define COLUMNS 4
+#endif
+// Each group owns complete columns. Row segments exchange only their sums;
+// no subgroup feature or dependency between workgroups is needed.
+layout(local_size_x=128) in;
+layout(set=0,binding=1,std430) readonly buffer RGB { uint packed[]; };
+layout(set=0,binding=2,std430) readonly buffer Metadata { uint mode[]; };
+layout(set=0,binding=4,std430) readonly buffer Limit { uint raw_bytes[]; };
+#if defined(OUTPUT_UNORM)
+layout(set=0,binding=3,rgba8) writeonly uniform image2D output_image;
+#elif defined(OUTPUT_UINT)
+layout(set=0,binding=3,rgba8ui) writeonly uniform uimage2D output_image;
+#else
+layout(set=0,binding=3,std430) writeonly buffer Output { uint result[]; };
+#endif
+layout(push_constant) uniform Params { uint width,height,q,count; } pc;
+shared uvec4 sums[128];
+shared uvec4 scratch[128];
+uint byte_at(uint p) { return (packed[p/4]>>((p%4)*8))&255u; }
+uvec4 rgb_at(uint x,uint y) {
+    if(x>=pc.width||y>=pc.height)return uvec4(0);
+    uint p=(y*pc.width+x)*3;
+    return uvec4(byte_at(p),byte_at(p+1),byte_at(p+2),0);
+}
+void store_pixel(uint x,uint y,uvec4 p) {
+    p.w=255u;
+#if defined(OUTPUT_UNORM)
+    imageStore(output_image,ivec2(x,y),vec4(p)/255.0);
+#elif defined(OUTPUT_UINT)
+    imageStore(output_image,ivec2(x,y),p);
+#else
+    result[y*pc.width+x]=p.x|(p.y<<8)|(p.z<<16)|0xff000000u;
+#endif
+}
+void main() {
+    uint lane=gl_LocalInvocationID.x;
+    // Uniform guards complement complete host CRC/grammar/size admission.
+    if(mode[0]>2||raw_bytes[0]!=pc.width*pc.height*3)return;
+    uint column=lane%COLUMNS,segment=lane/COLUMNS;
+    uint x=gl_WorkGroupID.x*COLUMNS+column;
+    uint chunk=(pc.height+(128/COLUMNS)-1)/(128/COLUMNS);
+    uint first=segment*chunk,last=min(first+chunk,pc.height);
+    uvec4 previous=uvec4(0);
+    if(mode[0]==2) {
+        uvec4 sum=uvec4(0);
+        for(uint y=first;y<last;++y)sum=(sum+rgb_at(x,y))&uvec4(255);
+        sums[lane]=sum;
+        barrier();
+        // Inclusive prefix over segments of each column; all 128 lanes
+        // reach every barrier, including absent columns and empty segments.
+        for(uint stride=1;stride<128/COLUMNS;stride*=2) {
+            scratch[lane]=(sums[lane]+(segment>=stride?sums[lane-stride*COLUMNS]:uvec4(0)))&uvec4(255);
+            barrier();
+            sums[lane]=scratch[lane];
+            barrier();
+        }
+        if(segment>0)previous=sums[lane-COLUMNS];
+    }
+    if(x>=pc.width)return;
+    for(uint y=first;y<last;++y) {
+        uvec4 p=rgb_at(x,y);
+        if(mode[0]==2) { previous=(previous+p)&uvec4(255);p=previous; }
+        store_pixel(x,y,p);
+    }
+}

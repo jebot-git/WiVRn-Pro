@@ -315,8 +315,10 @@ struct Session {
     }
     // Caller must fully preflight both immutable inputs, poison, and populate
     // descriptors before entering this shared dispatch/transfer/image oracle.
-    Measurement execute(unsigned mode,const std::array<std::vector<uint32_t>,2>& expected,Measurement m={}) {
+    Measurement execute(unsigned mode,const std::array<std::vector<uint32_t>,2>& expected,Measurement m={},unsigned dispatch_groups=0) {
         require(mode<modes,"mode");
+        const unsigned groups=dispatch_groups?dispatch_groups:tiles;
+        require(groups<=properties.limits.maxComputeWorkGroupCount[0],"decode dispatch limit");
         for(const auto& pixels:expected) require(pixels.size()==size_t(width)*height,"oracle shape");
         auto start=Clock::now(); begin(); vkCmdResetQueryPool(command,o.queries,0,2);
         memory_barrier(VK_ACCESS_HOST_WRITE_BIT,VK_ACCESS_SHADER_READ_BIT,VK_PIPELINE_STAGE_HOST_BIT,VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
@@ -324,7 +326,7 @@ struct Session {
         for(unsigned eye=0;eye<2;++eye) {
             auto& im=o.images[mode][eye];
             if(mode) barrier(im,VK_IMAGE_LAYOUT_GENERAL,VK_ACCESS_TRANSFER_WRITE_BIT,VK_ACCESS_SHADER_WRITE_BIT,VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
-            bind(mode,decode_sets[mode][eye]); vkCmdDispatch(command,tiles,1,1);
+            bind(mode,decode_sets[mode][eye]); vkCmdDispatch(command,groups,1,1);
             if(!mode) {
                 memory_barrier(VK_ACCESS_SHADER_WRITE_BIT,VK_ACCESS_TRANSFER_READ_BIT,VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,VK_PIPELINE_STAGE_TRANSFER_BIT);
                 auto r=region(); vkCmdCopyBufferToImage(command,o.output[eye].handle,im.handle,im.layout,1,&r);

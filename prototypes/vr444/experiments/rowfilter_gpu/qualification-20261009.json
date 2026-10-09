@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "experiment": "rowfilter-gpu",
+  "date": "2026-10-09",
+  "headset_used": false,
+  "promotion_blocked": true,
+  "performance_gate_evaluated": false,
+  "hardware_reports": {
+    "arc-columns1": {
+      "columns": 1,
+      "fixture_count": 170,
+      "measured_stereo_arm_invocations": 510,
+      "warmup_stereo_arm_invocations": 510,
+      "rrf_eye_mode_counts": [
+        146,
+        26,
+        168
+      ],
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "maximum_srgb_code_error": 0.193304,
+      "exact_optimal_image_bytes": true,
+      "sampled_same_device_baseline_exact": true,
+      "cpu_prefix_restore_in_path": false,
+      "cpu_grammar_crc_lz4_in_path": true,
+      "promotion_blocked": true,
+      "headset_used": false,
+      "performance_gate_evaluated": false,
+      "pass": true,
+      "result_sha256": "f31b13a8aa507accc0a7d1944f44fb6c3f54049fcb8b9e8179e40976968ed2f6"
+    },
+    "arc-columns4": {
+      "columns": 4,
+      "fixture_count": 170,
+      "measured_stereo_arm_invocations": 510,
+      "warmup_stereo_arm_invocations": 510,
+      "rrf_eye_mode_counts": [
+        146,
+        26,
+        168
+      ],
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "maximum_srgb_code_error": 0.193304,
+      "exact_optimal_image_bytes": true,
+      "sampled_same_device_baseline_exact": true,
+      "cpu_prefix_restore_in_path": false,
+      "cpu_grammar_crc_lz4_in_path": true,
+      "promotion_blocked": true,
+      "headset_used": false,
+      "performance_gate_evaluated": false,
+      "pass": true,
+      "result_sha256": "81c94e9756086a769d5f5847a427620272b19a3cda3acf5d6c9f9c75886cbdf5"
+    },
+    "arc-columns16": {
+      "columns": 16,
+      "fixture_count": 170,
+      "measured_stereo_arm_invocations": 510,
+      "warmup_stereo_arm_invocations": 510,
+      "rrf_eye_mode_counts": [
+        146,
+        26,
+        168
+      ],
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "maximum_srgb_code_error": 0.193304,
+      "exact_optimal_image_bytes": true,
+      "sampled_same_device_baseline_exact": true,
+      "cpu_prefix_restore_in_path": false,
+      "cpu_grammar_crc_lz4_in_path": true,
+      "promotion_blocked": true,
+      "headset_used": false,
+      "performance_gate_evaluated": false,
+      "pass": true,
+      "result_sha256": "1409ec1ed9fb191eb43a090de1ddc642948f8f4e07c5d9ef82e6427a75792b95"
+    },
+    "uhd-columns4": {
+      "columns": 4,
+      "fixture_count": 118,
+      "measured_stereo_arm_invocations": 354,
+      "warmup_stereo_arm_invocations": 354,
+      "rrf_eye_mode_counts": [
+        130,
+        18,
+        88
+      ],
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "maximum_srgb_code_error": 0.193304,
+      "exact_optimal_image_bytes": true,
+      "sampled_same_device_baseline_exact": true,
+      "cpu_prefix_restore_in_path": false,
+      "cpu_grammar_crc_lz4_in_path": true,
+      "promotion_blocked": true,
+      "headset_used": false,
+      "performance_gate_evaluated": false,
+      "pass": true,
+      "result_sha256": "40a0e043119270931c12c6d84d3b2c1eb34fbd3a09e8682181831e235c4d4886"
+    }
+  },
+  "verification": {
+    "asan_ubsan_cpu_fixtures": 170,
+    "leak_detection": false,
+    "leak_detection_reason": "ptrace environment",
+    "audit_unit_tests": 4,
+    "audit_negative_mutations": 23,
+    "invalid_column_choice_rejected_before_vulkan": true,
+    "spirv_val_vulkan11_modules": 12,
+    "spirv_capabilities": [
+      "Shader"
+    ],
+    "host_build": "clang++ O2 warnings as errors",
+    "android_build": "NDK29 API29 ARM64 compile-only warnings as errors",
+    "original_direct_image_regression_fixtures": 96,
+    "all_76_corpus_file_hashes_match_committed_manifest": true,
+    "independent_static_review": "compositor team found no blocker in prefix barriers, modulo arithmetic, tails or both-eye admission"
+  },
+  "conditions": {
+    "hardware_icd": "/usr/share/vulkan/icd.d/intel_icd.x86_64.json",
+    "desktop_workload": "uncontrolled",
+    "concurrent_cpu_research": "permitted; correctness only",
+    "vulkan_validation_layer_enabled": false,
+    "no_network_or_xr_operations": true
+  },
+  "source_binary_shader_sha256": {
+    "prototypes/vr444/experiments/rowfilter_gpu/probe.cpp": "545df7dfb0654c085fe8bef95914ba3cbca582d9a163a514a9b291172dbef856",
+    "prototypes/vr444/experiments/rowfilter_gpu/decode.comp": "2a019063b41a630d4f447e62e8bd9af91c6aacad76142003c701bf5a5db9c9b6",
+    "prototypes/vr444/experiments/rowfilter_gpu/build.sh": "acbdec7bd5f0a3c176331eacced80284b5975c9664618673286fc2c08dba14f1",
+    "prototypes/vr444/experiments/rowfilter_gpu/audit.py": "595a605bda1e7c426b821d2948359bef023bd097c4a35861b89eb758b6f07caf",
+    "prototypes/vr444/experiments/rowfilter_gpu/test_audit.py": "ae8938c501e1468998179f38d367e3268db9b3d0dd69691d6fd88b8cb237f989",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/rowfilter-gpu-host": "db8da5cbf0fc9f93f25abbcdf91be1fa0b005b04b5dc4b519ee29dd7ad379c13",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/rowfilter-gpu-android": "ce7bedd120af3ee20393e15fbe77a0343cde536d0cb7a998f0d53625fe43c49f",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/rowfilter-gpu-asan": "6a88479e9c612fdebf32deb4bcf35e4c6d95b565659f18055a3e8270630b6592",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-1/buffer.spv": "36faded6515cc8746c042591912a107e72a5cc2ec4eaf4bfcb99859c5ac35bd6",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-1/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-1/uint.spv": "292f46dddfc4961721da3c8a7b831fffff5ea2b555e683a2293117c3df886c79",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-1/unorm.spv": "e54882df075efa81579a17f223feb9c131f318f569327e70589f0802ba78da6e",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-16/buffer.spv": "a2d3ddcbe3e409952fff37e76e644767e9244aac65abd1560b6966d49d43dbe9",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-16/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-16/uint.spv": "2b6d909ad54cc262b15b50ac53725490e7b20e4058f108b9f7d83a40834048fe",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-16/unorm.spv": "f7ca27e23ee722e7881c936c696eddacee48c53746685a5d5b04e0bb904d6013",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-4/buffer.spv": "1ef691b6e9291826cadfabe86ddb99725fa6787b5e4e9b7d97d88cb410ee95c0",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-4/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-4/uint.spv": "f42443cf8ba2ce3cabd16a061d8c8a0f2252cc209d95309397683ba030ac700b",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-4/unorm.spv": "f963502ec2f189a50dcdcbad1f1abe92f28f301e8155eb3ecc77a1febf5c54e6",
+    "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp": "4dfafc1c1049bc7e66fcc47e5240dd4afbeb2d6a746638d0d1fe4c5996052503",
+    "prototypes/vr444/experiments/direct_image_gpu/sample.comp": "b146b902a79640cdd887061a9475217aa156a763ee04bbfa521e20be2f32938c",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "prototypes/vr444/experiments/rgb_rowfilter/fixtures/manifest.json": "4a2fcba372a7cc2d902c2cd7490f5483a8ef96f2059626e2bc93d6f88ca8b2f8",
+    "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f"
+  },
+  "local_artifacts": {
+    "validation/results/sub15-rowfilter-gpu/arc-columns1-audit.json": {
+      "sha256": "4a74e1aadb82ac45fe894266c67a35e0169490faf0c6a8b46aef1740ed6d71d2",
+      "bytes": 662
+    },
+    "validation/results/sub15-rowfilter-gpu/arc-columns1.json": {
+      "sha256": "f31b13a8aa507accc0a7d1944f44fb6c3f54049fcb8b9e8179e40976968ed2f6",
+      "bytes": 208794
+    },
+    "validation/results/sub15-rowfilter-gpu/arc-columns1.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "validation/results/sub15-rowfilter-gpu/arc-columns16-audit.json": {
+      "sha256": "e436695c97d895ff12350620b2cd697f28f297bf813e9344fa1a57d1bb015fc5",
+      "bytes": 663
+    },
+    "validation/results/sub15-rowfilter-gpu/arc-columns16.json": {
+      "sha256": "1409ec1ed9fb191eb43a090de1ddc642948f8f4e07c5d9ef82e6427a75792b95",
+      "bytes": 208580
+    },
+    "validation/results/sub15-rowfilter-gpu/arc-columns16.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "validation/results/sub15-rowfilter-gpu/arc-columns4-audit.json": {
+      "sha256": "b6d496d90fea660b17d49466879b90b8603e8ee1ea1d8d6269e5a8103525065c",
+      "bytes": 662
+    },
+    "validation/results/sub15-rowfilter-gpu/arc-columns4.json": {
+      "sha256": "81c94e9756086a769d5f5847a427620272b19a3cda3acf5d6c9f9c75886cbdf5",
+      "bytes": 208638
+    },
+    "validation/results/sub15-rowfilter-gpu/arc-columns4.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "validation/results/sub15-rowfilter-gpu/cpu-asan.json": {
+      "sha256": "65a3a24d7b198a9484d00787065c960411d77d9357db7618fdb3429e4393e506",
+      "bytes": 108
+    },
+    "validation/results/sub15-rowfilter-gpu/cpu-asan.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "validation/results/sub15-rowfilter-gpu/cpu-full.json": {
+      "sha256": "65a3a24d7b198a9484d00787065c960411d77d9357db7618fdb3429e4393e506",
+      "bytes": 108
+    },
+    "validation/results/sub15-rowfilter-gpu/direct-image-regression.json": {
+      "sha256": "4ad1ceca4a2d9497eec612b819cca8ff8b942f06b41805f9cb278d7d403c7fff",
+      "bytes": 112987
+    },
+    "validation/results/sub15-rowfilter-gpu/direct-image-regression.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "validation/results/sub15-rowfilter-gpu/invalid-columns.json": {
+      "sha256": "1ce11d38da715b57f42b05c9e54fd9e81f406c10f6bd3e426a92fe672e625db2",
+      "bytes": 114
+    },
+    "validation/results/sub15-rowfilter-gpu/uhd-columns4-audit.json": {
+      "sha256": "273093d70fefb9374c3217e8a20a9452cbf21e0aad7714387eb7f52beb89dd01",
+      "bytes": 662
+    },
+    "validation/results/sub15-rowfilter-gpu/uhd-columns4.json": {
+      "sha256": "40a0e043119270931c12c6d84d3b2c1eb34fbd3a09e8682181831e235c4d4886",
+      "bytes": 144895
+    },
+    "validation/results/sub15-rowfilter-gpu/uhd-columns4.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "dependencies": {
+    "2773a29": "2773a29a179cbab87bbeb31c4a7303eb565a77fa",
+    "895e9ef": "895e9eff0bb0423f78ce95eae4ba0c1ea1dbaaf8",
+    "b06dc00": "b06dc001a7bdc106106cb4489f9039a118cc7f8e",
+    "d2256397": "d225639743b0d7208a72622b3e893410476173b1"
+  }
+}
