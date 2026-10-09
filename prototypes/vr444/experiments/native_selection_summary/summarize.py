@@ -314,7 +314,8 @@ def main():
     for r in result['campaigns']['output']['runs']:
         d = r['warm_selected_eye_decoder_ms']
         lines.append(f"{r['run']:14s}" + ' / '.join(f"{d[k]['p50']:.3f}" for k in ('cpu_decode_ms', 'staging_copy_ms', 'decode_upload_ms')))
-    lines += ['', 'Closest bracket: ready->selection median rises from 11.245 to 25.777 ms, while receipt->ready falls from 2.431 to 1.888 ms and selection->submit stays near 1.46 ms.',
+    before_stages, after_stages = closest_before['stage_ms'], closest_after['stage_ms']
+    lines += ['', f"Closest bracket: ready->selection median rises from {before_stages['ready_to_selection_ms']['p50']:.3f} to {after_stages['ready_to_selection_ms']['p50']:.3f} ms, while receipt->ready falls from {before_stages['receipt_to_ready_ms']['p50']:.3f} to {after_stages['receipt_to_ready_ms']['p50']:.3f} ms and selection->submit stays near 1.46 ms.",
               'This localizes the observed age change after publication; it does not establish cause or removability. Target/readiness phase and selected-source-history details are retained in JSON.',
               'The first bounded run has 124 warm presentations outside the 90 Hz band plus same-PID focus loss/recovery. Original evidence pass is preserved, but fixed-90 ranking excludes that run.']
     for rec in result['recommendations']:
