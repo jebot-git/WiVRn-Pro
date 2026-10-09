@@ -11,14 +11,14 @@
     "prototypes/vr444/experiments/wireless_pair_probe/audit_worker.py": "235db8b391d1e6927a5c08c9f502584578e5f79c9d42af74fbaf87aa5de06af1",
     "prototypes/vr444/experiments/wireless_pair_probe/build.sh": "e9211a3b5d43b9738da4d2093b6b7b4009d96f00cfc4f5a3eb740bad0c95ba92",
     "prototypes/vr444/experiments/wireless_pair_probe/make_plan.py": "80ff421d3e8fdc64f3a653682b164b1f4102f289d2e9d00b62684653069f3e06",
-    "prototypes/vr444/experiments/wireless_pair_probe/probe.cpp": "20c8b28997779027bcd8f7fc89ced3f3190a0ea618b08fdfd2f0fb3cbc916f75",
+    "prototypes/vr444/experiments/wireless_pair_probe/probe.cpp": "d030875d9905518eab1d9c4e81bfd8426a13a406d0650a598c7220d7a110f917",
     "prototypes/vr444/experiments/wireless_pair_probe/test.cpp": "f09376507145f664a13d4ded5b7460451003fcc8276961c3b1587078fd7bf31c",
     "prototypes/vr444/experiments/wireless_pair_probe/test_audits.py": "06fb514f9644bbd282a18c4a1f243cc9e2747621fecf03ccfc7b1f71e78d521c",
     "prototypes/vr444/experiments/wireless_pair_probe/wire.hpp": "170c2d927fbc06627b86fe1b7a166829908f50f3586cfee6e159a85f0c7f6596"
   },
   "binary_sha256": {
-    "/tmp/wivrn-wireless-pair-build/probe": "87a65220e1a98e69f1c7b4ba20191d8b13157ebeccdad1ca0295e3945bf32800",
-    "/tmp/wivrn-wireless-pair-build/probe-android": "3136bdd09f4b9227f69b5c4677a1232238ed6f256ac0b6577f8a0695b293e477",
+    "/tmp/wivrn-wireless-pair-build/probe": "91fa7ef51f88ffd8d59555cad08b8bbfbc73e29bb2fedc4ddada5f3968bafbba",
+    "/tmp/wivrn-wireless-pair-build/probe-android": "49b4d7a569b85b673070cd47941383d88b62ccfe28e41a3c33aef13ab9b304d3",
     "/tmp/wivrn-wireless-pair-build/test": "73ceb28f4969425a5d5f81b6567cf5a71bb6d0ca6a10953944816a8610890996",
     "/tmp/wivrn-wireless-pair-build/test-android": "739663ad3feb73309f47a2f80d45bc0df268306744f376668f6e28106a57a174"
   },
@@ -32,5 +32,6 @@
   "audit_negative_mutations": 11,
   "peer_review": "GPU agent read-only review: no blocker; retained nominal-rate, clock-origin/oracle-generation and future-frame abandonment scope notes.",
   "network_executed": false,
-  "headset_executed": false
+  "headset_executed": false,
+  "final_hardening": "Receiver exits before generating the next expected pair after absolute30s run expiry."
 }
