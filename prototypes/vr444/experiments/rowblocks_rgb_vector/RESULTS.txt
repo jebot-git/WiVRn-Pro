@@ -1,0 +1,63 @@
+Frozen vector RGB host observation, 2026-10-09
+=============================================
+
+ASan+UBSan and ThreadSanitizer each pass733 canonical stereo cases,576 direct
+scalar/vector pixel-oracle cases and2000 differential corruptions. They record
+4332 and4327 explicit rejections respectively; active scratch alias checks vary
+with which workers acquire jobs. Both runs finish without diagnostics. Android
+API29 arm64 binaries compile only. Independent helper review found no saturation,
+lane-order, runtime gate or cropped-row bounds blocker. A26-profile x12-arm x5
+smoke passes before measurement.
+
+Final26 profiles x12 arms x31 measured repetitions:9672 exact stereo invocations
+in26.050448 seconds, with3 warmups. Both teams explicitly idle before launch;
+all frozen source, corpus and native/Android binary hashes unchanged. Twelve
+actual capture pairs plus fourteen explicitly duplicated-eye synthetic profiles.
+Host i7-12700 / clang22.1.8 / Linux7.2.9, no affinity/frequency/thermal controls;
+ordinary desktop services remain uncontrolled. No headset/network/GPU operation.
+
+Same-batch mean of four captured pair p50s per group, milliseconds. All rows use
+four server workers and the same four-worker RRB client. ScalarRGB is the prior
+direct RGB decoder with scalar stores; RGBA is the original fused RGBA+RGB-pack
+decoder; VectorRGB is this experiment. Total uses paired complete samples rather
+than adding marginal quantiles.
+
+RRB32                           Q1          Q8-a        Q8-b
+ScalarRGB server wall         0.332441    0.495726    0.456029
+RGBA server wall              0.292676    0.448607    0.409986
+VectorRGB server wall         0.282252    0.416603    0.393864
+RGBA server process CPU       0.839803    1.408195    1.214888
+VectorRGB server process CPU  0.813684    1.348950    1.171034
+ScalarRGB server+client       0.641355    0.945824    0.876177
+RGBA server+client            0.593122    0.895884    0.820062
+VectorRGB server+client       0.587143    0.862923    0.793631
+VR444 server+client           0.705077    1.092831    0.922732
+
+RRB32 VectorRGB improves all12 captured total p50 and p95 pairs versus ScalarRGB.
+Its server p50 improves12/12 and server p95 improves11/12. Against the stronger
+RGBA control, improvements are9/12 server p50,8/12 server p95,10/12 total p50 and
+9/12 total p95. Thus the matched vector-store experiment improves the negative
+scalar-store candidate, but does not establish a universal win over RGBA.
+
+Against original VR444, all12 captured total p50s improve, but2/12 total p95s
+regress: paired-b/1170 by0.037788ms and lossless/180 by0.032224ms. The31-sample
+observation is not a rare-tail confidence bound or target-device result.
+
+RRB128 VectorRGB total mean pair p50 is0.645860 /0.970930 /0.888492ms, versus RGBA
+0.644116 /0.987088 /0.910599. It improves7/12 server p50/p95 and9/12 total p50/p95
+relative to RGBA. RRB32 remains the generally stronger measured client/CPU-stage
+candidate, while RRB128's smaller wire size is a separate tradeoff.
+
+Every canonical byte and prior bandwidth tradeoff remains unchanged. Corpus
+totals across four captured pairs per group:
+group       VR444       RRF-up       RRB32       RRB128
+Q1          98,239       55,655      66,332       58,298
+Q8-a       182,910      233,898     245,567      236,627
+Q8-b       135,653      184,585     194,380      186,904
+Q8 wire inflation can outweigh CPU savings. No connection, GPU, compositor or
+xrEndFrame duration is added to these host values, and no sub15 promotion follows.
+
+Exactness preserves prior decoded VR444 pixels, including prior Q8 loss; this is
+not an original framebuffer encoder. Scalar and vector decoder stores operate in
+private staging until complete stereo assembly, with unchanged failure/lease
+contracts. Headset tests remain suspended.

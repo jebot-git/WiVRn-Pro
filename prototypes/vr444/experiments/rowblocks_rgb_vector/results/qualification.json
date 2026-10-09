@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "created_utc": "2026-10-09T09:42:09.886760+00:00",
+  "base": "2066d45",
+  "asan_ubsan": {
+    "pass": true,
+    "exact_canonical_stereo_cases": 733,
+    "direct_rgb_oracle_cases": 576,
+    "differential_corruption_cases": 2000,
+    "rejections": 4332,
+    "worker_counts": [
+      1,
+      2,
+      4
+    ],
+    "reuse_batches": 300,
+    "max_block_jobs": 512,
+    "max_pixels_per_eye": 4194304,
+    "source_qmaps_and_odd_dimensions": true,
+    "separate_published_lease_retained": true
+  },
+  "thread_sanitizer": {
+    "pass": true,
+    "exact_canonical_stereo_cases": 733,
+    "direct_rgb_oracle_cases": 576,
+    "differential_corruption_cases": 2000,
+    "rejections": 4327,
+    "worker_counts": [
+      1,
+      2,
+      4
+    ],
+    "reuse_batches": 300,
+    "max_block_jobs": 512,
+    "max_pixels_per_eye": 4194304,
+    "source_qmaps_and_odd_dimensions": true,
+    "separate_published_lease_retained": true
+  },
+  "rejection_count_note": "Active scratch alias checks vary with worker job acquisition; both runs complete without diagnostics.",
+  "host_build_command": [
+    "env",
+    "RRB_RGB_VECTOR_TSAN=1",
+    "bash",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/build.sh"
+  ],
+  "android_build_command": [
+    "bash",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/build-android.sh"
+  ],
+  "source_sha256": {
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/encoder.hpp": "9fd6eb1b43936200beea33e5eec06fb84d54ecccb5a0ef9a8474dfab17b829db",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/direct_rgb.cpp": "e72b5fdbf8a0c580862a53a14151f8c21b0b162e15751f1ec50d7c92835a45a3",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/direct_rgb.hpp": "642a21a6b454b9ddd6171456aef6ab9eb920ec5d7e02131b00ec29a7b38c2a01",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/encode_rgb.hpp": "4d767dd8fdf82d2bf286bc3faf2a456fe5bbc8374955be0f6b2be12e68a135c7",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/bench.cpp": "650962958b265ce9011b103262e1ad4124ee94e07499b22d87d90d58c50cf3e1",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/test.cpp": "e296f935a3520b490215d4cb13c4447c3a8d2a767470f0fda6f0297de5fe3574",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/build.sh": "8053c3fdb50ae2b11b6545b7c903b2d72ecfe461dc7432b4f13a995b4534097f",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/build-android.sh": "261a062bfef64a64393e3a5c6c96254973c8332e8f32f503c9e1b290663e6022",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/measure.py": "bbd5c587986ac6872aa71fb83f5c426008d495354408619190cf0e8e67308787",
+    "prototypes/vr444/experiments/rowblocks_rgb_vector/summarize.py": "08dc5be0f1ee2c5a04718065ab76118c5baaf22eb35cd54f2e3e844f2aeb08ee",
+    "prototypes/vr444/experiments/rowblocks_rgb_encoder/encoder.hpp": "36317527f423d9ecfa83c58838934c6e9df5041333636ed15806d65f18e41edf",
+    "prototypes/vr444/experiments/rowblocks_rgb_encoder/direct_rgb.cpp": "69c7de4e1283c5e011be5f6b6085c1cff264270204fde99ec853c86f97aac8ff",
+    "prototypes/vr444/experiments/rowblocks_rgb_encoder/direct_rgb.hpp": "8d7589e515010aadc41dd93f902f86ee7e5a8f91c9a5d13d0bfac1fb0d467857",
+    "prototypes/vr444/experiments/rowblocks_rgb_encoder/encode_rgb.hpp": "fb2d30549b3fbca3c7522a9b05f9930313860f32c7dc3eeb44762e7dfc735a6c",
+    "prototypes/vr444/experiments/rowblocks_fused_encoder/encoder.hpp": "4c77202fa6d579e2cc65be05bc0e36866440a1ff3c11ae0777ed25d68088babe",
+    "prototypes/vr444/experiments/rowblocks_encoder_workers/encoder.hpp": "824c7aabe67be6cab2987ae5a50385492ad06f3e20e78504af3e474a18295b9f",
+    "prototypes/vr444/experiments/rowblocks_workers/workers.hpp": "6ff6370e89929d03bcd7dc10b81c967363430c532422096cbac5216b34ef9903",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "ea35ce11cd12a690db5ec7187bc20689a56288a25c01fd1229056e67d38f9dbe",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/latency_decode/direct.cpp": "796017f83b4a2159b3adb65876f14ce9b2ffeaef348d7907be0cc784d9621905",
+    "prototypes/vr444/experiments/latency_decode/direct.hpp": "7577105236e1787ba627ef467411bb591748b79d96537b3fe0392689e32ad8bd",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706"
+  },
+  "binary_sha256": {
+    "bench": "50a1164f62c0c2a6b5554388cb734b0c1c692130f36200286d2f19776e3d99b7",
+    "test": "e1ea537a55e948d3b00bf517da8398c07fa84a731cbcd8d7693aa06848eff298",
+    "test-tsan": "8c24ea69cbb11f83fe4f04212a4df7e45bb0f0900bfcae29cf5a96fb83112521",
+    "bench-android": "30e19ed5d1d6e97df6583e343c2aa265291b3170ef0700a5c3f2ad1ac8e073ac",
+    "test-android": "32e0bbb57909818c575464c50067e8b393f525d50e747a9d59d17b1ab3438c29"
+  },
+  "documentation_sha256": {
+    "README.txt": "c2833d1601221aafcef5bcfc3e375b436c578f6239168bd2392e24d21ca53328",
+    "RESULTS.txt": "0d044f141907b550f1240f11881c6342e5d16403047a2d5118f3124371075a3c"
+  },
+  "result_sha256": {
+    "benchmark.json": "2f23ddd4f2ad1bf909910fba7c4ce4d130c4e9723083f807823bb37d03664ff7",
+    "summary.json": "ff7cce7f4bf52ecafd6d682b77a505815de4a6d7ca143c26662935a296b67f2b",
+    "measurement-provenance.json": "609432c783284b2444f9f12b39b6b18a9fb264bd10fb2947f4cf6ed36cf3c897",
+    "asan.json": "dff5e4c9f15df699f771be482eed85f844e2f76e9d17672fb67ac471d873b046",
+    "tsan.json": "3d688e7d73bbffe9a696329bfbd0e3e27bfa5da2daa62e924666b761e2f193d1"
+  },
+  "measured_stereo_invocations": 9672,
+  "exact_wire_and_pixels_every_invocation": true,
+  "rrb32_capture_improvements_vs_rgba": {
+    "server_p50": 9,
+    "server_p95": 8,
+    "total_p50": 10,
+    "total_p95": 9
+  },
+  "rrb32_capture_improvements_vs_scalar_rgb": {
+    "server_p50": 12,
+    "server_p95": 11,
+    "total_p50": 12,
+    "total_p95": 12
+  },
+  "rrb32_total_p95_regressions_vs_vr444": 2,
+  "header_review": "Compositor team independently reviewed saturation/store ordering/runtime gating/cropped-row bounds; no blocker.",
+  "headset_accessed": false,
+  "android_runtime_tested": false,
+  "promotion_eligible": false
+}
