@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Fresh planner/auditor regression with simulated capture logs; no new device or GPU execution",
+  "test_count": 11,
+  "argv": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "-v",
+    "test_capture"
+  ],
+  "returncode": 0,
+  "elapsed_s": 1.4286772140185349,
+  "stdout": "",
+  "stderr": "test_adapter_rejects_cross_build_shader_and_headset_splices (test_capture.ReplayCapture.test_adapter_rejects_cross_build_shader_and_headset_splices) ... ok\ntest_audit_rejects_unbound_source_parser_and_controls (test_capture.ReplayCapture.test_audit_rejects_unbound_source_parser_and_controls) ... ok\ntest_audit_rejects_validly_rehashed_adapter_identity_splice (test_capture.ReplayCapture.test_audit_rejects_validly_rehashed_adapter_identity_splice) ... ok\ntest_complete_synthetic_acquisition (test_capture.ReplayCapture.test_complete_synthetic_acquisition) ... ok\ntest_failed_missing_reordered_timeout_commands (test_capture.ReplayCapture.test_failed_missing_reordered_timeout_commands) ... ok\ntest_forged_uploaded_shader_cannot_bypass_native_join (test_capture.ReplayCapture.test_forged_uploaded_shader_cannot_bypass_native_join) ... ok\ntest_output_hash_path_and_decoding_controls (test_capture.ReplayCapture.test_output_hash_path_and_decoding_controls) ... ok\ntest_plan_rejects_native_job_grammar_and_adapter_identity (test_capture.ReplayCapture.test_plan_rejects_native_job_grammar_and_adapter_identity) ... ok\ntest_replace_restore_raw_capture_uses_hashed_snapshot (test_capture.ReplayCapture.test_replace_restore_raw_capture_uses_hashed_snapshot) ... ok\ntest_result_scope_hardware_and_boolean_types (test_capture.ReplayCapture.test_result_scope_hardware_and_boolean_types) ... ok\ntest_unbound_extra_symlink_and_changed_snapshot (test_capture.ReplayCapture.test_unbound_extra_symlink_and_changed_snapshot) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 1.362s\n\nOK\n",
+  "source_sha256": {
+    "prototypes/vr444/experiments/submitted_image_replay/capture.py": "767acb902002fe2f21a72b5ef79cad236ebde5b951b83b81953348fdf449072e",
+    "prototypes/vr444/experiments/submitted_image_replay/test_capture.py": "f9d7fef0db6fe4afe30c86e787132311a34aa12d6ffc5ba039ca9561325530b4",
+    "prototypes/vr444/experiments/submitted_image_replay/qualify.py": "d3264cc2fb684511dd549b4008e7f01f95741d34450bc8eeacc59c6b42f2f49a",
+    "prototypes/vr444/experiments/submitted_image_replay/README.txt": "09a434b777b6154c3b3b00963a7bac0ac608168f10f8a22119d0927e92369a39",
+    "prototypes/vr444/experiments/headset_review_smoke/run.py": "e495081a5bdbbef3aa94cff0082b700516740dca711d10d3ec9dedb143e4c64a"
+  },
+  "sources_unchanged": true,
+  "python": "3.14.7 (main, Aug 10 2026, 00:00:00) [GCC 16.1.1 20260515 (Red Hat 16.1.1-2)]",
+  "executable": "/usr/bin/python3.14",
+  "qualified_implementation_commit": "508c290be9c3a02d28a5162fbad1a1d8674ebfe1",
+  "qualified_binary_sha256": {
+    "/tmp/sub15-submitted-replay-final/replay": "4da2253de4680f6c18d00c618f9e471c6006ec278873ecc667f01d1bdcd7c449",
+    "/tmp/sub15-submitted-replay-final/replay-asan": "c1cecb30560c5be24752aa18a47fb4bafb7369b429a53b1510ff7b4d52a8bb6f",
+    "/tmp/sub15-submitted-replay-final/replay-android": "d84924412b6d28b1b98fb2ebb881b5af8aaf470e6ed218975238dcec4cb34662",
+    "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv": "a4942c342b003ef48883c5ea80077d3cfb8bff555e29f45b5043252bcfd09338",
+    "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv": "ea9b64e07309bdb11443abf9862d515655d34674e4067d27c5283ca37c11b91f"
+  },
+  "native_build_receipt": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/build-receipt.json",
+  "native_build_receipt_sha256": "d6be1ee952a93a967cc6d3492edd89abe7e8fa49e25ad77df0f37dcbee82ec8f",
+  "independent_read_only_review": "compositor team; no blocker found",
+  "actual_headset_used": false,
+  "gpu_execution": false,
+  "native_application_execution": false,
+  "quality_qualified": false
+}
