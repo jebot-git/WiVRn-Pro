@@ -89,6 +89,15 @@ experiments preserve the RRF/RRB bytes used here. That catalog includes current
 and negative alternatives, external historical binaries, and explicit old
 receipt/source differences. It is a separate qualification scope.
 
+The compositor team's final catalog is research/sub15-20261009/compositor-
+qualification-suite at fe9dae00c4c8c89dad45502f2908b6c901800737: 27 approaches,
+353 fresh Python tests, eight ASan/UBSan standalone C++ programs and two recorder
+TSan runs, with its one historical plot-source gap explicit. No linked native or
+headset execution is claimed. The transport team's supplementary campaign at
+abfc9dd5e0947f89c688345bc248ef09bd6fdebd checks 432 arrival orders and 4,800 seeded
+whole-pair trials across all 240 mutator/group-size/shape cells; it is separate
+from that team's sealed primary catalog and does not change codec bytes.
+
 The compositor team's pinned receipt/target/source-identity analyses and native
 telemetry changes are a separate scope. Its exact known-receipt result at
 3069202 does not turn a private GPU saving into a live latency guarantee: fixed
