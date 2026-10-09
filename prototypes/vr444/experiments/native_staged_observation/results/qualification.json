@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "schema": 1,
+  "test_count": 4,
+  "argv": [
+    "/usr/bin/python3",
+    "-m",
+    "unittest",
+    "-v",
+    "test_audit"
+  ],
+  "stdout": "",
+  "stderr": "test_bound_snapshot_and_changed_file (test_audit.Audit.test_bound_snapshot_and_changed_file) ... ok\ntest_exact_envelope_identity_crc_and_shape (test_audit.Audit.test_exact_envelope_identity_crc_and_shape) ... ok\ntest_quantiles_and_strict_json (test_audit.Audit.test_quantiles_and_strict_json) ... ok\ntest_stage_scope_rejects_unsupported_gpu_claims (test_audit.Audit.test_stage_scope_rejects_unsupported_gpu_claims) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK\n",
+  "source_sha256": {
+    "prototypes/vr444/experiments/native_staged_observation/audit.py": "296df370d735b668645f591ec2cc632703df6483a791727cfd4ee580ab30f64a",
+    "prototypes/vr444/experiments/native_staged_observation/test_audit.py": "d8402d54fa756f6062a9c90a63f77ae0226b0b2146ae900f46b6546480777883",
+    "prototypes/vr444/experiments/native_staged_observation/README.txt": "5b33eb5816a4533ff06e8ba293d61dcf850c580aa01cf23e9608b175467d3f88"
+  },
+  "sources_unchanged": true,
+  "native_data_report_sha256": "fb863bfc6a12c0c5eb554c1ae528a04e8bde6c9fd8d35a61fb233bb3c8bcc0fe",
+  "new_device_or_gpu_execution": false,
+  "scope": "Fresh native observation auditor regression; existing captured bytes independently rechecked"
+}
