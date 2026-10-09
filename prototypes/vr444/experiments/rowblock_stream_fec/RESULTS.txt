@@ -1,0 +1,53 @@
+VXP1 actual-byte qualification, 2026-10-09
+=========================================
+
+16 focused Python tests pass. They include all 66 individual source-loss
+positions across K=4/8/16 in a two-eye fixture, one loss in every group, two losses
+in one group, source plus parity loss, repair-only one-shard blocks, odd/partial
+shapes, maximum 512-block stereo, 500 record-bit mutations, CRC-valid incorrect
+parity, nonzero recovered tail padding, immutable group identity, old-format
+rejection, orphan cap and expired recovery. The inherited 20 VXB tests also pass.
+Independent peer review found no retained-bound or publication blocker.
+
+Actual export qualification passed with unchanged source/input/binary/receipt
+hashes:
+  312 profile/row/K cases (26 profiles x 4 row sizes x 3 group sizes)
+  282 eligible; 30 canonical over-cap cases rejected
+ 3012 applicable logical delivery replays
+ 2538 exact complete-stereo publications
+  474 complete-stereo withholds after unrecoverable loss
+   90 explicitly inapplicable two-source-loss cases (all blocks have one source)
+  282 native ASan/UBSan independent VR444/RGBA/RRB stereo byte-oracle invocations
+
+The corpus remains 24 actual capture eyes (12 stereo pairs) plus 14 explicitly
+duplicated-eye synthetic profiles. No timed/native/headset networking ran. The
+native executable is the unchanged, source/dependency-bound VXB byte oracle.
+qualification.json retains all case/scenario results and input/control hashes.
+
+Wire cost is a substantial negative for small captured blocks
+------------------------------------------------------------
+
+Extra UDP payload bytes over the same VXB no-recovery stream, aggregated across
+the 12 actual captured pairs. All parity, including parity after publication,
+is counted. Percentages are actual record bytes, not nominal 1/K estimates.
+
+Block rows     K=4       K=8       K=16
+   16         82.588%   82.588%   82.588%
+   32         60.753%   59.999%   59.999%
+   64         48.369%   42.013%   41.562%
+  128         38.417%   30.453%   26.416%
+
+Many small blocks have only one or a few source fragments. Group sizes larger
+than a block do not amortize parity across other blocks. The experiment therefore
+demonstrates exact bounded recovery but does not justify promoting this profile:
+its offered-load penalty could erase a benefit from earlier block availability.
+Cross-block grouping would require a distinct checked mapping/lifetime design,
+and no such optimization is silently assumed in these numbers.
+
+Largest observed retained pending payload was 245640 bytes. The conservative
+1048656-byte theoretical bound includes pending source and parity payload for
+two candidates, not peak RSS, transient joins, previous publications or metadata.
+
+No speedup, probability of recovery on a physical link, congestion behavior,
+integrated overlap or headset sub-15 result is established. Source/data identities,
+strict RRF grammar, decoded pixels and atomic stereo completion are preserved.
