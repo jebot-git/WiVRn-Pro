@@ -1,0 +1,108 @@
+DEFAULT-OFF NATIVE PUBLICATION CAPTURE -- 2026-10-09
+
+Implemented integration
+This branch wires the separately validated publication ledger core into the
+codec-test source overlay and acquisition runner. It does not modify the root
+native checkout, integration.patch, overlay-manifest.json, an APK or any device.
+
+stream.cpp reads codec-test-publication-trace.txt strictly as one 0/1 token.
+Absent/0 is off. Enabling requires candidate tracing, allocates the fixed
+ledger before callback workers start and opens a new publication-trace.jsonl
+under the test dump directory. An already existing output is rejected. The
+runner clears its dedicated test dump directory through its existing path;
+this branch has not executed that path on a device.
+
+Accepted push_blit_handle callbacks append after the existing FIFO rotation
+and swap, with the exact newly retained and evicted handle metadata. They use
+the existing received_from_decoder timestamp and frames mutex. Hashing those
+fixed metadata copies adds diagnostic work; no new callback clock or I/O is
+introduced. Rejected/invisible/stale-decoder handles are not publications and
+are outside this ledger's scope.
+
+Decoder retirement records one reset while holding decoder_mutex exclusively
+and then frames_mutex, preserving the established lock order. The checkpoint
+mark is captured by common_frame with the same frames lock as the candidate
+history. The render thread exports that immutable prefix before flushing its
+matching candidate JSON record after successful xrEndFrame. Presentation rows
+carry exact epoch/prefix count and explicit valid/drop/write state.
+
+The ledger and exporter members precede the decoder array in declaration
+order, so decoder members are destroyed first. The ledger stays alive while
+their callbacks shut down. Export state and its ofstream remain render-thread
+owned. Native serialization already occurs under the decoder shared lock but
+outside frames_mutex; the added export may delay later decoder resets and
+render pacing. No latency qualification is implied.
+
+Acquisition/evidence contract
+native_compare.py adds --publication-trace, requiring custom VR444 CPU NEON,
+--candidate-trace and --source-trace. Pure option/source-file preflight happens
+before output creation or any device command. Native stream.cpp, stream.h and
+publication_ledger.h hashes enter provenance. The new config file joins the
+existing backup/write/readback/restore set, and is explicitly written as 0
+when not requested. There are now 11 files in that future runner's set; the
+earlier launch's completed 10-file cleanup evidence is not rewritten.
+
+Final file evaluation requires requested provenance, native helper hashes,
+config readback=1, the core's complete FIFO/history reconstruction and the
+existing candidate/presentation checks. Every checkpoint's epoch/count and
+successful zero-loss state must match its presentation row. Every published
+frame ID, including unselected frames evicted between snapshots, must also
+join the complete independent host source trace. That join establishes host
+application mapping under the source trace's existing constraints; it does
+not subtract host timestamps from client timestamps or prove optical age.
+
+The standalone core reader's input hashes do not by themselves prove hardware
+provenance. In acquisition, the existing runner seals files and records actual
+binary/APK/hardware identities; native integration and a fresh matching build
+receipt remain necessary before a future authorized live capture. This branch
+contains neither such a linked build nor a live acquisition.
+
+Missing/extra/corrupt ledgers or publication fields while disabled fail. The
+latency policy also rejects explicit flags, summary status, artifact presence,
+presentation field presence (even false values), or enabled config readback.
+Older absent optional controls remain readable. No historical target threshold
+is changed. Diagnostics always block promotion and release readiness.
+
+Coverage and reset limits
+Coverage ends at the final exported selection checkpoint. Force-stop may leave
+a later unexported tail, which is explicitly not recorded. Partially exported
+or unmatched checkpoints fail rather than being truncated into a pass. The
+ready timestamp precedes frames-lock release, so event order supplies exact
+history reconstruction but not an exact alternative lock-acquisition instant.
+
+Reset epochs reconstruct ledger history, but the existing candidate validator's
+previous-selection continuity requirements still apply. A recording spanning a
+decoder reset that violates that independent contract remains failed. This
+branch does not relabel such a capture or weaken candidate evidence to admit it.
+When the candidate budget stops committing, publication_write_ok is false for
+later presentation rows; their retained mark cannot imply a newly exported
+checkpoint. The independent candidate drop counter also fails the capture.
+
+Offline validation
+publication-capture-validation-20261009.json records all 280 Python tests,
+including absent-overlay rejection before device commands, false/omitted
+provenance, config/epoch/count/write mismatches, unselected source IDs, and
+diagnostic-promotion concealment attempts.
+
+It also compiles the complete Android stream translation unit twice with a
+read-only Clang VFS overlay: codec-test diagnostics enabled, and the diagnostic
+macro disabled. Both pass. Native source paths/hashes are verified unchanged.
+This is syntax validation against the cached real build configuration, not a
+linked Android build or an installed APK. The receipt binds the earlier
+ASan/UBSan/TSan publication-core receipt and checks its sources are unchanged.
+
+Independent GPU-team review found no member-lifetime, FIFO eviction, lock-order
+or export-order blocker. Its capped-capture telemetry observation led to the
+explicit false write status described above. Independent transport-team review
+found no blocker in preflight, backup/restore membership, typed checkpoints,
+all-publication source joins or promotion rejection. Neither review performed
+device operations.
+
+Reproduce offline with a new receipt path:
+  python3 prototypes/vr444/experiments/selection_policy/validate_publication_capture.py \
+    --native-source /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests \
+    --compile-commands /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests/.cxx/Debug/2hd2e6j2/arm64-v8a/compile_commands.json \
+    --out /tmp/publication-capture-new.json
+
+See PUBLICATION-LEDGER.txt for the external-mutex proof, primary C++ references,
+bounded recorder behavior and strict event-format contract.

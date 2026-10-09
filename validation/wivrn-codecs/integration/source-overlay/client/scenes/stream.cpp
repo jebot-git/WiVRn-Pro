@@ -181,6 +181,17 @@ static const std::array supported_depth_formats{
         vk::Format::eX8D24UnormPack32,
 };
 
+#ifdef WIVRN_CODEC_TESTS
+static wivrn::codec_test::selection_trace::Frame codec_test_trace_frame(
+        const std::shared_ptr<wivrn::shard_accumulator::blit_handle>& handle)
+{
+    if (!handle) return {};
+    return {true, handle->feedback.frame_index, wivrn::codec_test::warp_hash(handle->view_info),
+            handle->view_info.display_time, handle->feedback.received_first_packet,
+            handle->feedback.received_from_decoder, handle->view_info.alpha};
+}
+#endif
+
 scenes::stream::stream(std::string server_name, scene & parent_scene) :
         scene_impl<stream>(supported_color_formats, supported_depth_formats, parent_scene),
         apps{*this, std::move(server_name)}
@@ -220,6 +231,23 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
         test_candidate_trace_file.open(folder / "selection-trace.jsonl", std::ios::trunc);
         if (!test_candidate_trace_file)
             throw std::runtime_error("cannot open codec test candidate trace");
+    }
+    std::ifstream publication_config(application::get_config_path() / "codec-test-publication-trace.txt");
+    if (publication_config.is_open()) {
+        std::string mode, trailing;
+        if (!(publication_config >> mode) || (mode != "0" && mode != "1") || (publication_config >> trailing))
+            throw std::runtime_error("invalid codec test publication trace mode");
+        if (mode == "1") {
+            if (!test_candidate_trace.enabled)
+                throw std::runtime_error("publication trace requires candidate trace");
+            const auto output = application::get_config_path() / "codec-test/publication-trace.jsonl";
+            if (std::filesystem::exists(output))
+                throw std::runtime_error("publication trace output already exists");
+            test_publication_ledger = std::make_unique<codec_test::publication_ledger::Ledger<>>();
+            test_publication_file.open(output, std::ios::out);
+            if (!test_publication_file)
+                throw std::runtime_error("cannot open codec test publication trace");
+        }
     }
 #endif
 }
@@ -694,6 +722,8 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
             auto& history = decoders[stream].latest_frames;
             std::rotate(history.begin(), history.begin() + 1, history.end());
             std::swap(handle, history.back());
+            if (test_publication_ledger)
+                test_publication_ledger->publish(stream, codec_test_trace_frame(history.back()), codec_test_trace_frame(handle));
 #else
 			std::swap(handle, decoders[stream].latest_frames[handle->feedback.frame_index % decoders[stream].latest_frames.size()]);
 #endif
@@ -735,22 +765,18 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
     namespace selection_trace = codec_test::selection_trace;
     namespace selection_policy = codec_test::selection_policy;
     static_assert(decoder_count == selection_trace::decoder_count && image_buffer_size == selection_trace::history_slots);
-    auto trace_frame = [](const auto& handle) -> selection_trace::Frame {
-        if (!handle) return {};
-        return {true, handle->feedback.frame_index, codec_test::warp_hash(handle->view_info),
-                handle->view_info.display_time, handle->feedback.received_first_packet,
-                handle->feedback.received_from_decoder, handle->view_info.alpha};
-    };
     selection_policy::History history{};
     selection_policy::Pair previous{};
     for (size_t i = 0; i < decoder_count; ++i) {
-        previous[i] = trace_frame(current_blit_handles[i]);
+        previous[i] = codec_test_trace_frame(current_blit_handles[i]);
         for (size_t slot = 0; slot < image_buffer_size; ++slot)
-            history[i * image_buffer_size + slot] = trace_frame(decoders[i].latest_frames[slot]);
+            history[i * image_buffer_size + slot] = codec_test_trace_frame(decoders[i].latest_frames[slot]);
     }
     const auto decision = selection_policy::choose(history, previous, test_selection_policy,
                                                    display_time, period, previous_display_time);
     if (trace) {
+        if (test_publication_ledger)
+            test_publication_mark = test_publication_ledger->mark();
         trace->policy = test_selection_policy;
         trace->predicted_period = period;
         trace->previous_predicted_display = previous_display_time;
@@ -1428,6 +1454,8 @@ void scenes::stream::render(const XrFrameState & frame_state)
                     test_present << ",\"render_attempts\":";
                     codec_test::selection_trace::write_attempts(test_present, test_attempt_snapshot);
                     XrDuration trace_write_ns = 0;
+                    // No new checkpoint is claimed once candidate capture is capped.
+                    bool publication_write_ok = !test_publication_ledger;
                     if (test_candidate_trace.commit()) {
                         const XrTime trace_write_begin = instance.now();
                         test_trace_record.sequence = test_candidate_trace.records;
@@ -1436,6 +1464,9 @@ void scenes::stream::render(const XrFrameState & frame_state)
                         test_trace_record.end_frame_return = test_end_frame_return;
                         test_trace_record.projection_submitted = !room_capture && projection_layer_index;
                         test_trace_record.attempts = test_attempt_snapshot;
+                        if (test_publication_ledger)
+                            publication_write_ok = test_publication_exporter.write(test_publication_file,
+                                *test_publication_ledger, test_publication_mark, test_trace_record.sequence, test_trace_record.history);
                         codec_test::selection_trace::write_json(test_candidate_trace_file, test_trace_record);
                         test_candidate_trace_file.flush();
                         trace_write_ns = instance.now() - trace_write_begin;
@@ -1444,6 +1475,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
                         << ",\"candidate_trace_dropped\":" << test_candidate_trace.dropped
                         << ",\"candidate_trace_write_ns\":" << trace_write_ns
                         << ",\"candidate_trace_write_ok\":" << (test_candidate_trace_file ? "true" : "false");
+                    if (test_publication_ledger)
+                        test_present << ",\"publication_trace_enabled\":true"
+                            << ",\"publication_trace_records\":" << test_publication_mark.records()
+                            << ",\"publication_trace_epoch\":" << test_publication_mark.generation()
+                            << ",\"publication_trace_dropped\":" << test_publication_mark.dropped()
+                            << ",\"publication_trace_valid\":" << (test_publication_mark.valid() ? "true" : "false")
+                            << ",\"publication_trace_write_ok\":" << (publication_write_ok && test_publication_file ? "true" : "false");
                 }
                 test_present << "}\n";
                 test_present.flush();
@@ -1557,6 +1595,13 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
 		current_blit_handles.fill(nullptr);
 		retired.swap(decoders);
 		video_stream_description.reset();
+#ifdef WIVRN_CODEC_TESTS
+        if (test_publication_ledger) {
+            // Same ordering as publication/selection: decoder_mutex, then frames_mutex.
+            std::lock_guard frame_lock(frames_mutex);
+            test_publication_ledger->reset();
+        }
+#endif
 	}
 	for (auto & item: retired)
 		item = {};
