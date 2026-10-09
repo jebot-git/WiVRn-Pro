@@ -59,7 +59,7 @@ hypothetical selectors that forge metadata, horizon, ownership or support slots.
     --approach ready-successor --out NEW_VALIDATION.json
 20,000 generated histories include 10,000 coherent ordered triples and 10,000
 mixed malformed/partial cases. Disabled and successor-filter-off behavior match
-their independent baselines exactly. The generator exercises 4,037 advancing
+their independent baselines exactly. The generator exercises 4,045 advancing
 choices with valid complete successors. Boundary, alpha, incomplete-eye,
 nonregression, bad-configuration and INT64 endpoint cases pass ASan/UBSan.
 256 C++ serialized fixtures agree with independently written Python decisions

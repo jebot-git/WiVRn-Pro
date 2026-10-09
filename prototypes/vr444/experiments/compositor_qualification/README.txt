@@ -146,3 +146,14 @@ and two subsequently added cross-team reference documents. Later notes/receipt
 additions do not silently become freshly executed sources. CROSS-TEAM-HANDOFF.txt
 and cross-team-pointers-20261009.json pin the separate GPU/transport results and
 supplementary mutation campaign; no merged source tree or summed timing is claimed.
+
+Historical narrative errata discovered in the final read-only check:
+HORIZON-RESEARCH's admission count is 9,399, not its earlier transcribed 9,522;
+READY-SUCCESSOR's advancing-choice count is 4,045, not 4,037. Their own archived
+successful sanitizer stdout already records the correct counts, and the fresh
+host run independently agrees. Current note copies are corrected, while the
+historical catalog retains immutable old notes. narrative-errata-20261009.json
+pins both supporting receipt blobs and the corrected current notes. No test
+implementation, counterfactual performance result or qualification gate changed.
+These note errors are separate from the already explicit historical plot-source
+binding gap; artifact-byte verification does not assert narrative infallibility.

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "kind": "historical_narrative_count_corrections",
+  "checked_at_utc": "2026-10-09T11:18:56.916623+00:00",
+  "corrections": [
+    {
+      "archived_commit": "747a9ed4232f5d472b3400f924164b009d85a750",
+      "note_path": "prototypes/vr444/experiments/selection_policy/HORIZON-RESEARCH.txt",
+      "recorded_note_count": "9,522",
+      "correct_receipt_count": "9,399",
+      "receipt_path": "prototypes/vr444/experiments/selection_policy/horizon-validation-20261009.json",
+      "receipt_sha256": "1244cd459e64ecf411b553a4fb5863211175904d155fd462c7070ebf4065eb76",
+      "receipt_success_marker": "Horizon policy PASS: 20000 disabled and full-horizon equivalence cases, 9399 fractional admissions, boundary/alpha/malformed-config/overflow checks",
+      "current_note_sha256": "99e097c61cdfd6c289d0495c9310273d11a5bfa559fcda4efe248beca9ae5917"
+    },
+    {
+      "archived_commit": "7e7b43a0241d96e348fd3659b2310676476d6b94",
+      "note_path": "prototypes/vr444/experiments/selection_policy/READY-SUCCESSOR.txt",
+      "recorded_note_count": "4,037",
+      "correct_receipt_count": "4,045",
+      "receipt_path": "prototypes/vr444/experiments/selection_policy/ready-successor-validation-20261009.json",
+      "receipt_sha256": "538c8ef34311080a64e26a409548d03846ff30e0574a868775c412da6894fbd5",
+      "receipt_success_marker": "Ready-successor PASS: 20000 disabled/filter-off equivalence histories; 4045 advancing choices with independent complete-successor witnesses; boundary/alpha/overflow checks",
+      "current_note_sha256": "cbe41d46bbdd87b14552a16a29bb73984a390d5cd9fb1d41f1fb0812feea65b5"
+    }
+  ],
+  "pinned_historical_artifacts_rewritten": false,
+  "implementation_changed": false,
+  "performance_results_changed": false,
+  "fresh_execution_repeated": false,
+  "basis": "Archived successful sanitizer stdout and final fresh host suite agree. These are note transcription errors, not different test runs or altered passing scope. Historical catalog remains pinned to its original immutable notes; this explicit sidecar corrects their narrative counts.",
+  "headset_operations": false,
+  "promotion_eligible": false
+}

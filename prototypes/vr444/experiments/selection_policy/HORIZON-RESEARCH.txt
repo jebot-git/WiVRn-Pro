@@ -71,7 +71,7 @@ declarations, empty windows and conditional cadence under repeated choices.
   python3 -B prototypes/vr444/experiments/selection_policy/validate_horizon.py \
     --out NEW_VALIDATION_RECEIPT.json
 20,000 generated histories exactly reproduce both disabled closest-target and
-full-horizon bounded-newest. Across fractional choices, 9,522 actual admissions
+full-horizon bounded-newest. Across fractional choices, 9,399 actual admissions
 pass coherent identity, horizon, nonregression and fallback invariants. Named
 boundary/alpha/configuration/INT64 overflow cases pass. ASan/UBSan remain enabled;
 LeakSanitizer is disabled under ptrace. Independent Python replay agrees with
