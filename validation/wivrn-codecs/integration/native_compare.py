@@ -383,6 +383,10 @@ def run(args):
         raise RuntimeError('cannot back up dedicated config '+name+': '+result.stderr.decode(errors='replace'))
     def write_config(name, data):
         ac('shell', f"run-as {PACKAGE} sh -c 'cat > files/{name}'", input=data)
+    physical_serial = ac('shell', 'getprop', 'ro.serialno', capture_output=True, text=True).stdout.strip()
+    if not re.fullmatch(r'[A-Za-z0-9_-]{1,120}', physical_serial):
+        raise ValueError('invalid physical headset serial')
+    (output/'headset-serial-before.txt').write_text(physical_serial+'\n')
     installed = ac('shell', 'pm', 'path', PACKAGE, capture_output=True, text=True).stdout.strip().splitlines()
     if len(installed) != 1 or not installed[0].startswith('package:'):
         raise ValueError('a single dedicated APK installation is required')
@@ -431,7 +435,9 @@ def run(args):
             'comparison_worker_disabled_by_test_only_guard': True,
             'main_source_sha256': sha(source/'server/main.cpp'),
             'shader_sha256': {p.name: sha(p) for p in sorted((source/'assets/codec-test').glob('*.spv'))},
-            'headset_serial': args.serial, 'duration_s': args.seconds, 'geometry': [576, 640],
+            'headset_serial': args.serial, 'adb_target': args.serial,
+            'headset_physical_serial': physical_serial,
+            'duration_s': args.seconds, 'geometry': [576, 640],
             'requested_display_hz': 90, 'fps_divider': args.fps_divider,
             'requested_new_content_fps': 90/args.fps_divider, 'custom_frame_stride': 1,
             'native_encoder_requested': None if args.mode in CUSTOM_MODES else 'qsv',
@@ -574,6 +580,13 @@ def run(args):
                 with (output/'production-package-after.txt').open('w') as f:
                     ac('shell', 'dumpsys', 'package', 'org.meumeu.wivrn', stdout=f)
             cleanup('capture final logs', logs)
+            def verify_physical_serial():
+                observed = ac('shell', 'getprop', 'ro.serialno', capture_output=True, text=True).stdout.strip()
+                (output/'headset-serial-after.txt').write_text(observed+'\n')
+                state['physical_headset_unchanged'] = observed == physical_serial
+                if not state['physical_headset_unchanged']:
+                    raise ValueError('physical headset changed during acquisition')
+            cleanup('verify physical headset', verify_physical_serial)
             if quality_application_record is not None:
                 def verify_quality_application():
                     actual = sha(Path(quality_application_record['snapshot_path']))
