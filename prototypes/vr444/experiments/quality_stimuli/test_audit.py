@@ -67,6 +67,19 @@ class Audit(unittest.TestCase):
             self.assertEqual(r['submitted_stereo_frames'],1);self.assertFalse(r['post_foveation_comparison_performed'])
             self.assertEqual(r['captured_swapchain_images'],2)
 
+    def test_explicit_space_and_legacy_cannot_be_relabeled(self):
+        for space in ('VIEW','LOCAL'):
+            with tempfile.TemporaryDirectory() as temp:
+                path=Path(temp);rows=fixture(path)
+                rows[0].update(schema=2,space=space,source_reference_space=space,locate_and_layer_use_same_space=True)
+                rows[-2]['source_reference_space']=space;save(path,rows)
+                self.assertEqual(audit.application(path)['source_reference_space'],space)
+                rows[-2]['source_reference_space']='LOCAL' if space=='VIEW' else 'VIEW';save(path,rows)
+                with self.assertRaises(ValueError):audit.application(path)
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp);rows=fixture(path);rows[0]['space']='LOCAL';save(path,rows)
+            with self.assertRaises(ValueError):audit.application(path)
+
     def test_metadata_mutations(self):
         changes = [lambda r:r[0].update(source_generation='client_decode'), lambda r:r[0].update(latency_comparable=True),
             lambda r:r[0].update(format=37), lambda r:r[-1].update(submitted=2), lambda r:r[-1].update(complete=1),
