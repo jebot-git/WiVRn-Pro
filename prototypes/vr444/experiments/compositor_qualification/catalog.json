@@ -604,6 +604,31 @@
           "source_bindings": 3
         }
       ]
+    },
+    {
+      "id": "compositor-cadence-coverage",
+      "branch": "research/sub15-20261009/compositor-cadence-coverage",
+      "commit": "f511545415eba9aa3ddbdfc16d982d7f35def711",
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/CADENCE-COVERAGE.txt",
+          "kind": "notes",
+          "sha256": "af943021a4b5bd35d9033eba5df1a13f647c3d26c32d1d14ebb0aea08257222b",
+          "source_bindings": 0
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/cadence-coverage-validation-20261009.json",
+          "kind": "validation",
+          "sha256": "52d4e548a68d559215c4bcf269466eed4c501edec3d7f5adeb6a386b4228df01",
+          "source_bindings": 110
+        },
+        {
+          "path": "prototypes/vr444/experiments/selection_policy/cadence-coverage-20261009.json",
+          "kind": "analysis",
+          "sha256": "725a27c74b6b6c8f163f75d184c31c886657428713e1a1d5594874d5ca9d0c94",
+          "source_bindings": 2
+        }
+      ]
     }
   ],
   "native_integration_required": [

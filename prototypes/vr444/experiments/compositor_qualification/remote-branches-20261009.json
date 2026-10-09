@@ -2,7 +2,7 @@
   "schema": 1,
   "status": "pass",
   "kind": "remote_published_branch_identity",
-  "checked_at_utc": "2026-10-09T10:30:46.099198+00:00",
+  "checked_at_utc": "2026-10-09T10:54:09.765734+00:00",
   "remote": "https://github.com/jebot-git/WiVRn-Pro.git",
   "command": [
     "git",
@@ -10,7 +10,7 @@
     "--heads",
     "origin"
   ],
-  "catalog_sha256": "cd5b3d1ddcf9d93e60338798429d049eb0a2fc6a262046c4262a662736f44904",
+  "catalog_sha256": "790cec08f65b9dfa28e90822eb6c5727ac29a0abe9701f966db279a201ccfc0a",
   "branches": [
     {
       "branch": "research/sub15-20261009/compositor",
@@ -111,9 +111,14 @@
     {
       "branch": "research/sub15-20261009/compositor-source-age-bound",
       "commit": "8d808fd84ac4554eea032ed45db0ec65a7cc9bea"
+    },
+    {
+      "branch": "research/sub15-20261009/compositor-cadence-coverage",
+      "commit": "f511545415eba9aa3ddbdfc16d982d7f35def711"
     }
   ],
-  "branch_count": 25,
+  "branch_count": 26,
   "headset_operations": false,
-  "source_execution": false
+  "source_or_acquisition_modified": false,
+  "promotion_eligible": false
 }

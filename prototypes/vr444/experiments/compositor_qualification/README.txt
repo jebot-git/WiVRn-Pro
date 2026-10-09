@@ -6,7 +6,7 @@ The research branches repair diagnostic contracts, add opt-in capture, and
 bound selection alternatives using immutable recorded evidence. Runtime
 policy and production qualification limits are unchanged.
 
-catalog.json pins 25 separately pushed approach branches and 70 notes,
+catalog.json pins 26 separately pushed approach branches and 73 notes,
 validation or analysis artifacts at full immutable Git commit IDs. It is
 the machine-readable branch/artifact index. Each artifact is read from its
 own commit, never silently compared against later changed source files.
@@ -33,13 +33,13 @@ the old receipt or relabel full historical source integrity as passing.
 Fresh Python mode additionally runs the entire current validation suite,
 requires nonzero execution and plain OK without skips, and rehashes all
 files in the declared source directories before/after. The completed run
-has 336 passing tests, including eight catalog/runner tests covering omitted
+has 343 passing tests, including eight catalog/runner tests covering omitted
 or duplicate approaches, altered artifacts/sources, malformed digest maps,
 external source references, exact known-gap declarations and all-skipped
 test output. A transport-team independent read-only review found no blocker.
 
 Separate final receipts rechecked all 1,492 original acquisition files in
-five manifests and matched all 25 branch heads on origin to their catalog
+five manifests and matched all 26 branch heads on origin to their catalog
 commits. These are read-only integrity checks, not fresh device evidence.
 The primary fresh-suite receipt still honestly marks those separate stages
 as outside its own scope. Output receipts are copied into this directory
@@ -92,6 +92,12 @@ Most useful results and boundaries:
    unbounded-target encoded in [14.852189, 14.974637] ms; both source-distinct
    models in [15.924690, 15.998856] ms. These are inclusive bounds, not new
    exact optima. A separate rendered figure and receipt show all intervals.
+
+8. CADENCE-COVERAGE checks the native first-to-last-new-frame interval against
+   the entire observed warm presentation span. All five original captures
+   have zero held endpoints and identical rates. Seven synthetic regressions
+   show why this cannot be presumed for paths that omit deadlines. Missing
+   submissions and observed held frames stay distinct. The policy is unchanged.
 
 Native integration remains outstanding and owned by the integration team:
 regenerate integration.patch and overlay-manifest, include the pacer init
