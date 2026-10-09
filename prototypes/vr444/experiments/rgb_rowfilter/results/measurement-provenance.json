@@ -1,0 +1,30 @@
+{
+  "created_utc": "2026-10-09T06:46:38.002079+00:00",
+  "git_base": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "cpu_model": "12th Gen Intel(R) Core(TM) i7-12700",
+  "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+  "headset_accessed": false,
+  "network_accessed": false,
+  "android_runtime_tested": false,
+  "source_sha256": {
+    "prototypes/vr444/experiments/rgb_rowfilter/README.txt": "fa55b18cee59c43c7a19f401e929f147009b9febab4d673c4963d844019c602b",
+    "prototypes/vr444/experiments/rgb_rowfilter/bench.cpp": "c543acdc923002cc294789926c7873084de6723149a6adf5f7d1bae16727f63e",
+    "prototypes/vr444/experiments/rgb_rowfilter/build.sh": "999583e26ceff6cfdeb0255209852ae65ec5572ef43b4936fdbba06e0c317660",
+    "prototypes/vr444/experiments/rgb_rowfilter/export.cpp": "0d6d2a237b50d20dc7f3894e79324f87826147a524d3edb627641250de1f5ba7",
+    "prototypes/vr444/experiments/rgb_rowfilter/golden.py": "056566bf7c82db6d53d74ca18c04f20273277a00693ae70f8b3e0e4d27473998",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "070d602e98db68c6eae88b3bcbd54f49e6decb265f130188f9d2a28e2ce7be4c",
+    "prototypes/vr444/experiments/rgb_rowfilter/summarize.py": "df1e96dd49a027fc37d05cce0f70f3110430b5b02fa264d68de8770b630a4d06",
+    "prototypes/vr444/experiments/rgb_rowfilter/test.cpp": "67c043172e0537e2739f5b6d3bad9b8b2233db12a7c0fd60381bda5b503b1fc1"
+  },
+  "binary_sha256": {
+    "test": "807efebbf173858df43520a9d9cba79b6754112f53f1ed2e63ca1c359291f868",
+    "bench": "7d90c9ca73c7c5d9cb592453fe14ed7f06350d2549657f87a87afec5013b524c",
+    "export": "4c384f66fd24c5ad614b3093e3ff96deaa105b0103a5ed59c51ef95e32e9f2fa"
+  },
+  "benchmark_sha256": "d144d8e58425f45be4a0b5d2260ac0a40df5315bc6e9cbe5bed24896b6fb068e",
+  "command": "/tmp/wivrn-rgb-rowfilter-build/bench /home/blux/spatial-bridge/validation/results/codec-viability-0.8.0/compact/corpus 31",
+  "coordinated_window": "both GPU and compositor teams explicitly confirmed idle before9.91-second final batch; ordinary desktop/services continued",
+  "superseded_measurement": "pre-strict-LZ4-grammar exploratory batch is not used in frozen results",
+  "limitations": "one x86 host without affinity/frequency/thermal control;24 captured eyes +14 synthetics; no native renderer, network, target device, compositor or optical measurement"
+}
