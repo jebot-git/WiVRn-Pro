@@ -1604,6 +1604,6 @@
       "bytes": 76869
     }
   },
-  "audit_script_sha256": "62c835af3de13e344a33c9f148e7e300cb2c4793ffc277372f70751f7ecfb744",
+  "audit_script_sha256": "371c8a2431fcda93621ab44c136095eaf13a824319d1bcc2d27457bee04c32fa",
   "all_read_inputs_unchanged_after_analysis": true
 }

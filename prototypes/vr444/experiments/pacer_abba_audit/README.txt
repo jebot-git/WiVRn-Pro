@@ -98,3 +98,8 @@ without emitting a report: a misjoined right-eye frame, and an invalid tail
 update, each with its run-manifest hash repaired while leaving the saved summary
 PASS. Their source/report bindings and outcomes are in validation.json. Original
 acquisition files were never edited.
+
+Independent codec-team review found no arithmetic or interpretation blocker.
+Its focus-gating suggestion is now enforced, with a third repaired-hash negative
+that replaces the captured PID's FOCUSED entry by VISIBLE. Running with Python
+-O is explicitly rejected rather than disabling the audit assertions.

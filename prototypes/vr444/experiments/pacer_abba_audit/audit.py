@@ -64,6 +64,7 @@ for name,win in zip(order,[0,900,900,0]):
  focus.sort();assert focus
  latest=[state for when,state in focus if when<=warm[0]['submit_xr_ns']]
  focused=bool(latest and latest[-1]=='FOCUSED' and all(state=='FOCUSED' for when,state in focus if warm[0]['submit_xr_ns']<when<=warm[-1]['submit_xr_ns']))
+ assert focused, 'warm focus lost or not established for the captured PID'
  actual_tail=tail.evaluate(root,win);assert actual_tail['status']==('pass'if win else'off'),actual_tail
  tail_report={'status':actual_tail['status']}
  if win:
