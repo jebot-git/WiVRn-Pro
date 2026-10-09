@@ -1,0 +1,553 @@
+{
+  "status": "pass",
+  "source_sha256": {
+    "prototypes/vr444/experiments/submitted_image_replay/reprojection.glsl": "9eb34ae49bea22ac9dada9074cc600fce3433d6a02a692c9b9bb4fef86cddfd9",
+    "prototypes/vr444/experiments/submitted_image_replay/build.sh": "31befbd98361dd368c3412b762ff1dccf2f7bd2f360c5cdaba6873b7d10fd820",
+    "prototypes/vr444/experiments/submitted_image_replay/qualify.py": "d3264cc2fb684511dd549b4008e7f01f95741d34450bc8eeacc59c6b42f2f49a",
+    "prototypes/vr444/experiments/submitted_image_replay/geometry_audit.py": "136019464a9800d939acbb981ef3e8b5b892a441988058fbdf63f75a017deaf6",
+    "prototypes/vr444/experiments/submitted_image_replay/replay.cpp": "d07b29b0edcdb0bf8a8c1d685276d3a0f612d9e8df9e98ef7d30c09c98a1ef38",
+    "prototypes/vr444/experiments/submitted_image_replay/README.txt": "73bc3db0b434e4077b63c866f93ee46e781825f4db4739197e3cdab1315f8726"
+  },
+  "binary_sha256": {
+    "/tmp/sub15-submitted-replay-final/replay": "4da2253de4680f6c18d00c618f9e471c6006ec278873ecc667f01d1bdcd7c449",
+    "/tmp/sub15-submitted-replay-final/replay-asan": "c1cecb30560c5be24752aa18a47fb4bafb7369b429a53b1510ff7b4d52a8bb6f",
+    "/tmp/sub15-submitted-replay-final/replay-android": "d84924412b6d28b1b98fb2ebb881b5af8aaf470e6ed218975238dcec4cb34662",
+    "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv": "a4942c342b003ef48883c5ea80077d3cfb8bff555e29f45b5043252bcfd09338",
+    "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv": "ea9b64e07309bdb11443abf9862d515655d34674e4067d27c5283ca37c11b91f"
+  },
+  "checks": [
+    {
+      "name": "bounded job ASan/UBSan",
+      "valid": 1,
+      "rejections": 18
+    },
+    {
+      "name": "synthetic graphics",
+      "case": 0,
+      "format": 43,
+      "source": [
+        256,
+        2
+      ],
+      "output": [
+        256,
+        2
+      ],
+      "repeat_exact": true,
+      "eye_identity": true,
+      "omission_control_rejected": true,
+      "ideal_cpu_max_code_error": [
+        0,
+        0
+      ],
+      "output_sha256": [
+        "cd25a171293a10fa6c97ddce16426bd2ba7e218e7f2d4c98f424d59ae10c9bac",
+        "64fd666928c3eb90aa927bfd98a745afdbdc619f3a9a59bb93eec5527be9408b"
+      ]
+    },
+    {
+      "name": "synthetic graphics",
+      "case": 1,
+      "format": 50,
+      "source": [
+        17,
+        33
+      ],
+      "output": [
+        17,
+        33
+      ],
+      "repeat_exact": true,
+      "eye_identity": true,
+      "omission_control_rejected": true,
+      "ideal_cpu_max_code_error": [
+        0,
+        0
+      ],
+      "output_sha256": [
+        "bbe76be3eea54f7a16651b3777f079d7ce49552cfb7f61d03d9a650867f5654f",
+        "74e5a5d053c0c9d4cc6099df5f0618ee3240bf52c892cf4c70f00a7ebee0a022"
+      ]
+    },
+    {
+      "name": "synthetic graphics",
+      "case": 2,
+      "format": 43,
+      "source": [
+        6,
+        4
+      ],
+      "output": [
+        8,
+        6
+      ],
+      "repeat_exact": true,
+      "eye_identity": true,
+      "omission_control_rejected": true,
+      "ideal_cpu_max_code_error": [
+        1,
+        1
+      ],
+      "output_sha256": [
+        "557d500558d5817a9f993aa69b3589623ab198c64a1cd7bc47db6984733c1a23",
+        "454d18de7111c40b74696ae6c2dbae60c1958730ca7f714b87084095b678c644"
+      ]
+    },
+    {
+      "name": "synthetic graphics",
+      "case": 3,
+      "format": 43,
+      "source": [
+        9,
+        5
+      ],
+      "output": [
+        9,
+        5
+      ],
+      "repeat_exact": true,
+      "eye_identity": true,
+      "omission_control_rejected": true,
+      "ideal_cpu_max_code_error": [
+        1,
+        1
+      ],
+      "output_sha256": [
+        "ffeb8c2f92f8767db6475f418e39f0acfe151232c48bc46711f24ffc764ff7bc",
+        "7bad7c26cc08dd3878356b086f2354fceebbcf2521e339e502b4a9b078651deb"
+      ]
+    },
+    {
+      "name": "GPU ASan/UBSan",
+      "pass_": true
+    }
+  ],
+  "device": {
+    "device": "Intel(R) Arc(tm) A770 Graphics (DG2)",
+    "device_type": 2,
+    "vendor_id": 32902,
+    "device_id": 22176,
+    "driver": 109060195,
+    "api_version": 4211051,
+    "queue_family": 0
+  },
+  "hardware_executed": true,
+  "headset_used": false,
+  "native_renderer_executed": false,
+  "synthetic_shaders_used": true,
+  "packaged_native_shader_binding_verified": false,
+  "quality_qualified": false,
+  "commands": [
+    {
+      "argv": [
+        "bash",
+        "/home/blux/spatial-bridge/.worktrees/sub15-native-staged-image/prototypes/vr444/experiments/submitted_image_replay/build.sh",
+        "/tmp/sub15-submitted-replay-final"
+      ],
+      "external_timeout_s": 120,
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"job_valid\":true,\"eyes\":2,\"gpu_used\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: short replay job\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: short replay job\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: short replay job\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: short image\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: trailing replay bytes\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: replay job magic/version\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: replay job magic/version\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: image dimensions\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: image dimensions\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: output format\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: stereo eye count\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: image dimensions\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: foveation count\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: only alpha=0 / shader_srgb_decode=false supported\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: only alpha=0 / shader_srgb_decode=false supported\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: only complete source rect supported\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: nonfinite constant\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "--cpu-only"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "submitted-image-replay: opaque source required\n"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case0-0",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":256,\"height\":2,\"vk_format\":43,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case0-1",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":256,\"height\":2,\"vk_format\":43,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case0-omit",
+        "0",
+        "--omit-right"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":256,\"height\":2,\"vk_format\":43,\"omission_control\":true,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case1-0",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":17,\"height\":33,\"vk_format\":50,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case1-1",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":17,\"height\":33,\"vk_format\":50,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case1-omit",
+        "0",
+        "--omit-right"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":17,\"height\":33,\"vk_format\":50,\"omission_control\":true,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case2-0",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":8,\"height\":6,\"vk_format\":43,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case2-1",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":8,\"height\":6,\"vk_format\":43,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case2-omit",
+        "0",
+        "--omit-right"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":8,\"height\":6,\"vk_format\":43,\"omission_control\":true,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case3-0",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":9,\"height\":5,\"vk_format\":43,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case3-1",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":9,\"height\":5,\"vk_format\":43,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/case3-omit",
+        "0",
+        "--omit-right"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":9,\"height\":5,\"vk_format\":43,\"omission_control\":true,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-submitted-replay-final/replay-asan",
+        "/tmp/sub15-render-qualification-4xo8ey68/job.rlp",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.vert.spv",
+        "/tmp/sub15-submitted-replay-final/shaders/reprojection.frag.spv",
+        "/tmp/sub15-render-qualification-4xo8ey68/asan",
+        "0"
+      ],
+      "external_timeout_s": 20,
+      "returncode": 0,
+      "stdout": "{\"replay_completed\":true,\"eyes\":2,\"device\":\"Intel(R) Arc(tm) A770 Graphics (DG2)\",\"vendor_id\":32902,\"device_id\":22176,\"driver\":109060195,\"api_version\":4211051,\"device_type\":2,\"queue_family\":0,\"width\":9,\"height\":5,\"vk_format\":43,\"omission_control\":false,\"openxr_used\":false,\"quality_qualified\":false,\"performance_claim\":false}\n",
+      "stderr": ""
+    }
+  ],
+  "tools_sha256": {
+    "clang++": "4ea85504401d9f5c05109d6cb05778b241aa8d56fde1da2e5bc7ba46cffd44f5",
+    "glslc": "85365a1f6e439c17cb9d71045d8306c018782359a466ae65c1806be4f7f0cd87"
+  },
+  "scope": "Synthetic private graphics replay identity and CPU ideal \u00b11-code approximation checks; native capture matching is still required"
+}
