@@ -1,0 +1,108 @@
+Distinct source generations in the exact phase/count frontier
+============================================================
+
+Status: host-only conditional model, not a runnable selector or headset result.
+This separate branch adds a stricter source-identity diagnostic. It does not
+change the existing latency policy's definition or thresholds. Base: 6586e3b.
+
+Finding
+-------
+None of 250 tested cells meets p95 receive age strictly below 15ms and the
+full-window sufficient count for 88Hz when every selected encoded frame must
+refer to a different latched application-frame set. This remains true with the
+future-target ceiling removed and with 8ms hypothetical publication advance.
+
+Best fresh counts at 1,875 distinct generation choices:
+
+  Hypothetical publication advance       0ms      1ms    2ms    4ms    8ms
+  Best tested positive phase          5.555555ms  5ms   5.5ms  5.5ms  5.5ms
+  Maximum fresh generation choices      1489     1580   1677   1677   1677
+  Required for strict p95 < 15ms         1782     1782   1782   1782   1782
+
+The two-horizon and unbounded summaries above coincide. All counts from 1,900
+through 1,875 were solved for every cell. There are only 1,895 warm-eligible source
+sets, so higher counts are infeasible. All 125 unbounded cells are a checked
+restriction of the preceding encoded-only grid; none exceeds its original score.
+
+At +5.5ms phase/2ms publication advance, the retained maximum-fresh-count path
+has 1,875 distinct source sets, encoded and source-set cadence 88.087856Hz, and
+receive-age p50/p95/p99 12.282709/15.965001/20.110574ms. This certificate does NOT
+minimize p95 independently. It uses 260 frames before their first recorded
+snapshot. Ownership, runtime feedback and projection acceptance remain relaxed.
+Formerly qualifying encoded-only cells at +4ms/+4.5ms phase and 4ms advance now
+have only 1,662/1,673 fresh source choices instead of 1,791/1,782 fresh encoded
+choices. Counting each encoded ID as new source content concealed this tradeoff.
+
+What source identity does and does not mean
+----------------------------------------
+Each complete encoded pair is joined through the preserved host source trace
+to its canonical set of (pacer_id, app_frame_id) latches. All 2,094 known encoded
+frames join unambiguously. They contain 2,071 source sets, with 23 repeated
+encoded identities across the full acquisition. The actual warm-up prefix has
+166 distinct encoded IDs but only 160 source sets. Among 1,910 otherwise eligible
+warm encoded frames are 1,895 distinct source sets. In this run no additional
+warm encoded frame is removed by excluding an already submitted warm-up set;
+the exclusion remains an explicit checked rule with its own adversarial test.
+
+A distinct application frame is not proof of a distinct simulation/input epoch,
+new pixels, a changed scene, or optical freshness. This analysis never subtracts
+host timestamps from client timestamps. Receive age retains its original client
+clock definition. Application identities merely prevent the model from calling
+two encodings of the same latched source set two distinct source generations.
+
+Exact solver
+------------
+novelty_oracle.h is a separate opt-in offline solver. The original cardinality
+implementation and its validated binary are unchanged. Source generation sets
+must form contiguous ranges in increasing encoded-frame order; the Python front
+end checks the ENTIRE known order before warm filtering, so a filtered-out
+recurrence cannot hide. Noncontiguous recurrence fails closed. Source sets are
+canonicalized by pacer identity; duplicate pacers or malformed identities reject.
+
+The solver retains all encoded alternatives within each source group: later
+receipt can trade against later readiness, so arbitrarily collapsing a group
+would be unsound. For each deadline, exact skip budget and ending encoded frame,
+the transition's prior-state prefix contains only strictly earlier source groups.
+A monotone cursor adds previous-deadline states as their group becomes eligible;
+same-deadline choices cannot feed each other. Skipping preserves the ending frame.
+The existing frame-rank band remains a necessary (possibly loose) count bound.
+The parent budget stays bounded at 25 million entries and 64 skipped deadlines.
+
+Backtracking rechecks source-group order as well as frame/deadline/target order,
+readiness and score. A separate Python audit checks actual canonical source sets
+for duplicates and actual warm-up reuse, rather than trusting numeric ordinals.
+It also retains all original target-admission and receive-age checks. Thus bogus
+distinct ordinals cannot disguise identical source identities.
+
+Validation
+----------
+source-novelty-validation-20261009.json records a fresh exact compiler command,
+compiler/binary/source hashes, ASan/UBSan, 4,096 exhaustive small populations
+against independent recursive enumeration over every skip budget, and 4,096
+all-unique-group cases with exact original-cardinality score/path-tie agreement.
+Deterministic cases include same-group alternatives with different readiness,
+insufficient groups, late first choice, strict age boundary, group regression,
+invalid groups/timestamps/IDs and bounded parent-memory exhaustion. Nine malformed
+CLI cases reject. All 295 Python tests pass, including source-set canonicalization,
+noncontiguous recurrence, missing joins, warm-up aliases and forged certificates.
+
+Independent transport-team static review found no blocker in the group prefix,
+necessary rank band, skip/backtracking logic or population underflow guard.
+source-novelty-20261009.json seals all 6,500 count states, selected certificates,
+the exact binary/build receipt, all loaded analysis sources, original reference
+and original 300-file acquisition manifest. These hashes are rechecked after the
+analysis. Original failed run05 evidence is unchanged. No live configuration,
+native source behavior, transport route or release gate was changed.
+
+Reproduce from this branch (use fresh output/build paths):
+
+  python3 prototypes/vr444/experiments/selection_policy/validate_source_novelty.py \
+    --build-dir /tmp/sub15-novelty-new \
+    --out /tmp/sub15-novelty-new-validation.json
+
+  python3 prototypes/vr444/experiments/selection_policy/source_novelty.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --solver /tmp/sub15-novelty-new/novelty-probe \
+    --build-receipt /tmp/sub15-novelty-new-validation.json \
+    --reference prototypes/vr444/experiments/selection_policy/phase-frontier-20261009.json \
+    --out /tmp/sub15-source-novelty-new.json

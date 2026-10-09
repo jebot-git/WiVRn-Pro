@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "compiler": "/usr/bin/clang++",
+  "compiler_binary": "/usr/bin/clang-22",
+  "compiler_sha256": "4ea85504401d9f5c05109d6cb05778b241aa8d56fde1da2e5bc7ba46cffd44f5",
+  "compiler_version": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang++.cfg\n",
+  "checks": [
+    {
+      "command": [
+        "/usr/bin/clang++",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang++.cfg\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/usr/bin/clang++",
+        "-std=c++20",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-O1",
+        "-g",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "/home/blux/spatial-bridge/.worktrees/sub15-compositor/prototypes/vr444/experiments/selection_policy/novelty_test.cpp",
+        "-o",
+        "/tmp/sub15-novelty-validated-20261009/novelty-sanitized"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-sanitized"
+      ],
+      "returncode": 0,
+      "stdout": "4096 exhaustive source-novelty skip/cardinality populations and deterministic boundary checks passed\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/usr/bin/clang++",
+        "-std=c++20",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-O2",
+        "/home/blux/spatial-bridge/.worktrees/sub15-compositor/prototypes/vr444/experiments/selection_policy/novelty_probe.cpp",
+        "-o",
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 0,
+      "stdout": "{\"schema\":1,\"rank_band_width\":2,\"parent_slots\":8,\"stored_states\":4,\"frontier\":[{\"skips\":0,\"required_count\":2,\"feasible\":true,\"maximum_good\":2,\"certificate\":[[1,1],[2,2]]},{\"skips\":1,\"required_count\":1,\"feasible\":true,\"maximum_good\":1,\"certificate\":[[1,1]]}]}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "missing/oversize integer\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "trailing input\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid exact integer\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid exact integer\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "input population bounds\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid exact integer\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "strict frame IDs and globally nondecreasing targets/generations required\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid frame identity/timing\n"
+    },
+    {
+      "command": [
+        "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+        "/tmp/sub15-novelty-validated-20261009/sample.txt"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "invalid frame identity/timing\n"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ".......................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 295 tests in 5.003s\n\nOK\n"
+    }
+  ],
+  "sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/validate_source_novelty.py": "07598ed28407531ea12836118f3a4dce9b34d96d8dedfd3511a94df933ee8fbc",
+    "prototypes/vr444/experiments/selection_policy/novelty_oracle.h": "90ef9bfb8f4a4adc443db40b1e9818621766cdf2d9bca7ad2408f4c53ec44f00",
+    "prototypes/vr444/experiments/selection_policy/novelty_test.cpp": "b94a263c8ae2c58cea071bdcf0d62b87d7eb8e79450342b667410f85a60dd37e",
+    "prototypes/vr444/experiments/selection_policy/novelty_probe.cpp": "5fc046d4a8124c5884ce08320525d010e7ffbbdad0b4ad425d95bf2668e45ffd",
+    "prototypes/vr444/experiments/selection_policy/source_novelty.py": "ea3b3ea80325393d4aab80f6dedc3cab50c42541e399ff42b15e5d2c45ea40ca",
+    "validation/wivrn-codecs/tests/test_source_novelty.py": "d8d79651d3ef017b6aa97d5ef373b3feb518cd0eb29065e47edb21150589c004",
+    "prototypes/vr444/experiments/selection_policy/cardinality_oracle.h": "50ba2b3e25dc555d117502491eca9502932bfbad064868dac15a76a9ce5254b1",
+    "prototypes/vr444/experiments/selection_policy/target_admission.py": "96ee5bff6e7608eb588eb8028a82e1dd2dbff265909efb0af59153f956d1623b",
+    "prototypes/vr444/experiments/selection_policy/phase_frontier.py": "fca2c49482ceda8b19737708c2441d3cdfb676233e7b9b592376a7195373336c",
+    "prototypes/vr444/experiments/selection_policy/cardinality.py": "58545fa8eb40278ea0245f78903e9ace1537785c387293def11c710fb7f9e8b5",
+    "prototypes/vr444/experiments/selection_policy/supply_phase.py": "7afe848798a43efa71f42bd4803e12470586e3f7f677aff720501ccd978c267e",
+    "prototypes/vr444/experiments/selection_policy/target_envelope.py": "b6af5e3305d37b92fa84a33b2a55411a1f1a9b77764a60d3029470451d0eb4ad",
+    "prototypes/vr444/experiments/selection_policy/availability_oracle.py": "dd52cbb6ee398c43f3e4e9c6da0a1d850db7f39738fc5817651b7ce9f382e487",
+    "prototypes/vr444/experiments/selection_policy/counterfactual.py": "857da8c912576b9cce34997300b169cf39e58c87786df8fdbd731bf82da7c827",
+    "prototypes/vr444/experiments/selection_policy/reanalyze_trace.py": "cd0b22f7c4f3be735672a98b435c40cf07754fec0173d3d3f0d016f07114c8ac",
+    "validation/wivrn-codecs/tests/test_candidate_trace.py": "8175f508ee3b202e683f4307156868a69f3a08a038dd58c8716b568139ceabef",
+    "validation/wivrn-codecs/tests/test_compression.py": "bd664d2532c0ec819baa61443e1b2c7c78c6c96571c08eae1a6ea7ceec8cae95",
+    "validation/wivrn-codecs/tests/test_cpu_target.py": "01e90d493837207930655af20920630d08e317d0b0d07a07f5943c87eb30ec90",
+    "validation/wivrn-codecs/tests/test_decoder_selection.py": "0367c7bddb62e7114e5a5f689c6015fba7da594cbde57253a1d41a811d69bd5f",
+    "validation/wivrn-codecs/tests/test_gaze_metrics.py": "e387eaebeb5beaf8c358c37c623e5322c09663e58cca22a4324b3cea861f4d71",
+    "validation/wivrn-codecs/tests/test_hardware.py": "1ffe4ca62ec423a03f09d69c71b3653f81fdd8428492ad961bf9e9fde1b5bb88",
+    "validation/wivrn-codecs/tests/test_latency_policy.py": "9af8fcd725a047fffe79aaf6b0f3c7bcc6dd5afe5b87aa95eec30d24469cdf64",
+    "validation/wivrn-codecs/tests/test_latency_runtime.py": "e2b91feaa6930b9b39432352bb08847733e29d08b7dc766da39db46da6839573",
+    "validation/wivrn-codecs/tests/test_live_integration.py": "c3e711d0bf0a341665077c5a3fb619d60e5f45b1077811206429f304f0cbb812",
+    "validation/wivrn-codecs/tests/test_meta_sr.py": "b107bf7b1ac9d097a84f5b9f61af54ca1e3a57991155a5f17955f916d5c76e4a",
+    "validation/wivrn-codecs/tests/test_native_compare.py": "a242234d909919dfd5868fa3b8927e83b159063079fc734d9fab5bab4b726415",
+    "validation/wivrn-codecs/tests/test_native_metrics.py": "a1413e2167ffc9cd03efab947cb554012b4552223a9d9c170b766a65865e4f96",
+    "validation/wivrn-codecs/tests/test_optical.py": "db70f554dbd0cb43e17a1411c43e7cf1529756de2496247965dc520b90063e31",
+    "validation/wivrn-codecs/tests/test_suite.py": "b1b51a67d6bf916b6c7f6dd84e52e660aebbf9acec59a34691fdcc9bf0c240ad",
+    "validation/wivrn-codecs/tests/test_trace_reanalysis.py": "8409d81eae3321e4617c6cb49174a2ec6a8b34f2ce9a519c3774c1ed8de47eb0",
+    "validation/wivrn-codecs/tests/test_selection_counterfactual.py": "0682b5132a8e7ee0b3360de0747812cf8baee1b55e4541f3476958ecec02e8ea",
+    "validation/wivrn-codecs/tests/test_ready_successor.py": "5b6663b27971498904784c510c52213e703c877802d3eff199788f6141c48006",
+    "validation/wivrn-codecs/tests/test_pacer_trace.py": "df85ac9476ea8c1118c1bb4d2bec97c3d22b39cb619d4b01f99472530afaf4e2",
+    "validation/wivrn-codecs/tests/test_availability_oracle.py": "63315b9f5fd84059b92f8218441966ab2b4765e17c0d499c572e4eca72cc5e1f",
+    "validation/wivrn-codecs/tests/test_client_timeline.py": "120d91ef839316d5f0bd42cd0bf145e892975f890b991f71d22915386b5de7ca",
+    "validation/wivrn-codecs/tests/test_pacer_source_join.py": "cd1ac525f59af10b78cc9214eb48b6e019f9d49af4c28229cba0e8d44f9a4940",
+    "validation/wivrn-codecs/tests/test_target_envelope.py": "93ab13723052973b1d7df8025eceacf61e7044f7803c198a98b0b8dc23b620e4",
+    "validation/wivrn-codecs/tests/test_supply_phase.py": "0d999a1449da05bfe73f19154a379265df9c3a314fba4ca527970bf01db3b695",
+    "validation/wivrn-codecs/tests/test_full_count.py": "965de31a33b76df216199ce1a5ae072acbab768ae14476762b03c3e91191a289",
+    "validation/wivrn-codecs/tests/test_cardinality.py": "4703eaf3f0e8cced57165cfc83b076b1d162101825eec7d2c90e6b7b7ece541d",
+    "validation/wivrn-codecs/tests/test_publication_trace.py": "fca82ff440d837af1cfbe73b53e93755e2c130595d5f3466c3bb00c86500338d",
+    "validation/wivrn-codecs/tests/test_publication_capture.py": "de07c1b5dbbacb4364f182892f3c6c26c10cf4337234c6da8367c681ea6322cd",
+    "validation/wivrn-codecs/tests/test_phase_frontier.py": "790af3eebbbdb8c74bfc69630de643ef74316347769ce15c145f40250fcb0e36",
+    "validation/wivrn-codecs/tests/test_target_admission.py": "77310e1bc3c5b0f1879101e7549e42791f8f5850abad0ff25de8b4b042642b2e"
+  },
+  "solver_path": "/tmp/sub15-novelty-validated-20261009/novelty-probe",
+  "solver_sha256": "28b7c31ae2c356fdfcfbcc672c8725078e32227c8625f793aec3102a0f002a02",
+  "sanitizer": "address,undefined; leak detection disabled for this environment",
+  "exhaustive_small_populations": 4096,
+  "all_unique_group_original_solver_crosschecks": 4096,
+  "malformed_cli_cases": 9,
+  "headset_operations": false,
+  "native_behavior_changed": false,
+  "measured_speedup": false,
+  "latency_gate_evaluated": false,
+  "scope": "Host-only exact source-generation novelty solver correctness and independent certificate audit."
+}
