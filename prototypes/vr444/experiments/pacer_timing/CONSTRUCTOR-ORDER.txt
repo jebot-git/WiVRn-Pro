@@ -1,0 +1,59 @@
+PACER TRACE CONSTRUCTION ORDER FIX -- 2026-10-09
+
+Use this fix with the earlier pacer-trace observation branch before integration.
+The original observation patch opened the diagnostic output in the constructor
+body. The pacer's worker jthread is already constructed by then and can be
+blocked on its condition variable. An invalid/existing output path throws;
+constructor unwinding destroys the worker without running pacer::~pacer's
+condition-variable notification, which can leave the unwind waiting forever.
+This issue was found in offline review before native integration or launch.
+
+Diagnostic recorder creation and instance-ID assignment now occur in the
+first member initializer. The member is declared before the worker, so path
+errors happen before a worker can start. Invalid paths still fail clearly;
+exclusive creation still preserves existing files. Runtime scheduling and
+successful prediction arithmetic are unchanged. Default-disabled diagnostics
+still allocate/open nothing. Native source trees remain untouched.
+
+constructor_test.cpp compiles/links the actual overlay pacer constructor using
+read-only Clang VFS and cached native compiler settings. Its executable provides
+a deterministic pthread_create EAGAIN fault and no-op u_var/default-value stubs;
+no worker thread is started and no server or headset connection is launched.
+Five separate processes prove:
+  relative path -> trace error before any worker-start attempt;
+  existing file -> trace error before any worker-start attempt;
+  missing parent -> trace error before any worker-start attempt;
+  disabled recorder -> expected worker-start fault;
+  valid new recorder -> initialization precedes expected worker-start fault,
+                        followed by a complete empty recorder footer.
+The existing file's bytes are checked unchanged.
+
+A temporary VFS negative control moves initialization back to the constructor
+body without editing any source tree. It must fail the trace-before-worker
+assertion with the expected return code 4, proving the regression test catches
+the original ordering error. This is controlled constructor fault testing,
+not normal pacer worker execution or a native server build. Existing packet
+headers have static common-support initializers, so the test links one cached
+support object and libcrypto; its hash is bound in the receipt. No connection,
+credential use or protocol operation is performed.
+
+The new receipt is constructor-validation-20261009.json. The prior syntax and
+recorder receipt remains a historical record of its exact earlier source hash;
+constructor-fixed-validation-20261009.json binds the corrected sources to the
+same ASan/UBSan recorder tests, 512 independent fixture replays, Python suite and
+full translation-unit syntax check. No original runtime evidence is changed.
+
+Reproduce (host only; outputs must be new)
+  python3 prototypes/vr444/experiments/pacer_timing/validate_constructor.py \
+    --native-source /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests \
+    --compile-commands /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests/build/codec-server/compile_commands.json \
+    --out /tmp/pacer-constructor-new.json
+  python3 prototypes/vr444/experiments/pacer_timing/validate.py \
+    --native-source /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests \
+    --compile-commands /home/blux/spatial-bridge/.worktrees/wivrn-codec-tests/build/codec-server/compile_commands.json \
+    --out /tmp/pacer-fixed-new.json
+
+Validation completed: 11 native-constructor build/fault/negative-control checks
+and 6 recorder/fixture/syntax checks pass; the corrected source also passes
+the complete 231-test Python suite. The intentional negative control returns 4
+as declared in its receipt, while every positive check returns 0.
