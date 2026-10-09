@@ -1,0 +1,1 @@
+{"pass":true,"roundtrips":271,"rejections":8422,"mutations":10000,"maximum_pixels":4194304,"output_unchanged_on_rejection":true,"independent_modulo_predictor_oracle":true,"scalar_simd_canonical_wire_equal":true,"simd_boundary_cases":65,"backend":"aarch64-neon"}

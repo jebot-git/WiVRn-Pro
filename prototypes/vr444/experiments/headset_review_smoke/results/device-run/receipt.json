@@ -1,0 +1,1883 @@
+{
+  "schema": 1,
+  "start_utc": "2026-10-09T12:54:09.031764+00:00",
+  "plan_sha256": "ae32c2cf89256061da4ab1a7a951f82de89f25aff057ee822020d4dcbf9e8b3a",
+  "runner_sha256": "e495081a5bdbbef3aa94cff0082b700516740dca711d10d3ec9dedb143e4c64a",
+  "headset_used": true,
+  "root_required": false,
+  "openxr_used": false,
+  "performance_qualification": false,
+  "promotion_eligible": false,
+  "remote_directory": "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0",
+  "commands": [
+    {
+      "label": "serial",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "getprop ro.serialno"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06438786399667151,
+      "stdout_sha256": "c1bc05a54512f062e20d07657dea4d33cf7571c32f9fd60803beea95626c57d6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "fingerprint",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "getprop ro.build.fingerprint"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.032139085000380874,
+      "stdout_sha256": "d1ced593f32570f7ff31ed8bd35ce35e7a64837c4bdd6d6594a08877bf163c75",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "battery-before",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "dumpsys battery"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06398382200859487,
+      "stdout_sha256": "955c2615b76c030c9d6b29332682c461a8fa3d866c3954e242f51a643743afa1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "mkdir",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "mkdir /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06397303700214252,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-0",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/build/capabilities-android",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/memory-capabilities"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.11444894198211841,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "518a8818ba88812d581730591e0b13d4f1fa1eb4e1b831213304ae75f0a07669"
+    },
+    {
+      "label": "hash-0",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/memory-capabilities"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06410357600543648,
+      "stdout_sha256": "3044d68034f4bdde581930d430e13f433cbacc51a2293c8d6ebe1a6ae55a9246",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "chmod-0",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "chmod 700 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/memory-capabilities"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.031973404984455556,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-1",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/prototypes/vr444/experiments/vulkan_extensions/build/capabilities-android",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/extension-capabilities"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.1140401890152134,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "41c3b09ffca406365fef9c93e6d2d0d57758c16b2deade24c50bf51f528c133a"
+    },
+    {
+      "label": "hash-1",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/extension-capabilities"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06411278998712078,
+      "stdout_sha256": "74366bee44df97b40927f110565e0f56dd8c61e871ba747baa30c04266f63d93",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "chmod-1",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "chmod 700 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/extension-capabilities"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03177606101962738,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-2",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/mapped-consumer-android",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/mapped-consumer"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.1140165539982263,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ec44717f096e2ce42e1120b6d95b91ee0a897a46a04f5d60cd2d4e9fade3288b"
+    },
+    {
+      "label": "hash-2",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/mapped-consumer"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06422809101059102,
+      "stdout_sha256": "7656ec9257ce6840ae4e0e27925606a718e09f168a45a05f6e12e662e95caf9b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "chmod-2",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "chmod 700 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/mapped-consumer"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.031950871023582295,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-3",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/wivrn-rowblocks-band-views-build/test-android",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/band-views-test"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.11424488699412905,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "f91277f44220dd2195423828953e01392a80cf732a335b4f8382b366a2eb8a3b"
+    },
+    {
+      "label": "hash-3",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/band-views-test"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06399856897769496,
+      "stdout_sha256": "28a61945bdfdec2ed42dbd485bc65c8bf2de6982a296446677076485bf44c258",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "chmod-3",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "chmod 700 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/band-views-test"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06389544499688782,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-4",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/wivrn-rgb-rowfilter-simd-build/test-android",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/simd-test"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.11414896498899907,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "66b3ffe8d814fbca1722dde41d3c323d970946014a7a0edc35dfab9ed89fd1d2"
+    },
+    {
+      "label": "hash-4",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/simd-test"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.0639122580178082,
+      "stdout_sha256": "d5e7712540c4d2301988a5e6c69744a2657055ebff3e1e89be181c685d27d127",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "chmod-4",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "chmod 700 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/simd-test"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03188972998759709,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "mkdir-5",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "mkdir -p /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03189998399466276,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-5",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/buffer.spv",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4/buffer.spv"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.031841403018916026,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "379a495b36c0688289eda2921effbb3558789fe2ed874230b5558c4cf912048e"
+    },
+    {
+      "label": "hash-5",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4/buffer.spv"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.031946731003699824,
+      "stdout_sha256": "6c12aa83bb906a5f7bf3417b357368b31381aed0ad0d6e0318ddc661dcb0d8f3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-6",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/sample.spv",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4/sample.spv"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03191091297776438,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b486e99767d002acc0ebd416b622210fa875db5d1be81ad771375cf80b65f5b3"
+    },
+    {
+      "label": "hash-6",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4/sample.spv"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03180446301121265,
+      "stdout_sha256": "2a715d4def5710a17a9dccf7a19f8262ec5afce02ea13175f02cd5d8d2a7fe3c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-7",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/uint.spv",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4/uint.spv"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06413129600696266,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "915ef177d4482859a5fa1f2c21e177e6efdb676760c72e96c8b3eb92b5b32c78"
+    },
+    {
+      "label": "hash-7",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4/uint.spv"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.032073968002805486,
+      "stdout_sha256": "bf4edf8cbdd82844b49fd528b81a8ab61bafd44fd0ce148cec28efd415cd4888",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-8",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/unorm.spv",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4/unorm.spv"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03177851499640383,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ca52be1fa2ca949ffcad814ac34b68d3734f191c48a2df656f2a320eac8d0784"
+    },
+    {
+      "label": "hash-8",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrf/shaders-4/unorm.spv"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06398952601011842,
+      "stdout_sha256": "5630fcc3e022e55c6f3a4d2c8b2aa407a4127221a91a6f554ec6116166646891",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "mkdir-9",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "mkdir -p /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03192191300331615,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-9",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/buffer.spv",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders/buffer.spv"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06413646900909953,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "09d1d4da8054d45f3a947fcfb3ec08af6e59bce4f9202eb01c386179b941e888"
+    },
+    {
+      "label": "hash-9",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders/buffer.spv"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06413218600209802,
+      "stdout_sha256": "1caecd0b38da881ec4329b7c8885d9a1d87dbdb9d22866f621de36a6b19d1f39",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-10",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/sample.spv",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders/sample.spv"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03197721400647424,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "787cfdc498e0e7d0a0bd32c7a25a5f0bf1c1c95475559b85cf9eab6f2c5cc663"
+    },
+    {
+      "label": "hash-10",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders/sample.spv"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.031890338024822995,
+      "stdout_sha256": "ed390e9c9ab8c9fe1a5c99232dac00c6dccad02c97c507e8abf6cfc2671f8f36",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-11",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/uint.spv",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders/uint.spv"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03194002798409201,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "6fc89fdfad41fa8cf6caa3cfb4c9f1ec0e097cbe59a0c86b3e6d60f6d11ae957"
+    },
+    {
+      "label": "hash-11",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders/uint.spv"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.031910452991724014,
+      "stdout_sha256": "2690b97743a0f0c32cba822b5a9a08fb47ccc609ca29778b87c2147d5d1e66ed",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-12",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/unorm.spv",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders/unorm.spv"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03197585299494676,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a0f6f2f23a1af4b3a5373639780e31d4ec6c9db7067c77c08e8892155a16edfc"
+    },
+    {
+      "label": "hash-12",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders/rrb/shaders/unorm.spv"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06385865600896068,
+      "stdout_sha256": "337a6ac7bf954bd24effb033840d5a4077f7d2efc530470754a456b4ab054c6e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "mkdir-13",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "mkdir -p /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03199780700379051,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-13",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-0.rrf",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a/1350-0.rrf"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.0318269299750682,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e9b3b11345116e8d41d958a50cbf6523f1587ee06a4506a704c654af4e3afe30"
+    },
+    {
+      "label": "hash-13",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a/1350-0.rrf"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.0320648449996952,
+      "stdout_sha256": "1608d49618671b190b4fd1a20b38797c22b39bb4ed29e7e34da0d97688eb8719",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-14",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-0.rgba",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a/1350-0.rgba"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06424770099692978,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "10bcac65db7ec55f8c4800b39bee7975959f083fe6aa38f0027deda82a3d67e3"
+    },
+    {
+      "label": "hash-14",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a/1350-0.rgba"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06394833399099298,
+      "stdout_sha256": "7ff9addf782e064bece25839b779013da66faa76b7c1a4d557ddd9ad484c44b7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-15",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-1.rrf",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a/1350-1.rrf"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06411723801284097,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "758f490af94016c216c8e310480e8bc2e13ce0fa810f2998e6508cdde5a99312"
+    },
+    {
+      "label": "hash-15",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a/1350-1.rrf"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06424549501389265,
+      "stdout_sha256": "7174218137758bd63810aeaaff01c01afb105791cb37ae9ac93c978b3bb26929",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-16",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-1.rgba",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a/1350-1.rgba"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06392645501182415,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a0521c39744676c6ab4f205119a331dfb5a2019f9e3b8b0a75dc2a241d473ac6"
+    },
+    {
+      "label": "hash-16",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/paired-a/1350-1.rgba"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06401924998499453,
+      "stdout_sha256": "035b3ee40e7405d32c9719fa41bf83a3946c3901a8c3ffcc508c5180cf816eb6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "mkdir-17",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "mkdir -p /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03197468500002287,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-17",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r16.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.r16.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.031925663992296904,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "172927df5ba99aaf254b962ddad9d289df950a4bafa6dffa7bb28a457099662b"
+    },
+    {
+      "label": "hash-17",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.r16.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06389016500907019,
+      "stdout_sha256": "4eea10e54b881c5678c38acc2e89f5b247eda855800759784a37677438269575",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-18",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r32.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.r32.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.0641466350061819,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "79759fdddbe046c30cda807cd2c56e44cbd236dffbc526e54df5f48441381989"
+    },
+    {
+      "label": "hash-18",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.r32.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.064188482996542,
+      "stdout_sha256": "167ffe9983e39bcea2f8b72f1074b0782bdb2289efaba1a1745f1ff2f5882fed",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-19",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r64.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.r64.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03200453199679032,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "52ab5d3997cad4b1d8fece38b66f0136281931524eb446411eee01cc474913c3"
+    },
+    {
+      "label": "hash-19",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.r64.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03211394001846202,
+      "stdout_sha256": "17dd9193c82fe85d80f6efec59f9ff20709570080eb20595be556dbb5632a3a2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-20",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r128.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.r128.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06392808898817748,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e4a5ac6a899b0e44acf756c98fec7b5e6f44996b1a7f8976a074079eadcb41ad"
+    },
+    {
+      "label": "hash-20",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.r128.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.0639928080199752,
+      "stdout_sha256": "2fdcadfb175f6c1cccae4941115781d5367dbe0c4db29ac0c20f57b1eb316757",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-21",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.rgba",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.rgba"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06417048699222505,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ef761f35b42f97155408cd0a5e9d27e1239d3d2d99ddf3ea5c6ae9cbbef277f9"
+    },
+    {
+      "label": "hash-21",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-0.rgba"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.031914902006974444,
+      "stdout_sha256": "457336a167cde86b715f28fa36abcc164c2083011e560385caf25ccd812b89e5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-22",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r16.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.r16.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06392622200655751,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7fbcc2131e84d22f9d72bab5ca2bafe2d1953068ad6124e86ef0094a85ab917b"
+    },
+    {
+      "label": "hash-22",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.r16.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.032105391001095995,
+      "stdout_sha256": "80be93d1864758a7a65f7468c8ad1b158a7df37b8b6eb9e0474294d0db468693",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-23",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r32.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.r32.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.031872941995970905,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "cccdb2d080934376364c0afced3ffd37fdbcdbc202732bd3361a3557cc3e723c"
+    },
+    {
+      "label": "hash-23",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.r32.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03200906500569545,
+      "stdout_sha256": "609326945b413e7a169f26c41fb6a4ca5c198a20d7cae21d7503c6a41d891964",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-24",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r64.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.r64.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03190335599356331,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "f0ca2c4ca26c601ab8bb83ba3704b1ccd81e10780d7f5943d151105574d345bd"
+    },
+    {
+      "label": "hash-24",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.r64.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.032077548996312544,
+      "stdout_sha256": "163fdd614200290d4fbb0f2822eb3517eaa096fdb138f53a24214f17a18a3c10",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-25",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r128.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.r128.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03199263499118388,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "228176374ada11fc0e5c8035b97541293f5171f8d526e15153180407daa5b799"
+    },
+    {
+      "label": "hash-25",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.r128.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03198714001337066,
+      "stdout_sha256": "f62d158331b12c01d4ce2f5a4070011b64d19120d968eebc9d9aeb4744d6f98b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-26",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.rgba",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.rgba"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06424670602427796,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4f2697872070160e8476c7cddb508c8f245d0bef2b9eb185a06c42a00b787ef0"
+    },
+    {
+      "label": "hash-26",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/paired-a/1350-1.rgba"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06397856000694446,
+      "stdout_sha256": "b7224dfcc82f8a8478e147840599f263338b560fff0219e12647c7e650d53839",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "mkdir-27",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "mkdir -p /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03172892000293359,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-27",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-0.rrf",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless/360-0.rrf"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03178338901489042,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "309bbc7f591c56acff7925adcbcc73c4a7b6ab4ab9079e27853bd2a88ac2f555"
+    },
+    {
+      "label": "hash-27",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless/360-0.rrf"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03195089101791382,
+      "stdout_sha256": "a8f55c9aa396c762fa23d7763189d01f7778844e6858c598ed9476005ef7e42c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-28",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-0.rgba",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless/360-0.rgba"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06422997001209296,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7d1217e1ebc0884bd053aa7612864a21f500f304a290dbab2c381fce88a23d2a"
+    },
+    {
+      "label": "hash-28",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless/360-0.rgba"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03211510801338591,
+      "stdout_sha256": "d4589b029858c985f918af74a6103d881ac6ed9ac1b5630da8c0704a6ae3451b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-29",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-1.rrf",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless/360-1.rrf"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06401467902469449,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "aafec3bfeb08dbc93de2a9790aca88604437564bfa9877d6ce2912065e1056c1"
+    },
+    {
+      "label": "hash-29",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless/360-1.rrf"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06400682200910524,
+      "stdout_sha256": "24df219a0bc0da1b276195c18f4d6c0ad7763a3e09a497c5d8cbcb83591d9de8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-30",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-1.rgba",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless/360-1.rgba"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06427185799111612,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d326ec26b115bbcabaf6bc2ff611199920b46e2f6ff4bd953f670bb23849b635"
+    },
+    {
+      "label": "hash-30",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf/lossless/360-1.rgba"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.031992233998607844,
+      "stdout_sha256": "fd65754fdfd281d6bc9913659f1327f628f102a5ef09242a63243b3ea6c65210",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "mkdir-31",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "mkdir -p /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06384093299857341,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-31",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r16.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.r16.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03207605201168917,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b8e0fe20d5d4733f5dc819d04413cebba216e094cb9465f106705ea33a84807a"
+    },
+    {
+      "label": "hash-31",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.r16.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.032052560010924935,
+      "stdout_sha256": "dc7d00937a277ceac5d632b8ec339a6eb9d2094fa8c4597bf5428b94cfacfc1f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-32",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r32.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.r32.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.031951081997249275,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "91e960005d7a9da77bede28d3fe6e43f4ee6e0822c98e7b9dc8f470ffc9fb8f2"
+    },
+    {
+      "label": "hash-32",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.r32.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.0639660190208815,
+      "stdout_sha256": "e788eb7bcf64ebca5fc7850b8c5c2b926d3cf0a0b86e9c5d1a2eca64e404ea19",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-33",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r64.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.r64.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06397865799954161,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "cb08f49ff8362d583c145d0b9b7f66bce343ccd60ede3e2be10f95da972dcfbf"
+    },
+    {
+      "label": "hash-33",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.r64.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.031802028010133654,
+      "stdout_sha256": "b20e2a6b6bf3a47cc2064e895b42398c25c584439748ac7f61e17e20bf7c4ff3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-34",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r128.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.r128.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03180343299754895,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "bd3628711296ba597fe9878254f23e5f23d47556539b94a72189166a7083bbe5"
+    },
+    {
+      "label": "hash-34",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.r128.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03194668798823841,
+      "stdout_sha256": "f6d2ae1706d989deb0682dfe8d0c5f84934c160daeb033bea012bb2c77a891b2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-35",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.rgba",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.rgba"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06404373500845395,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "221385f967008b99d102a3cfd849fbf5a457ac44887f50b6d0ce7472df375374"
+    },
+    {
+      "label": "hash-35",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-0.rgba"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06391780299600214,
+      "stdout_sha256": "f2a541c32cb281c75b59915560047343f5368f21a5a56feb67ed01909d82657f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-36",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r16.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.r16.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.031796121009392664,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4d0da11657203e36ace0057bee470d8399fe836a65f4d578b3982d11096e6b79"
+    },
+    {
+      "label": "hash-36",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.r16.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06391880099545233,
+      "stdout_sha256": "86cc2a19de6c9be6b493cf1e3fe306a78709b6bbeb9f4646a3bf938eca70d956",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-37",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r32.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.r32.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.031914716004393995,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c09e4d54f96783e27b14db0fefd8eaf44329ab18f365469be38c1d06f466d8b4"
+    },
+    {
+      "label": "hash-37",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.r32.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03228187299100682,
+      "stdout_sha256": "6d2b54108739b5a7657f0c884594545c87abc3a28d373406d4033652ec2ea940",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-38",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r64.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.r64.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.03193779199500568,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "13ce79f5dfaab47650a019077b85ddae8e4e5fe5021b2076c687f7cb83eb7a76"
+    },
+    {
+      "label": "hash-38",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.r64.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03189617398311384,
+      "stdout_sha256": "4e96913ee5af2d969854920663a7461586a5b1151a0c6ae7d8dbe3c972dcbb14",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-39",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r128.rrb",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.r128.rrb"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06409398798132315,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7e531a8acf99afd4f6cda7e1e01d8ff8971c6c454740eddec9a4578704060523"
+    },
+    {
+      "label": "hash-39",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.r128.rrb"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03209470599540509,
+      "stdout_sha256": "912a9cde113c5bbbf65cf5d7f9bbbcac1682cf41df74c42471b8a107c4a0981f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "push-40",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "push",
+        "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.rgba",
+        "/data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.rgba"
+      ],
+      "timeout_s": 60,
+      "returncode": 0,
+      "elapsed_s": 0.06386687199119478,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "986be84ea766c71d4772f0cbe3c75ce55252931ba864571d10c418490b74edbe"
+    },
+    {
+      "label": "hash-40",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb/lossless/360-1.rgba"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06415369801106863,
+      "stdout_sha256": "ed78abe8dfd4377d0b2cae562394c089a25159fdeeec23c8338d8a9aa6c8ebf2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "extensions",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "timeout -s KILL 15 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/extension-capabilities"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.1140579670027364,
+      "stdout_sha256": "fbb7b926dbbc96bcca3f827b94c771b12ba2efa333958d3b27326674a57c0b1a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "memory",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "timeout -s KILL 15 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/memory-capabilities"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.11413832099060528,
+      "stdout_sha256": "113fa95112a709ad7fca3a143252d980a5fa51763942b9405a9c27773d413865",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "simd",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "timeout -s KILL 120 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/simd-test"
+      ],
+      "timeout_s": 135,
+      "returncode": 0,
+      "elapsed_s": 0.7161908950074576,
+      "stdout_sha256": "e62b0bc808a72c6ddbc620b06186c41447aa9d430fb1270fbf5c239adb630b31",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "band-views",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "timeout -s KILL 180 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/band-views-test"
+      ],
+      "timeout_s": 195,
+      "returncode": 0,
+      "elapsed_s": 5.326828259014292,
+      "stdout_sha256": "7e554214289b20832fb73a5bd1e91d9692c3c07b98fed3b59e00106b55807688",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "gpu-two-profiles",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "timeout -s KILL 180 /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/mapped-consumer /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/shaders /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrf /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0/rrb --device 0 --reps 1"
+      ],
+      "timeout_s": 195,
+      "returncode": 0,
+      "elapsed_s": 59.70353543901001,
+      "stdout_sha256": "ea0168d80c4c0d2650856acec17241ebceda742c1995e56d5551ccdcf89d717c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "battery-after",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "dumpsys battery"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03210270998533815,
+      "stdout_sha256": "a9f06d58bf92d59f4755ece9550f3b55539be7ab1cbf3e7fd241f2bd50b7994a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "cleanup",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "rm -rf /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.06399135399260558,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "cleanup-verified",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "test '!' -e /data/local/tmp/sub15-review-8c31211ac31a4fe88459cd229d4324d0"
+      ],
+      "timeout_s": 30,
+      "returncode": 0,
+      "elapsed_s": 0.03182293497957289,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "inputs": [
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/build/capabilities-android",
+      "remote": "memory-capabilities",
+      "sha256": "7cabbaf4006eca59918c0cd2859094a4c92d1b8771c8de59c24b2014867b3492",
+      "executable": true
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/prototypes/vr444/experiments/vulkan_extensions/build/capabilities-android",
+      "remote": "extension-capabilities",
+      "sha256": "9ca16798721a8e5e031b244de78eeb73be103133b3a04b1046e7f6797dcb9156",
+      "executable": true
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/mapped-consumer-android",
+      "remote": "mapped-consumer",
+      "sha256": "d62f5723c4ee13969f5749e6bc9b15ad38c1cbdd8175f0ab831ab4e09963bb2d",
+      "executable": true
+    },
+    {
+      "local": "/tmp/wivrn-rowblocks-band-views-build/test-android",
+      "remote": "band-views-test",
+      "sha256": "2a780cc5c82762ca39e0aca81321ba5fd88e0d98273c8b67e76eef46b6fa2455",
+      "executable": true
+    },
+    {
+      "local": "/tmp/wivrn-rgb-rowfilter-simd-build/test-android",
+      "remote": "simd-test",
+      "sha256": "76e52c1bd646b10f2028d3ae8bd66a83f9b357f4efe88a86ff414c7f511f520f",
+      "executable": true
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/buffer.spv",
+      "remote": "shaders/rrf/shaders-4/buffer.spv",
+      "sha256": "1ef691b6e9291826cadfabe86ddb99725fa6787b5e4e9b7d97d88cb410ee95c0",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/sample.spv",
+      "remote": "shaders/rrf/shaders-4/sample.spv",
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/uint.spv",
+      "remote": "shaders/rrf/shaders-4/uint.spv",
+      "sha256": "f42443cf8ba2ce3cabd16a061d8c8a0f2252cc209d95309397683ba030ac700b",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/unorm.spv",
+      "remote": "shaders/rrf/shaders-4/unorm.spv",
+      "sha256": "f963502ec2f189a50dcdcbad1f1abe92f28f301e8155eb3ecc77a1febf5c54e6",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/buffer.spv",
+      "remote": "shaders/rrb/shaders/buffer.spv",
+      "sha256": "b408089ce94765a38c30f2e98f2f6881c209646da10353ceef30ea22ead867ca",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/sample.spv",
+      "remote": "shaders/rrb/shaders/sample.spv",
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/uint.spv",
+      "remote": "shaders/rrb/shaders/uint.spv",
+      "sha256": "076230140137e8b10b6a6f085b028b021f9d419b742906cefdfd41cd7d3ef416",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/unorm.spv",
+      "remote": "shaders/rrb/shaders/unorm.spv",
+      "sha256": "2ec428dab6a4dc25188ee57b42464c511b5c2d99fcfd563916ac188c60c3b087",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-0.rrf",
+      "remote": "rrf/paired-a/1350-0.rrf",
+      "sha256": "b666cc1bdcc60ac568aaf80bf4c308ff7aaf09ac36b72aa36f46ada6cd0d8954",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-0.rgba",
+      "remote": "rrf/paired-a/1350-0.rgba",
+      "sha256": "8d4d6441cfe522a6666c2d3f688ef7d81d285e49bc83d56bbb22d36bdde51501",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-1.rrf",
+      "remote": "rrf/paired-a/1350-1.rrf",
+      "sha256": "ad37503d031bc9671eff2154322224a7fe6415fbb2987bd2bb436da0082357a8",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-1.rgba",
+      "remote": "rrf/paired-a/1350-1.rgba",
+      "sha256": "19d1423ab70a9fb3c1dadd1239e329f178fa07810fbbf575b902b05670566378",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r16.rrb",
+      "remote": "rrb/paired-a/1350-0.r16.rrb",
+      "sha256": "c0181b5a4f362b632c48a3dce44c6010c871d020962814b1f2c45c463391a7e9",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r32.rrb",
+      "remote": "rrb/paired-a/1350-0.r32.rrb",
+      "sha256": "038a54b37d2b63082fa447b28ae1963c3092ed3940768173ecc86adfb2eb4d2a",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r64.rrb",
+      "remote": "rrb/paired-a/1350-0.r64.rrb",
+      "sha256": "fe65db86c2a434f4eae58b3735d2c6153b0ddc1c297984796bcda9b528c5be69",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r128.rrb",
+      "remote": "rrb/paired-a/1350-0.r128.rrb",
+      "sha256": "fadfedc0286fa738473676c9d6a98656139c1c558fed31b0c7b4c037b62bcccf",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.rgba",
+      "remote": "rrb/paired-a/1350-0.rgba",
+      "sha256": "8d4d6441cfe522a6666c2d3f688ef7d81d285e49bc83d56bbb22d36bdde51501",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r16.rrb",
+      "remote": "rrb/paired-a/1350-1.r16.rrb",
+      "sha256": "9ee5d47991a74d255b4e592b41a7f42d32ae69a6fb00d5a7fca95b9d3c181f4c",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r32.rrb",
+      "remote": "rrb/paired-a/1350-1.r32.rrb",
+      "sha256": "d0cd64537133dd72beb26d6aeeea1a4db6b4318f1420e0d99702d8ed1c4f5290",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r64.rrb",
+      "remote": "rrb/paired-a/1350-1.r64.rrb",
+      "sha256": "03559e78c1abd4271d4d2384a9eae040de600854e016a7d5ea0bb74a41851c91",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r128.rrb",
+      "remote": "rrb/paired-a/1350-1.r128.rrb",
+      "sha256": "e481191a88f607caa1a7f37a27d4c713db918ebf457ba7c24b6afd9f3ec333d9",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.rgba",
+      "remote": "rrb/paired-a/1350-1.rgba",
+      "sha256": "19d1423ab70a9fb3c1dadd1239e329f178fa07810fbbf575b902b05670566378",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-0.rrf",
+      "remote": "rrf/lossless/360-0.rrf",
+      "sha256": "c8c843ffe91e6e0ba74a1ed5dadd56450bf6e606f40a89bd8e0fcc5ad5e64889",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-0.rgba",
+      "remote": "rrf/lossless/360-0.rgba",
+      "sha256": "48670fcf4b438f3bb5d59a20aa01c507d76488230c998cd196956891d955717f",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-1.rrf",
+      "remote": "rrf/lossless/360-1.rrf",
+      "sha256": "7dc1845ec3c05128e3f1543252dcc74d7bde613b4233772e4163957cc0ba5f08",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-1.rgba",
+      "remote": "rrf/lossless/360-1.rgba",
+      "sha256": "ccd8c7bb419311696dffe8e3088342d44b92c195e7902ea6c32b3dbf13ace581",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r16.rrb",
+      "remote": "rrb/lossless/360-0.r16.rrb",
+      "sha256": "e1972dd981958aaf0a3d8111cb0ae61a6a29019ec2d7e6cf99065b4c79950d7f",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r32.rrb",
+      "remote": "rrb/lossless/360-0.r32.rrb",
+      "sha256": "4a2f86f28be78958f01574fbf96bc65877d25f39914fa7b8cee165e40bcd49f6",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r64.rrb",
+      "remote": "rrb/lossless/360-0.r64.rrb",
+      "sha256": "3a894500d02166b67da85a6d3a10715a57d274cd02e513184ccc12be90ad5963",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r128.rrb",
+      "remote": "rrb/lossless/360-0.r128.rrb",
+      "sha256": "c0c8fd8a083c8f484fd4c02edfac7e4029d4e0c5bd5be4415a717cfb204c5a29",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.rgba",
+      "remote": "rrb/lossless/360-0.rgba",
+      "sha256": "48670fcf4b438f3bb5d59a20aa01c507d76488230c998cd196956891d955717f",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r16.rrb",
+      "remote": "rrb/lossless/360-1.r16.rrb",
+      "sha256": "056cfe4cbf95f72ed947ddabeea948e689d73906c580aa43e6425070d7cc595f",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r32.rrb",
+      "remote": "rrb/lossless/360-1.r32.rrb",
+      "sha256": "bf7415b6c3ceaa33310637c3a9435ef239c4a0f7f1b42168e6a1c197c7fff152",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r64.rrb",
+      "remote": "rrb/lossless/360-1.r64.rrb",
+      "sha256": "443029da95df4ce6562b08732b5e9bee736a678a2087a3551213e81d2f4256e8",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r128.rrb",
+      "remote": "rrb/lossless/360-1.r128.rrb",
+      "sha256": "30b9bc4363d807e46e1fee2f6eb8afd3d13b11520248c781669efb76d2311646",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.rgba",
+      "remote": "rrb/lossless/360-1.rgba",
+      "sha256": "ccd8c7bb419311696dffe8e3088342d44b92c195e7902ea6c32b3dbf13ace581",
+      "executable": false
+    }
+  ],
+  "scope": "Standalone correctness/capability smoke; portable probes may retain hardcoded host-only labels. This receipt records actual device execution.",
+  "status": "completed",
+  "device_serial": "230YC01D8W000E",
+  "inputs_unchanged": true,
+  "finish_utc": "2026-10-09T12:55:20.119871+00:00"
+}

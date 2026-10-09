@@ -1,0 +1,300 @@
+{
+  "schema": 1,
+  "adb_target": "192.168.1.105:5555",
+  "expected_serial": "230YC01D8W000E",
+  "scope": "Rooted Quest Pro standalone capabilities, CPU exactness and two-profile Vulkan smoke. No native OpenXR, neural runtime, comparative performance or sub15 qualification.",
+  "source_branch": "research/sub15-20261009/gpu-qualification-suite",
+  "source_head": "fad2b1cb596d2b62ffbffc8ce37b4849af2605cd",
+  "files": [
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/build/capabilities-android",
+      "remote": "memory-capabilities",
+      "sha256": "7cabbaf4006eca59918c0cd2859094a4c92d1b8771c8de59c24b2014867b3492",
+      "executable": true
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/prototypes/vr444/experiments/vulkan_extensions/build/capabilities-android",
+      "remote": "extension-capabilities",
+      "sha256": "9ca16798721a8e5e031b244de78eeb73be103133b3a04b1046e7f6797dcb9156",
+      "executable": true
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/mapped-consumer-android",
+      "remote": "mapped-consumer",
+      "sha256": "d62f5723c4ee13969f5749e6bc9b15ad38c1cbdd8175f0ab831ab4e09963bb2d",
+      "executable": true
+    },
+    {
+      "local": "/tmp/wivrn-rowblocks-band-views-build/test-android",
+      "remote": "band-views-test",
+      "sha256": "2a780cc5c82762ca39e0aca81321ba5fd88e0d98273c8b67e76eef46b6fa2455",
+      "executable": true
+    },
+    {
+      "local": "/tmp/wivrn-rgb-rowfilter-simd-build/test-android",
+      "remote": "simd-test",
+      "sha256": "76e52c1bd646b10f2028d3ae8bd66a83f9b357f4efe88a86ff414c7f511f520f",
+      "executable": true
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/buffer.spv",
+      "remote": "shaders/rrf/shaders-4/buffer.spv",
+      "sha256": "1ef691b6e9291826cadfabe86ddb99725fa6787b5e4e9b7d97d88cb410ee95c0",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/sample.spv",
+      "remote": "shaders/rrf/shaders-4/sample.spv",
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/uint.spv",
+      "remote": "shaders/rrf/shaders-4/uint.spv",
+      "sha256": "f42443cf8ba2ce3cabd16a061d8c8a0f2252cc209d95309397683ba030ac700b",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrf/shaders-4/unorm.spv",
+      "remote": "shaders/rrf/shaders-4/unorm.spv",
+      "sha256": "f963502ec2f189a50dcdcbad1f1abe92f28f301e8155eb3ecc77a1febf5c54e6",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/buffer.spv",
+      "remote": "shaders/rrb/shaders/buffer.spv",
+      "sha256": "b408089ce94765a38c30f2e98f2f6881c209646da10353ceef30ea22ead867ca",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/sample.spv",
+      "remote": "shaders/rrb/shaders/sample.spv",
+      "sha256": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/uint.spv",
+      "remote": "shaders/rrb/shaders/uint.spv",
+      "sha256": "076230140137e8b10b6a6f085b028b021f9d419b742906cefdfd41cd7d3ef416",
+      "executable": false
+    },
+    {
+      "local": "/home/blux/spatial-bridge/.worktrees/sub15-gpu/validation/results/sub15-gpu-qualification-suite/final-host/consumer-build/base/rrb/shaders/unorm.spv",
+      "remote": "shaders/rrb/shaders/unorm.spv",
+      "sha256": "2ec428dab6a4dc25188ee57b42464c511b5c2d99fcfd563916ac188c60c3b087",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-0.rrf",
+      "remote": "rrf/paired-a/1350-0.rrf",
+      "sha256": "b666cc1bdcc60ac568aaf80bf4c308ff7aaf09ac36b72aa36f46ada6cd0d8954",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-0.rgba",
+      "remote": "rrf/paired-a/1350-0.rgba",
+      "sha256": "8d4d6441cfe522a6666c2d3f688ef7d81d285e49bc83d56bbb22d36bdde51501",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-1.rrf",
+      "remote": "rrf/paired-a/1350-1.rrf",
+      "sha256": "ad37503d031bc9671eff2154322224a7fe6415fbb2987bd2bb436da0082357a8",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/paired-a/1350-1.rgba",
+      "remote": "rrf/paired-a/1350-1.rgba",
+      "sha256": "19d1423ab70a9fb3c1dadd1239e329f178fa07810fbbf575b902b05670566378",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r16.rrb",
+      "remote": "rrb/paired-a/1350-0.r16.rrb",
+      "sha256": "c0181b5a4f362b632c48a3dce44c6010c871d020962814b1f2c45c463391a7e9",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r32.rrb",
+      "remote": "rrb/paired-a/1350-0.r32.rrb",
+      "sha256": "038a54b37d2b63082fa447b28ae1963c3092ed3940768173ecc86adfb2eb4d2a",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r64.rrb",
+      "remote": "rrb/paired-a/1350-0.r64.rrb",
+      "sha256": "fe65db86c2a434f4eae58b3735d2c6153b0ddc1c297984796bcda9b528c5be69",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.r128.rrb",
+      "remote": "rrb/paired-a/1350-0.r128.rrb",
+      "sha256": "fadfedc0286fa738473676c9d6a98656139c1c558fed31b0c7b4c037b62bcccf",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-0.rgba",
+      "remote": "rrb/paired-a/1350-0.rgba",
+      "sha256": "8d4d6441cfe522a6666c2d3f688ef7d81d285e49bc83d56bbb22d36bdde51501",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r16.rrb",
+      "remote": "rrb/paired-a/1350-1.r16.rrb",
+      "sha256": "9ee5d47991a74d255b4e592b41a7f42d32ae69a6fb00d5a7fca95b9d3c181f4c",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r32.rrb",
+      "remote": "rrb/paired-a/1350-1.r32.rrb",
+      "sha256": "d0cd64537133dd72beb26d6aeeea1a4db6b4318f1420e0d99702d8ed1c4f5290",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r64.rrb",
+      "remote": "rrb/paired-a/1350-1.r64.rrb",
+      "sha256": "03559e78c1abd4271d4d2384a9eae040de600854e016a7d5ea0bb74a41851c91",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.r128.rrb",
+      "remote": "rrb/paired-a/1350-1.r128.rrb",
+      "sha256": "e481191a88f607caa1a7f37a27d4c713db918ebf457ba7c24b6afd9f3ec333d9",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/paired-a/1350-1.rgba",
+      "remote": "rrb/paired-a/1350-1.rgba",
+      "sha256": "19d1423ab70a9fb3c1dadd1239e329f178fa07810fbbf575b902b05670566378",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-0.rrf",
+      "remote": "rrf/lossless/360-0.rrf",
+      "sha256": "c8c843ffe91e6e0ba74a1ed5dadd56450bf6e606f40a89bd8e0fcc5ad5e64889",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-0.rgba",
+      "remote": "rrf/lossless/360-0.rgba",
+      "sha256": "48670fcf4b438f3bb5d59a20aa01c507d76488230c998cd196956891d955717f",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-1.rrf",
+      "remote": "rrf/lossless/360-1.rrf",
+      "sha256": "7dc1845ec3c05128e3f1543252dcc74d7bde613b4233772e4163957cc0ba5f08",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowfilter-gpu-corpus/lossless/360-1.rgba",
+      "remote": "rrf/lossless/360-1.rgba",
+      "sha256": "ccd8c7bb419311696dffe8e3088342d44b92c195e7902ea6c32b3dbf13ace581",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r16.rrb",
+      "remote": "rrb/lossless/360-0.r16.rrb",
+      "sha256": "e1972dd981958aaf0a3d8111cb0ae61a6a29019ec2d7e6cf99065b4c79950d7f",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r32.rrb",
+      "remote": "rrb/lossless/360-0.r32.rrb",
+      "sha256": "4a2f86f28be78958f01574fbf96bc65877d25f39914fa7b8cee165e40bcd49f6",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r64.rrb",
+      "remote": "rrb/lossless/360-0.r64.rrb",
+      "sha256": "3a894500d02166b67da85a6d3a10715a57d274cd02e513184ccc12be90ad5963",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.r128.rrb",
+      "remote": "rrb/lossless/360-0.r128.rrb",
+      "sha256": "c0c8fd8a083c8f484fd4c02edfac7e4029d4e0c5bd5be4415a717cfb204c5a29",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-0.rgba",
+      "remote": "rrb/lossless/360-0.rgba",
+      "sha256": "48670fcf4b438f3bb5d59a20aa01c507d76488230c998cd196956891d955717f",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r16.rrb",
+      "remote": "rrb/lossless/360-1.r16.rrb",
+      "sha256": "056cfe4cbf95f72ed947ddabeea948e689d73906c580aa43e6425070d7cc595f",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r32.rrb",
+      "remote": "rrb/lossless/360-1.r32.rrb",
+      "sha256": "bf7415b6c3ceaa33310637c3a9435ef239c4a0f7f1b42168e6a1c197c7fff152",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r64.rrb",
+      "remote": "rrb/lossless/360-1.r64.rrb",
+      "sha256": "443029da95df4ce6562b08732b5e9bee736a678a2087a3551213e81d2f4256e8",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.r128.rrb",
+      "remote": "rrb/lossless/360-1.r128.rrb",
+      "sha256": "30b9bc4363d807e46e1fee2f6eb8afd3d13b11520248c781669efb76d2311646",
+      "executable": false
+    },
+    {
+      "local": "/tmp/sub15-rgb-rowblocks-gpu-corpus/lossless/360-1.rgba",
+      "remote": "rrb/lossless/360-1.rgba",
+      "sha256": "ccd8c7bb419311696dffe8e3088342d44b92c195e7902ea6c32b3dbf13ace581",
+      "executable": false
+    }
+  ],
+  "runs": [
+    {
+      "name": "extensions",
+      "argv": [
+        "{remote}/extension-capabilities"
+      ],
+      "timeout_s": 15
+    },
+    {
+      "name": "memory",
+      "argv": [
+        "{remote}/memory-capabilities"
+      ],
+      "timeout_s": 15
+    },
+    {
+      "name": "simd",
+      "argv": [
+        "{remote}/simd-test"
+      ],
+      "timeout_s": 120
+    },
+    {
+      "name": "band-views",
+      "argv": [
+        "{remote}/band-views-test"
+      ],
+      "timeout_s": 180
+    },
+    {
+      "name": "gpu-two-profiles",
+      "argv": [
+        "{remote}/mapped-consumer",
+        "{remote}/shaders",
+        "{remote}/rrf",
+        "{remote}/rrb",
+        "--device",
+        "0",
+        "--reps",
+        "1"
+      ],
+      "timeout_s": 180
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+test_graph_bound_and_no_overwrite (test_intake.IntakeTests.test_graph_bound_and_no_overwrite) ... ok
+test_malformed_previous_and_identity (test_intake.IntakeTests.test_malformed_previous_and_identity) ... ok
+test_moving_and_new_remote_heads (test_intake.IntakeTests.test_moving_and_new_remote_heads) ... ok
+test_pins_aliases_ancestry_and_advisory_classification (test_intake.IntakeTests.test_pins_aliases_ancestry_and_advisory_classification) ... ok
+test_removal_requires_successful_discovery_and_fetch (test_intake.IntakeTests.test_removal_requires_successful_discovery_and_fetch) ... ok
+test_stale_cache_cannot_move_authoritative_baseline (test_intake.IntakeTests.test_stale_cache_cannot_move_authoritative_baseline) ... ok
+test_cap_rejection_is_counted_and_never_qualifies (test_manifest.ManifestTests.test_cap_rejection_is_counted_and_never_qualifies) ... ok
+test_completed_does_not_assert_correctness (test_manifest.ManifestTests.test_completed_does_not_assert_correctness) ... ok
+test_invalid_provenance_metrics_and_claims (test_manifest.ManifestTests.test_invalid_provenance_metrics_and_claims) ... ok
+test_json_nonfinite_and_duplicate_keys_rejected (test_manifest.ManifestTests.test_json_nonfinite_and_duplicate_keys_rejected) ... ok
+test_no_scene_or_session_leakage (test_manifest.ManifestTests.test_no_scene_or_session_leakage) ... ok
+test_planned_has_no_invented_measurements (test_manifest.ManifestTests.test_planned_has_no_invented_measurements) ... ok
+test_simulation_cannot_be_hardware (test_manifest.ManifestTests.test_simulation_cannot_be_hardware) ... ok
+test_unknowns_are_distinct_from_zero (test_manifest.ManifestTests.test_unknowns_are_distinct_from_zero) ... ok
+test_command_failure_retains_failed_receipt (test_neural_hooks.HooksTest.test_command_failure_retains_failed_receipt) ... ok
+test_contradictory_xr_success_rejected (test_neural_hooks.HooksTest.test_contradictory_xr_success_rejected) ... ok
+test_dense_pair_cannot_be_admitted_or_hide_bytes (test_neural_hooks.HooksTest.test_dense_pair_cannot_be_admitted_or_hide_bytes) ... ok
+test_final_rehash_catches_later_artifact_change (test_neural_hooks.HooksTest.test_final_rehash_catches_later_artifact_change) ... ok
+test_gaze_future_expression_time_allowed_invalid_eye_requires_fallback (test_neural_hooks.HooksTest.test_gaze_future_expression_time_allowed_invalid_eye_requires_fallback) ... ok
+test_input_and_candidate_pins_are_bound (test_neural_hooks.HooksTest.test_input_and_candidate_pins_are_bound) ... ok
+test_manual_argv_literal_and_no_overwrite (test_neural_hooks.HooksTest.test_manual_argv_literal_and_no_overwrite) ... ok
+test_missing_adapter_blocks_without_launch (test_neural_hooks.HooksTest.test_missing_adapter_blocks_without_launch) ... ok
+test_missing_native_event_capability_blocks (test_neural_hooks.HooksTest.test_missing_native_event_capability_blocks) ... ok
+test_mixed_stereo_or_pre_call_event_rejected (test_neural_hooks.HooksTest.test_mixed_stereo_or_pre_call_event_rejected) ... ok
+test_offline_or_relabelled_receipt_cannot_supply_headset_metrics (test_neural_hooks.HooksTest.test_offline_or_relabelled_receipt_cannot_supply_headset_metrics) ... ok
+test_population_duplicate_and_missing_pair_rejected (test_neural_hooks.HooksTest.test_population_duplicate_and_missing_pair_rejected) ... ok
+test_repeated_prior_submission_does_not_become_new (test_neural_hooks.HooksTest.test_repeated_prior_submission_does_not_become_new) ... ok
+test_symlink_escape_and_duplicate_json_fail (test_neural_hooks.HooksTest.test_symlink_escape_and_duplicate_json_fail) ... ok
+test_synthetic_roundtrip_preserves_dense_rejection (test_neural_hooks.HooksTest.test_synthetic_roundtrip_preserves_dense_rejection) ... ok
+test_timeout_retains_failure_without_latency_metric (test_neural_hooks.HooksTest.test_timeout_retains_failure_without_latency_metric) ... ok
+test_wrong_clock_and_negative_latency_rejected (test_neural_hooks.HooksTest.test_wrong_clock_and_negative_latency_rejected) ... ok
+test_cap_rejects_pair_without_hiding_measurements (test_run_pair.PairTests.test_cap_rejects_pair_without_hiding_measurements) ... ok
+test_exact_roundtrip (test_run_pair.PairTests.test_exact_roundtrip) ... ok
+test_failed_command (test_run_pair.PairTests.test_failed_command) ... ok
+test_file_size_budget (test_run_pair.PairTests.test_file_size_budget) ... ok
+test_lossy_metrics (test_run_pair.PairTests.test_lossy_metrics) ... ok
+test_metacharacters_remain_literal (test_run_pair.PairTests.test_metacharacters_remain_literal) ... ok
+test_path_placeholder_cannot_escape (test_run_pair.PairTests.test_path_placeholder_cannot_escape) ... ok
+test_refuses_overwrite (test_run_pair.PairTests.test_refuses_overwrite) ... ok
+test_right_decoder_cannot_invalidate_left_artifacts (test_run_pair.PairTests.test_right_decoder_cannot_invalidate_left_artifacts) ... ok
+test_short_decode_preserves_failure (test_run_pair.PairTests.test_short_decode_preserves_failure) ... ok
+test_source_size_validation (test_run_pair.PairTests.test_source_size_validation) ... ok
+test_symlink_output_refused (test_run_pair.PairTests.test_symlink_output_refused) ... ok
+test_timeout (test_run_pair.PairTests.test_timeout) ... ok
+
+----------------------------------------------------------------------
+Ran 44 tests in 2.612s
+
+OK

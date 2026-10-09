@@ -1,0 +1,98 @@
+Research PR review, 2026-10-09
+=============================
+
+Review scope and exact heads
+  #1 research-workflow: 0cda480da555c71c56b00033e56ca7054d1fdd8c
+  #2 neural-experiment-ranker: e3e6a45b69d702ad3ffac63d9f25f7708c2d18a8
+  #3 neural-intra-codec: e25b33a853a575a7232e9109b3eb9233687310eb
+  #4 neural-encoder-decisions: 056c3349b61c929f5882e734d6513c01ab3930c5
+
+Three independent reviewers and root examined the implementations and ran the
+existing offline tests in detached worktrees. No PR was changed or merged and
+no GitHub review comment was posted. Findings below concern these exact heads.
+
+P2: Repair the newest intake snapshot before the next refresh (#1)
+---------------------------------------------------------------
+validation/wivrn-codecs/research_workflow/snapshots/20261009T120954Z.json:4712
+has a comparison_baseline with 75 old refs, whereas its branch population has
+78 refs. The neural branches are absent and the workflow SHA is stale. Discovery
+is declared complete, so intake.validate_snapshot rejects the committed snapshot
+with ValueError("malformed or unsupported intake snapshot"). The next snapshot
+command using this file as --previous cannot proceed. Regenerate its baseline
+from the recorded branch population. Six older snapshots validate; all 123
+recorded commit-parent lists checked by the reviewer match local Git objects.
+
+P2: Bind parsed event bytes to the artifact hash (#2, #3, #4)
+----------------------------------------------------------
+validation/wivrn-codecs/research_workflow/neural_hooks.py:155-159 discards the
+hash returned by its JSONL read. Artifacts are hashed at 208-216, reread for
+metrics, then checked again only at 346-349. A replace/read/restore sequence can
+therefore produce capture_validated and a 1 ms diagnostic while the receipt
+hashes the original 10 ms event file. Root reproduced this on #2; neural_hooks.py
+is byte-identical across all three PRs (SHA-256
+0dd5a8628a4069261bde1aa1d6f08f636641de836234bf5a149039fde50a2140).
+
+The repro uses HooksTest's synthetic fixture, changes submit timestamp_ns from
+1010000000 to 1001000000 only while rows() reads events.jsonl, and restores the
+original bytes before the final hash check. It does not replace parsed return
+values. This requires concurrent replacement/restoration; ordinary append-only
+writers generally fail the final checks. Correct adapters that finish writing
+before import are unaffected. This is evidence consistency, not a claim of
+independent hardware authenticity. Parse the initially hashed bytes, or compare
+each JSONL read's own hash with the expected artifact record before parsing.
+
+P2: Reject impossible stereo byte/cap accounting (#1)
+----------------------------------------------------
+validation/wivrn-codecs/research_workflow/manifest.py:168-172 only checks that
+peak bytes do not exceed total bytes. Starting from test_manifest.completed(),
+set application_cap_bytes=100 and max_stereo_serialized_bytes=100. The validator
+accepts offered_pairs=2, serialized_bytes=240, and zero over-cap/rejected/fallback
+pairs. These observations cannot all hold under CONTRACT.md's before-admission
+stereo-envelope definition. Setting the peak to null also passes. Check the
+total against offered count and peak, and require a disposition where the
+observations necessarily imply an over-cap pair. Root reproduced both cases.
+
+P2: Apply the native RRB32 pixel bound to decision plans (#4)
+----------------------------------------------------------
+validation/wivrn-codecs/neural_encoder_decisions/core.py:269 checks axes <=4096
+but omits the inherited 4,194,304 pixels/eye limit. Root reproduced:
+  core.plan(bytes(4096 * 1025 * 3), 4096, 1025, "fixed_up")
+It accepts 4,198,400 pixels and produces a 33-block plan. The 12,595,200-byte
+input also fits native.py's 16 MiB allowance, but the native RRF/RRB codec rejects
+that shape. Enforce the product bound, or an explicit unsupported disposition,
+before invoking the native adapter. The wrapper's exact-output checks do not
+turn this unsupported input into a native pass; the issue is profile admission.
+
+Lower-priority consistency findings
+----------------------------------
+  #1 manifest.py:126 permits execution=evidence=simulation with transport mode
+  datagram_hardware. The evidence domain still says simulation, so this is an
+  inconsistent transport label rather than demonstrated hardware promotion.
+  Require hardware execution for that transport mode, or define a separate
+  modeled-target field. Root reproduced acceptance using completed().
+
+  #4 core.py:159 requires a provenance key in a model but does not validate its
+  value. The reviewer confirmed provenance=None and moving-branch metadata pass
+  evaluation. The dataset hash still binds the valid index; no split leakage
+  was demonstrated. Reuse the dataset provenance validator for model metadata.
+
+Validation and readiness
+------------------------
+  #1: 27 existing workflow tests and example manifest passed.
+  #2: 12 ranker tests, 44 shared workflow tests and synthetic demo passed.
+  #3: 13 codec tests, 44 shared workflow tests and tiny codec smoke passed.
+  #4: 13 decision tests and 44 shared workflow tests passed.
+The 44 shared tests are the same suite, not 132 independent tests. Existing
+passing tests do not cover the reproduced findings. Root retained its PR2 logs
+under results/review-tests; other counts were independently reported by reviewers.
+
+The ranker remains advisory. The intra codec is an explicitly lossy Python
+block-mean MLP. The encoder-decisions track pins an external adapter and leaves
+native decision application unverified without native receipts. No real trained
+research corpus/model or integrated live headset adapter was supplied by these
+PRs. No false claim of a working Android neural codec was found. Keep the drafts
+unmerged until the admission/evidence defects are resolved and reviewed.
+
+The separate Android smoke in this directory exercises existing six-hour
+research binaries, not these neural PRs. See README.txt and audit.json for
+device evidence, exact scope and remaining integration work.

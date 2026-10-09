@@ -1,0 +1,17 @@
+test_actual_network_learns_and_shadow_does_not_fill_observations (test_ranker.RankerTests.test_actual_network_learns_and_shadow_does_not_fill_observations) ... ok
+test_baselines_are_deterministic_and_share_complete_pool (test_ranker.RankerTests.test_baselines_are_deterministic_and_share_complete_pool) ... ok
+test_cli_end_to_end_and_exclusive_outputs (test_ranker.RankerTests.test_cli_end_to_end_and_exclusive_outputs) ... ok
+test_domain_units_receipt_and_synthetic_separation (test_ranker.RankerTests.test_domain_units_receipt_and_synthetic_separation) ... ok
+test_duplicate_rows_and_aliases_do_not_satisfy_independence (test_ranker.RankerTests.test_duplicate_rows_and_aliases_do_not_satisfy_independence) ... ok
+test_feature_leakage_nonfinite_and_cohort_mismatch_reject (test_ranker.RankerTests.test_feature_leakage_nonfinite_and_cohort_mismatch_reject) ... ok
+test_heldout_labels_do_not_change_weights_or_training_normalization (test_ranker.RankerTests.test_heldout_labels_do_not_change_weights_or_training_normalization) ... ok
+test_model_abstains_on_no_signal_and_out_of_range (test_ranker.RankerTests.test_model_abstains_on_no_signal_and_out_of_range) ... ok
+test_null_labels_do_not_become_zero_or_independent_support (test_ranker.RankerTests.test_null_labels_do_not_become_zero_or_independent_support) ... ok
+test_pending_dataset_rows_can_be_ranked_but_test_identities_cannot (test_ranker.RankerTests.test_pending_dataset_rows_can_be_ranked_but_test_identities_cannot) ... ok
+test_serialized_advisory_controls_fail_closed (test_ranker.RankerTests.test_serialized_advisory_controls_fail_closed) ... ok
+test_transitive_components_and_cross_split_leak_reject (test_ranker.RankerTests.test_transitive_components_and_cross_split_leak_reject) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.408s
+
+OK
