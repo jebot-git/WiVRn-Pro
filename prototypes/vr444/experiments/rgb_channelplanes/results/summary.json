@@ -1,0 +1,740 @@
+{
+  "schema": 1,
+  "backend": "x86-ssse3-pack-expand+sse2-row",
+  "groups": {
+    "paired-a": {
+      "cases": 8,
+      "profiles": [
+        {
+          "profile": "vr444_plain_lz4",
+          "wire_bytes": 182910,
+          "saved_percent_vs_vr444": 0.0,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.09554475,
+            "source_reconstruction_ms": 0,
+            "wrapper_encode_ms": 0.09554475,
+            "client_decode_ms": 0.4319765,
+            "server_plus_client_ms": 0.53090175
+          }
+        },
+        {
+          "profile": "rgb_plain",
+          "wire_bytes": 243974,
+          "saved_percent_vs_vr444": -33.38472472800831,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.69341,
+            "source_reconstruction_ms": 0.33219975,
+            "wrapper_encode_ms": 0.343584625,
+            "client_decode_ms": 0.3189115,
+            "server_plus_client_ms": 1.018453625
+          }
+        },
+        {
+          "profile": "rgb_up",
+          "wire_bytes": 233898,
+          "saved_percent_vs_vr444": -27.876004592422497,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.7742495,
+            "source_reconstruction_ms": 0.335795875,
+            "wrapper_encode_ms": 0.429111125,
+            "client_decode_ms": 0.28420475,
+            "server_plus_client_ms": 1.068531875
+          }
+        },
+        {
+          "profile": "planes_plain",
+          "wire_bytes": 327255,
+          "saved_percent_vs_vr444": -78.91586025914383,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.064935375,
+            "source_reconstruction_ms": 0.339699,
+            "wrapper_encode_ms": 0.71972025,
+            "client_decode_ms": 0.48432725,
+            "server_plus_client_ms": 1.556844375
+          }
+        },
+        {
+          "profile": "planes_up",
+          "wire_bytes": 296897,
+          "saved_percent_vs_vr444": -62.31862664698487,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.1248447499999998,
+            "source_reconstruction_ms": 0.34882625,
+            "wrapper_encode_ms": 0.77154125,
+            "client_decode_ms": 0.516916875,
+            "server_plus_client_ms": 1.653177875
+          }
+        },
+        {
+          "profile": "green_plain",
+          "wire_bytes": 242072,
+          "saved_percent_vs_vr444": -32.34486906128697,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.86569875,
+            "source_reconstruction_ms": 0.338217875,
+            "wrapper_encode_ms": 0.519629625,
+            "client_decode_ms": 0.49470912499999997,
+            "server_plus_client_ms": 1.3670895
+          }
+        },
+        {
+          "profile": "green_up",
+          "wire_bytes": 235079,
+          "saved_percent_vs_vr444": -28.521677327647478,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.9353678750000001,
+            "source_reconstruction_ms": 0.341254125,
+            "wrapper_encode_ms": 0.59092975,
+            "client_decode_ms": 0.48042625,
+            "server_plus_client_ms": 1.4211845
+          }
+        },
+        {
+          "profile": "green_planes_plain",
+          "wire_bytes": 338730,
+          "saved_percent_vs_vr444": -85.18943742824341,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.05301825,
+            "source_reconstruction_ms": 0.34231825,
+            "wrapper_encode_ms": 0.703583,
+            "client_decode_ms": 0.4932075,
+            "server_plus_client_ms": 1.5553195
+          }
+        },
+        {
+          "profile": "green_planes_up",
+          "wire_bytes": 306480,
+          "saved_percent_vs_vr444": -67.55781531900935,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.105244875,
+            "source_reconstruction_ms": 0.338123875,
+            "wrapper_encode_ms": 0.75052325,
+            "client_decode_ms": 0.515036125,
+            "server_plus_client_ms": 1.6231915
+          }
+        }
+      ]
+    },
+    "paired-b": {
+      "cases": 8,
+      "profiles": [
+        {
+          "profile": "vr444_plain_lz4",
+          "wire_bytes": 135653,
+          "saved_percent_vs_vr444": 0.0,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.08205124999999999,
+            "source_reconstruction_ms": 0,
+            "wrapper_encode_ms": 0.08205124999999999,
+            "client_decode_ms": 0.35241225,
+            "server_plus_client_ms": 0.4423775
+          }
+        },
+        {
+          "profile": "rgb_plain",
+          "wire_bytes": 186024,
+          "saved_percent_vs_vr444": -37.13224182288633,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.578693875,
+            "source_reconstruction_ms": 0.265528375,
+            "wrapper_encode_ms": 0.299902625,
+            "client_decode_ms": 0.30199875,
+            "server_plus_client_ms": 0.88523975
+          }
+        },
+        {
+          "profile": "rgb_up",
+          "wire_bytes": 184585,
+          "saved_percent_vs_vr444": -36.071447000803516,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.657648875,
+            "source_reconstruction_ms": 0.274609,
+            "wrapper_encode_ms": 0.378697375,
+            "client_decode_ms": 0.247800625,
+            "server_plus_client_ms": 0.913971375
+          }
+        },
+        {
+          "profile": "planes_plain",
+          "wire_bytes": 250584,
+          "saved_percent_vs_vr444": -84.7242596920083,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.93002875,
+            "source_reconstruction_ms": 0.27049025,
+            "wrapper_encode_ms": 0.651051125,
+            "client_decode_ms": 0.429168875,
+            "server_plus_client_ms": 1.367328875
+          }
+        },
+        {
+          "profile": "planes_up",
+          "wire_bytes": 230373,
+          "saved_percent_vs_vr444": -69.82521580798067,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.990703,
+            "source_reconstruction_ms": 0.274388375,
+            "wrapper_encode_ms": 0.7102532500000001,
+            "client_decode_ms": 0.467258875,
+            "server_plus_client_ms": 1.46530275
+          }
+        },
+        {
+          "profile": "green_plain",
+          "wire_bytes": 186567,
+          "saved_percent_vs_vr444": -37.532527846785555,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.739090875,
+            "source_reconstruction_ms": 0.276138375,
+            "wrapper_encode_ms": 0.452327625,
+            "client_decode_ms": 0.47653275,
+            "server_plus_client_ms": 1.2220083750000001
+          }
+        },
+        {
+          "profile": "green_up",
+          "wire_bytes": 185838,
+          "saved_percent_vs_vr444": -36.99512727326339,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.8155355,
+            "source_reconstruction_ms": 0.271434875,
+            "wrapper_encode_ms": 0.537331,
+            "client_decode_ms": 0.44118675,
+            "server_plus_client_ms": 1.25504425
+          }
+        },
+        {
+          "profile": "green_planes_plain",
+          "wire_bytes": 258928,
+          "saved_percent_vs_vr444": -90.87524787509307,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.901582375,
+            "source_reconstruction_ms": 0.27311675,
+            "wrapper_encode_ms": 0.6278825,
+            "client_decode_ms": 0.437749625,
+            "server_plus_client_ms": 1.348398
+          }
+        },
+        {
+          "profile": "green_planes_up",
+          "wire_bytes": 239677,
+          "saved_percent_vs_vr444": -76.68389198911929,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.96501,
+            "source_reconstruction_ms": 0.273056625,
+            "wrapper_encode_ms": 0.688141875,
+            "client_decode_ms": 0.467451,
+            "server_plus_client_ms": 1.441265875
+          }
+        }
+      ]
+    },
+    "lossless": {
+      "cases": 8,
+      "profiles": [
+        {
+          "profile": "vr444_plain_lz4",
+          "wire_bytes": 98239,
+          "saved_percent_vs_vr444": 0.0,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.068897125,
+            "source_reconstruction_ms": 0,
+            "wrapper_encode_ms": 0.068897125,
+            "client_decode_ms": 0.24277674999999999,
+            "server_plus_client_ms": 0.31799925
+          }
+        },
+        {
+          "profile": "rgb_plain",
+          "wire_bytes": 61060,
+          "saved_percent_vs_vr444": 37.845458524618536,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.371428125,
+            "source_reconstruction_ms": 0.167827875,
+            "wrapper_encode_ms": 0.1854735,
+            "client_decode_ms": 0.306500875,
+            "server_plus_client_ms": 0.688362375
+          }
+        },
+        {
+          "profile": "rgb_up",
+          "wire_bytes": 55655,
+          "saved_percent_vs_vr444": 43.34734677673836,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.44349225000000003,
+            "source_reconstruction_ms": 0.169033125,
+            "wrapper_encode_ms": 0.25569437500000003,
+            "client_decode_ms": 0.206341375,
+            "server_plus_client_ms": 0.658524875
+          }
+        },
+        {
+          "profile": "planes_plain",
+          "wire_bytes": 96262,
+          "saved_percent_vs_vr444": 2.012439051700443,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.686762625,
+            "source_reconstruction_ms": 0.16844125,
+            "wrapper_encode_ms": 0.50985475,
+            "client_decode_ms": 0.361347125,
+            "server_plus_client_ms": 1.0474697499999999
+          }
+        },
+        {
+          "profile": "planes_up",
+          "wire_bytes": 74674,
+          "saved_percent_vs_vr444": 23.98741843870561,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.759382,
+            "source_reconstruction_ms": 0.17464875,
+            "wrapper_encode_ms": 0.582125625,
+            "client_decode_ms": 0.400343375,
+            "server_plus_client_ms": 1.161451625
+          }
+        },
+        {
+          "profile": "green_plain",
+          "wire_bytes": 59714,
+          "saved_percent_vs_vr444": 39.215586477875384,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.529800125,
+            "source_reconstruction_ms": 0.1733955,
+            "wrapper_encode_ms": 0.340383375,
+            "client_decode_ms": 0.5642874999999999,
+            "server_plus_client_ms": 1.091106375
+          }
+        },
+        {
+          "profile": "green_up",
+          "wire_bytes": 55494,
+          "saved_percent_vs_vr444": 43.51123280978023,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.6169503749999999,
+            "source_reconstruction_ms": 0.172633625,
+            "wrapper_encode_ms": 0.43484125,
+            "client_decode_ms": 0.397690875,
+            "server_plus_client_ms": 1.01935525
+          }
+        },
+        {
+          "profile": "green_planes_plain",
+          "wire_bytes": 94199,
+          "saved_percent_vs_vr444": 4.1124197111126914,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.658035,
+            "source_reconstruction_ms": 0.17118675,
+            "wrapper_encode_ms": 0.476434875,
+            "client_decode_ms": 0.35988312499999997,
+            "server_plus_client_ms": 1.02103475
+          }
+        },
+        {
+          "profile": "green_planes_up",
+          "wire_bytes": 73475,
+          "saved_percent_vs_vr444": 25.207911318315535,
+          "raw_fallback_cases": 0,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.7275,
+            "source_reconstruction_ms": 0.175604625,
+            "wrapper_encode_ms": 0.54771175,
+            "client_decode_ms": 0.3940175,
+            "server_plus_client_ms": 1.1324435
+          }
+        }
+      ]
+    },
+    "synthetic-q1": {
+      "cases": 7,
+      "profiles": [
+        {
+          "profile": "vr444_plain_lz4",
+          "wire_bytes": 1851656,
+          "saved_percent_vs_vr444": 0.0,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.7839224285714286,
+            "source_reconstruction_ms": 0,
+            "wrapper_encode_ms": 0.7839224285714286,
+            "client_decode_ms": 2.143966857142857,
+            "server_plus_client_ms": 2.9352485714285717
+          }
+        },
+        {
+          "profile": "rgb_plain",
+          "wire_bytes": 1769875,
+          "saved_percent_vs_vr444": 4.416641103963159,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.647217285714286,
+            "source_reconstruction_ms": 1.829521857142857,
+            "wrapper_encode_ms": 0.8149184285714285,
+            "client_decode_ms": 0.8701264285714285,
+            "server_plus_client_ms": 3.5237287142857143
+          }
+        },
+        {
+          "profile": "rgb_up",
+          "wire_bytes": 1173630,
+          "saved_percent_vs_vr444": 36.61727664317779,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.3966637142857143,
+            "source_reconstruction_ms": 1.835622857142857,
+            "wrapper_encode_ms": 0.5470591428571429,
+            "client_decode_ms": 0.4868234285714286,
+            "server_plus_client_ms": 2.897206142857143
+          }
+        },
+        {
+          "profile": "planes_plain",
+          "wire_bytes": 1158328,
+          "saved_percent_vs_vr444": 37.44367204275524,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.5543675714285716,
+            "source_reconstruction_ms": 1.8299995714285713,
+            "wrapper_encode_ms": 0.723951,
+            "client_decode_ms": 0.5650094285714286,
+            "server_plus_client_ms": 3.138935
+          }
+        },
+        {
+          "profile": "planes_up",
+          "wire_bytes": 1178177,
+          "saved_percent_vs_vr444": 36.37171267233222,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.654714,
+            "source_reconstruction_ms": 1.8264944285714286,
+            "wrapper_encode_ms": 0.815904,
+            "client_decode_ms": 0.6251738571428571,
+            "server_plus_client_ms": 3.2771097142857144
+          }
+        },
+        {
+          "profile": "green_plain",
+          "wire_bytes": 1795448,
+          "saved_percent_vs_vr444": 3.0355530400895225,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.8206962857142854,
+            "source_reconstruction_ms": 1.836693142857143,
+            "wrapper_encode_ms": 0.9776368571428572,
+            "client_decode_ms": 1.0208812857142857,
+            "server_plus_client_ms": 3.8437708571428573
+          }
+        },
+        {
+          "profile": "green_up",
+          "wire_bytes": 1172908,
+          "saved_percent_vs_vr444": 36.6562687669848,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.539814,
+            "source_reconstruction_ms": 1.8339995714285713,
+            "wrapper_encode_ms": 0.7003521428571429,
+            "client_decode_ms": 0.6279997142857143,
+            "server_plus_client_ms": 3.1657388571428573
+          }
+        },
+        {
+          "profile": "green_planes_plain",
+          "wire_bytes": 1185518,
+          "saved_percent_vs_vr444": 35.97525674315316,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.5665514285714286,
+            "source_reconstruction_ms": 1.8350565714285716,
+            "wrapper_encode_ms": 0.7254661428571428,
+            "client_decode_ms": 0.5800054285714286,
+            "server_plus_client_ms": 3.148631857142857
+          }
+        },
+        {
+          "profile": "green_planes_up",
+          "wire_bytes": 1180987,
+          "saved_percent_vs_vr444": 36.2199566226124,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.6403202857142856,
+            "source_reconstruction_ms": 1.8408762857142855,
+            "wrapper_encode_ms": 0.7927887142857143,
+            "client_decode_ms": 0.6197675714285714,
+            "server_plus_client_ms": 3.2634342857142857
+          }
+        }
+      ]
+    },
+    "synthetic-q8": {
+      "cases": 7,
+      "profiles": [
+        {
+          "profile": "vr444_plain_lz4",
+          "wire_bytes": 1114220,
+          "saved_percent_vs_vr444": 0.0,
+          "raw_fallback_cases": 2,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.47229042857142856,
+            "source_reconstruction_ms": 0,
+            "wrapper_encode_ms": 0.47229042857142856,
+            "client_decode_ms": 1.350388857142857,
+            "server_plus_client_ms": 1.8286815714285716
+          }
+        },
+        {
+          "profile": "rgb_plain",
+          "wire_bytes": 1563727,
+          "saved_percent_vs_vr444": -40.34275098275026,
+          "raw_fallback_cases": 1,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.9448554285714286,
+            "source_reconstruction_ms": 1.1693488571428572,
+            "wrapper_encode_ms": 0.7706411428571428,
+            "client_decode_ms": 0.7592874285714286,
+            "server_plus_client_ms": 2.7116554285714285
+          }
+        },
+        {
+          "profile": "rgb_up",
+          "wire_bytes": 1336251,
+          "saved_percent_vs_vr444": -19.927034158424718,
+          "raw_fallback_cases": 1,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.870682142857143,
+            "source_reconstruction_ms": 1.178591857142857,
+            "wrapper_encode_ms": 0.6887204285714286,
+            "client_decode_ms": 0.5615191428571429,
+            "server_plus_client_ms": 2.4374791428571427
+          }
+        },
+        {
+          "profile": "planes_plain",
+          "wire_bytes": 1579065,
+          "saved_percent_vs_vr444": -41.71931934447417,
+          "raw_fallback_cases": 1,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.286699857142857,
+            "source_reconstruction_ms": 1.1803627142857143,
+            "wrapper_encode_ms": 1.1018584285714286,
+            "client_decode_ms": 0.7801571428571428,
+            "server_plus_client_ms": 3.0665374285714284
+          }
+        },
+        {
+          "profile": "planes_up",
+          "wire_bytes": 1319846,
+          "saved_percent_vs_vr444": -18.45470373893845,
+          "raw_fallback_cases": 1,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.127446285714286,
+            "source_reconstruction_ms": 1.1794897142857144,
+            "wrapper_encode_ms": 0.9471565714285715,
+            "client_decode_ms": 0.6752132857142857,
+            "server_plus_client_ms": 2.812958
+          }
+        },
+        {
+          "profile": "green_plain",
+          "wire_bytes": 1578146,
+          "saved_percent_vs_vr444": -41.63684012134048,
+          "raw_fallback_cases": 1,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.107789142857143,
+            "source_reconstruction_ms": 1.1854785714285714,
+            "wrapper_encode_ms": 0.915489,
+            "client_decode_ms": 0.886714,
+            "server_plus_client_ms": 2.9996225714285716
+          }
+        },
+        {
+          "profile": "green_up",
+          "wire_bytes": 1319359,
+          "saved_percent_vs_vr444": -18.41099603309939,
+          "raw_fallback_cases": 1,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.9914182857142857,
+            "source_reconstruction_ms": 1.1769645714285715,
+            "wrapper_encode_ms": 0.8115222857142858,
+            "client_decode_ms": 0.6911314285714285,
+            "server_plus_client_ms": 2.687737
+          }
+        },
+        {
+          "profile": "green_planes_plain",
+          "wire_bytes": 1538596,
+          "saved_percent_vs_vr444": -38.08727181346592,
+          "raw_fallback_cases": 1,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.2151084285714284,
+            "source_reconstruction_ms": 1.1787750000000001,
+            "wrapper_encode_ms": 1.0335598571428573,
+            "client_decode_ms": 0.7687098571428571,
+            "server_plus_client_ms": 2.987274
+          }
+        },
+        {
+          "profile": "green_planes_up",
+          "wire_bytes": 1300710,
+          "saved_percent_vs_vr444": -16.737269120999443,
+          "raw_fallback_cases": 1,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 2.085641285714286,
+            "source_reconstruction_ms": 1.1808405714285715,
+            "wrapper_encode_ms": 0.9001621428571428,
+            "client_decode_ms": 0.674608,
+            "server_plus_client_ms": 2.7647255714285714
+          }
+        }
+      ]
+    },
+    "all": {
+      "cases": 38,
+      "profiles": [
+        {
+          "profile": "vr444_plain_lz4",
+          "wire_bytes": 3382678,
+          "saved_percent_vs_vr444": 0.0,
+          "raw_fallback_cases": 4,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 0.2833009210526316,
+            "source_reconstruction_ms": 0,
+            "wrapper_encode_ms": 0.2833009210526316,
+            "client_decode_ms": 0.8599424736842105,
+            "server_plus_client_ms": 1.1494141842105263
+          }
+        },
+        {
+          "profile": "rgb_plain",
+          "wire_bytes": 3824660,
+          "saved_percent_vs_vr444": -13.066038209962638,
+          "raw_fallback_cases": 3,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.1919148684210525,
+            "source_reconstruction_ms": 0.7135932368421053,
+            "wrapper_encode_ms": 0.46659481578947365,
+            "client_decode_ms": 0.49539963157894734,
+            "server_plus_client_ms": 1.6943193421052631
+          }
+        },
+        {
+          "profile": "rgb_up",
+          "wire_bytes": 2984019,
+          "saved_percent_vs_vr444": 11.785307380720244,
+          "raw_fallback_cases": 3,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.180909105263158,
+            "source_reconstruction_ms": 0.7193422894736842,
+            "wrapper_encode_ms": 0.45153894736842104,
+            "client_decode_ms": 0.34855715789473685,
+            "server_plus_client_ms": 1.538711105263158
+          }
+        },
+        {
+          "profile": "planes_plain",
+          "wire_bytes": 3411494,
+          "saved_percent_vs_vr444": -0.8518694359912482,
+          "raw_fallback_cases": 3,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.4563496315789473,
+            "source_reconstruction_ms": 0.7184626315789474,
+            "wrapper_encode_ms": 0.7322546052631579,
+            "client_decode_ms": 0.5161818947368421,
+            "server_plus_client_ms": 1.979248710526316
+          }
+        },
+        {
+          "profile": "planes_up",
+          "wire_bytes": 3099967,
+          "saved_percent_vs_vr444": 8.35760897135347,
+          "raw_fallback_cases": 3,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.4861726315789474,
+            "source_reconstruction_ms": 0.7217051578947369,
+            "wrapper_encode_ms": 0.7592838157894737,
+            "client_decode_ms": 0.5310227105263158,
+            "server_plus_client_ms": 2.022892947368421
+          }
+        },
+        {
+          "profile": "green_plain",
+          "wire_bytes": 3861947,
+          "saved_percent_vs_vr444": -14.168330535747131,
+          "raw_fallback_cases": 3,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.3572662105263158,
+            "source_reconstruction_ms": 0.7225583157894737,
+            "wrapper_encode_ms": 0.625015947368421,
+            "client_decode_ms": 0.6746684736842105,
+            "server_plus_client_ms": 2.0354049473684213
+          }
+        },
+        {
+          "profile": "green_up",
+          "wire_bytes": 2968678,
+          "saved_percent_vs_vr444": 12.238823795820942,
+          "raw_fallback_cases": 3,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.3331962105263158,
+            "source_reconstruction_ms": 0.7199823684210526,
+            "wrapper_encode_ms": 0.6075772894736842,
+            "client_decode_ms": 0.5207460263157895,
+            "server_plus_client_ms": 1.856289552631579
+          }
+        },
+        {
+          "profile": "green_planes_plain",
+          "wire_bytes": 3415971,
+          "saved_percent_vs_vr444": -0.984220194768759,
+          "raw_fallback_cases": 3,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.4308606315789474,
+            "source_reconstruction_ms": 0.7207840789473684,
+            "wrapper_encode_ms": 0.7046417105263157,
+            "client_decode_ms": 0.5202033947368421,
+            "server_plus_client_ms": 1.9565620789473683
+          }
+        },
+        {
+          "profile": "green_planes_up",
+          "wire_bytes": 3101329,
+          "saved_percent_vs_vr444": 8.317345014807797,
+          "raw_fallback_cases": 3,
+          "mean_case_p50_ms": {
+            "server_transcode_ms": 1.459572894736842,
+            "source_reconstruction_ms": 0.7222710263157894,
+            "wrapper_encode_ms": 0.7300439736842105,
+            "client_decode_ms": 0.5282280526315789,
+            "server_plus_client_ms": 1.9940085789473683
+          }
+        }
+      ]
+    }
+  },
+  "statistic": "means of per-eye case medians, not pooled percentiles or stereo predictions",
+  "limitation": "single x86 host;24 captured eyes+14synthetics; no clock/thermal/affinity control, transfer, GPU upload, compositor or headset measurement"
+}

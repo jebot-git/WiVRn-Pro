@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "independent_manual_lz4": true,
+  "cases": [
+    {
+      "name": "planes-plain",
+      "wire_bytes": 50,
+      "rgba_bytes": 64,
+      "wire_sha256": "c606db192920a3c247ae3a4633a12cd2cebe05424b2bc5bf8244fdefcbee188c",
+      "rgba_sha256": "957b89f29094b9204de1cb6ffe2a34907be0727480911fda03681330b3502557"
+    },
+    {
+      "name": "green-planes-plain",
+      "wire_bytes": 50,
+      "rgba_bytes": 64,
+      "wire_sha256": "7e29b36749162b4ce3aaddcbe2e9db0b5311fdebc13eb310089a945d82faaeae",
+      "rgba_sha256": "957b89f29094b9204de1cb6ffe2a34907be0727480911fda03681330b3502557"
+    },
+    {
+      "name": "green-planes-up",
+      "wire_bytes": 66,
+      "rgba_bytes": 64,
+      "wire_sha256": "46adb95cab281a1c059b46e312ecabb6c3dc65d04d6b2c02b65c8367a64e983a",
+      "rgba_sha256": "957b89f29094b9204de1cb6ffe2a34907be0727480911fda03681330b3502557"
+    },
+    {
+      "name": "green-interleaved",
+      "wire_bytes": 45,
+      "rgba_bytes": 64,
+      "wire_sha256": "eb142e2b3080444137a8dfbda84491396fc07e94f4edc53f195f97ebd6a926d2",
+      "rgba_sha256": "957b89f29094b9204de1cb6ffe2a34907be0727480911fda03681330b3502557"
+    },
+    {
+      "name": "raw-odd",
+      "wire_bytes": 41,
+      "rgba_bytes": 12,
+      "wire_sha256": "5fe61a1b260bdfd492cd776a32608a20e8c51c4c1355eec233a500b5d509d472",
+      "rgba_sha256": "c747a0f35600075b93f62e97291488bc9825ae4b79b911d89634b221b66c80be"
+    }
+  ]
+}
