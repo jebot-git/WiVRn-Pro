@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Python synthetic control tests and qualified host RLP1 CPU parser only",
+  "sources_sha256": {
+    "validation/wivrn-codecs/integration/original_reference_job.py": "bef005bdcb70bcc93e71dcb9e455db29fb76fff775500299d79bec442c72184e",
+    "validation/wivrn-codecs/integration/original_reference_compare.py": "bf0125ff1d871d12521d9ebbc89fcc8f4e81adbff77acd37c115baeeeff2e769",
+    "validation/wivrn-codecs/integration/source_mapping.py": "ca7a542b328d3a546fa12fcf39e78c2869240515f5c057e3fb97fbd68912c785",
+    "validation/wivrn-codecs/integration/submitted_reference_job.py": "bf2d242bad3c8c79cee69098b7a52622433a03886e08309d5e50f126b09f14ca",
+    "validation/wivrn-codecs/integration/submitted_capture.py": "5f0b744cd46e81b48aace942db3cb9460f47ec166cc445c59a5586613912cd97",
+    "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
+    "validation/wivrn-codecs/integration/original_source_pixels.py": "da4dc457f99ca3ca56042b7b1834be4ec7f5c92c89b4a8fc392ebc8a64001de7",
+    "prototypes/vr444/experiments/original_app_reference/qualify.py": "a068a842b368f6574048502fe500bd1d35e6e1fa30a67ff6cad23df8bdb75899",
+    "validation/wivrn-codecs/tests/test_original_reference.py": "99143e4127b4339d48c4ef84d4c4017b6785679e58cb3fc715eb6966844cfc3a",
+    "validation/wivrn-codecs/tests/test_original_source_pixels.py": "6576458296bc51ad99a7a46a3f0fd9fd6ff2ad1db771febc01d2571e2e49d769",
+    "prototypes/vr444/experiments/submitted_image_replay/capture.py": "521019cbb0bb0bf5368d8cb98ea52d7c1cefd7fde05264eb573ae383341f63c9"
+  },
+  "python_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "python_stderr_sha256": "c6ff6189d9642c421fa8712dd4efbaf4ba005af0a9a68a1e699f4ce897c13254",
+  "qualified_renderer_commit": "508c290be9c3a02d28a5162fbad1a1d8674ebfe1",
+  "host_parser_sha256": "4da2253de4680f6c18d00c618f9e471c6006ec278873ecc667f01d1bdcd7c449",
+  "parser_checks": [
+    {
+      "width": 4,
+      "height": 4,
+      "case": "identity",
+      "accepted": true,
+      "returncode": 0,
+      "input_sha256": "9cea64124d7e20da723ba5d2884ad73b966eebdb4e933a60244456237f80285d",
+      "stdout_sha256": "dde7a64178472cec47af0457be0b3c2d4787ce3c328cd99babe621ce86cf05dd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "width": 4,
+      "height": 4,
+      "case": "missing-right-tail",
+      "accepted": false,
+      "returncode": 1,
+      "input_sha256": "5f907dc0493f3a63b4293598f5995b9c433bf1a17259219156f070e3662fbb20",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "f8f8cd836ab01f0b79ad0860e1be72ff1c10321d60814d5213b60888439b0643"
+    },
+    {
+      "width": 4,
+      "height": 4,
+      "case": "trailing-byte",
+      "accepted": false,
+      "returncode": 1,
+      "input_sha256": "71f5e9cc6da3da63e604fc00d5b1fefdcd01998cbea961ade9fc970fae9b24cc",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "afec54b2eadaabec7a21baaa308f81679bb0803b2dc9d14d2d266b07d949d4db"
+    },
+    {
+      "width": 1800,
+      "height": 1980,
+      "case": "identity",
+      "accepted": true,
+      "returncode": 0,
+      "input_sha256": "a0ee3c8af2e12953995b0a26d8f62b2311613293afd6f954991d546df04a5e2c",
+      "stdout_sha256": "dde7a64178472cec47af0457be0b3c2d4787ce3c328cd99babe621ce86cf05dd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "width": 1800,
+      "height": 1980,
+      "case": "missing-right-tail",
+      "accepted": false,
+      "returncode": 1,
+      "input_sha256": "ecf6b92c031856b6d8ccda263cfbf3dfaf8fbdb6ff1bd9d3907c0bf6309c994b",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "f8f8cd836ab01f0b79ad0860e1be72ff1c10321d60814d5213b60888439b0643"
+    },
+    {
+      "width": 1800,
+      "height": 1980,
+      "case": "trailing-byte",
+      "accepted": false,
+      "returncode": 1,
+      "input_sha256": "83b2f5df4fc46ba4babc2333c49c4d3471daf3ed4e4006718a94afb8658589c7",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "afec54b2eadaabec7a21baaa308f81679bb0803b2dc9d14d2d266b07d949d4db"
+    }
+  ],
+  "elapsed_seconds": 0.5608262089663185,
+  "headset_used": false,
+  "gpu_used": false,
+  "actual_source_mapping_acquisition_used": false,
+  "original_to_submitted_quality_verified": false,
+  "full_goal_qualified": false
+}

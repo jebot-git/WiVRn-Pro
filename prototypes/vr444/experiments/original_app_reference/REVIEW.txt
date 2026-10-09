@@ -1,0 +1,19 @@
+Independent read-only reviews
+============================
+
+Compositor review caught and fixed an actual adapter bug: a final auditor-source
+loop shadowed the RLP filename. job_name and auditor_name are now distinct; a
+nonempty real source map is included in the regression fixture.
+
+Both compositor and codec reviewers found no remaining material blocker in the
+final orchestration: fresh source/job/native/collector recomputation, exact
+private prepared/RLP bytes, actual raw/canonical capture equality, full submitted
+cone inclusion in the helper union, and source-stage plus actual triple equality.
+They requested directly binding original_source_pixels.py through the final
+comparison; it is now included in before/after checks and report source hashes.
+
+The codec helper is imported unchanged from aed977e. Its own receipt covers eight
+test groups, including128 scalar tiling references. This branch's fresh receipt
+covers all18 Python tests and six qualified native host --cpu-only RLP cases.
+The actual-headset original reference has not been executed by this agent.
+No synthetic test result qualifies the quality route or a human visual gate.
