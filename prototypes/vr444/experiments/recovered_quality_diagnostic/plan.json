@@ -1,0 +1,9 @@
+{
+  "original_run": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v3-build/native-quality1152-suite/rrb4-q1-chroma-grid-r1",
+  "recovery": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v3-build/first-run-client-recovery",
+  "original_hashes_sha256": "375a6995d25ff4642aeb206a5c994bdaf6f7b425856a062a751fcacae95adb57",
+  "recovery_receipt_sha256": "ede3611b8e016b1c63ce74985e27906e358468f786c17f29a0b290e60a953324",
+  "diagnostic_summary_sha256": "a5eb25ea320457f94ae6f5c55b99ab1d6237a5d566bf113e723d49fb7fc15a73",
+  "build_receipt": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v3-build/build-receipt.json",
+  "build_sha256": "4b5e59f4cce35a8a1473ba46c4687e75467e127da31e31e2f2668d132c45c149"
+}

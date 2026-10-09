@@ -1,0 +1,18 @@
+[
+  "/usr/bin/python3",
+  "validation/wivrn-codecs/integration/source_mapping.py",
+  "--run-root",
+  "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v3-build/native-quality1152-suite-retry/rrb4-q1-chroma-grid-r1",
+  "--run-sha",
+  "09a4f6cb99e318327b9988b3f28a8c23c276dfd8ab43ef0a44fb2dd949ca7ad6",
+  "--build-receipt",
+  "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v3-build/build-receipt.json",
+  "--build-sha",
+  "4b5e59f4cce35a8a1473ba46c4687e75467e127da31e31e2f2668d132c45c149",
+  "--application-build-receipt",
+  "/tmp/sub15-quality-source-map-clock/build-receipt.json",
+  "--application-build-sha",
+  "003ac6a6101a5db1b8694ffcb869b7b112461fe8faf28bf0ba0f1603f3ee4c96",
+  "--out",
+  "prototypes/vr444/experiments/recovered_quality_diagnostic/retry-first-source-map.json"
+]
