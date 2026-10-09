@@ -1,0 +1,1976 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Independent native CPU RRB byte/invariant audit; preserves failed run gates",
+  "run": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality/rrb4-q1-chroma-grid",
+  "run_manifest_sha256": "d781bc11e345ed2253e69fd24015824554e64dae47fcc3a18ddce6201eed4c0e",
+  "build_receipt_sha256": "d6be1ee952a93a967cc6d3492edd89abe7e8fa49e25ad77df0f37dcbee82ec8f",
+  "source": "q1",
+  "output": "cpu",
+  "workers": 4,
+  "encoded_stereo_pairs": 1343,
+  "decoded_stereo_pairs": 1343,
+  "partial_private_pairs": [],
+  "presentations": 1252,
+  "maximum_encoded_stereo_envelope_bytes": 35168,
+  "rejected_eye_records": 0,
+  "shared_pair_decode_ms": {
+    "count": 1343,
+    "p50": 1.00156,
+    "p95": 1.45698,
+    "p99": 1.77937,
+    "max": 3.28818
+  },
+  "pair_decode_counting": "One stereo measurement, repeated identically per eye; never sum eyes",
+  "decoder_terminal_summaries": {
+    "0": {
+      "type": "summary",
+      "queue_dropped": 0,
+      "pairing": "paired",
+      "pair_admitted": 1343,
+      "pair_completed": 1343,
+      "pair_failed": 0,
+      "pair_dropped_eyes": 0,
+      "pair_stale_eyes": 0,
+      "pair_duplicate_eyes": 0,
+      "pair_metadata_mismatch": 0,
+      "pair_abandoned": 0,
+      "pair_pending_dropped_pairs": 0,
+      "pair_orphan_dropped_eyes": 0,
+      "pair_pending_frames": 0
+    },
+    "1": {
+      "type": "summary",
+      "queue_dropped": 0,
+      "pairing": "paired",
+      "pair_admitted": 1343,
+      "pair_completed": 1343,
+      "pair_failed": 0,
+      "pair_dropped_eyes": 0,
+      "pair_stale_eyes": 0,
+      "pair_duplicate_eyes": 0,
+      "pair_metadata_mismatch": 0,
+      "pair_abandoned": 0,
+      "pair_pending_dropped_pairs": 0,
+      "pair_orphan_dropped_eyes": 0,
+      "pair_pending_frames": 0
+    }
+  },
+  "failure_counters": {
+    "pair_failed": 0,
+    "pair_metadata_mismatch": 0,
+    "pair_abandoned": 0,
+    "pair_orphan_dropped_eyes": 0,
+    "pair_duplicate_eyes": 0,
+    "pair_stale_eyes": 0,
+    "pair_pending_dropped_pairs": 0
+  },
+  "scalar_audit": {
+    "schema": 1,
+    "status": "pass",
+    "auditor_source_sha256": "4a258f36a260fce65b13eec431b4259b6c707af26b53810b7149df20cc1ac5ea",
+    "source_contract": "post_foveation_rgb_exact",
+    "oracle_sha256": "c12050116d960d256fc59d3db248c5b1ac6196a99112be4e9d43093bc4bfc8d4",
+    "captured_eye_payloads": 30,
+    "complete_captured_pairs": 15,
+    "captured_presented_pairs": 14,
+    "stereo_envelope_cap": 262144,
+    "inputs_unchanged": true,
+    "headset_accessed": false,
+    "scope": "Sequential scalar reconstruction of exact saved RRB payload/envelope bytes versus host reference/source and available client output. No display, source-app, acquisition-authenticity or latency claim."
+  },
+  "exact_original_post_foveation_eyes": 30,
+  "captured_payload_eyes": 30,
+  "client_reference_exact_eyes": 30,
+  "recorded_gates": {
+    "custom_evidence": {
+      "status": "pass",
+      "errors": []
+    },
+    "research_latency_single_run": {
+      "status": "fail",
+      "errors": [
+        "unique_stereo_submission_hz: 86.793018 violates min 88",
+        "application quality fixtures use a separate profile and cannot qualify the latency target",
+        "complete stereo receive-to-submit p95 must be strictly below 15 ms"
+      ]
+    },
+    "candidate_trace": {
+      "status": "off",
+      "errors": []
+    },
+    "source_trace": {
+      "status": "pass",
+      "errors": []
+    },
+    "pacer_trace": {
+      "status": "off"
+    },
+    "publication_trace": {
+      "status": "off",
+      "errors": []
+    }
+  },
+  "recorded_overall_status": "pass",
+  "warm_presentation": {
+    "status": "measured",
+    "window_start_xr_ns": 8837439981112,
+    "first_unique_submit_xr_ns": 8837443310687,
+    "last_unique_submit_xr_ns": 8850243879514,
+    "unique_pair_interval_s": 12.800568827,
+    "presentation_count": 1112,
+    "unique_stereo_pairs": 1112,
+    "repeat_presentations": 0,
+    "unique_stereo_submission_hz": 86.79301795218574,
+    "per_eye": {
+      "left": {
+        "receive_to_ready_ms": {
+          "count": 1112,
+          "p50": 2.518125,
+          "p95": 8.691199,
+          "p99": 10.08396,
+          "max": 14.185157
+        },
+        "ready_to_submit_ms": {
+          "count": 1112,
+          "p50": 12.114584,
+          "p95": 14.48297,
+          "p99": 15.232501,
+          "max": 232.555596
+        },
+        "receive_to_submit_ms": {
+          "count": 1112,
+          "p50": 15.008179,
+          "p95": 17.145783,
+          "p99": 17.827189,
+          "max": 238.024451
+        }
+      },
+      "right": {
+        "receive_to_ready_ms": {
+          "count": 1112,
+          "p50": 2.048959,
+          "p95": 3.262032,
+          "p99": 4.444584,
+          "max": 5.189948
+        },
+        "ready_to_submit_ms": {
+          "count": 1112,
+          "p50": 12.114584,
+          "p95": 14.48297,
+          "p99": 15.232501,
+          "max": 232.555596
+        },
+        "receive_to_submit_ms": {
+          "count": 1112,
+          "p50": 14.254897,
+          "p95": 16.624897,
+          "p99": 17.140731,
+          "max": 237.646586
+        }
+      }
+    },
+    "pooled": {
+      "receive_to_ready_ms": {
+        "count": 2224,
+        "p50": 2.353594,
+        "p95": 7.876459,
+        "p99": 9.663438,
+        "max": 14.185157
+      },
+      "ready_to_submit_ms": {
+        "count": 2224,
+        "p50": 12.114584,
+        "p95": 14.48297,
+        "p99": 15.232501,
+        "max": 232.555596
+      },
+      "receive_to_submit_ms": {
+        "count": 2224,
+        "p50": 14.672971,
+        "p95": 16.929481,
+        "p99": 17.592762,
+        "max": 238.024451
+      }
+    }
+  },
+  "application_source_audit": {
+    "schema": 1,
+    "status": "pass",
+    "profile": "application_quality_source",
+    "pattern": "chroma-grid",
+    "frames": 1410,
+    "submitted_stereo_frames": 1333,
+    "captured_swapchain_images": 6,
+    "session_ended": true,
+    "source_stage": "application_swapchain_before_compositor",
+    "source_generation": "direct_encoded_srgb_byte_upload",
+    "source_sha256": [
+      "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238",
+      "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e"
+    ],
+    "original_application_source_exact": true,
+    "post_foveation_comparison_performed": false,
+    "codec_or_client_comparison_performed": false,
+    "latency_comparable": false,
+    "limits": [
+      "Execution provenance must separately bind the app binary and command.",
+      "This verifies saved app-image bytes and declared frame records; no display or codec quality result.",
+      "Actual pose/FOV/target records are retained for a separate source/compositor join."
+    ],
+    "input_sha256": {
+      "app.jsonl": "bd0e6eaa2b8f891216e1a09ec6ba8070b26a49074cfaffe70ddbe9c11340eb38",
+      "eye0-image0.readback.rgba": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238",
+      "eye0-image1.readback.rgba": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238",
+      "eye0-image2.readback.rgba": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238",
+      "eye0.source.rgba": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238",
+      "eye1-image0.readback.rgba": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e",
+      "eye1-image1.readback.rgba": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e",
+      "eye1-image2.readback.rgba": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e",
+      "eye1.source.rgba": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e"
+    }
+  },
+  "mapping_diagnostics": [
+    {
+      "capture_id": 1,
+      "frame": 90,
+      "warp": 13149394681561239981,
+      "eye": 0,
+      "reconstructed_geometry": [
+        1800,
+        1980
+      ],
+      "encoded_geometry": [
+        576,
+        640
+      ],
+      "encoded_input_fov_left_right_down_up_radians": [
+        -0.942477763,
+        0.69813168,
+        -0.942477763,
+        0.733038306
+      ],
+      "foveation_x": [
+        1,
+        0,
+        1,
+        1,
+        2,
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        0,
+        3,
+        2,
+        3,
+        2,
+        3,
+        4,
+        4,
+        6,
+        6,
+        8,
+        11,
+        17,
+        27,
+        69,
+        250,
+        67,
+        27,
+        16,
+        11,
+        8,
+        7,
+        5,
+        4,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "foveation_y": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        3,
+        2,
+        2,
+        4,
+        3,
+        4,
+        5,
+        5,
+        8,
+        9,
+        11,
+        19,
+        29,
+        75,
+        274,
+        74,
+        31,
+        17,
+        12,
+        10,
+        6,
+        7,
+        4,
+        3,
+        5,
+        2,
+        3,
+        3,
+        2,
+        1,
+        3,
+        1,
+        1,
+        1
+      ],
+      "ratio1_encoded_run_xy": [
+        250,
+        274
+      ],
+      "central10_encoded_cells": 46998,
+      "central10_cells_with_source_span_above1": 19892,
+      "central10_all_cells_ratio1": false,
+      "mask_sha256": "b5065ceee05fa5a0f4d5290e2ecb21c41b921a76f6ecbb2671a2c6cadb848f40",
+      "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+    },
+    {
+      "capture_id": 1,
+      "frame": 90,
+      "warp": 13149394681561239981,
+      "eye": 1,
+      "reconstructed_geometry": [
+        1800,
+        1980
+      ],
+      "encoded_geometry": [
+        576,
+        640
+      ],
+      "encoded_input_fov_left_right_down_up_radians": [
+        -0.69813168,
+        0.942477763,
+        -0.942477763,
+        0.733038306
+      ],
+      "foveation_x": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        4,
+        5,
+        7,
+        8,
+        11,
+        16,
+        27,
+        67,
+        250,
+        69,
+        27,
+        17,
+        11,
+        8,
+        6,
+        6,
+        4,
+        4,
+        3,
+        2,
+        3,
+        2,
+        3,
+        0,
+        3,
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1
+      ],
+      "foveation_y": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        3,
+        2,
+        2,
+        4,
+        3,
+        4,
+        5,
+        5,
+        8,
+        9,
+        11,
+        19,
+        29,
+        75,
+        274,
+        74,
+        31,
+        17,
+        12,
+        10,
+        6,
+        7,
+        4,
+        3,
+        5,
+        2,
+        3,
+        3,
+        2,
+        1,
+        3,
+        1,
+        1,
+        1
+      ],
+      "ratio1_encoded_run_xy": [
+        250,
+        274
+      ],
+      "central10_encoded_cells": 46998,
+      "central10_cells_with_source_span_above1": 19892,
+      "central10_all_cells_ratio1": false,
+      "mask_sha256": "ee91e96de3e0f4c6b3b52dcb271f8b98c53f35da3860211ceefe4b869f052a7e",
+      "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+    },
+    {
+      "capture_id": 2,
+      "frame": 270,
+      "warp": 11103966708984676151,
+      "eye": 0,
+      "reconstructed_geometry": [
+        1800,
+        1980
+      ],
+      "encoded_geometry": [
+        576,
+        640
+      ],
+      "encoded_input_fov_left_right_down_up_radians": [
+        -0.942477763,
+        0.69813168,
+        -0.942477763,
+        0.733038306
+      ],
+      "foveation_x": [
+        1,
+        0,
+        1,
+        1,
+        2,
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        0,
+        3,
+        2,
+        3,
+        2,
+        3,
+        4,
+        4,
+        6,
+        6,
+        8,
+        11,
+        17,
+        27,
+        69,
+        250,
+        67,
+        27,
+        16,
+        11,
+        8,
+        7,
+        5,
+        4,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "foveation_y": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        3,
+        2,
+        2,
+        4,
+        3,
+        4,
+        5,
+        5,
+        8,
+        9,
+        11,
+        19,
+        29,
+        75,
+        274,
+        74,
+        31,
+        17,
+        12,
+        10,
+        6,
+        7,
+        4,
+        3,
+        5,
+        2,
+        3,
+        3,
+        2,
+        1,
+        3,
+        1,
+        1,
+        1
+      ],
+      "ratio1_encoded_run_xy": [
+        250,
+        274
+      ],
+      "central10_encoded_cells": 46998,
+      "central10_cells_with_source_span_above1": 19892,
+      "central10_all_cells_ratio1": false,
+      "mask_sha256": "b5065ceee05fa5a0f4d5290e2ecb21c41b921a76f6ecbb2671a2c6cadb848f40",
+      "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+    },
+    {
+      "capture_id": 2,
+      "frame": 270,
+      "warp": 11103966708984676151,
+      "eye": 1,
+      "reconstructed_geometry": [
+        1800,
+        1980
+      ],
+      "encoded_geometry": [
+        576,
+        640
+      ],
+      "encoded_input_fov_left_right_down_up_radians": [
+        -0.69813168,
+        0.942477763,
+        -0.942477763,
+        0.733038306
+      ],
+      "foveation_x": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        4,
+        5,
+        7,
+        8,
+        11,
+        16,
+        27,
+        67,
+        250,
+        69,
+        27,
+        17,
+        11,
+        8,
+        6,
+        6,
+        4,
+        4,
+        3,
+        2,
+        3,
+        2,
+        3,
+        0,
+        3,
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1
+      ],
+      "foveation_y": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        3,
+        2,
+        2,
+        4,
+        3,
+        4,
+        5,
+        5,
+        8,
+        9,
+        11,
+        19,
+        29,
+        75,
+        274,
+        74,
+        31,
+        17,
+        12,
+        10,
+        6,
+        7,
+        4,
+        3,
+        5,
+        2,
+        3,
+        3,
+        2,
+        1,
+        3,
+        1,
+        1,
+        1
+      ],
+      "ratio1_encoded_run_xy": [
+        250,
+        274
+      ],
+      "central10_encoded_cells": 46998,
+      "central10_cells_with_source_span_above1": 19892,
+      "central10_all_cells_ratio1": false,
+      "mask_sha256": "ee91e96de3e0f4c6b3b52dcb271f8b98c53f35da3860211ceefe4b869f052a7e",
+      "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+    },
+    {
+      "capture_id": 3,
+      "frame": 360,
+      "warp": 8841306296364279773,
+      "eye": 0,
+      "reconstructed_geometry": [
+        1800,
+        1980
+      ],
+      "encoded_geometry": [
+        576,
+        640
+      ],
+      "encoded_input_fov_left_right_down_up_radians": [
+        -0.942477763,
+        0.69813168,
+        -0.942477763,
+        0.733038306
+      ],
+      "foveation_x": [
+        1,
+        0,
+        1,
+        1,
+        2,
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        0,
+        3,
+        2,
+        3,
+        2,
+        3,
+        4,
+        4,
+        6,
+        6,
+        8,
+        11,
+        17,
+        27,
+        69,
+        250,
+        67,
+        27,
+        16,
+        11,
+        8,
+        7,
+        5,
+        4,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "foveation_y": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        3,
+        2,
+        2,
+        4,
+        3,
+        4,
+        5,
+        5,
+        8,
+        9,
+        11,
+        19,
+        29,
+        75,
+        274,
+        74,
+        31,
+        17,
+        12,
+        10,
+        6,
+        7,
+        4,
+        3,
+        5,
+        2,
+        3,
+        3,
+        2,
+        1,
+        3,
+        1,
+        1,
+        1
+      ],
+      "ratio1_encoded_run_xy": [
+        250,
+        274
+      ],
+      "central10_encoded_cells": 46998,
+      "central10_cells_with_source_span_above1": 19892,
+      "central10_all_cells_ratio1": false,
+      "mask_sha256": "b5065ceee05fa5a0f4d5290e2ecb21c41b921a76f6ecbb2671a2c6cadb848f40",
+      "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+    },
+    {
+      "capture_id": 3,
+      "frame": 360,
+      "warp": 8841306296364279773,
+      "eye": 1,
+      "reconstructed_geometry": [
+        1800,
+        1980
+      ],
+      "encoded_geometry": [
+        576,
+        640
+      ],
+      "encoded_input_fov_left_right_down_up_radians": [
+        -0.69813168,
+        0.942477763,
+        -0.942477763,
+        0.733038306
+      ],
+      "foveation_x": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        4,
+        5,
+        7,
+        8,
+        11,
+        16,
+        27,
+        67,
+        250,
+        69,
+        27,
+        17,
+        11,
+        8,
+        6,
+        6,
+        4,
+        4,
+        3,
+        2,
+        3,
+        2,
+        3,
+        0,
+        3,
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1
+      ],
+      "foveation_y": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        3,
+        2,
+        2,
+        4,
+        3,
+        4,
+        5,
+        5,
+        8,
+        9,
+        11,
+        19,
+        29,
+        75,
+        274,
+        74,
+        31,
+        17,
+        12,
+        10,
+        6,
+        7,
+        4,
+        3,
+        5,
+        2,
+        3,
+        3,
+        2,
+        1,
+        3,
+        1,
+        1,
+        1
+      ],
+      "ratio1_encoded_run_xy": [
+        250,
+        274
+      ],
+      "central10_encoded_cells": 46998,
+      "central10_cells_with_source_span_above1": 19892,
+      "central10_all_cells_ratio1": false,
+      "mask_sha256": "ee91e96de3e0f4c6b3b52dcb271f8b98c53f35da3860211ceefe4b869f052a7e",
+      "scope": "Integer spans and recorded input FOV only. Assumes canonical reconstructed image axes; does not bind original app source rect/flip or prove pre-foveation pixel equality."
+    }
+  ],
+  "input_artifacts": {
+    "config-before.json": {
+      "bytes": 557,
+      "sha256": "7312b45c01e49f7f31c92682f30c0e2790a788f1303a1ca20fe5d0db75bac2ae"
+    },
+    "production-package-before.txt": {
+      "bytes": 6812,
+      "sha256": "495ed9ad030ad0f76d4cc46b61eaf7031bdcb1373d2cc9d66b7bca15c84c87f1"
+    },
+    "quality-application-plan.json": {
+      "bytes": 2195,
+      "sha256": "1c76328bf3f2d31d55ef19492841f6e2d64193faa06626d02ed6f925d54ec66a"
+    },
+    "quality-application-execution.json": {
+      "bytes": 2924,
+      "sha256": "2ccf17551ae64efd1b146654b8f08ef39f9bb73149784ded30dee3fc0ad27ee3"
+    },
+    "server-config.json": {
+      "bytes": 698,
+      "sha256": "edb4cbdbaf2ccac3740b958567bf702a745b17e2aa533905fe975b9081d74f87"
+    },
+    "client-config.json": {
+      "bytes": 382,
+      "sha256": "b80f09785bbb9d60125e0e9d8c4962c769e457aa396e91d2f2315fff342a0338"
+    },
+    "provenance.json": {
+      "bytes": 8546,
+      "sha256": "003b8aed30971b833d800f1f0fbcc31a47e86d268f509d5d03efc74183c1aaae"
+    },
+    "wivrn-live-logcat.txt": {
+      "bytes": 81077,
+      "sha256": "13bc256de5d0b7421259b432984ea6baa309a41cbb6928fa6fd336db08aa4b54"
+    },
+    "client-config-readback.json": {
+      "bytes": 1059,
+      "sha256": "d27fa2558b6989d5517946a7139fe166513575b6dbfad797b1a2544c8365039a"
+    },
+    "server.log": {
+      "bytes": 6303,
+      "sha256": "e225f664f1415544e219dd9331fabb824940eaa604cc0c28032c27cc5a6ee4da"
+    },
+    "launch.txt": {
+      "bytes": 148,
+      "sha256": "6ff7da47c3467d0e2015c1635fa2a625affd53eb071607c35daed03d85436732"
+    },
+    "performance-samples.jsonl": {
+      "bytes": 131358,
+      "sha256": "9df36b06751dc1e30d4dbe5fe249fa90cddc6ddad864d425ce6f3e7fea1d5771"
+    },
+    "app-pid.txt": {
+      "bytes": 6,
+      "sha256": "39f36bf38ae24143b2deff2bb81c4181b87c71e5ec2223fe951d6601d3258156"
+    },
+    "app-pid-receipt.json": {
+      "bytes": 80,
+      "sha256": "eb7daf52c1b4eaccb46275798fc5c9b4197e71827f54af457828cb87e6c8dbb4"
+    },
+    "client.tar": {
+      "bytes": 134295040,
+      "sha256": "8527cf3c972649bfc6f2328a558923a8ae219981d3bed0a37b35962b4930a641"
+    },
+    "wivrn-logcat.txt": {
+      "bytes": 63766,
+      "sha256": "4c6e23f22e0bf36972424b273456a137ecaf027f9f535f24a6ad3c8a721c9f2e"
+    },
+    "production-package-after.txt": {
+      "bytes": 6812,
+      "sha256": "495ed9ad030ad0f76d4cc46b61eaf7031bdcb1373d2cc9d66b7bca15c84c87f1"
+    },
+    "cleanup.json": {
+      "bytes": 237,
+      "sha256": "2981b73c26eaf066dda2290b536e117608a08544a2c577d2fd06469f7914196e"
+    },
+    "custom-evidence.json": {
+      "bytes": 75792,
+      "sha256": "6c7ab966064c0ae379c50dc89a4c54b4f5e9ec46be8a95cd250a986ea2093bf9"
+    },
+    "hardware-provenance.txt": {
+      "bytes": 1049,
+      "sha256": "3e1bead066486d659024947d0448f0d8a4887f817fa2de74cd79ab16e972c8f1"
+    },
+    "summary.json": {
+      "bytes": 303551,
+      "sha256": "03d83d01888e8870ef65e1e9f654d6018c319288b4fb1ea5f3aeed6e2aabd8b9"
+    },
+    "host/source-trace.jsonl": {
+      "bytes": 4683648,
+      "sha256": "8a7ff901da7a9e3b0bde8dbb23e40dc589fe4645a274e2d51c805ffcd0c6d9c5"
+    },
+    "host/encode-0.jsonl": {
+      "bytes": 575436,
+      "sha256": "665da979f640ae6d519306db9bdf28e93e7eccb2676d7a7026efe7c148647d71"
+    },
+    "host/encode-1.jsonl": {
+      "bytes": 575953,
+      "sha256": "32f508ab81c8e566325ede4ee70c8778b9a6635cb005aade93efbb68fb7175c6"
+    },
+    "host/encode-2.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "host/90-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/90-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/90-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/90-0.envelope": {
+      "bytes": 17747,
+      "sha256": "eaf5819adf854a5f7fd5e41e9a037beaa0fa58034b4e03a406fdb5fa7adc8544"
+    },
+    "host/90-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/90-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/90-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/90-1.envelope": {
+      "bytes": 17421,
+      "sha256": "9919488f95f80f80191bcd31c3c7e24e24079df626ecfc51c6c5676fcdcd12a3"
+    },
+    "host/180-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/180-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/180-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/180-0.envelope": {
+      "bytes": 17747,
+      "sha256": "b1471069c98f4989ae80e3206ad4bf5a7e0dbf4a96f2967c8bad67d4c1707d0d"
+    },
+    "host/180-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/180-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/180-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/180-1.envelope": {
+      "bytes": 17421,
+      "sha256": "d86c3fff907d3b3ea1cc9823a141f548db757e1eedcab47229024e9307ddb9a0"
+    },
+    "host/270-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/270-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/270-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/270-0.envelope": {
+      "bytes": 17747,
+      "sha256": "a3ec94175ff5b1f19edde8562c5e2ac7d2dd372a75e1725e0be61227c08519f8"
+    },
+    "host/270-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/270-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/270-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/270-1.envelope": {
+      "bytes": 17421,
+      "sha256": "6bb4b9ad24541a16317a57882b2ffbaef23d5de2a69647e2daa1bbd1786d4db2"
+    },
+    "host/360-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/360-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/360-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/360-0.envelope": {
+      "bytes": 17747,
+      "sha256": "c63c2267e855242a073a42d48cf47784ae00d42925d432f3053ccc09c1b7278d"
+    },
+    "host/360-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/360-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/360-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/360-1.envelope": {
+      "bytes": 17421,
+      "sha256": "c9d2d0b8d74c48835f10bb59d5d4794504baa1553fcdb4ce6c092e905501cefa"
+    },
+    "host/450-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/450-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/450-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/450-0.envelope": {
+      "bytes": 17747,
+      "sha256": "e60c2e034f2699adb7402022cc5bea2cc3f6a90fbe9f3fe2804de1acf4a46c93"
+    },
+    "host/450-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/450-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/450-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/450-1.envelope": {
+      "bytes": 17421,
+      "sha256": "c4c8bfc8813ef32e1601e5cbe2df000e6e2c1370bdca981b55fe4bd932f603c9"
+    },
+    "host/540-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/540-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/540-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/540-0.envelope": {
+      "bytes": 17747,
+      "sha256": "255050f8a553f794be2ed837d3c4e5b627ca71003b7b58c67aca0a15c0cf0f4f"
+    },
+    "host/540-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/540-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/540-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/540-1.envelope": {
+      "bytes": 17421,
+      "sha256": "0354a2845888b8d1ed95f5f75a251d39ea91f02d49894fc59f3a8ff36b68d0b0"
+    },
+    "host/630-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/630-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/630-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/630-0.envelope": {
+      "bytes": 17747,
+      "sha256": "6b6d9875a2a8933774361199b7fe14f053cfd201346be445afbf4e3b3cd5ab67"
+    },
+    "host/630-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/630-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/630-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/630-1.envelope": {
+      "bytes": 17421,
+      "sha256": "e8fe9a96b83932ca4cb0e7524acca0bad6a04b695333384edbc0cb206b92e1be"
+    },
+    "host/720-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/720-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/720-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/720-0.envelope": {
+      "bytes": 17747,
+      "sha256": "9641f26568dc67cdd07b5149e02650adf817d209e1c22bbe46068775fcc8dac1"
+    },
+    "host/720-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/720-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/720-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/720-1.envelope": {
+      "bytes": 17421,
+      "sha256": "9193ae2fa9a8f6093169c39e25cb235396eb5bf4ff3283e62ff25ed3796f2a50"
+    },
+    "host/810-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/810-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/810-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/810-0.envelope": {
+      "bytes": 17747,
+      "sha256": "fead8c155736e2bd4300daf4d19913dcb77719e16e722794307f18da14c9cb54"
+    },
+    "host/810-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/810-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/810-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/810-1.envelope": {
+      "bytes": 17421,
+      "sha256": "b32ef1468abdd6912c2f7de894125a4a2d21c25ce17baeaec32372c6bf08c2e3"
+    },
+    "host/900-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/900-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/900-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/900-0.envelope": {
+      "bytes": 17747,
+      "sha256": "970594f13ce9018714b8668c343888eab101821b86a5fa66406687101d48cb89"
+    },
+    "host/900-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/900-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/900-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/900-1.envelope": {
+      "bytes": 17421,
+      "sha256": "b7224db42eeca189f9ae3a944d617a4d8c23f27035bd1b77f906399ba38768ca"
+    },
+    "host/990-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/990-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/990-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/990-0.envelope": {
+      "bytes": 17747,
+      "sha256": "f6852e1ff625a04b8c98c3f25ae80e84a08b79231f56931cf3322984bf7a9f13"
+    },
+    "host/990-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/990-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/990-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/990-1.envelope": {
+      "bytes": 17421,
+      "sha256": "99597fbdf64de6bd1cf707b2287de72893ba719403dd691910f21f5f4f2664e2"
+    },
+    "host/1080-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/1080-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/1080-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/1080-0.envelope": {
+      "bytes": 17747,
+      "sha256": "55e0840306504ef367a15379d83938854a6b45db298860ffd35f679f366323cd"
+    },
+    "host/1080-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/1080-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/1080-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/1080-1.envelope": {
+      "bytes": 17421,
+      "sha256": "6df2bbea0011b7bcb7c377a0030c9946673a5dd74821c30d2452a5ad15dcf79b"
+    },
+    "host/1170-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/1170-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/1170-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/1170-0.envelope": {
+      "bytes": 17747,
+      "sha256": "70b14c54e923485a5e3c4da54858243702b09bac6bb03df57b17026355c34d97"
+    },
+    "host/1170-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/1170-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/1170-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/1170-1.envelope": {
+      "bytes": 17421,
+      "sha256": "12603fa84c43ac5e0a34f81cdd2a684e2b84e3ee75d82c530cba70009945ec77"
+    },
+    "host/1260-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/1260-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/1260-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/1260-0.envelope": {
+      "bytes": 17747,
+      "sha256": "65d6c7480801d2433924c470f7893953cca0cea2d176a1d1219b2ab8a5d1382f"
+    },
+    "host/1260-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/1260-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/1260-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/1260-1.envelope": {
+      "bytes": 17421,
+      "sha256": "bc0531cec319cab7426228b4fc9efd3f7f4ec8678802bfbd542d4c1b7a9d8d87"
+    },
+    "host/1350-0.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/1350-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "host/1350-0.payload": {
+      "bytes": 17699,
+      "sha256": "1a8a000567bcd04da7404ae539d76ce1190c1fabd0a277933f8b52c420f17b97"
+    },
+    "host/1350-0.envelope": {
+      "bytes": 17747,
+      "sha256": "292a90ca24e95d2b8c374d926a12f1f08b5fe1c1ff51e6a067f9b69547c0f357"
+    },
+    "host/1350-1.reference.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/1350-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "host/1350-1.payload": {
+      "bytes": 17373,
+      "sha256": "fa7ef0224ef5c54f9b3f9878149a2af04127b71082f0c65600ba50f020feea63"
+    },
+    "host/1350-1.envelope": {
+      "bytes": 17421,
+      "sha256": "ede799c64c28a1b86fe32fb8ced04eda0d4d82e77780b41bd923b44e92e0fd9a"
+    },
+    "client/codec-test-present.jsonl": {
+      "bytes": 965865,
+      "sha256": "d77a623df1d27f8cce53a35d884171a2130a64c4bed5f7e3d8c7025440a8cf4e"
+    },
+    "config-before/client.json": {
+      "bytes": 269,
+      "sha256": "166bc6e8fa667cdb0f86fbe46e5a7d6a1493264a44d4c1cd96fc143ec6d359db"
+    },
+    "config-before/codec-test-kernel.txt": {
+      "bytes": 10,
+      "sha256": "095163571d4f55817013c062b1f3a47a62481c607132bf72c26ab0d52541b642"
+    },
+    "config-before/codec-test-backend.txt": {
+      "bytes": 9,
+      "sha256": "256d8e424647b95449377fab9a924f748844533361de11299d80e2ae98f4959d"
+    },
+    "config-before/codec-test-pairing.txt": {
+      "bytes": 7,
+      "sha256": "447b4a3be1a220cac88744d636e79fdd2933ebe45501bd1c20a8034b22f14819"
+    },
+    "config-before/codec-test-compression.txt": {
+      "bytes": 4,
+      "sha256": "717ebf83115474d4a8e344dfc6b1a94c282eedea469b7c96de6da4ee2ad30f32"
+    },
+    "config-before/codec-test-gaze-timing.txt": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "config-before/codec-test-selection.txt": {
+      "bytes": 63,
+      "sha256": "89e3e2cf13347653cabf62060fb09157ad09024926673eb41e4986064becfcb5"
+    },
+    "config-before/codec-test-candidate-trace.txt": {
+      "bytes": 69,
+      "sha256": "62a2a885cc6f17c36480dc6a3ec3237d3b7831b10b1ddafa08d04cfa705f8db8"
+    },
+    "config-before/codec-test-cpu-output.txt": {
+      "bytes": 64,
+      "sha256": "ff5d3ada79f9ce1a6fbe5659e1075b8a55c23edb702efa390d255a8638ff71d6"
+    },
+    "config-before/codec-test-selection-policy.txt": {
+      "bytes": 70,
+      "sha256": "cd3eda4004750d457694658fd681ccfd14df284d08a1536fda76689b93dc37aa"
+    },
+    "config-before/codec-test-publication-trace.txt": {
+      "bytes": 71,
+      "sha256": "8c14d2f731be93644354096b09b7ffa449284ba69c28a6c10a80f0ebe6922f69"
+    },
+    "config-before/codec-test-payload.txt": {
+      "bytes": 61,
+      "sha256": "22f5c15b4d67c53004e7b4c40c80f6aceab02d46a96a5bf0fb62f2fbecdbac96"
+    },
+    "config-before/codec-test-rrb-workers.txt": {
+      "bytes": 65,
+      "sha256": "a0923b427d4a82edf19ad7f5d133ee41e4ce675beb3eee6403793bad4a26254a"
+    },
+    "config-before/codec-test-rrb-output.txt": {
+      "bytes": 64,
+      "sha256": "475a6fd9c88574112dce1535ed4794cfbd9be3a482f78ab0dd2e1d2e11050201"
+    },
+    "config-before/codec-test-quality-capture.json": {
+      "bytes": 70,
+      "sha256": "cf51ffa17ab943fe9bfc3c430df4c2ec092428b24e16931eff62d75073b42399"
+    },
+    "app-source/app.jsonl": {
+      "bytes": 1896376,
+      "sha256": "bd0e6eaa2b8f891216e1a09ec6ba8070b26a49074cfaffe70ddbe9c11340eb38"
+    },
+    "app-source/eye0.source.rgba": {
+      "bytes": 14256000,
+      "sha256": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238"
+    },
+    "app-source/eye1.source.rgba": {
+      "bytes": 14256000,
+      "sha256": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e"
+    },
+    "app-source/eye0-image0.readback.rgba": {
+      "bytes": 14256000,
+      "sha256": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238"
+    },
+    "app-source/eye1-image0.readback.rgba": {
+      "bytes": 14256000,
+      "sha256": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e"
+    },
+    "app-source/eye0-image1.readback.rgba": {
+      "bytes": 14256000,
+      "sha256": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238"
+    },
+    "app-source/eye1-image1.readback.rgba": {
+      "bytes": 14256000,
+      "sha256": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e"
+    },
+    "app-source/eye0-image2.readback.rgba": {
+      "bytes": 14256000,
+      "sha256": "c2ec80c868e915a368b534903ab96a812e9a70b30f51b2d007e9747a36b13238"
+    },
+    "app-source/eye1-image2.readback.rgba": {
+      "bytes": 14256000,
+      "sha256": "4b5433c69daf1e8a74801fc99ab517b472d97af3f1e44c4b330ffb522825344e"
+    },
+    "client/codec-test/decode-0.jsonl": {
+      "bytes": 1605958,
+      "sha256": "66fa26b08339f9459ca2b794034199deaa6c7837c379c1c59f2c5b468110e224"
+    },
+    "client/codec-test/decode-1.jsonl": {
+      "bytes": 1606244,
+      "sha256": "116dab64da6b00ff3c99b128d27bacfc912d853d93c17bb0fc20638b9c438a23"
+    },
+    "client/codec-test/decode-2.jsonl": {
+      "bytes": 61,
+      "sha256": "ee40719a3104b260dba7b229c3dace3d2bdca37211a2dc29f2db0e8bc0e06482"
+    },
+    "client/codec-test/layer-filter.jsonl": {
+      "bytes": 171,
+      "sha256": "8bf5edd4857a249dfa40dede6250ba7aa0e8045d6c6f8a9228fa975305a88674"
+    },
+    "client/codec-test/90-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/90-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/180-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/180-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/270-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/270-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/360-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/360-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/450-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/450-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/540-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/540-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/630-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/630-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/720-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/720-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/810-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/810-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/900-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/900-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/990-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/990-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/1080-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/1080-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/1170-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/1170-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/1260-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/1260-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/1350-0.rgba": {
+      "bytes": 1474560,
+      "sha256": "e8d1af205a18a832605764d35b95b4eeea29be78a09eb27b0a4f885c58951441"
+    },
+    "client/codec-test/1350-1.rgba": {
+      "bytes": 1474560,
+      "sha256": "0f28333afbedb4a9e2c033f548f22644552a19ea3e73af33023358596a956e44"
+    },
+    "client/codec-test/quality/capture-1-eye-0.raw": {
+      "bytes": 14256000,
+      "sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad"
+    },
+    "client/codec-test/quality/capture-1-eye-0.json": {
+      "bytes": 2518,
+      "sha256": "b3945cd1eb86337c047ee7393e774d59efe0f9a09a2e9d9c1f3d8c3a73f0fead"
+    },
+    "client/codec-test/quality/capture-1-eye-1.raw": {
+      "bytes": 14256000,
+      "sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8"
+    },
+    "client/codec-test/quality/capture-1-eye-1.json": {
+      "bytes": 2518,
+      "sha256": "cd37f1915d4e65f4442dbfdba29e627b12b65181b00b984b3f32eab8ff7c13b6"
+    },
+    "client/codec-test/quality/capture-1-pair.json": {
+      "bytes": 132,
+      "sha256": "a3ebacef2bcb1c9d6d3ff9229838a54c35c3cdbaaf82440d04cde9db059fb359"
+    },
+    "client/codec-test/quality/capture-2-eye-0.raw": {
+      "bytes": 14256000,
+      "sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad"
+    },
+    "client/codec-test/quality/capture-2-eye-0.json": {
+      "bytes": 2571,
+      "sha256": "58bc185b52299927bc261b47fce478181facc3b8ad63268754903ea9819b805c"
+    },
+    "client/codec-test/quality/capture-2-eye-1.raw": {
+      "bytes": 14256000,
+      "sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8"
+    },
+    "client/codec-test/quality/capture-2-eye-1.json": {
+      "bytes": 2569,
+      "sha256": "375d44dbd822ce378059937f5cc94d9dad192090cfc5e6082aa0451465fe2c0c"
+    },
+    "client/codec-test/quality/capture-2-pair.json": {
+      "bytes": 132,
+      "sha256": "7e7a0baf36e4da5f0703b4977d9cda1736321ec1f02479714f3cb5c566ef4337"
+    },
+    "client/codec-test/quality/capture-3-eye-0.raw": {
+      "bytes": 14256000,
+      "sha256": "b34664abe33803e8670ba2b669e75cbac329441062bb29ae8a709d50b212edad"
+    },
+    "client/codec-test/quality/capture-3-eye-0.json": {
+      "bytes": 2568,
+      "sha256": "bab8212b8090fb8be1d3474a67eca337b36b19968fdd7d93aec9c82545369fac"
+    },
+    "client/codec-test/quality/capture-3-eye-1.raw": {
+      "bytes": 14256000,
+      "sha256": "033499f73da8388f382acd320ccab3142f94fd293056b17350cbceab64cc9bc8"
+    },
+    "client/codec-test/quality/capture-3-eye-1.json": {
+      "bytes": 2566,
+      "sha256": "2fc6a26b5c2b4a5f57c1de11ed13bc9a158599cd467aad6a9a288de2ea3d2408"
+    },
+    "client/codec-test/quality/capture-3-pair.json": {
+      "bytes": 132,
+      "sha256": "84ab0760cf2aeb1500c59b17e1fe6ab96c99672a8a55b44e6f99ef0c73a15f2e"
+    },
+    "client/codec-test/shaders-0/encode.spv": {
+      "bytes": 12280,
+      "sha256": "c1d79637a60f1663b7eb7723537a5bb4457a94005a6e7c65b46dd29de92f9986"
+    },
+    "client/codec-test/shaders-0/decode.spv": {
+      "bytes": 12928,
+      "sha256": "90d9fe82c49c81aeb57bfa0ec95d249850bd82856d4fd655ff6ef9af2d6863a3"
+    },
+    "client/codec-test/shaders-0/encode-coop64.spv": {
+      "bytes": 12648,
+      "sha256": "3e534f0e9e2fe717b83340319ac648e8750aad7bb54c2eb925c061568b3774ae"
+    },
+    "client/codec-test/shaders-0/decode-coop64.spv": {
+      "bytes": 13172,
+      "sha256": "06a4f6760ed97bf7aa897024862f5568d207f4b1dd35b2bf192a2fda2efe2f08"
+    },
+    "client/codec-test/shaders-0/encode-coop128.spv": {
+      "bytes": 12648,
+      "sha256": "08f46f4e1ba61702e4d56665776b2c874350ee698ce9976484414f399be9fb2e"
+    },
+    "client/codec-test/shaders-0/decode-coop128.spv": {
+      "bytes": 13172,
+      "sha256": "47b9027b5e9aa73de850ef946a606b68fc7787829239fe946f9fb5674dff38e0"
+    },
+    "client/codec-test/shaders-0/decode-coop128dc.spv": {
+      "bytes": 16032,
+      "sha256": "ef7f0cb75ef62e753ea29634c517e8ce5d875dba92c39342f8fad42e4f00c11b"
+    },
+    "client/codec-test/shaders-1/encode.spv": {
+      "bytes": 12280,
+      "sha256": "c1d79637a60f1663b7eb7723537a5bb4457a94005a6e7c65b46dd29de92f9986"
+    },
+    "client/codec-test/shaders-1/decode.spv": {
+      "bytes": 12928,
+      "sha256": "90d9fe82c49c81aeb57bfa0ec95d249850bd82856d4fd655ff6ef9af2d6863a3"
+    },
+    "client/codec-test/shaders-1/encode-coop64.spv": {
+      "bytes": 12648,
+      "sha256": "3e534f0e9e2fe717b83340319ac648e8750aad7bb54c2eb925c061568b3774ae"
+    },
+    "client/codec-test/shaders-1/decode-coop64.spv": {
+      "bytes": 13172,
+      "sha256": "06a4f6760ed97bf7aa897024862f5568d207f4b1dd35b2bf192a2fda2efe2f08"
+    },
+    "client/codec-test/shaders-1/encode-coop128.spv": {
+      "bytes": 12648,
+      "sha256": "08f46f4e1ba61702e4d56665776b2c874350ee698ce9976484414f399be9fb2e"
+    },
+    "client/codec-test/shaders-1/decode-coop128.spv": {
+      "bytes": 13172,
+      "sha256": "47b9027b5e9aa73de850ef946a606b68fc7787829239fe946f9fb5674dff38e0"
+    },
+    "client/codec-test/shaders-1/decode-coop128dc.spv": {
+      "bytes": 16032,
+      "sha256": "ef7f0cb75ef62e753ea29634c517e8ce5d875dba92c39342f8fad42e4f00c11b"
+    },
+    "client/codec-test/shaders-2/encode.spv": {
+      "bytes": 12280,
+      "sha256": "c1d79637a60f1663b7eb7723537a5bb4457a94005a6e7c65b46dd29de92f9986"
+    },
+    "client/codec-test/shaders-2/decode.spv": {
+      "bytes": 12928,
+      "sha256": "90d9fe82c49c81aeb57bfa0ec95d249850bd82856d4fd655ff6ef9af2d6863a3"
+    },
+    "client/codec-test/shaders-2/encode-coop64.spv": {
+      "bytes": 12648,
+      "sha256": "3e534f0e9e2fe717b83340319ac648e8750aad7bb54c2eb925c061568b3774ae"
+    },
+    "client/codec-test/shaders-2/decode-coop64.spv": {
+      "bytes": 13172,
+      "sha256": "06a4f6760ed97bf7aa897024862f5568d207f4b1dd35b2bf192a2fda2efe2f08"
+    },
+    "client/codec-test/shaders-2/encode-coop128.spv": {
+      "bytes": 12648,
+      "sha256": "08f46f4e1ba61702e4d56665776b2c874350ee698ce9976484414f399be9fb2e"
+    },
+    "client/codec-test/shaders-2/decode-coop128.spv": {
+      "bytes": 13172,
+      "sha256": "47b9027b5e9aa73de850ef946a606b68fc7787829239fe946f9fb5674dff38e0"
+    },
+    "client/codec-test/shaders-2/decode-coop128dc.spv": {
+      "bytes": 16032,
+      "sha256": "ef7f0cb75ef62e753ea29634c517e8ce5d875dba92c39342f8fad42e4f00c11b"
+    }
+  },
+  "sources_sha256": {
+    "prototypes/vr444/experiments/native_rrb_evidence/record.py": "16021a03ccb92f551decc1097ce4923cc71a8b7053318314a172c71e6f33272e",
+    "validation/wivrn-codecs/integration/rrb_payload_audit.py": "4a258f36a260fce65b13eec431b4259b6c707af26b53810b7149df20cc1ac5ea",
+    "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
+    "prototypes/vr444/experiments/quality_stimuli/audit.py": "8a41e766a309eec2d74081c6078e8a5d7ec6a45df3df1b51afc6f58cad81395c"
+  },
+  "full_goal_qualified": false,
+  "quality_route_qualified": false,
+  "latency_route_qualified": false,
+  "promotion_eligible": false,
+  "limitations": [
+    "Post-foveation source equality is not original application-to-display equality.",
+    "Native summary latency/trace verdicts are retained, not repaired or promoted by this audit.",
+    "Same-render submitted-reference pixel comparison remains a separate bound stage.",
+    "One chroma-grid run does not meet two-repeat/three-family/full-stage quality requirements.",
+    "No optical display, human-visible artifact or new wireless-transport claim."
+  ]
+}

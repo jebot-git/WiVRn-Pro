@@ -1,0 +1,73 @@
+Native RRB CPU and first Q1 source evidence (2026-10-09)
+
+These independent read-only audits pass their byte/provenance/invariant scope.
+Neither capture qualifies a complete latency or quality goal. Reports preserve
+all original run failures and include each actual input's hash and byte count.
+
+CPU4 / decoded VR444 Q8 input:
+  2,091 encoded and 2,074 decoded complete stereo pairs, 2,023 presentations.
+  Maximum encoded stereo envelope total 72,847 bytes (cap262,144).
+  Independent scalar replay validates48 captured eyes; all46 available client
+  image captures equal the corresponding decoded reference. Q8 references all
+  differ from original post-foveation source: this is NOT original-lossless.
+  Shared both-eye CPU decode p50/p95/p99=1.33906/1.99010/2.51906 ms. Each value
+  is one stereo measurement repeated in both eye logs, never added twice.
+  Failure/mismatch/abandoned/orphan/duplicate/stale counters zero; pending
+  dropped-pair counter reaches2. No partial private decoded pair is present.
+  The actual run remains FAIL: complete-stereo earliest receipt→post-xrEndFrame
+  warm p95=21.552242ms and new-pair cadence87.474049Hz. A skipped runtime target
+  regressed1.259823ms and correctly made the candidate/publication ledger's
+  monotonicity gate fail. No evidence was removed to repair that verdict.
+
+CPU4 / direct Q1 chroma-grid / historical VIEW fixture:
+  1,343 encoded and decoded complete stereo pairs; 1,252 presentations.
+  Maximum encoded stereo envelope total35,168bytes. All failure/drop counters0.
+  30 captured payload eyes independently replay exactly to the original
+  POST-HOST-FOVEATION input; all30 client captures match that same independent
+  source. Shared stereo CPU decode p50/p95/p99=1.00156/1.45698/1.77937ms.
+  The application generated independent1800×1980 RGBA8_SRGB images, submitted
+  1,333 stereo frames and retained6 actual swapchain readbacks, all exact.
+  Host foveation reduced the codec input to576×640. The recorded map's1:1
+  central runs are250×274. Of46,998 encoded cells intersecting central10°,
+  19,892 span more than one original source pixel on at least one axis.
+  q1-chroma-grid.json contains all six mapping diagnostics, vectors, FOVs and
+  mask hashes. This is a geometric coverage diagnostic, not a guessed original
+  source crop/flip/pixel correspondence. Exact Q1 decoding cannot undo that
+  spatial loss. The quality-only stimulus is excluded from latency selection.
+
+The later exact same-device replay of capture1 separately matches both native
+submitted eye buffers:69,612 central10° protected pixels per eye have zero RGB
+code error, and full RGB plus alpha arrays match. The final comparison adapter
+and its output are a separate commit/receipt. It uses post-host-foveation source
+and reconstructed metadata geometry; it cannot prove original-app fidelity or
+physical display visibility.
+
+The user reported a black physical view during the prior VIEW test. That failed
+visible assessment is retained despite exact saved buffers. Team source review
+found the VIEW fast path forwards eye-local poses into a world-space client
+layer. The separate explicit LOCAL fixture commit46042587 was then observed
+visible by the user. That later observation does not relabel these historical
+VIEW artifacts or establish full quality. Additional fixture families/repeats,
+original source mapping/filter footprints and final visible assessment remain.
+
+Transport scope here is TCP over the acquisition harness's ADB reverse route;
+these captures are not evidence for the separate wireless data-plane protocol
+comparison. No component timings are added into a claimed whole-pipeline win.
+
+Replay:
+  python3 prototypes/vr444/experiments/native_rrb_evidence/record.py
+    --run CAPTURE --manifest-sha256 EXPLICIT_CAPTURE_SHA
+    --oracle /home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/build/codec-server/rrb-reference
+    --oracle-sha256 c12050116d960d256fc59d3db248c5b1ac6196a99112be4e9d43093bc4bfc8d4
+    --build-receipt BUILD_RECEIPT
+    --build-sha256 d6be1ee952a93a967cc6d3492edd89abe7e8fa49e25ad77df0f37dcbee82ec8f
+    --out NEW_JSON
+
+Capture root prefix:
+/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009
+CPU: native-rrb/rrb4-publication
+ manifest5aeeffd38c1d53be2e1c5e5c7373908e354a7b023e2e9121621c21288a2cf871
+Q1: native-quality/rrb4-q1-chroma-grid
+ manifestd781bc11e345ed2253e69fd24015824554e64dae47fcc3a18ddce6201eed4c0e
+Build receipt: build-receipt.json. Raw inputs remain in the root-owned acquisition
+folders; this branch adds immutable numeric/hash reports and offline auditors.
