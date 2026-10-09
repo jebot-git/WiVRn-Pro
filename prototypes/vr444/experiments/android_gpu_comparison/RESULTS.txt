@@ -45,6 +45,9 @@ Development selection
    in CPU decompression to mapped output, not shader time. Exactness passes are
    valuable, but desktop mapped-output wins do not transfer to this device.
    The preserved implementation is mapped-input-consumer @068dd29df03e44ab0668d9607d2896650c4b91f9.
+   This hold concerns RRF/RRB LZ4 output paths only. It does not decide existing
+   VR444 native cached/mapped paths, whose decoder and access pattern differ.
+   Select those from their separate fresh native comparison.
    A future causal experiment should compare the same decoder into a fixed heap
    buffer plus copy against mapped output, with allocation/zero-fill controlled.
 4. Timeline semaphores and synchronization2 are queried supported, never enabled
