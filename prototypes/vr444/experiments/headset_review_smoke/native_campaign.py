@@ -34,7 +34,7 @@ def main():
         (out / 'campaign.json').write_text(json.dumps(status, indent=2) + '\n')
 
     def capture(label, argv, allowed=(0,)):
-        result = subprocess.run(argv, capture_output=True, timeout=30)
+        result = subprocess.run(argv, capture_output=True, timeout=60 if label == 'previous-capture' else 30)
         for suffix, data in [('stdout', result.stdout), ('stderr', result.stderr)]:
             (out / 'preflight' / (label + '.' + suffix)).write_bytes(data)
         status['commands'].append({'label': label, 'argv': argv, 'returncode': result.returncode,
@@ -98,7 +98,7 @@ def main():
         initial = configs()
         status['initial_config_sha256'] = initial
         # Preserve the previous dedicated capture before the native harness replaces it.
-        capture('previous-capture', adb + ['exec-out', 'run-as', package, 'tar', '-C', 'files', '-cf', '-',
+        capture('previous-capture', adb + ['exec-out', 'run-as', package, 'tar', '-C', 'files', '-czf', '-',
                                          'codec-test', 'codec-test-present.jsonl'], allowed=(0, 1))
         for arm in plan['runs']:
             argv = [word.replace('{fresh_output_root}', str(out)) for word in arm['argv']]
