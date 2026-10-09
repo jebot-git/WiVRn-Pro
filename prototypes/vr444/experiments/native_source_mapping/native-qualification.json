@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Native source-map recorder offline safety and full translation-unit syntax only",
+  "source_sha256": {
+    "server/compositor/compositor.cpp": "e8a7c3972771a1823dd506d4aa273879351b9f7c620c690600713df3d2083a5c",
+    "server/compositor/foveation.cpp": "d536741b629d1ce389bd3f195534e28b579f50dbda0be09388ebe53a628d26bc",
+    "server/compositor/foveation.h": "5779527f710d8058e064ab0dd0afd250ccdb6ff99c10fb9f2d31285505dfe2d5",
+    "common/codec_test/source_mapping.h": "fb6a1f49aa3b3ccbdcef2859474dbec7dbf1bb1607fea32b22054323723375d6"
+  },
+  "test_source_sha256": "11455f68fa25002237f40bf95cc31dc826d9fc520623348d2a158c169c33e122",
+  "sanitizer_compile": [
+    "clang++",
+    "-std=c++20",
+    "-O1",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-fsanitize=address,undefined",
+    "-fno-omit-frame-pointer",
+    "-I/home/blux/spatial-bridge/.worktrees/sub15-native-source-mapping/validation/wivrn-codecs/integration/source-overlay/common/codec_test",
+    "/home/blux/spatial-bridge/.worktrees/sub15-native-source-mapping/prototypes/vr444/experiments/native_source_mapping/test_capture.cpp",
+    "-o",
+    "/tmp/sub15-source-map-syntax/test-capture"
+  ],
+  "sanitizer_command": [
+    "/tmp/sub15-source-map-syntax/test-capture",
+    "/tmp/sub15-source-map-capture-sealed"
+  ],
+  "sanitizer_exit_code": 0,
+  "checks": 20,
+  "sanitizer_binary_sha256": "7ab779c5d843a38888e76a125fa1693da6d90dcf215633346d563511b93d5a71",
+  "syntax_translation_units": 4,
+  "syntax_on_off": true,
+  "syntax_compile_not_link": true,
+  "immutable_snapshot_and_capacity_checked": true,
+  "throw_timeout_guard_checked": true,
+  "normal_cached_ubo_export": "Reviewed full native snapshot reads actual mapped UBO even on cached update; no GPU execution in this qualification",
+  "artifact_sha256": {
+    "capture.stdout": "ec8e9d7e42dc1a52993a9f01d0958d0e9aee56eeae9dfc893fe7108d3a4e09f9",
+    "capture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compositor-on.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compositor-on.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compositor-off.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compositor-off.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "foveation-on.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "foveation-on.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "foveation-off.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "foveation-off.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "syntax-commands.json": "ee116f214f641cbff613bcefba714a60da194081a2418d851acd22ee1c479102"
+  },
+  "gpu_exercised": false,
+  "openxr_exercised": false,
+  "headset_exercised": false,
+  "quality_qualified": false,
+  "latency_qualified": false
+}
