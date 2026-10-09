@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "independent_manual_lz4": true,
+  "cases": [
+    {
+      "name": "plain-tail",
+      "wire_bytes": 128,
+      "rgba_bytes": 68,
+      "wire_sha256": "c52df2b55b36f9811bc4f423e11471f09f04fbacb0bd7d55658f671d3b60074f",
+      "rgba_sha256": "953851c0d32a7a99bd790b539b8a877ff546555327fed06d3af4a843982e1481"
+    },
+    {
+      "name": "up-tail-reset",
+      "wire_bytes": 129,
+      "rgba_bytes": 68,
+      "wire_sha256": "ce57fb3e75e0afd61eb01a093e0db41402b778f989f9fa5c6147a429ffca191f",
+      "rgba_sha256": "953851c0d32a7a99bd790b539b8a877ff546555327fed06d3af4a843982e1481"
+    },
+    {
+      "name": "raw-up-reset",
+      "wire_bytes": 174,
+      "rgba_bytes": 128,
+      "wire_sha256": "3940f4c73950eb4ce9d8b9f7b742884eeb32513b7838c0dd1e3c200fab1610af",
+      "rgba_sha256": "bc60dda5721e57b36c9f5ddf87499a714ef244471f19cc35f04407b3311ffc80"
+    },
+    {
+      "name": "raw-odd",
+      "wire_bytes": 265,
+      "rgba_bytes": 204,
+      "wire_sha256": "8b24d8ba9aa23e18772276670efc9288bb85ad68b7fb045d35edaf75e4b10af8",
+      "rgba_sha256": "a81ff91d770959a18b32f34d1e3331b9cafb7d1d55c840780d54b394a289b384"
+    }
+  ]
+}
