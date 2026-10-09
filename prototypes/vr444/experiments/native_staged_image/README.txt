@@ -110,3 +110,19 @@ currently lack XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT; raw swapchain copy capture
 requires an explicitly supported usage and acquired-image lifetime through
 copy completion before release. CPU/GPU component equality cannot establish
 physical displayed pixels, sustained cadence or sub15 latency.
+Actual Android standalone follow-up (2026-10-09)
+----------------------------------------------
+android-plan.json pins six existing qualified artifacts; root executed the
+unchanged headset_review_smoke runner on the owned headset. The read-only
+audit_android.py verifies all 23 acquisition commands, deployed digests and
+destinations, serial, command log bytes, cleanup and immutable helper source
+bindings. It parses the same buffers whose bytes are hashed. Five fresh Python
+tests include command/result/artifact mutations and a replace/restore control.
+
+results/android-qualification.json records Adreno(TM) 650, CPU 66 checks, and
+all eight stereo image/first-consumer cases with 826 checks. The executable's
+older host-scope labels remain unmodified in the raw output; the enclosing
+receipt explicitly identifies actual headset execution. This qualifies the
+private helper on that device. Native scene ownership, OpenXR submission,
+application-source quality, visible pixels and latency remain separate gates.
+

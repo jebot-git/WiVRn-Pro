@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "tests": 5,
+  "test_scope": "Synthetic command/result mutation controls only; no ADB/device execution",
+  "source_sha256": {
+    "prototypes/vr444/experiments/native_staged_image/audit_android.py": "22ecfa3619c2c9245afe943843b6da3eaf2a782ef1c686fa03ce5fcde117e45b",
+    "prototypes/vr444/experiments/native_staged_image/test_android_audit.py": "84af42b82199c0eb598f24e8714779351f0cf62cbcf6908e92c3eada3b552070",
+    "prototypes/vr444/experiments/native_staged_image/android-plan.json": "116767292486413b8e4b6caba5db6a0f7c655996680784d24f7b20be1e171350",
+    "prototypes/vr444/experiments/native_staged_image/results/android-audit-tests.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prototypes/vr444/experiments/native_staged_image/results/android-audit-tests.stderr": "d175a400b6390f7358db9f27173a7b9b00847466cfd4aa5b44cb63a075e702c8",
+    "prototypes/vr444/experiments/native_staged_image/results/android-qualification.json": "5004697f99a0d30ab56168dd0c996fd3e27238b2c7c00696619e0114c9f47fbd"
+  },
+  "qualified_helper_commit": "1b3541c91cb77eff6ba032052b254f48fc86d2a2",
+  "actual_android_capture_pending": false
+}
