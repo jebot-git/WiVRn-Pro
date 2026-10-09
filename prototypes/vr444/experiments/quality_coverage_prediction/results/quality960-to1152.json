@@ -1,0 +1,5405 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Conditional offline allocation prediction; no new headset, GPU, wire admission or quality qualification",
+  "run_root": "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/v2-build/native-quality-960/rrb4-q1-chroma-grid",
+  "run_manifest_sha256": "229c1c1d5a90dae9456ed9e494a6a771ded423cdf847cc2416ae5eae8275ddb3",
+  "input_sha256": {
+    "client/codec-test/quality/capture-1-eye-0.json": "ed30b449a61db687dcb5b43872b4e9a8ee6c5b3c827883b3967eeafc052e24e5",
+    "client/codec-test/quality/capture-1-eye-1.json": "e717866c231eb8f899a9f367df1b9b1b9072b813bcb512432c5cc89e9f77eabf",
+    "client/codec-test/quality/capture-2-eye-0.json": "053ad5d611199269461df34f1933f3f68cbe20280a26c7d2471f309e08e65743",
+    "client/codec-test/quality/capture-2-eye-1.json": "b003eebc2057dcd5bc11a352a18fa5b5046909d8741fec478662047aa35add15",
+    "client/codec-test/quality/capture-3-eye-0.json": "64bd7b549e78caa585ffdec5e8aae61241540ab5565e4e27748bb3089afb467c",
+    "client/codec-test/quality/capture-3-eye-1.json": "be59e8ef8d9c61497bbd98739e222ab19fc884c779d8671cd66f0666d6c0e927",
+    "provenance.json": "7317664e379b2848e09e33185a7cd9043c0ebb2559433f3c57e902d63383d7b5"
+  },
+  "source_sha256": {
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/foveation.cpp": "9c82a03efdbae35f7fbfb88e5dcbe8def439d1e471f473163de5e187115113ae",
+    "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
+    "prototypes/vr444/experiments/quality_coverage_prediction/predict.py": "52c92d549905d5423dad9618aaecaf07dd640a2018dbb6dab4cd79a328b70a8a"
+  },
+  "generated_cpp_sha256": "3f311d77ac9d1e82e62d45344211f718751905dabdfda134d7453434871f5eee",
+  "compilers": {
+    "native": {
+      "invocation": "/usr/bin/c++",
+      "resolved": "/usr/bin/c++",
+      "sha256": "579d25c2d1e45abeed0c63a517b5c52f6d09ea811a787bf7a7c677a7fd0726f6"
+    },
+    "sanitized": {
+      "invocation": "/usr/bin/clang++",
+      "resolved": "/usr/bin/clang-22",
+      "sha256": "4ea85504401d9f5c05109d6cb05778b241aa8d56fde1da2e5bc7ba46cffd44f5"
+    }
+  },
+  "binaries": {
+    "native": {
+      "path": "/tmp/sub15-quality-coverage-final5/native",
+      "sha256": "6c29715bb60f250f005db50259c2eaddde98c669ee22e004302684ea4a292b14"
+    },
+    "sanitized": {
+      "path": "/tmp/sub15-quality-coverage-final5/sanitized",
+      "sha256": "98adc9a975828011d5eedeb6cc063444b6131eee07944aca3bd317092bdf1e5f"
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/c++",
+        "-std=c++23",
+        "-O2",
+        "-ffast-math",
+        "/tmp/sub15-quality-coverage-final5/constructor.cpp",
+        "-o",
+        "/tmp/sub15-quality-coverage-final5/native"
+      ],
+      "exit": 0,
+      "wall_seconds": 0.7587511300225742,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/bin/clang++",
+        "-std=c++23",
+        "-O1",
+        "-fno-omit-frame-pointer",
+        "-fsanitize=address,undefined",
+        "/tmp/sub15-quality-coverage-final5/constructor.cpp",
+        "-o",
+        "/tmp/sub15-quality-coverage-final5/sanitized"
+      ],
+      "exit": 0,
+      "wall_seconds": 1.0408924369839951,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-quality-coverage-final5/native"
+      ],
+      "exit": 0,
+      "wall_seconds": 0.0038723659818060696,
+      "stdout_sha256": "47dd99a98736fb1db0cc7f69df9d9c423e34dc58f8399226c187552532301950",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/tmp/sub15-quality-coverage-final5/sanitized"
+      ],
+      "exit": 0,
+      "wall_seconds": 0.011910811997950077,
+      "stdout_sha256": "47dd99a98736fb1db0cc7f69df9d9c423e34dc58f8399226c187552532301950",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "constructor_invocations": 432,
+  "negative_admissions": 10,
+  "sanitizer_partition_differences": 0,
+  "results": [
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "e926371af9b94297efca5b1dfdfe33c11093af3cf1bb1793e7b58af4ef9b78d4",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        803,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "c3729d2c07c579f0f3c772fe7e95044ab873120d28bf95b14280ed2b1838797c",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        653,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "c648ebba8af1803f80ab865957f2ffabe2223550fde7ede4e13b47f3d7508df1",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        737
+      ],
+      "ratio1_source_rect": [
+        802,
+        551,
+        686,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f4de1867bc3b4e0c57e8eede3507812da4b52ffe4185167f40d961a382a1c405",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        669,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "002821609f651bf00c63144ce2453e5ef0ab93b9479f27a02505a5b7aaa67e83",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        736
+      ],
+      "ratio1_source_rect": [
+        802,
+        568,
+        686,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f2f75f86b6fafaa328434f91e5fa4d06c3c3cdf3f205126028c8b67428e4f301",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        685,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "6de8ee71abe835a865a496c7aa31ee446c1e34fe513a9701c4a496c0807eadfc",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        735
+      ],
+      "ratio1_source_rect": [
+        802,
+        584,
+        686,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "95334834a659a7d80044da4bb7e337fbbb3f67c9fdcca2272a203521079a34c1",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "c66461f52b0ae38262cb065ce62741fefa3866f07e1e7d13e1b8f2c99a816d51",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        803,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a2ca30188512cc673f71c5db7e2669928a42b37d782c39677d457dda6fb4bb46",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "3e728b983d74d102f38d16ff7be2ff4ff6a7d0c29a3a6138a85db16da9c3ff39",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        803,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "9078474632a852d0a3d0c1e5b091ef87c8c67b2ac31fca0f4a73223f43e53157",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "8d36d7c370191bfb7cde4cc27ebdcb37ca595a2a900660d11a765d9a845c188b",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        805,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "5be647703ee0c9d0746bee7252063969107bf6399eff0fdf53a40230c1a585bc",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "33e1a78bdb8c9d14e75abb863602998f6f0d6a72f44795a103e8644135733ee8",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        805,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "8de8c8d1731f90fd029713a2c9330ed4c0b4dbc564766b91d6b07e8b1696e0e1",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "fed00ff80001f805f84680a60b2c684f2a12f5fd93cb26f89e05dd91f2373d71",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        805,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f7e217fcd48f3066a33d75f93710e7b7ead59e645daedc03e2ee229af2e46471",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "6df8acc52440dc7230ca1a6eb95b5f090aca7ac99be281d4b0e5ed1604f7b481",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        310,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "99568bf952c5c49e9af16248ad8001f3e0326e257d3ad2efb325e8db24590d00",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        653,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "76a69050bb34dd36b00f35a74db9e48bc5f095fbd6b7b68d50a828af138d39cd",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        737
+      ],
+      "ratio1_source_rect": [
+        312,
+        551,
+        686,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a170b5ddd1b767aaa0052608850bc6899471ec3d2274352ff092396248a2ab94",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        669,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "c20d729fd16b38991ddb0125bcf519f7aa2ac399fbe4b3d9ae73e25bb6a427d6",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        736
+      ],
+      "ratio1_source_rect": [
+        312,
+        568,
+        686,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a7d965b1a293abefb704def03fda8d1fffa00ab62f8f05149a87ff4eea74fa74",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        685,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "d47631880f77ae944c458cfc03c971a294b6759c28698cfa2c5e192bb86d4c02",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        735
+      ],
+      "ratio1_source_rect": [
+        312,
+        584,
+        686,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "ee3bee18e67815c61c86d806085f8d89f1f1de931e2f6fb022aeb10d2845b140",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "1d5d3786a51c78a8fd58db52ece8744593bf5ed6f1e18283e3fa37bd05268d04",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        310,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "fb8fc6193f429e2c36ca9ec0b4687a3b7191d78a468ee2e48bfc0d404f837cbf",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "447db0c8c6561ad13fdb1cb342191ea37a616289862c65ad726f7d5209f9494f",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        310,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "4a8459968d0a93c6704c67d6e53ae552180b785c22d2c7a9f5f3a6b47ed25b83",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "1e0705f33a539caa0d70a021dadc048007ac0128f59422585e5ab28a8e6129b1",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        308,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "0a5b971a8b68ae4cc84c14744420101ca8d54251a1ec25a29239e0137fd6cdef",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "0877c2f44a88d1d96cc578f137e6892e9f252471b8ce311e4b5479c6bc17e237",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        308,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "4dc9c043ecaa26027302e2365157d16bc5da9099d19bbec1155c8a19ca993563",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "7d4397f70e8961a5778cb68390731325a1a1ab459c375fececfc3224432eb681",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-1-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        308,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "102bf29c860654807a0f5a4df6f86b700a77fcc9cdd29aecbb7080debfdd6c88",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "e926371af9b94297efca5b1dfdfe33c11093af3cf1bb1793e7b58af4ef9b78d4",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        803,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "c3729d2c07c579f0f3c772fe7e95044ab873120d28bf95b14280ed2b1838797c",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        653,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "c648ebba8af1803f80ab865957f2ffabe2223550fde7ede4e13b47f3d7508df1",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        737
+      ],
+      "ratio1_source_rect": [
+        802,
+        551,
+        686,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f4de1867bc3b4e0c57e8eede3507812da4b52ffe4185167f40d961a382a1c405",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        669,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "002821609f651bf00c63144ce2453e5ef0ab93b9479f27a02505a5b7aaa67e83",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        736
+      ],
+      "ratio1_source_rect": [
+        802,
+        568,
+        686,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f2f75f86b6fafaa328434f91e5fa4d06c3c3cdf3f205126028c8b67428e4f301",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        685,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "6de8ee71abe835a865a496c7aa31ee446c1e34fe513a9701c4a496c0807eadfc",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        735
+      ],
+      "ratio1_source_rect": [
+        802,
+        584,
+        686,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "95334834a659a7d80044da4bb7e337fbbb3f67c9fdcca2272a203521079a34c1",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "c66461f52b0ae38262cb065ce62741fefa3866f07e1e7d13e1b8f2c99a816d51",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        803,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a2ca30188512cc673f71c5db7e2669928a42b37d782c39677d457dda6fb4bb46",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "3e728b983d74d102f38d16ff7be2ff4ff6a7d0c29a3a6138a85db16da9c3ff39",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        803,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "9078474632a852d0a3d0c1e5b091ef87c8c67b2ac31fca0f4a73223f43e53157",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "8d36d7c370191bfb7cde4cc27ebdcb37ca595a2a900660d11a765d9a845c188b",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        805,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "5be647703ee0c9d0746bee7252063969107bf6399eff0fdf53a40230c1a585bc",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "33e1a78bdb8c9d14e75abb863602998f6f0d6a72f44795a103e8644135733ee8",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        805,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "8de8c8d1731f90fd029713a2c9330ed4c0b4dbc564766b91d6b07e8b1696e0e1",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "fed00ff80001f805f84680a60b2c684f2a12f5fd93cb26f89e05dd91f2373d71",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        805,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f7e217fcd48f3066a33d75f93710e7b7ead59e645daedc03e2ee229af2e46471",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "6df8acc52440dc7230ca1a6eb95b5f090aca7ac99be281d4b0e5ed1604f7b481",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        310,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "99568bf952c5c49e9af16248ad8001f3e0326e257d3ad2efb325e8db24590d00",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        653,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "76a69050bb34dd36b00f35a74db9e48bc5f095fbd6b7b68d50a828af138d39cd",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        737
+      ],
+      "ratio1_source_rect": [
+        312,
+        551,
+        686,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a170b5ddd1b767aaa0052608850bc6899471ec3d2274352ff092396248a2ab94",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        669,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "c20d729fd16b38991ddb0125bcf519f7aa2ac399fbe4b3d9ae73e25bb6a427d6",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        736
+      ],
+      "ratio1_source_rect": [
+        312,
+        568,
+        686,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a7d965b1a293abefb704def03fda8d1fffa00ab62f8f05149a87ff4eea74fa74",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        685,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "d47631880f77ae944c458cfc03c971a294b6759c28698cfa2c5e192bb86d4c02",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        735
+      ],
+      "ratio1_source_rect": [
+        312,
+        584,
+        686,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "ee3bee18e67815c61c86d806085f8d89f1f1de931e2f6fb022aeb10d2845b140",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "1d5d3786a51c78a8fd58db52ece8744593bf5ed6f1e18283e3fa37bd05268d04",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        310,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "fb8fc6193f429e2c36ca9ec0b4687a3b7191d78a468ee2e48bfc0d404f837cbf",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "447db0c8c6561ad13fdb1cb342191ea37a616289862c65ad726f7d5209f9494f",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        310,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "4a8459968d0a93c6704c67d6e53ae552180b785c22d2c7a9f5f3a6b47ed25b83",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "1e0705f33a539caa0d70a021dadc048007ac0128f59422585e5ab28a8e6129b1",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        308,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "0a5b971a8b68ae4cc84c14744420101ca8d54251a1ec25a29239e0137fd6cdef",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "0877c2f44a88d1d96cc578f137e6892e9f252471b8ce311e4b5479c6bc17e237",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        308,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "4dc9c043ecaa26027302e2365157d16bc5da9099d19bbec1155c8a19ca993563",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "7d4397f70e8961a5778cb68390731325a1a1ab459c375fececfc3224432eb681",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-2-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        308,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "102bf29c860654807a0f5a4df6f86b700a77fcc9cdd29aecbb7080debfdd6c88",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "e926371af9b94297efca5b1dfdfe33c11093af3cf1bb1793e7b58af4ef9b78d4",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        803,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "c3729d2c07c579f0f3c772fe7e95044ab873120d28bf95b14280ed2b1838797c",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        653,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "c648ebba8af1803f80ab865957f2ffabe2223550fde7ede4e13b47f3d7508df1",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        737
+      ],
+      "ratio1_source_rect": [
+        802,
+        551,
+        686,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f4de1867bc3b4e0c57e8eede3507812da4b52ffe4185167f40d961a382a1c405",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        669,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "002821609f651bf00c63144ce2453e5ef0ab93b9479f27a02505a5b7aaa67e83",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        736
+      ],
+      "ratio1_source_rect": [
+        802,
+        568,
+        686,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f2f75f86b6fafaa328434f91e5fa4d06c3c3cdf3f205126028c8b67428e4f301",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        894,
+        685,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "6de8ee71abe835a865a496c7aa31ee446c1e34fe513a9701c4a496c0807eadfc",
+      "x_params": [
+        3,
+        13,
+        17,
+        22,
+        32,
+        55,
+        137,
+        501,
+        136,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        735
+      ],
+      "ratio1_source_rect": [
+        802,
+        584,
+        686,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "95334834a659a7d80044da4bb7e337fbbb3f67c9fdcca2272a203521079a34c1",
+      "x_params": [
+        7,
+        42,
+        75,
+        187,
+        686,
+        153,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "c66461f52b0ae38262cb065ce62741fefa3866f07e1e7d13e1b8f2c99a816d51",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        803,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a2ca30188512cc673f71c5db7e2669928a42b37d782c39677d457dda6fb4bb46",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        897,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "3e728b983d74d102f38d16ff7be2ff4ff6a7d0c29a3a6138a85db16da9c3ff39",
+      "x_params": [
+        4,
+        12,
+        16,
+        24,
+        31,
+        55,
+        138,
+        502,
+        134,
+        43,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        803,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "9078474632a852d0a3d0c1e5b091ef87c8c67b2ac31fca0f4a73223f43e53157",
+      "x_params": [
+        7,
+        43,
+        74,
+        187,
+        687,
+        152,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "8d36d7c370191bfb7cde4cc27ebdcb37ca595a2a900660d11a765d9a845c188b",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        805,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "5be647703ee0c9d0746bee7252063969107bf6399eff0fdf53a40230c1a585bc",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "33e1a78bdb8c9d14e75abb863602998f6f0d6a72f44795a103e8644135733ee8",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        805,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "8de8c8d1731f90fd029713a2c9330ed4c0b4dbc564766b91d6b07e8b1696e0e1",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        898,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "fed00ff80001f805f84680a60b2c684f2a12f5fd93cb26f89e05dd91f2373d71",
+      "x_params": [
+        4,
+        12,
+        17,
+        22,
+        33,
+        54,
+        138,
+        502,
+        135,
+        42,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-0.json",
+      "eye": 0,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        805,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "f7e217fcd48f3066a33d75f93710e7b7ead59e645daedc03e2ee229af2e46471",
+      "x_params": [
+        7,
+        43,
+        74,
+        188,
+        687,
+        151,
+        2,
+        0,
+        0
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "6df8acc52440dc7230ca1a6eb95b5f090aca7ac99be281d4b0e5ed1604f7b481",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        310,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "99568bf952c5c49e9af16248ad8001f3e0326e257d3ad2efb325e8db24590d00",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": true
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        653,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "76a69050bb34dd36b00f35a74db9e48bc5f095fbd6b7b68d50a828af138d39cd",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        737
+      ],
+      "ratio1_source_rect": [
+        312,
+        551,
+        686,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a170b5ddd1b767aaa0052608850bc6899471ec3d2274352ff092396248a2ab94",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        669,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "c20d729fd16b38991ddb0125bcf519f7aa2ac399fbe4b3d9ae73e25bb6a427d6",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        736
+      ],
+      "ratio1_source_rect": [
+        312,
+        568,
+        686,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "a7d965b1a293abefb704def03fda8d1fffa00ab62f8f05149a87ff4eea74fa74",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        501,
+        534
+      ],
+      "ratio1_source_rect": [
+        405,
+        685,
+        501,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "d47631880f77ae944c458cfc03c971a294b6759c28698cfa2c5e192bb86d4c02",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        136,
+        501,
+        137,
+        55,
+        32,
+        22,
+        17,
+        13,
+        3
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.031,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        686,
+        735
+      ],
+      "ratio1_source_rect": [
+        312,
+        584,
+        686,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "ee3bee18e67815c61c86d806085f8d89f1f1de931e2f6fb022aeb10d2845b140",
+      "x_params": [
+        0,
+        0,
+        2,
+        153,
+        686,
+        187,
+        75,
+        42,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "1d5d3786a51c78a8fd58db52ece8744593bf5ed6f1e18283e3fa37bd05268d04",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        310,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "fb8fc6193f429e2c36ca9ec0b4687a3b7191d78a468ee2e48bfc0d404f837cbf",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        401,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "447db0c8c6561ad13fdb1cb342191ea37a616289862c65ad726f7d5209f9494f",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        43,
+        134,
+        502,
+        138,
+        55,
+        31,
+        24,
+        16,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.033,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        310,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "4a8459968d0a93c6704c67d6e53ae552180b785c22d2c7a9f5f3a6b47ed25b83",
+      "x_params": [
+        0,
+        0,
+        2,
+        152,
+        687,
+        187,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        653,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 68399,
+      "protected_cells_with_span_above1": 1287,
+      "protected_mask_sha256": "1e0705f33a539caa0d70a021dadc048007ac0128f59422585e5ab28a8e6129b1",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        10,
+        35,
+        57,
+        146,
+        534,
+        146,
+        58,
+        35,
+        23,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 9,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        737
+      ],
+      "ratio1_source_rect": [
+        308,
+        551,
+        687,
+        737
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "0a5b971a8b68ae4cc84c14744420101ca8d54251a1ec25a29239e0137fd6cdef",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        51,
+        199,
+        737,
+        201,
+        78,
+        14
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        669,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 67008,
+      "protected_cells_with_span_above1": 2698,
+      "protected_mask_sha256": "0877c2f44a88d1d96cc578f137e6892e9f252471b8ce311e4b5479c6bc17e237",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        13,
+        35,
+        58,
+        145,
+        534,
+        146,
+        57,
+        35,
+        24,
+        9
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 10,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        736
+      ],
+      "ratio1_source_rect": [
+        308,
+        568,
+        687,
+        736
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "4dc9c043ecaa26027302e2365157d16bc5da9099d19bbec1155c8a19ca993563",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        0,
+        56,
+        200,
+        736,
+        200,
+        76,
+        12
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        960,
+        1056
+      ],
+      "ratio1_run": [
+        502,
+        534
+      ],
+      "ratio1_source_rect": [
+        400,
+        685,
+        502,
+        534
+      ],
+      "protected_encoded_cells": 65346,
+      "protected_cells_with_span_above1": 4373,
+      "protected_mask_sha256": "7d4397f70e8961a5778cb68390731325a1a1ab459c375fececfc3224432eb681",
+      "x_params": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        42,
+        135,
+        502,
+        138,
+        54,
+        33,
+        22,
+        17,
+        12,
+        4
+      ],
+      "y_params": [
+        0,
+        17,
+        34,
+        58,
+        145,
+        534,
+        145,
+        58,
+        35,
+        23,
+        7
+      ],
+      "nominal": false
+    },
+    {
+      "capture": "client/codec-test/quality/capture-3-eye-1.json",
+      "eye": 1,
+      "half_ipd_m": 0.035,
+      "downward_pitch_degrees": 11,
+      "encoded": [
+        1152,
+        1280
+      ],
+      "ratio1_run": [
+        687,
+        735
+      ],
+      "ratio1_source_rect": [
+        308,
+        584,
+        687,
+        735
+      ],
+      "protected_encoded_cells": 69612,
+      "protected_cells_with_span_above1": 0,
+      "protected_mask_sha256": "102bf29c860654807a0f5a4df6f86b700a77fcc9cdd29aecbb7080debfdd6c88",
+      "x_params": [
+        0,
+        0,
+        2,
+        151,
+        687,
+        188,
+        74,
+        43,
+        7
+      ],
+      "y_params": [
+        1,
+        60,
+        200,
+        735,
+        200,
+        75,
+        9
+      ],
+      "nominal": false
+    }
+  ],
+  "assumptions": [
+    "Source rect is full1800x1980, canonical axes; actual source mapping capture still required.",
+    "Zero gaze quaternion, no manual override,1m convergence, nominal eye_x\u00b10.033m and10degree downward default; these are declared inputs, not uniquely recovered tracking measurements.",
+    "Nominal constructor matches all six captured960x1056 vectors exactly; matching does not prove inputs unique.",
+    "Nine finite eye-offset/pitch combinations are sensitivity cases, not exhaustive or continuous bounds.",
+    "Source-code -O2 -ffast-math standalone extraction is not final linked binary execution.",
+    "Protected mask covers encoded cell footprints, not original-app or displayed byte equality."
+  ],
+  "stereo_envelope_cap": 262144,
+  "wire_admission_measured": false,
+  "actual_1152_execution": false,
+  "quality_route_qualified": false,
+  "full_goal_qualified": false
+}

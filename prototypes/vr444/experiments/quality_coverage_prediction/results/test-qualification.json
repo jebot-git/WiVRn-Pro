@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "argv": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "prototypes/vr444/experiments/quality_coverage_prediction",
+    "-p",
+    "test_predict.py",
+    "-v"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": "test_boolean_capture_id (test_predict.Admission.test_boolean_capture_id) ... ok\ntest_boolean_eye (test_predict.Admission.test_boolean_eye) ... ok\ntest_missing_eye (test_predict.Admission.test_missing_eye) ... ok\ntest_stereo_frame (test_predict.Admission.test_stereo_frame) ... ok\ntest_stereo_warp (test_predict.Admission.test_stereo_warp) ... ok\ntest_symlink_parent (test_predict.Admission.test_symlink_parent) ... ok\ntest_unsafe_manifest (test_predict.Admission.test_unsafe_manifest) ... ok\ntest_wrong_source (test_predict.Admission.test_wrong_source) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.004s\n\nOK\n",
+  "sources": {
+    "prototypes/vr444/experiments/quality_coverage_prediction/predict.py": "52c92d549905d5423dad9618aaecaf07dd640a2018dbb6dab4cd79a328b70a8a",
+    "prototypes/vr444/experiments/quality_coverage_prediction/test_predict.py": "fdbd883bfff9a974d2acdf297a785d973d4063a0ed7379e2ad321dc329c6add0"
+  },
+  "full_goal_qualified": false
+}
