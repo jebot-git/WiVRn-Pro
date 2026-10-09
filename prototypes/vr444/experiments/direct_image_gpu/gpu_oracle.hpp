@@ -140,7 +140,7 @@ struct Session {
         di.enabledExtensionCount=extensions.size(); di.ppEnabledExtensionNames=extensions.data();
         check(vkCreateDevice(physical,&di,nullptr,&o.device)); vkGetDeviceQueue(o.device,family,0,&queue);
         for(unsigned eye=0;eye<2;++eye) {
-            make_buffer(o.inputs[eye][0],VkDeviceSize(tiles)*vr444::SLOT_WORDS*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,true);
+            make_buffer(o.inputs[eye][0],VkDeviceSize(tiles)*vr444::SLOT_WORDS*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT|VK_BUFFER_USAGE_TRANSFER_SRC_BIT,true);
             make_buffer(o.inputs[eye][1],VkDeviceSize(tiles)*index_words*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,true);
             make_buffer(o.inputs[eye][2],VkDeviceSize(tiles)*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,true);
             make_buffer(o.output[eye],VkDeviceSize(w)*h*4,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT|VK_BUFFER_USAGE_TRANSFER_SRC_BIT|VK_BUFFER_USAGE_TRANSFER_DST_BIT,false);
@@ -316,10 +316,15 @@ struct Session {
     // Caller must fully preflight both immutable inputs, poison, and populate
     // descriptors before entering this shared dispatch/transfer/image oracle.
     Measurement execute(unsigned mode,const std::array<std::vector<uint32_t>,2>& expected,Measurement m={},unsigned dispatch_groups=0) {
+        for(const auto& pixels:expected) require(pixels.size()==size_t(width)*height,"oracle shape");
+        return verify(mode,expected,execute_pipeline(mode,m,dispatch_groups));
+    }
+    // Benchmark callers time image readiness and then invoke verify separately.
+    // This method never substitutes for the exactness oracle.
+    Measurement execute_pipeline(unsigned mode,Measurement m={},unsigned dispatch_groups=0) {
         require(mode<modes,"mode");
         const unsigned groups=dispatch_groups?dispatch_groups:tiles;
         require(groups<=properties.limits.maxComputeWorkGroupCount[0],"decode dispatch limit");
-        for(const auto& pixels:expected) require(pixels.size()==size_t(width)*height,"oracle shape");
         auto start=Clock::now(); begin(); vkCmdResetQueryPool(command,o.queries,0,2);
         memory_barrier(VK_ACCESS_HOST_WRITE_BIT,VK_ACCESS_SHADER_READ_BIT,VK_PIPELINE_STAGE_HOST_BIT,VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
         vkCmdWriteTimestamp(command,VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,o.queries,0);
@@ -338,7 +343,12 @@ struct Session {
         uint64_t stamps[2]{}; check(vkGetQueryPoolResults(o.device,o.queries,0,2,sizeof(stamps),stamps,8,VK_QUERY_RESULT_64_BIT));
         uint64_t mask=timestamp_bits==64?UINT64_MAX:(uint64_t(1)<<timestamp_bits)-1;
         m.gpu_ms=double((stamps[1]-stamps[0])&mask)*properties.limits.timestampPeriod/1e6;
-        start=Clock::now(); begin();
+        return m;
+    }
+    Measurement verify(unsigned mode,const std::array<std::vector<uint32_t>,2>& expected,Measurement m={}) {
+        require(mode<modes,"mode");
+        for(const auto& pixels:expected) require(pixels.size()==size_t(width)*height,"oracle shape");
+        auto start=Clock::now(); begin();
         memory_barrier(VK_ACCESS_HOST_WRITE_BIT,VK_ACCESS_TRANSFER_WRITE_BIT,VK_PIPELINE_STAGE_HOST_BIT,VK_PIPELINE_STAGE_TRANSFER_BIT);
         for(unsigned eye=0;eye<2;++eye) {
             bind(modes,sample_sets[mode][eye]); vkCmdDispatch(command,(width*height+63)/64,1,1);

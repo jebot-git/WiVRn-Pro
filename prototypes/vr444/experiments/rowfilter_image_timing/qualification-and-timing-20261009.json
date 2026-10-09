@@ -1,0 +1,2862 @@
+{
+  "schema": 1,
+  "experiment": "rowfilter-image-timing",
+  "date": "2026-10-09",
+  "base_commit": "67d6e2d",
+  "cpu_simd_dependency_commit": "895e9ef",
+  "headset_used": false,
+  "promotion_blocked": true,
+  "sub15_gate_evaluated": false,
+  "native_interleaved_measurement": {
+    "qualification_only": false,
+    "case_count": 26,
+    "device": [
+      "Intel(R) Arc(tm) A770 Graphics (DG2)",
+      2,
+      109060195
+    ],
+    "measured_stereo_arm_invocations": 5642,
+    "per_case": [
+      {
+        "name": "corpus/synthetic/chroma-lines-q1.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.88104,
+              "p95_ms": 3.70156,
+              "max_ms": 3.89445
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.47752,
+              "p95_ms": 2.0797099999999995,
+              "max_ms": 2.3090200000000003
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.78137,
+              "p95_ms": 3.52005,
+              "max_ms": 3.62817
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2663399999999998,
+              "p95_ms": 1.98304,
+              "max_ms": 2.00286
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.72638,
+              "p95_ms": 3.63717,
+              "max_ms": 3.68638
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3466100000000003,
+              "p95_ms": 2.10297,
+              "max_ms": 2.1181300000000003
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.80162,
+              "p95_ms": 3.43736,
+              "max_ms": 3.48581
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.1550799999999999,
+              "p95_ms": 1.84245,
+              "max_ms": 1.8699499999999998
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.78512,
+              "p95_ms": 3.38084,
+              "max_ms": 3.41502
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.08705,
+              "p95_ms": 1.9036100000000002,
+              "max_ms": 1.9766100000000002
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.86835,
+              "p95_ms": 3.66065,
+              "max_ms": 3.71162
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3819100000000002,
+              "p95_ms": 1.9319699999999997,
+              "max_ms": 2.11496
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.96652,
+              "p95_ms": 3.49948,
+              "max_ms": 3.92126
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4517299999999997,
+              "p95_ms": 1.9211900000000002,
+              "max_ms": 2.2309900000000003
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/chroma-lines-q8.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.07115,
+              "p95_ms": 3.62874,
+              "max_ms": 3.97421
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6062899999999998,
+              "p95_ms": 1.89665,
+              "max_ms": 2.0379300000000002
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.01092,
+              "p95_ms": 3.49777,
+              "max_ms": 3.74185
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5133999999999999,
+              "p95_ms": 2.1444599999999996,
+              "max_ms": 2.1456399999999998
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.94806,
+              "p95_ms": 3.55386,
+              "max_ms": 3.58531
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4490899999999998,
+              "p95_ms": 2.0269200000000005,
+              "max_ms": 2.1577599999999997
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.73179,
+              "p95_ms": 3.67033,
+              "max_ms": 3.76859
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2909700000000002,
+              "p95_ms": 2.05578,
+              "max_ms": 2.1710200000000004
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.8199,
+              "p95_ms": 3.53945,
+              "max_ms": 3.56395
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2862700000000002,
+              "p95_ms": 2.03361,
+              "max_ms": 2.07786
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.02739,
+              "p95_ms": 3.79653,
+              "max_ms": 3.92533
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5729600000000001,
+              "p95_ms": 2.1750000000000003,
+              "max_ms": 2.2604100000000003
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.09304,
+              "p95_ms": 3.64907,
+              "max_ms": 3.71225
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.55312,
+              "p95_ms": 2.1661,
+              "max_ms": 2.16746
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/constant-q1.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.12048,
+              "p95_ms": 3.68948,
+              "max_ms": 3.71704
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.60612,
+              "p95_ms": 2.12913,
+              "max_ms": 2.16552
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.0227,
+              "p95_ms": 3.63877,
+              "max_ms": 3.83368
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5113400000000001,
+              "p95_ms": 2.11137,
+              "max_ms": 2.2133200000000004
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.01789,
+              "p95_ms": 3.30011,
+              "max_ms": 3.7006
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.45863,
+              "p95_ms": 1.76201,
+              "max_ms": 2.00857
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.71774,
+              "p95_ms": 3.30592,
+              "max_ms": 3.42077
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2582999999999998,
+              "p95_ms": 1.7463899999999999,
+              "max_ms": 1.9542000000000002
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.87382,
+              "p95_ms": 3.54813,
+              "max_ms": 3.58163
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3176799999999997,
+              "p95_ms": 1.93277,
+              "max_ms": 2.14363
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.08009,
+              "p95_ms": 3.65223,
+              "max_ms": 3.72132
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.52949,
+              "p95_ms": 1.82046,
+              "max_ms": 2.16155
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.03682,
+              "p95_ms": 3.56775,
+              "max_ms": 3.57697
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5483799999999999,
+              "p95_ms": 2.1673400000000003,
+              "max_ms": 2.23891
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/constant-q8.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.24148,
+              "p95_ms": 3.7405,
+              "max_ms": 3.87797
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6825,
+              "p95_ms": 2.2573600000000003,
+              "max_ms": 2.33591
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.96332,
+              "p95_ms": 3.68466,
+              "max_ms": 3.68888
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5009199999999998,
+              "p95_ms": 2.13537,
+              "max_ms": 2.1404
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.97173,
+              "p95_ms": 3.57589,
+              "max_ms": 3.75008
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.48745,
+              "p95_ms": 1.9982900000000001,
+              "max_ms": 2.0951199999999996
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.8685,
+              "p95_ms": 3.32457,
+              "max_ms": 3.58235
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3424200000000002,
+              "p95_ms": 1.51364,
+              "max_ms": 1.84333
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.83121,
+              "p95_ms": 3.42197,
+              "max_ms": 3.46265
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.36872,
+              "p95_ms": 2.05234,
+              "max_ms": 2.14386
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.15135,
+              "p95_ms": 3.71535,
+              "max_ms": 3.96524
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6115299999999997,
+              "p95_ms": 2.28389,
+              "max_ms": 2.43053
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.11886,
+              "p95_ms": 3.74431,
+              "max_ms": 4.00491
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.57849,
+              "p95_ms": 2.02467,
+              "max_ms": 2.4508399999999995
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/edges-q1.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.12939,
+              "p95_ms": 3.80344,
+              "max_ms": 3.92077
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.52912,
+              "p95_ms": 1.9552100000000001,
+              "max_ms": 2.08516
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.94181,
+              "p95_ms": 3.63612,
+              "max_ms": 3.65359
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4602199999999999,
+              "p95_ms": 2.04976,
+              "max_ms": 2.18937
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.96993,
+              "p95_ms": 3.5554,
+              "max_ms": 3.68209
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4662400000000002,
+              "p95_ms": 2.0436199999999998,
+              "max_ms": 2.23938
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.71996,
+              "p95_ms": 3.29745,
+              "max_ms": 3.78314
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.25599,
+              "p95_ms": 1.81985,
+              "max_ms": 2.2041399999999998
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.80376,
+              "p95_ms": 3.50536,
+              "max_ms": 3.52737
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2160700000000002,
+              "p95_ms": 1.94227,
+              "max_ms": 1.95996
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.03666,
+              "p95_ms": 3.70392,
+              "max_ms": 3.87216
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.44707,
+              "p95_ms": 2.0458000000000003,
+              "max_ms": 2.2998900000000004
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.02356,
+              "p95_ms": 3.66103,
+              "max_ms": 3.71591
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4666100000000002,
+              "p95_ms": 2.1622899999999996,
+              "max_ms": 2.16857
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/edges-q8.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.99071,
+              "p95_ms": 4.25561,
+              "max_ms": 4.61418
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 2.3948,
+              "p95_ms": 2.65956,
+              "max_ms": 2.66744
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.81773,
+              "p95_ms": 4.32525,
+              "max_ms": 4.38058
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 2.25748,
+              "p95_ms": 2.63214,
+              "max_ms": 2.7192100000000003
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.70363,
+              "p95_ms": 4.18245,
+              "max_ms": 4.22718
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 2.1815499999999997,
+              "p95_ms": 2.67764,
+              "max_ms": 2.8161400000000003
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.50567,
+              "p95_ms": 4.09858,
+              "max_ms": 4.20002
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 2.01377,
+              "p95_ms": 2.59788,
+              "max_ms": 2.7106000000000003
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.53981,
+              "p95_ms": 3.95265,
+              "max_ms": 3.98672
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 2.00484,
+              "p95_ms": 2.33373,
+              "max_ms": 2.3407800000000005
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.94198,
+              "p95_ms": 4.47035,
+              "max_ms": 4.49688
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 2.3582,
+              "p95_ms": 2.8327400000000003,
+              "max_ms": 2.91019
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.83386,
+              "p95_ms": 4.38553,
+              "max_ms": 4.46959
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 2.29681,
+              "p95_ms": 2.89903,
+              "max_ms": 3.00334
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/gradient-q1.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.19274,
+              "p95_ms": 3.75144,
+              "max_ms": 4.03288
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6790500000000002,
+              "p95_ms": 2.27096,
+              "max_ms": 2.36766
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.06269,
+              "p95_ms": 3.55152,
+              "max_ms": 3.87555
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5512199999999998,
+              "p95_ms": 1.86138,
+              "max_ms": 1.94012
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.08966,
+              "p95_ms": 3.97856,
+              "max_ms": 4.03416
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5822100000000001,
+              "p95_ms": 2.18816,
+              "max_ms": 2.34247
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.98792,
+              "p95_ms": 3.43797,
+              "max_ms": 3.59279
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4648600000000003,
+              "p95_ms": 1.91281,
+              "max_ms": 1.93319
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.91025,
+              "p95_ms": 3.40221,
+              "max_ms": 3.90576
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.38559,
+              "p95_ms": 1.8171899999999999,
+              "max_ms": 2.34258
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.15225,
+              "p95_ms": 3.46688,
+              "max_ms": 3.81334
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.65071,
+              "p95_ms": 1.87195,
+              "max_ms": 1.881
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.16608,
+              "p95_ms": 3.91387,
+              "max_ms": 4.18032
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6268700000000003,
+              "p95_ms": 1.91205,
+              "max_ms": 2.03109
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/gradient-q8.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.02476,
+              "p95_ms": 3.37023,
+              "max_ms": 3.74715
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.50281,
+              "p95_ms": 1.7839199999999997,
+              "max_ms": 2.20999
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.8681,
+              "p95_ms": 3.51019,
+              "max_ms": 3.94112
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.34465,
+              "p95_ms": 2.01384,
+              "max_ms": 2.2274000000000003
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.81877,
+              "p95_ms": 3.48927,
+              "max_ms": 3.51544
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3132099999999998,
+              "p95_ms": 1.6661099999999998,
+              "max_ms": 1.96417
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.70875,
+              "p95_ms": 3.44245,
+              "max_ms": 3.49159
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.17608,
+              "p95_ms": 1.62607,
+              "max_ms": 1.89868
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.71524,
+              "p95_ms": 3.32939,
+              "max_ms": 3.42522
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2073299999999998,
+              "p95_ms": 1.7745700000000002,
+              "max_ms": 1.82374
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.97572,
+              "p95_ms": 3.40684,
+              "max_ms": 3.81468
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.44331,
+              "p95_ms": 1.8173000000000001,
+              "max_ms": 2.18081
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.94861,
+              "p95_ms": 3.71596,
+              "max_ms": 4.21089
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.47492,
+              "p95_ms": 2.1822999999999997,
+              "max_ms": 2.36179
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/partial-17x19-qmap.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.500378,
+              "p95_ms": 1.31634,
+              "max_ms": 1.52719
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.239447,
+              "p95_ms": 0.3930800000000001,
+              "max_ms": 0.442269
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.539662,
+              "p95_ms": 1.53962,
+              "max_ms": 1.60121
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.273803,
+              "p95_ms": 0.50095,
+              "max_ms": 0.627126
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.504091,
+              "p95_ms": 1.03276,
+              "max_ms": 1.43661
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.264831,
+              "p95_ms": 0.6090139999999999,
+              "max_ms": 1.235819
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.503041,
+              "p95_ms": 0.724612,
+              "max_ms": 0.77881
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.256996,
+              "p95_ms": 0.400855,
+              "max_ms": 0.45491
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.50716,
+              "p95_ms": 0.860561,
+              "max_ms": 1.46173
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.2576280000000001,
+              "p95_ms": 0.39858600000000005,
+              "max_ms": 0.39923
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.501944,
+              "p95_ms": 0.873993,
+              "max_ms": 1.33147
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.251347,
+              "p95_ms": 0.43804,
+              "max_ms": 0.488795
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.488454,
+              "p95_ms": 1.37922,
+              "max_ms": 1.46408
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.25575000000000014,
+              "p95_ms": 0.505386,
+              "max_ms": 0.651962
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/partial-1x1-constant.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.483135,
+              "p95_ms": 1.39564,
+              "max_ms": 1.42392
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.23968099999999998,
+              "p95_ms": 1.053,
+              "max_ms": 1.059825
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.465001,
+              "p95_ms": 1.38166,
+              "max_ms": 1.42567
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.230809,
+              "p95_ms": 0.356394,
+              "max_ms": 1.118541
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.47143,
+              "p95_ms": 1.43561,
+              "max_ms": 1.47227
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.227679,
+              "p95_ms": 0.3380400000000001,
+              "max_ms": 0.343304
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.434793,
+              "p95_ms": 0.64448,
+              "max_ms": 0.662849
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.22819699999999998,
+              "p95_ms": 0.31461399999999995,
+              "max_ms": 0.345368
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.465642,
+              "p95_ms": 1.42367,
+              "max_ms": 1.49158
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.234411,
+              "p95_ms": 1.045153,
+              "max_ms": 1.2349739999999998
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.468659,
+              "p95_ms": 0.753398,
+              "max_ms": 1.40075
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.238904,
+              "p95_ms": 0.39973300000000006,
+              "max_ms": 1.15363
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 0.472176,
+              "p95_ms": 1.44897,
+              "max_ms": 1.6307
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 0.23281700000000005,
+              "p95_ms": 0.35133500000000006,
+              "max_ms": 0.4901
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/seeded-noise-q1.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 7.10674,
+              "p95_ms": 7.54457,
+              "max_ms": 7.64266
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.55906,
+              "p95_ms": 5.92241,
+              "max_ms": 6.07111
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.82156,
+              "p95_ms": 7.58315,
+              "max_ms": 7.62049
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.3123000000000005,
+              "p95_ms": 6.01142,
+              "max_ms": 6.02261
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.81746,
+              "p95_ms": 7.6613,
+              "max_ms": 7.81905
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.2348,
+              "p95_ms": 6.07668,
+              "max_ms": 6.14487
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.71172,
+              "p95_ms": 7.18193,
+              "max_ms": 7.45357
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.14223,
+              "p95_ms": 5.634130000000001,
+              "max_ms": 5.75512
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.6887,
+              "p95_ms": 7.52846,
+              "max_ms": 7.60403
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.14647,
+              "p95_ms": 5.87491,
+              "max_ms": 5.96007
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.88752,
+              "p95_ms": 7.55914,
+              "max_ms": 7.77261
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.4084699999999994,
+              "p95_ms": 6.08612,
+              "max_ms": 6.10655
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.97997,
+              "p95_ms": 7.66263,
+              "max_ms": 7.68081
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.39188,
+              "p95_ms": 6.0755300000000005,
+              "max_ms": 6.140000000000001
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/seeded-noise-q8.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 7.06584,
+              "p95_ms": 7.56992,
+              "max_ms": 7.61811
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.56634,
+              "p95_ms": 6.0629,
+              "max_ms": 6.12258
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.76905,
+              "p95_ms": 7.37386,
+              "max_ms": 7.41247
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.27665,
+              "p95_ms": 5.861,
+              "max_ms": 5.86801
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.80516,
+              "p95_ms": 7.35517,
+              "max_ms": 7.36008
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.248609999999999,
+              "p95_ms": 5.683,
+              "max_ms": 5.90293
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.69735,
+              "p95_ms": 7.16205,
+              "max_ms": 7.30663
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.18534,
+              "p95_ms": 5.7420599999999995,
+              "max_ms": 5.78064
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.63407,
+              "p95_ms": 7.32941,
+              "max_ms": 7.47304
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.13789,
+              "p95_ms": 5.748,
+              "max_ms": 6.02022
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.92184,
+              "p95_ms": 7.39989,
+              "max_ms": 7.51327
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.35606,
+              "p95_ms": 5.75515,
+              "max_ms": 5.931520000000001
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 6.85973,
+              "p95_ms": 7.69531,
+              "max_ms": 7.82029
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 5.38264,
+              "p95_ms": 5.79432,
+              "max_ms": 6.53435
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/text-like-q1.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.04045,
+              "p95_ms": 3.36085,
+              "max_ms": 3.68014
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5495500000000002,
+              "p95_ms": 1.8248,
+              "max_ms": 2.12435
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.98332,
+              "p95_ms": 3.47461,
+              "max_ms": 3.56054
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4574099999999999,
+              "p95_ms": 2.0527100000000003,
+              "max_ms": 2.1122199999999998
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.82844,
+              "p95_ms": 3.19648,
+              "max_ms": 3.29426
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3756300000000001,
+              "p95_ms": 1.5737400000000001,
+              "max_ms": 1.6252
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.83798,
+              "p95_ms": 3.30765,
+              "max_ms": 3.48493
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.21795,
+              "p95_ms": 1.79258,
+              "max_ms": 1.8300700000000003
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.8174,
+              "p95_ms": 3.38292,
+              "max_ms": 3.4774
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.25084,
+              "p95_ms": 1.94549,
+              "max_ms": 1.9554599999999998
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.0637,
+              "p95_ms": 3.63816,
+              "max_ms": 3.74926
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4970899999999998,
+              "p95_ms": 2.1180399999999997,
+              "max_ms": 2.16426
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.00895,
+              "p95_ms": 3.63312,
+              "max_ms": 3.81548
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.49481,
+              "p95_ms": 2.06616,
+              "max_ms": 2.11009
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/synthetic/text-like-q8.rrf",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.47901,
+              "p95_ms": 3.82352,
+              "max_ms": 4.00823
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 2.0061599999999995,
+              "p95_ms": 2.26693,
+              "max_ms": 2.6098
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.38155,
+              "p95_ms": 4.12877,
+              "max_ms": 4.36798
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.86414,
+              "p95_ms": 2.4515400000000005,
+              "max_ms": 2.7859300000000005
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.36108,
+              "p95_ms": 3.80997,
+              "max_ms": 4.09036
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.8568299999999998,
+              "p95_ms": 2.4200799999999996,
+              "max_ms": 2.4880900000000006
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.2249,
+              "p95_ms": 3.7723,
+              "max_ms": 3.84068
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.60173,
+              "p95_ms": 2.08929,
+              "max_ms": 2.2534
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.22365,
+              "p95_ms": 3.63578,
+              "max_ms": 3.9049
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6608800000000001,
+              "p95_ms": 2.2029300000000003,
+              "max_ms": 2.30164
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.44216,
+              "p95_ms": 4.14895,
+              "max_ms": 4.19475
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.9328900000000002,
+              "p95_ms": 2.36839,
+              "max_ms": 2.75543
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.40524,
+              "p95_ms": 4.07595,
+              "max_ms": 4.336
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.8992999999999998,
+              "p95_ms": 2.50636,
+              "max_ms": 2.8100200000000006
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/lossless/1080",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.98467,
+              "p95_ms": 3.43149,
+              "max_ms": 3.62053
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4964399999999998,
+              "p95_ms": 2.0672800000000002,
+              "max_ms": 2.13352
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.89109,
+              "p95_ms": 3.47193,
+              "max_ms": 3.5403
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.34829,
+              "p95_ms": 1.9640700000000002,
+              "max_ms": 2.02919
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.87428,
+              "p95_ms": 3.31901,
+              "max_ms": 3.66425
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3027600000000001,
+              "p95_ms": 1.9256799999999998,
+              "max_ms": 2.12188
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.68588,
+              "p95_ms": 3.34251,
+              "max_ms": 3.48147
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.1522799999999997,
+              "p95_ms": 1.89292,
+              "max_ms": 2.1234399999999996
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.60878,
+              "p95_ms": 3.45554,
+              "max_ms": 3.51721
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.12611,
+              "p95_ms": 1.804,
+              "max_ms": 1.93979
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.91827,
+              "p95_ms": 3.50203,
+              "max_ms": 3.58376
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.41135,
+              "p95_ms": 1.79288,
+              "max_ms": 1.91827
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.8983,
+              "p95_ms": 3.24712,
+              "max_ms": 3.34897
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.40288,
+              "p95_ms": 1.8474399999999997,
+              "max_ms": 1.93151
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/lossless/1260",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.19448,
+              "p95_ms": 3.80622,
+              "max_ms": 3.96953
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.64815,
+              "p95_ms": 2.24498,
+              "max_ms": 2.26183
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.96759,
+              "p95_ms": 3.53245,
+              "max_ms": 3.5681
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5053,
+              "p95_ms": 1.83933,
+              "max_ms": 2.12681
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.93552,
+              "p95_ms": 3.64215,
+              "max_ms": 3.64602
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.43446,
+              "p95_ms": 1.91581,
+              "max_ms": 2.0532
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.75349,
+              "p95_ms": 3.17117,
+              "max_ms": 3.63038
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2416200000000002,
+              "p95_ms": 1.72258,
+              "max_ms": 1.93877
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.80934,
+              "p95_ms": 3.44548,
+              "max_ms": 3.55839
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.21761,
+              "p95_ms": 1.9469899999999998,
+              "max_ms": 1.9604200000000003
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.21414,
+              "p95_ms": 3.59814,
+              "max_ms": 3.88258
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5719800000000002,
+              "p95_ms": 1.9399,
+              "max_ms": 2.07868
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.0132,
+              "p95_ms": 3.60812,
+              "max_ms": 3.66113
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.52732,
+              "p95_ms": 2.0491,
+              "max_ms": 2.1263699999999996
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/lossless/180",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.03979,
+              "p95_ms": 3.7233,
+              "max_ms": 3.95122
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.57131,
+              "p95_ms": 2.1349400000000003,
+              "max_ms": 2.3658
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.9808,
+              "p95_ms": 3.44987,
+              "max_ms": 3.71171
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4412999999999998,
+              "p95_ms": 2.00021,
+              "max_ms": 2.03214
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.89628,
+              "p95_ms": 3.79869,
+              "max_ms": 3.81013
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3896300000000001,
+              "p95_ms": 2.06861,
+              "max_ms": 2.2995099999999997
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.72812,
+              "p95_ms": 3.38279,
+              "max_ms": 4.0218
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.20203,
+              "p95_ms": 1.74807,
+              "max_ms": 2.4057399999999998
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.73556,
+              "p95_ms": 3.34905,
+              "max_ms": 3.35862
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2281100000000003,
+              "p95_ms": 1.7744700000000002,
+              "max_ms": 1.9579600000000001
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.0909,
+              "p95_ms": 3.81426,
+              "max_ms": 3.88213
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.53084,
+              "p95_ms": 2.01839,
+              "max_ms": 2.28839
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.98929,
+              "p95_ms": 3.51368,
+              "max_ms": 3.93666
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.48762,
+              "p95_ms": 1.9459199999999999,
+              "max_ms": 2.4432899999999997
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/lossless/360",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.14734,
+              "p95_ms": 3.44422,
+              "max_ms": 3.57782
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.56096,
+              "p95_ms": 1.8613499999999998,
+              "max_ms": 2.08619
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.87082,
+              "p95_ms": 3.26286,
+              "max_ms": 3.35524
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.40298,
+              "p95_ms": 1.59825,
+              "max_ms": 1.6169599999999997
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.86519,
+              "p95_ms": 3.18654,
+              "max_ms": 3.25941
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3505000000000003,
+              "p95_ms": 1.5905299999999998,
+              "max_ms": 1.62666
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.72781,
+              "p95_ms": 3.3796,
+              "max_ms": 3.79851
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.20932,
+              "p95_ms": 1.6081500000000002,
+              "max_ms": 1.81273
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.74412,
+              "p95_ms": 3.52089,
+              "max_ms": 3.55446
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.19852,
+              "p95_ms": 1.80336,
+              "max_ms": 2.01445
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.02333,
+              "p95_ms": 3.48211,
+              "max_ms": 3.57686
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.47971,
+              "p95_ms": 1.85108,
+              "max_ms": 1.9474799999999999
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.05647,
+              "p95_ms": 3.5303,
+              "max_ms": 3.8281
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.48051,
+              "p95_ms": 2.11045,
+              "max_ms": 2.17373
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/paired-a/1080",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.39497,
+              "p95_ms": 4.04216,
+              "max_ms": 4.17164
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.8022399999999998,
+              "p95_ms": 2.16272,
+              "max_ms": 2.38387
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.15883,
+              "p95_ms": 3.86043,
+              "max_ms": 3.92074
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6390699999999998,
+              "p95_ms": 2.23129,
+              "max_ms": 2.2738199999999997
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.12046,
+              "p95_ms": 3.7246,
+              "max_ms": 3.81118
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6155500000000003,
+              "p95_ms": 2.3074399999999997,
+              "max_ms": 2.3293799999999996
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.91774,
+              "p95_ms": 3.66765,
+              "max_ms": 3.90553
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.46167,
+              "p95_ms": 2.12458,
+              "max_ms": 2.36564
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.95874,
+              "p95_ms": 3.59729,
+              "max_ms": 3.68697
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.46158,
+              "p95_ms": 2.21658,
+              "max_ms": 2.2415700000000003
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.20973,
+              "p95_ms": 3.79944,
+              "max_ms": 3.91099
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.68561,
+              "p95_ms": 2.2695600000000002,
+              "max_ms": 2.32808
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.16391,
+              "p95_ms": 3.74937,
+              "max_ms": 3.8479
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.65524,
+              "p95_ms": 2.2376899999999997,
+              "max_ms": 2.40599
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/paired-a/1170",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.35714,
+              "p95_ms": 3.96618,
+              "max_ms": 4.16833
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.7984699999999998,
+              "p95_ms": 2.4171300000000002,
+              "max_ms": 2.61246
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.26462,
+              "p95_ms": 3.87605,
+              "max_ms": 3.91639
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6437400000000002,
+              "p95_ms": 2.02548,
+              "max_ms": 2.0321499999999997
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.04855,
+              "p95_ms": 3.7639,
+              "max_ms": 3.80124
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.56219,
+              "p95_ms": 2.0645999999999995,
+              "max_ms": 2.1145199999999997
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.90169,
+              "p95_ms": 3.23675,
+              "max_ms": 3.8577
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4079099999999998,
+              "p95_ms": 1.64132,
+              "max_ms": 1.7130699999999999
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.92425,
+              "p95_ms": 3.36029,
+              "max_ms": 3.61273
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4067999999999998,
+              "p95_ms": 1.77799,
+              "max_ms": 1.94671
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.21373,
+              "p95_ms": 3.7414,
+              "max_ms": 4.01323
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.7036099999999998,
+              "p95_ms": 2.09236,
+              "max_ms": 2.17309
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.22176,
+              "p95_ms": 4.07722,
+              "max_ms": 4.10545
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.7443700000000002,
+              "p95_ms": 2.47822,
+              "max_ms": 2.5867900000000006
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/paired-a/1260",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.29284,
+              "p95_ms": 3.97318,
+              "max_ms": 3.99396
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.79696,
+              "p95_ms": 2.0711,
+              "max_ms": 2.43447
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.10678,
+              "p95_ms": 3.42251,
+              "max_ms": 3.57623
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6241599999999998,
+              "p95_ms": 1.8510499999999999,
+              "max_ms": 1.9225499999999998
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.10943,
+              "p95_ms": 3.71387,
+              "max_ms": 3.87692
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.59688,
+              "p95_ms": 2.18411,
+              "max_ms": 2.3942900000000003
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.00113,
+              "p95_ms": 3.68133,
+              "max_ms": 3.69075
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4480599999999997,
+              "p95_ms": 1.98268,
+              "max_ms": 2.16268
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.9487,
+              "p95_ms": 3.37221,
+              "max_ms": 3.93425
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.45732,
+              "p95_ms": 1.9916099999999999,
+              "max_ms": 2.30114
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.32329,
+              "p95_ms": 3.8988,
+              "max_ms": 3.93276
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.71882,
+              "p95_ms": 2.2622999999999998,
+              "max_ms": 2.32147
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.28546,
+              "p95_ms": 3.83118,
+              "max_ms": 3.98504
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.67537,
+              "p95_ms": 2.1579500000000005,
+              "max_ms": 2.25246
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/paired-a/1350",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.23873,
+              "p95_ms": 4.14263,
+              "max_ms": 4.23748
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6783500000000002,
+              "p95_ms": 2.57135,
+              "max_ms": 2.68218
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.9994,
+              "p95_ms": 3.76897,
+              "max_ms": 3.84498
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.45718,
+              "p95_ms": 2.07485,
+              "max_ms": 2.0832800000000002
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.94201,
+              "p95_ms": 3.53983,
+              "max_ms": 3.83089
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4454600000000002,
+              "p95_ms": 1.8627599999999997,
+              "max_ms": 1.8680900000000003
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.81562,
+              "p95_ms": 3.3983,
+              "max_ms": 3.41638
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.28242,
+              "p95_ms": 1.92735,
+              "max_ms": 1.9426800000000002
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.90213,
+              "p95_ms": 3.79239,
+              "max_ms": 3.88587
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.32761,
+              "p95_ms": 2.1096900000000005,
+              "max_ms": 2.2213200000000004
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.09725,
+              "p95_ms": 3.87004,
+              "max_ms": 3.98396
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5439800000000001,
+              "p95_ms": 2.1101099999999997,
+              "max_ms": 2.22157
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.10156,
+              "p95_ms": 3.58539,
+              "max_ms": 4.01754
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5705999999999998,
+              "p95_ms": 1.87392,
+              "max_ms": 1.9617399999999998
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/paired-b/1080",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.20881,
+              "p95_ms": 4.21045,
+              "max_ms": 4.30376
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.68491,
+              "p95_ms": 2.2420299999999997,
+              "max_ms": 2.5927099999999994
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.09007,
+              "p95_ms": 3.66894,
+              "max_ms": 3.76168
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5859,
+              "p95_ms": 2.1458500000000003,
+              "max_ms": 2.15783
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.01485,
+              "p95_ms": 3.66405,
+              "max_ms": 3.84283
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5311599999999999,
+              "p95_ms": 2.17626,
+              "max_ms": 2.20305
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.93789,
+              "p95_ms": 3.81475,
+              "max_ms": 3.91212
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3840700000000001,
+              "p95_ms": 2.18363,
+              "max_ms": 2.3618699999999997
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.89025,
+              "p95_ms": 3.72837,
+              "max_ms": 3.74427
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.37006,
+              "p95_ms": 2.1607000000000003,
+              "max_ms": 2.20982
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.1384,
+              "p95_ms": 3.65858,
+              "max_ms": 3.94442
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6156,
+              "p95_ms": 2.1015,
+              "max_ms": 2.3252699999999997
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.19617,
+              "p95_ms": 4.101,
+              "max_ms": 4.4139
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6789899999999998,
+              "p95_ms": 2.3403199999999993,
+              "max_ms": 2.38009
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/paired-b/1170",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.17314,
+              "p95_ms": 3.81572,
+              "max_ms": 3.89321
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.6139199999999998,
+              "p95_ms": 2.20902,
+              "max_ms": 2.37714
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.99805,
+              "p95_ms": 3.66399,
+              "max_ms": 3.97288
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4637799999999999,
+              "p95_ms": 2.02637,
+              "max_ms": 2.02728
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.92971,
+              "p95_ms": 3.56466,
+              "max_ms": 3.63974
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.4272000000000002,
+              "p95_ms": 1.9992600000000003,
+              "max_ms": 2.03296
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.74122,
+              "p95_ms": 3.47262,
+              "max_ms": 3.82762
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.23717,
+              "p95_ms": 1.86066,
+              "max_ms": 2.35203
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.81899,
+              "p95_ms": 3.34734,
+              "max_ms": 3.48395
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2547599999999999,
+              "p95_ms": 1.5240300000000002,
+              "max_ms": 1.85495
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.07978,
+              "p95_ms": 3.63095,
+              "max_ms": 3.88381
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5326600000000001,
+              "p95_ms": 2.08407,
+              "max_ms": 2.28157
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.11499,
+              "p95_ms": 4.04064,
+              "max_ms": 4.05275
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5549700000000002,
+              "p95_ms": 2.50268,
+              "max_ms": 2.51929
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/paired-b/1260",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.2347,
+              "p95_ms": 4.01926,
+              "max_ms": 4.18309
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.66227,
+              "p95_ms": 2.46802,
+              "max_ms": 2.5156
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.0067,
+              "p95_ms": 3.37526,
+              "max_ms": 3.37688
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.51777,
+              "p95_ms": 1.8413499999999998,
+              "max_ms": 1.9775299999999998
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.96278,
+              "p95_ms": 3.63549,
+              "max_ms": 3.70963
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.46629,
+              "p95_ms": 1.60976,
+              "max_ms": 2.04546
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.86875,
+              "p95_ms": 3.27692,
+              "max_ms": 3.35873
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3083599999999997,
+              "p95_ms": 1.68885,
+              "max_ms": 1.72792
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.77428,
+              "p95_ms": 3.43244,
+              "max_ms": 3.44197
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.3343299999999998,
+              "p95_ms": 1.92481,
+              "max_ms": 1.9799999999999998
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.19686,
+              "p95_ms": 3.44441,
+              "max_ms": 3.71988
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5939400000000001,
+              "p95_ms": 1.8077100000000002,
+              "max_ms": 2.04371
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.10251,
+              "p95_ms": 3.95997,
+              "max_ms": 4.04113
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5425499999999999,
+              "p95_ms": 2.32864,
+              "max_ms": 2.39271
+            }
+          }
+        }
+      },
+      {
+        "name": "corpus/paired-b/1350",
+        "arms": {
+          "cpu_simd_rgba_copy": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.11914,
+              "p95_ms": 3.97119,
+              "max_ms": 4.14497
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.581,
+              "p95_ms": 2.3707599999999998,
+              "max_ms": 2.4792199999999998
+            }
+          },
+          "gpu_c1_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.02419,
+              "p95_ms": 3.35551,
+              "max_ms": 3.55174
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5050599999999998,
+              "p95_ms": 1.75252,
+              "max_ms": 1.9680300000000002
+            }
+          },
+          "gpu_c1_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.99499,
+              "p95_ms": 3.40462,
+              "max_ms": 3.4772
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.45333,
+              "p95_ms": 1.9496099999999998,
+              "max_ms": 2.0854299999999997
+            }
+          },
+          "gpu_c4_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.76085,
+              "p95_ms": 3.24625,
+              "max_ms": 3.70507
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2727000000000002,
+              "p95_ms": 1.5655400000000002,
+              "max_ms": 2.19876
+            }
+          },
+          "gpu_c4_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 2.93091,
+              "p95_ms": 3.84543,
+              "max_ms": 3.85513
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.2974599999999998,
+              "p95_ms": 2.20465,
+              "max_ms": 2.32733
+            }
+          },
+          "gpu_c16_unorm": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.07638,
+              "p95_ms": 3.56646,
+              "max_ms": 3.60031
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.53507,
+              "p95_ms": 1.84959,
+              "max_ms": 1.9439399999999998
+            }
+          },
+          "gpu_c16_uint": {
+            "outer_wall": {
+              "samples": 31,
+              "p50_ms": 3.07347,
+              "p95_ms": 3.49969,
+              "max_ms": 3.55904
+            },
+            "without_measured_poison_interval": {
+              "samples": 31,
+              "p50_ms": 1.5436199999999998,
+              "p95_ms": 2.00882,
+              "max_ms": 2.1097200000000003
+            }
+          }
+        }
+      }
+    ],
+    "captured_summary_by_base_q": {
+      "1": {
+        "cpu_simd_rgba_copy": {
+          "pairs": 4,
+          "median_of_pair_medians_ms": 3.093565
+        },
+        "gpu_c1_unorm": {
+          "pairs": 4,
+          "median_of_pair_medians_ms": 2.92934
+        },
+        "gpu_c1_uint": {
+          "pairs": 4,
+          "median_of_pair_medians_ms": 2.88528
+        },
+        "gpu_c4_unorm": {
+          "pairs": 4,
+          "median_of_pair_medians_ms": 2.727965
+        },
+        "gpu_c4_uint": {
+          "pairs": 4,
+          "median_of_pair_medians_ms": 2.73984
+        },
+        "gpu_c16_unorm": {
+          "pairs": 4,
+          "median_of_pair_medians_ms": 3.057115
+        },
+        "gpu_c16_uint": {
+          "pairs": 4,
+          "median_of_pair_medians_ms": 3.001245
+        }
+      },
+      "8": {
+        "cpu_simd_rgba_copy": {
+          "pairs": 8,
+          "median_of_pair_medians_ms": 3.2367150000000002
+        },
+        "gpu_c1_unorm": {
+          "pairs": 8,
+          "median_of_pair_medians_ms": 3.05713
+        },
+        "gpu_c1_uint": {
+          "pairs": 8,
+          "median_of_pair_medians_ms": 3.0049200000000003
+        },
+        "gpu_c4_unorm": {
+          "pairs": 8,
+          "median_of_pair_medians_ms": 2.88522
+        },
+        "gpu_c4_uint": {
+          "pairs": 8,
+          "median_of_pair_medians_ms": 2.91319
+        },
+        "gpu_c16_unorm": {
+          "pairs": 8,
+          "median_of_pair_medians_ms": 3.16763
+        },
+        "gpu_c16_uint": {
+          "pairs": 8,
+          "median_of_pair_medians_ms": 3.13945
+        }
+      }
+    },
+    "headset_used": false,
+    "promotion_blocked": true,
+    "sub15_gate_evaluated": false,
+    "limitations": [
+      "Private host GPU and uncontrolled desktop workload.",
+      "Whole outer clock includes poison; interval subtraction does not remove its cache effects.",
+      "Same-format RRF client image stage; server transcode, network and compositor excluded.",
+      "Repeated static inputs and reused workspace capacities after warmup."
+    ],
+    "pass": true,
+    "result_sha256": "dab46212b669fc7f54e88ddfd2994503c5db9b5d6f43ac74027f1f9749cf3f3a",
+    "conditions": {
+      "start_utc": "2026-10-09T07:37:33.146722+00:00",
+      "research_teams_confirmed_idle": true,
+      "desktop_workload": "uncontrolled",
+      "headset_used": false,
+      "corpus_manifest_sha256": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f",
+      "binary_sha256": "a251981f07fad40158b10c08da1475872d55d339c96010752090b283d6b6fbd8",
+      "icd": "/usr/share/vulkan/icd.d/intel_icd.x86_64.json",
+      "repetitions": 31,
+      "finish_utc": "2026-10-09T07:45:20.463808+00:00",
+      "process_seconds": 467.31684351401054,
+      "exit_code": 0,
+      "manifest_unchanged": true,
+      "corpus_unchanged": true
+    }
+  },
+  "verification": {
+    "qualification_fixtures": 170,
+    "qualification_recorded_invocations": 1190,
+    "qualification_warmup_invocations": 1190,
+    "asan_ubsan_paired_profiles": 26,
+    "asan_ubsan_recorded_invocations": 182,
+    "asan_ubsan_warmup_invocations": 546,
+    "sanitizer_diagnostics": false,
+    "sanitizer_timing_is_performance_evidence": false,
+    "sanitizer_run_conditions": "Briefly paused for another team measurement; overlapped ordinary regression near end. Leak detection disabled under ptrace.",
+    "rebuilt_rowfilter_regression_fixtures": 170,
+    "rebuilt_rowfilter_regression_recorded_invocations": 510,
+    "rebuilt_original_direct_image_regression_fixtures": 96,
+    "rebuilt_original_direct_image_regression_recorded_invocations": 288,
+    "audit_unit_tests": 5,
+    "audit_negative_mutations": 25,
+    "host_build": "clang++ O2 warnings as errors",
+    "android_build": "NDK29 API29 ARM64 compile-only warnings as errors",
+    "shader_modules_unchanged_from_base": 12,
+    "shader_validation_inherited": "12 spirv-val Vulkan1.1 passes; unchanged exact shader hashes",
+    "validation_layer_enabled": false,
+    "all_76_corpus_files_match_committed_manifest_before_and_after": true,
+    "independent_static_review": "Compositor team found no blocker in pair admission, staging bounds, transfer visibility/layouts, resource lifetime or outer-clock accounting."
+  },
+  "source_binary_shader_sha256": {
+    "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp": "1f31f7d07d41c14378a0341991dcb1af52b8c679ffd8daf9e92b2e35c274cb3a",
+    "prototypes/vr444/experiments/direct_image_gpu/sample.comp": "b146b902a79640cdd887061a9475217aa156a763ee04bbfa521e20be2f32938c",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-1/buffer.spv": "36faded6515cc8746c042591912a107e72a5cc2ec4eaf4bfcb99859c5ac35bd6",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-1/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-1/uint.spv": "292f46dddfc4961721da3c8a7b831fffff5ea2b555e683a2293117c3df886c79",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-1/unorm.spv": "e54882df075efa81579a17f223feb9c131f318f569327e70589f0802ba78da6e",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-16/buffer.spv": "a2d3ddcbe3e409952fff37e76e644767e9244aac65abd1560b6966d49d43dbe9",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-16/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-16/uint.spv": "2b6d909ad54cc262b15b50ac53725490e7b20e4058f108b9f7d83a40834048fe",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-16/unorm.spv": "f7ca27e23ee722e7881c936c696eddacee48c53746685a5d5b04e0bb904d6013",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-4/buffer.spv": "1ef691b6e9291826cadfabe86ddb99725fa6787b5e4e9b7d97d88cb410ee95c0",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-4/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-4/uint.spv": "f42443cf8ba2ce3cabd16a061d8c8a0f2252cc209d95309397683ba030ac700b",
+    "prototypes/vr444/experiments/rowfilter_gpu/build/shaders-4/unorm.spv": "f963502ec2f189a50dcdcbad1f1abe92f28f301e8155eb3ecc77a1febf5c54e6",
+    "prototypes/vr444/experiments/rowfilter_gpu/decode.comp": "2a019063b41a630d4f447e62e8bd9af91c6aacad76142003c701bf5a5db9c9b6",
+    "prototypes/vr444/experiments/rowfilter_gpu/fixtures.hpp": "2869b89c5d69606ffe3dd9462f67c4ae1b2b3b6009806e3744ec02a5d8f38263",
+    "prototypes/vr444/experiments/rowfilter_gpu/probe.cpp": "63dce6a10451638b820e880792b559f782dbf52c2d8c8b8febd96cd9ec0c7dab",
+    "prototypes/vr444/experiments/rowfilter_image_timing/README.txt": "fd22b81c35c461f51055b69f72e14d6fd226c5d537bdbf1e4e3240129189b596",
+    "prototypes/vr444/experiments/rowfilter_image_timing/audit.py": "c03d855953f972114081d7d0f5e6896dd1f65fec610af5f384fba6cee10d32ad",
+    "prototypes/vr444/experiments/rowfilter_image_timing/bench.cpp": "155ee7b12396a24dff477f92649c69048a1417df6748ad682bd2fc45edff308c",
+    "prototypes/vr444/experiments/rowfilter_image_timing/build/rowfilter-image-android": "8d27b82e1febbc05a598bb8b059e6c3b93906086cab759ede3c73abcb33e0980",
+    "prototypes/vr444/experiments/rowfilter_image_timing/build/rowfilter-image-asan": "7c3ff8000ce38c2f25cebb2b7f9ef84588240558560fe3a8ac0a8583e58e46ac",
+    "prototypes/vr444/experiments/rowfilter_image_timing/build/rowfilter-image-host": "a251981f07fad40158b10c08da1475872d55d339c96010752090b283d6b6fbd8",
+    "prototypes/vr444/experiments/rowfilter_image_timing/build.sh": "8dd689006b860652d047ce5c607c3405ca41e078cab3f65ea10fa48b083e2f2e",
+    "prototypes/vr444/experiments/rowfilter_image_timing/measure.py": "f6929e41b9a44f72619d9d6a45e025ad5cb12db5161d62638475e72062205c9e",
+    "prototypes/vr444/experiments/rowfilter_image_timing/pipeline.hpp": "103b3581258b898916255a35f1d8fb991ac4234df4f991ada1712fa317002937",
+    "prototypes/vr444/experiments/rowfilter_image_timing/test_audit.py": "2b2c01035c45d5bfa058f597c3b452f4513a440f54d7fb557882b6e44dba0d0a",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff"
+  },
+  "local_artifacts_sha256": {
+    "validation/results/sub15-rowfilter-image-timing/qualification.json": "dae676a79f85f817e7a9da0120b40646cf379a50a534e08345c717f8ff502992",
+    "validation/results/sub15-rowfilter-image-timing/sanitizer-paired.json": "50d8dfd8cc5bef48c29f94c6935e0d2dd599e1429cfacbbe0883d2a3e746b572",
+    "validation/results/sub15-rowfilter-image-timing/rowfilter-regression.json": "6e88583814ce526c2cb603ed3a56e76ce492f4f84e978fb2d20dd07bc13eac91",
+    "validation/results/sub15-rowfilter-image-timing/direct-image-regression.json": "5c7f8b3d8ce0ef0e498006ff4b4dff59fbaff8caeec8fa152a90cbcd07668db3",
+    "validation/results/sub15-rowfilter-image-timing/measured31-20261009T073745Z/result.json": "dab46212b669fc7f54e88ddfd2994503c5db9b5d6f43ac74027f1f9749cf3f3a",
+    "validation/results/sub15-rowfilter-image-timing/measured31-20261009T073745Z/input-hashes.json": "3bdc707478b8b3ae0d2f8d69f7b362e745e765a8d4db076dcbfd617dfc37dcde",
+    "validation/results/sub15-rowfilter-image-timing/measured31-20261009T073745Z/conditions.json": "38ba02bf1be9520c3d2c5813f86f2743c116f48f5d2804d3d2bb557de7420337"
+  },
+  "notes": [
+    "All warmup and recorded outputs require exact independent RGBA and same-device baseline sample bits, plus half-code inverse-EOTF color bound.",
+    "Both source eyes finish CRC, strict LZ4 grammar, decompression and dimensions before mapped input or GPU image changes.",
+    "All timing arms include two submissions, including diagnostic poison. Private logical devices and uncontrolled desktop GPU workload differ from production.",
+    "Group summaries are medians of per-pair medians, not confidence intervals. This same-format RRF client stage excludes server transcode, network, compositor and headset."
+  ]
+}
