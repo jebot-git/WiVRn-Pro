@@ -43,6 +43,9 @@
 #ifdef WIVRN_CODEC_TESTS
 #include "decoder/test_decoder.h"
 #include "stream_quality_capture.h"
+#include "codec_test/quality_geometry.h"
+#include <filesystem>
+#include <fstream>
 #endif
 #include "inplace_vector.hpp"
 #include "spdlog/spdlog.h"
@@ -323,8 +326,32 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
 			info.stream_eye_width = info.render_eye_width * scale;
 			info.stream_eye_height = info.render_eye_height * scale;
 #ifdef WIVRN_CODEC_TESTS
-            info.stream_eye_width = 576;
-            info.stream_eye_height = 640;
+            // The scale setting alone must never change the latency profile.
+            // Read the small explicit override before advertising any geometry.
+            auto read_choice = [](const std::filesystem::path& path) -> std::optional<std::string> {
+                std::error_code error;
+                const auto status=std::filesystem::symlink_status(path,error);
+                if (status.type()==std::filesystem::file_type::not_found &&
+                    (!error || error==std::errc::no_such_file_or_directory)) return std::nullopt;
+                if (error || !std::filesystem::is_regular_file(status))
+                    throw std::runtime_error("codec quality geometry configuration must be a regular file");
+                std::ifstream file(path,std::ios::binary);
+                if (!file) throw std::runtime_error("cannot read codec quality geometry configuration");
+                char bytes[65];file.read(bytes,sizeof(bytes));const auto count=file.gcount();
+                if (file.bad() || count>64) throw std::runtime_error("codec quality geometry configuration exceeds bound");
+                std::string value(bytes,size_t(count));
+                if (!value.empty() && value.back()=='\n') value.pop_back();
+                if (!value.empty() && value.back()=='\r') value.pop_back();
+                return value;
+            };
+            const auto token=read_choice(application::get_config_path()/"codec-test-quality-geometry.txt");
+            const auto payload=token && *token!="off"
+                ? read_choice(application::get_config_path()/"codec-test-payload.txt") : std::nullopt;
+            const auto profile=codec_test::quality_geometry::client(
+                token ? std::optional<std::string_view>(*token) : std::nullopt,
+                self->test_quality_capture->enabled(),payload ? std::string_view(*payload) : std::string_view{});
+            info.stream_eye_width = profile.width;
+            info.stream_eye_height = profile.height;
 #endif
 		}
 
