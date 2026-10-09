@@ -1,0 +1,1 @@
+{"pass":true,"roundtrips":1345,"rejections":8473,"mutations":10000,"maximum_pixels":4194304,"maximum_blocks":256,"output_unchanged_on_rejection":true,"scalar_simd_wire_equal":true,"backend":"x86-ssse3-pack-expand+sse2-row"}
