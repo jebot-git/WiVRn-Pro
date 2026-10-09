@@ -1,0 +1,14 @@
+{
+  "pass_result": true,
+  "sanitizers": [
+    "address",
+    "undefined"
+  ],
+  "loopback_roundtrips": 232,
+  "rejections": 19,
+  "gso_supported": true,
+  "gro_supported": true,
+  "maximum_outstanding_records": 32,
+  "partial_final_segments": true,
+  "mixed_packet_sizes": true
+}

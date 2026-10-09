@@ -128,7 +128,7 @@ static Result run(Sockets& sockets,const Packets& packets,size_t burst,bool batc
     return {std::chrono::duration<double,std::milli>(finish-start).count(),counters,total_bytes};
 }
 template<class Fn>static void rejects(Fn fn){bool bad=false;try{fn();}catch(const std::runtime_error&){bad=true;}need(bad,"expected rejection");}
-static int selftest(){
+[[maybe_unused]] static int selftest(){
     rejects([&]{validate_input({},1);});rejects([&]{validate_input({Packet(1201)},1);});rejects([&]{validate_input({Packet(1)},33);});rejects([&]{validate_input({{}},1);});
     rejects([&]{validate_input(Packets(max_packets+1,Packet(1)),1);});rejects([&]{validate_input({Packet(1)},0);});
     auto packets=generated(35,1200,7008);Sockets sockets;unsigned trips=0;
@@ -147,7 +147,8 @@ static int selftest(){
      rejects([&]{run(isolated,packets,4,true);});}
     std::cout<<"{\"pass\":true,\"loopback_roundtrips\":"<<trips<<",\"partial_final_batch\":true,\"forced_partial_syscalls\":true,\"empty_queue_timeout_checked\":true,\"malformed_input_bounds_checked\":true,\"foreign_peer_and_truncation_rejected\":true}\n";return 0;
 }
-static void distribution(std::vector<double> values){auto samples=values;std::sort(values.begin(),values.end());std::cout<<"{\"p50\":"<<values[(values.size()-1)/2]<<",\"p95\":"<<values[(95*values.size()+99)/100-1]<<",\"max\":"<<values.back()<<",\"samples\":[";for(size_t i=0;i<samples.size();++i)std::cout<<(i?",":"")<<samples[i];std::cout<<"]}";}
+[[maybe_unused]] static void distribution(std::vector<double> values){auto samples=values;std::sort(values.begin(),values.end());std::cout<<"{\"p50\":"<<values[(values.size()-1)/2]<<",\"p95\":"<<values[(95*values.size()+99)/100-1]<<",\"max\":"<<values.back()<<",\"samples\":[";for(size_t i=0;i<samples.size();++i)std::cout<<(i?",":"")<<samples[i];std::cout<<"]}";}
+#ifndef UDP_BATCH_EMBEDDED
 int main(int argc,char**argv){try{
     if(argc==2&&std::string(argv[1])=="self-test")return selftest();
     need(argc==2,"usage: probe self-test | REPS");unsigned reps=std::stoul(argv[1]);need(reps>=5&&reps<=100,"repetition bound");
@@ -162,3 +163,4 @@ int main(int argc,char**argv){try{
     }
     std::cout<<"]}\n";
 }catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
+#endif
