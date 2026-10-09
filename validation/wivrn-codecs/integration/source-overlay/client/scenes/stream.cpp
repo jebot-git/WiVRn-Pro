@@ -693,30 +693,55 @@ void scenes::stream::on_unfocused()
 
 scenes::stream::~stream()
 {
-	exit();
-
-	if (tracking_thread && tracking_thread->joinable())
-		tracking_thread->join();
-
-	if (network_thread.joinable())
-		network_thread.join();
 #ifdef WIVRN_CODEC_TESTS
-    // Decoder image leases are members destroyed after this body. The GUI
-    // renderer waits only its own fences, not the stream defoveation submit.
-    // Wait the actual shared queue before releasing any consumer-held lease.
-    // Queue idle also covers a fence reset followed by a failed submit, where
-    // waiting that never-submitted fence could hang indefinitely.
-    try {
-        queue.lock()->waitIdle();
-    } catch (const vk::DeviceLostError&) {
-        // A lost device cannot continue consuming the referenced resources.
-        spdlog::error("Codec test stream terminal drain: device lost");
-    } catch (...) {
-        spdlog::critical("Codec test stream terminal queue drain failed");
-        std::terminate(); // Never destroy possibly in-use decoder images.
-    }
+    prepare_exit(); // Idempotent fallback; the owner must quiesce before pop.
+#else
+    exit();
+    if (tracking_thread && tracking_thread->joinable()) tracking_thread->join();
+    if (network_thread.joinable()) network_thread.join();
 #endif
 }
+
+#ifdef WIVRN_CODEC_TESTS
+void scenes::stream::prepare_exit() noexcept
+{
+    try {
+        std::call_once(test_exit_once, [this] {
+            // Application still owns a strong reference and invokes this on its
+            // scene owner thread, without the scene-stack mutex. No render can
+            // start again after this retirement boundary.
+            exit();
+            if (tracking_thread && tracking_thread->joinable()) tracking_thread->join();
+            if (network_thread.joinable()) network_thread.join();
+            // GUI fences do not cover this stream's defoveation. Queue idle also
+            // covers reset fences whose following submit failed. No member or
+            // decoder sampler may disappear before the last consumer completes.
+            try {
+                queue.lock()->waitIdle();
+            } catch (const vk::DeviceLostError&) {
+                spdlog::error("Codec test stream terminal drain: device lost");
+            }
+            decltype(decoders) retired;
+            {
+                std::unique_lock lock(decoder_mutex);
+                std::lock_guard frame_lock(frames_mutex);
+                retired.swap(decoders);
+                current_blit_handles.fill(nullptr);
+                video_stream_description.reset();
+            }
+            // Worker callbacks take decoder_mutex; stop/join and producer drains
+            // must happen after releasing it. The owner strong reference remains
+            // alive through every join, preventing last-ref self-destruction on a
+            // decoder worker that briefly holds scene.lock().
+            for (auto& item : retired) item = {};
+            test_stereo_generation.reset();
+        });
+    } catch (...) {
+        spdlog::critical("Codec test stream owner-thread quiescence failed");
+        std::terminate(); // Never release resources with unknown completion.
+    }
+}
+#endif
 
 void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_ptr<shard_accumulator::blit_handle> handle)
 {
@@ -727,6 +752,9 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
 	{
 		std::shared_lock lock(decoder_mutex);
 		std::unique_lock frame_lock(frames_mutex);
+#ifdef WIVRN_CODEC_TESTS
+        if (state_ == state::shutdown) return;
+#endif
 		auto stream = handle->feedback.stream_index;
 		if (stream < decoders.size())
 		{
@@ -1122,7 +1150,17 @@ void scenes::stream::render(const XrFrameState & frame_state)
 		});
 
 		next_gui_status = stream_tab::hidden;
-		application::pop_scene();
+#ifdef WIVRN_CODEC_TESTS
+        // Owner-thread pop now quiesces synchronously and needs this lock.
+        lock.unlock();
+#endif
+        application::pop_scene();
+#ifdef WIVRN_CODEC_TESTS
+        session.begin_frame();
+        session.end_frame(frame_state.predictedDisplayTime, {});
+        test_render_attempts.skip(codec_test::selection_trace::Skip::shutdown);
+        return;
+#endif
 	}
 
 #ifdef WIVRN_CODEC_TESTS

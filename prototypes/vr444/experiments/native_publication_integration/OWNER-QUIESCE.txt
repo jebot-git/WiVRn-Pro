@@ -1,0 +1,41 @@
+Owner-thread stream quiescence — integration seam
+
+Requires application.cpp/scene.h prepare_exit API commit:
+  d9f4382b9f001c79da301974c51700a8fec878cb
+This focused commit owns only stream.cpp/.h plus its offline receipt/control.
+Root reconciles the final union manifest/patch after collecting codec, GPU,
+owner hook and capture commits. Do not treat the inherited69-file manifest as
+matching this intermediate source seam before that union reconciliation.
+
+Application retains a strong stream reference while calling prepare_exit on
+its scene owner thread, outside scene_stack_lock. The once-only stream hook
+marks shutdown, joins tracking/network, drains the actual shared VkQueue, then
+detaches all accumulators and current handles under decoder/frames locks.
+Retired decoders are destroyed outside those locks so their callbacks can
+finish and producer fences/workers can drain. This all finishes before the
+application may release its owner reference or Vulkan device/allocator.
+Device loss permits terminal resource release; any other exception terminates.
+The destructor calls the idempotent hook as fallback. No frame-path queue idle.
+
+Late legacy publication now rejects shutdown under the publication locks.
+Existing set_state already prevented shutdown revival with compare_exchange;
+this extra guard suppresses history/ledger mutation during retirement too.
+The stalled render path previously popped while holding decoder_mutex shared.
+It now unlocks before synchronous pop/quiesce, ends an empty XR frame, records
+shutdown outcome and returns. The initial shutdown pop is already before that
+lock and reaches the existing empty-frame return.
+
+GPU peer review found no remaining lock/lifetime blocker in this ordering;
+our reciprocal review of d9f4382 confirmed owner-reference retention and that
+both pop/cleanup release the stack lock before the virtual hook. GPU's separate
+actual-method owner tests cover its application hooks. Our receipt records
+actual full Android stream translation-unit syntax enabled/disabled and honest
+source-order regression guards, not a live Vulkan/device-loss execution.
+
+Reproduce against the separately pinned scene.h overlay:
+  python3 prototypes/vr444/experiments/native_publication_integration/validate_owner.py \
+    --scene-header /path/to/d9f4382/source-overlay/client/scene.h \
+    --native-root /path/to/unchanged/wivrn-codec-tests \
+    --out /tmp/fresh-owner-receipt.json
+The recorded compile argv uses the exact retained compile environment from the
+atomic milestone and a read-only VFS; no retained native sources are changed.
