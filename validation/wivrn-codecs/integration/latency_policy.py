@@ -141,6 +141,11 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
                     or summary.get('pacer_trace', {}).get('status', 'off') != 'off'
                     or (directory/'host/pacer-trace.jsonl').exists()):
                 errors.append('pacer tracing cannot masquerade as an untraced candidate')
+            if (provenance.get('publication_trace', False) is not False
+                    or summary.get('publication_trace', {}).get('status', 'off') != 'off'
+                    or any(any(k.startswith('publication_trace_') for k in row) for row in rows)
+                    or (directory/'client/codec-test/publication-trace.jsonl').exists()):
+                errors.append('publication tracing cannot masquerade as an untraced candidate')
             kernel = 'direct-neon' if backend == 'cpu-neon' else 'coop128dc'
             fixed = {'custom_decoder': kernel, 'scene_reference_space': 'Local',
                      'gaze_enabled': False, 'meta_sr_mode': 'off', 'user_presence_overridden': False,
@@ -212,6 +217,10 @@ def inspect_run(directory, build_receipt=None, reference_native=False):
             server = read('server-config.json')
             client = read('client-config.json')
             readback = read('client-config-readback.json')
+            if 'codec-test-publication-trace.txt' in readback and (
+                    type(readback['codec-test-publication-trace.txt']) is not str
+                    or readback['codec-test-publication-trace.txt'].strip() != '0'):
+                errors.append('publication trace readback is not disabled')
             expected_readback = {'codec-test-kernel.txt': kernel, 'codec-test-backend.txt': backend,
                                 'codec-test-pairing.txt': 'paired', 'codec-test-compression.txt': provenance.get('custom_compression'),
                                 'codec-test-gaze-timing.txt': '0', 'codec-test-selection.txt': phase,

@@ -25,7 +25,7 @@ MODES = ('native-h264', 'native-hevc', 'custom-vr444')
 CONFIG_FILES = ('client.json', 'codec-test-kernel.txt', 'codec-test-backend.txt',
                 'codec-test-pairing.txt', 'codec-test-compression.txt', 'codec-test-gaze-timing.txt',
                 'codec-test-selection.txt', 'codec-test-candidate-trace.txt',
-                'codec-test-cpu-output.txt', 'codec-test-selection-policy.txt')
+                'codec-test-cpu-output.txt', 'codec-test-selection-policy.txt', 'codec-test-publication-trace.txt')
 
 
 def save(path, value):
@@ -55,7 +55,9 @@ def experimental_settings(args):
         raise ValueError('mapped-direct requires custom CPU NEON decoding')
     if selection == 'bounded-newest' and not getattr(args, 'candidate_trace', False):
         raise ValueError('bounded-newest currently requires diagnostic candidate tracing')
-    return {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection}
+    publication_trace_helpers(args)
+    return {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection,
+            'codec-test-publication-trace.txt': '1' if getattr(args, 'publication_trace', False) else '0'}
 
 
 
@@ -74,6 +76,79 @@ def pacer_trace_helpers(args, source=None):
     if source is not None and any(not (Path(source)/name).is_file() for name in names):
         raise ValueError('pacer diagnostic overlay is absent; native integration/build required before acquisition')
     return names
+
+
+def publication_trace_helpers(args, source=None):
+    """Pure preflight for the separately opt-in client publication ledger."""
+    enabled = getattr(args, 'publication_trace', False)
+    if type(enabled) is not bool:
+        raise ValueError('publication trace control must be boolean')
+    if not enabled:
+        return ()
+    if (args.mode != 'custom-vr444' or args.decoder_backend != 'cpu-neon'
+            or getattr(args, 'candidate_trace', False) is not True
+            or getattr(args, 'source_trace', False) is not True):
+        raise ValueError('publication tracing requires custom CPU NEON plus candidate and source diagnostics')
+    names = ('client/scenes/stream.cpp', 'client/scenes/stream.h', 'common/codec_test/publication_ledger.h')
+    if source is not None and any(not (Path(source)/name).is_file() for name in names):
+        raise ValueError('publication diagnostic overlay is absent; native integration/build required before acquisition')
+    return names
+
+
+def evaluate_publication_trace(output, requested):
+    """File-only prefix plus configuration/presentation checkpoint validation."""
+    output = Path(output)
+    result = {'diagnostic_only': True, 'promotion_eligible': False, 'release_ready': False}
+    if type(requested) is not bool:
+        return result | {'status': 'fail', 'errors': ['publication trace request must be boolean']}
+    path = output/'client/codec-test/publication-trace.jsonl'
+    try:
+        presented = read_rows(output/'client/codec-test-present.jsonl')
+        unexpected = path.exists() or any(type(row) is dict and any(k.startswith('publication_trace_') for k in row) for row in presented)
+        if not requested:
+            return result | {'status': 'fail' if unexpected else 'off',
+                             'errors': ['publication trace evidence present while disabled'] if unexpected else []}
+        provenance = json.loads((output/'provenance.json').read_text())
+        if provenance.get('publication_trace') is not True:
+            raise ValueError('publication trace request differs from provenance')
+        helpers = publication_trace_helpers(argparse.Namespace(**provenance))
+        hashes = provenance.get('source_helper_sha256', {})
+        if any(type(hashes.get(name)) is not str or not re.fullmatch('[0-9a-f]{64}', hashes[name]) for name in helpers):
+            raise ValueError('publication native source provenance is missing')
+        readback = json.loads((output/'client-config-readback.json').read_text())
+        if type(readback.get('codec-test-publication-trace.txt')) is not str or readback['codec-test-publication-trace.txt'].strip() != '1':
+            raise ValueError('publication trace config readback differs')
+        analyzer = Path(__file__).with_name('publication_trace.py')
+        spec = importlib.util.spec_from_file_location('codec_publication_trace', analyzer)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        rows = module.load(path)
+        result = module.evaluate(rows, read_rows(output/'client/codec-test/selection-trace.jsonl'), presented)
+        if result['status'] == 'pass':
+            checkpoints = [row for row in rows if row['kind'] == 'checkpoint']
+            for record, checkpoint in zip(presented, checkpoints):
+                expected = dict(publication_trace_enabled=True, publication_trace_records=checkpoint['prefix_records'],
+                    publication_trace_epoch=checkpoint['epoch'], publication_trace_dropped=0,
+                    publication_trace_valid=True, publication_trace_write_ok=True)
+                if any(type(record.get(key)) is not type(value) or record.get(key) != value for key, value in expected.items()):
+                    raise ValueError('publication checkpoint differs from presentation ledger evidence')
+            # Bind every published identity, including frames evicted between
+            # candidate snapshots, to the independent complete host source trace.
+            source_analyzer = Path(__file__).resolve().parents[3]/'prototypes/vr444/experiments/compositor_freshness/analyze.py'
+            source_spec = importlib.util.spec_from_file_location('codec_publication_source_join', source_analyzer)
+            source_module = importlib.util.module_from_spec(source_spec)
+            source_spec.loader.exec_module(source_module)
+            frames = sorted({row['added']['frame'] for row in rows if row['kind'] == 'publish'})
+            joined = source_module.evaluate(read_rows(output/'host/source-trace.jsonl'), frames)
+            result['published_source_join'] = {k: v for k, v in joined.items() if k != 'system_to_app_frames'}
+            result['published_source_join_analyzer_sha256'] = sha(source_analyzer)
+            if joined['status'] != 'pass':
+                raise ValueError('not every published frame has a valid host source join')
+        result['analyzer_sources_sha256'] = {p.name: sha(p) for p in
+            (analyzer, Path(module.candidate.__file__), Path(module.candidate._replay.__file__))}
+        return result
+    except Exception as exc:
+        return result | {'status': 'fail', 'errors': [str(exc)]}
 
 
 def evaluate_pacer_trace(output, requested):
@@ -114,6 +189,7 @@ def source_trace_complete(path):
 def build_configuration(args, runtime, source, output):
     """Pure configuration builder, also usable by offline tests/review."""
     pacer_trace_helpers(args)
+    publication_trace_helpers(args)
     custom = args.mode == 'custom-vr444'
     codec = 'h264' if args.mode == 'native-h264' else 'h265'
     server_config = {
@@ -196,6 +272,7 @@ def run(args):
         raise ValueError('invalid custom compression')
     source, output = args.source.resolve(), args.out.resolve()
     pacer_helpers = pacer_trace_helpers(args, source)
+    publication_helpers = publication_trace_helpers(args, source)
     server = source/'build/codec-server/server/wivrn-pro-server'
     manifest = source/'build/codec-server/openxr_wivrn-dev.json'
     apk = source/'build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk'
@@ -253,7 +330,7 @@ def run(args):
                    'client/decoder/android/android_decoder.cpp', 'client/scenes/stream.cpp',
                    'server/compositor/foveation.cpp', 'server/compositor/compositor.cpp',
                    'server/driver/app_pacer.cpp', 'server/driver/codec_source_trace.h',
-                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers
+                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers
         save(output/'provenance.json', {
             'schema': 1, 'mode': args.mode, 'source': str(source), 'server_sha256': sha(server),
             'installed_apk_sha256': apk_hash, 'runtime_manifest_sha256': sha(manifest),
@@ -274,6 +351,7 @@ def run(args):
             'selection_phase': args.selection_phase, 'candidate_trace': args.candidate_trace,
             'cpu_output': args.cpu_output, 'selection_policy': args.selection_policy,
             'source_trace': args.source_trace, 'pacer_trace': getattr(args, 'pacer_trace', False),
+            'publication_trace': getattr(args, 'publication_trace', False),
             'scene_reference_space': 'Local',
             'application_source_sha256': sha(source/'client/application.cpp'),
             'application_header_sha256': sha(source/'client/application.h'),
@@ -548,7 +626,11 @@ def run(args):
     if result['pacer_trace']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
         result['promotion_status'] = 'blocked'
-    if args.source_trace or getattr(args, 'pacer_trace', False) or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
+    result['publication_trace'] = evaluate_publication_trace(output, getattr(args, 'publication_trace', False))
+    if result['publication_trace']['status'] not in ('pass', 'off'):
+        result['status'] = 'fail'
+        result['promotion_status'] = 'blocked'
+    if args.source_trace or getattr(args, 'pacer_trace', False) or getattr(args, 'publication_trace', False) or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
         result['promotion_status'] = 'blocked_experimental_path'
         result['release_ready'] = False
     # Preserve matching log lines for review without treating a support probe or
@@ -587,6 +669,8 @@ def main():
     parser.add_argument('--source-trace', action='store_true', help='Bounded host app/compositor mapping trace; diagnostic only')
     parser.add_argument('--pacer-trace', action='store_true',
                         help='Host pacer budget diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
+    parser.add_argument('--publication-trace', action='store_true',
+                        help='Client publication/eviction prefix diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
     args = parser.parse_args()
     result = run(args)
     print(json.dumps(result, indent=2))

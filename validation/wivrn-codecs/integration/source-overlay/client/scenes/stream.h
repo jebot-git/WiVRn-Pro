@@ -42,6 +42,7 @@
 #ifdef WIVRN_CODEC_TESTS
 #include "codec_test/layer_filter.h"
 #include "codec_test/selection_trace.h"
+#include "codec_test/publication_ledger.h"
 #include "codec_test/selection_policy.h"
 #include <fstream>
 namespace wivrn { class test_stereo_state; }
@@ -115,6 +116,11 @@ private:
 	wivrn::codec_test::selection_trace::Budget test_candidate_trace;
 	wivrn::codec_test::selection_trace::AttemptLedger test_render_attempts;
 	std::ofstream test_candidate_trace_file;
+	// Declared before decoders: their callbacks finish before this storage dies.
+	std::unique_ptr<wivrn::codec_test::publication_ledger::Ledger<>> test_publication_ledger;
+	wivrn::codec_test::publication_ledger::Ledger<>::Mark test_publication_mark;
+	wivrn::codec_test::publication_ledger::Exporter<> test_publication_exporter;
+	std::ofstream test_publication_file; // Render-thread owned; flushed by checkpoint.
 #endif
 	std::array<accumulator_images, decoder_count> decoders; // Locked by decoder_mutex
 
