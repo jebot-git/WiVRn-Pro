@@ -88,7 +88,47 @@ def cadence(times):
     return ((len(times)-1)*1e9/(times[-1]-times[0]) if len(times) > 1 and times[-1] > times[0] else None)
 
 
-def evaluate(traces, presented, source_rows, fractions=((0, 1), (1, 2), (3, 4), (31, 32), (1, 1)), warmup_ns=2_000_000_000):
+def validate_choice(record, previous, decision, numerator, denominator):
+    """Guard pluggable research selectors against invented/unavailable handles."""
+    selected, slots = decision.get('selected'), decision.get('chosen_slots')
+    if (type(selected) is not list or len(selected) != 3 or type(slots) is not list or len(slots) != 3
+            or any(type(i) is not int or not -1 <= i <= 2 for i in slots)
+            or type(decision.get('fallback')) is not bool):
+        raise ValueError('invalid hypothetical selection shape')
+    for eye, frame in enumerate(selected):
+        trace._frame(frame, record['selection_end_xr_ns'])
+        if type(frame.get('decoder')) is not int or frame['decoder'] != eye:
+            raise ValueError('hypothetical decoder identity differs')
+    target, period, prior = (record[k] for k in ('predicted_display_xr_ns', 'predicted_display_period_xr_ns',
+                                               'previous_predicted_display_xr_ns'))
+    full = min(period, target-prior) if period and prior else 0
+    bound = full*numerator//denominator
+    if type(decision.get('max_ahead_xr_ns')) is not int or decision['max_ahead_xr_ns'] != bound:
+        raise ValueError('hypothetical horizon differs from declared fraction')
+    empty = [dict(decoder=i, present=False) for i in range(3)]
+    if decision['fallback']:
+        expected = previous if replay.coherent(previous) else empty
+        if slots != [-1]*3 or not replay.snapshot_equal(selected, expected):
+            raise ValueError('hypothetical fallback is not the exact retained pair')
+        return
+    expected = [record['history'][eye*3+slot] if slot >= 0 else empty[eye] for eye, slot in enumerate(slots)]
+    if not replay.snapshot_equal(selected, expected) or not replay.coherent(selected):
+        raise ValueError('hypothetical replacement is not a complete exact history pair')
+    left = selected[0]
+    if (left['alpha'] != bool(record['history'][0]['present'] and record['history'][0]['alpha'])
+            or left['view_display_time_xr_ns'] > target+bound
+            or (bound == 0 and not replay.same(left, record['closest'][0], True))):
+        raise ValueError('hypothetical replacement violates alpha or future bound')
+    for reference in (record['closest'], previous):
+        if replay.coherent(reference):
+            old = reference[0]
+            if (left['frame'] < old['frame'] or left['view_display_time_xr_ns'] < old['view_display_time_xr_ns']
+                    or (left['frame'] == old['frame'] and not replay.same(left, old, True))):
+                raise ValueError('hypothetical replacement regresses a protected identity')
+
+
+def evaluate(traces, presented, source_rows, fractions=((0, 1), (1, 2), (3, 4), (31, 32), (1, 1)),
+             warmup_ns=2_000_000_000, selector=choose, selector_name='fractional_horizon'):
     if type(warmup_ns) is not int or warmup_ns < 0:
         raise ValueError('invalid warmup')
     verified = trace.evaluate(traces, presented)
@@ -101,6 +141,8 @@ def evaluate(traces, presented, source_rows, fractions=((0, 1), (1, 2), (3, 4), 
     fractions = tuple(tuple(f) for f in fractions)
     if any(any(type(v) is not int for v in f) for f in fractions) or len(set(fractions)) != len(fractions):
         raise ValueError('horizon declarations must be distinct integer ratios')
+    if any(not 0 <= n <= d <= 1024 or d == 0 for n, d in fractions):
+        raise ValueError('horizon declarations must be bounded fractions')
     predictions = {}
     needed = {p['left'] for p in presented}
     for fraction in fractions:
@@ -108,7 +150,21 @@ def evaluate(traces, presented, source_rows, fractions=((0, 1), (1, 2), (3, 4), 
             previous = None
             decisions = []
             for row in traces:
-                result = choose(row, *fraction, previous=previous if model.startswith('recurrent') else None)
+                prior_pair = (previous if previous is not None else row['previous']) if model.startswith('recurrent') else row['previous']
+                result = selector(row, *fraction, previous=prior_pair)
+                validate_choice(row, prior_pair, result, *fraction)
+                supporting = result.get('supporting_left_slots', [])
+                if (type(supporting) is not list or any(type(i) is not int or not 0 <= i < 3 for i in supporting)
+                        or supporting != sorted(set(supporting))):
+                    raise ValueError('invalid supporting history-slot declarations')
+                for slot in supporting:
+                    left = row['history'][slot]
+                    alpha = bool(row['history'][0]['present'] and row['history'][0]['alpha'])
+                    if (not left['present'] or left['alpha'] != alpha or not all(
+                            any(replay.same(left, f, True) for f in row['history'][eye*3:eye*3+3])
+                            for eye in range(1, 2+int(alpha)))):
+                        raise ValueError('supporting history slot is not a coherent complete pair')
+                    needed.add(left['frame'])
                 decisions.append(result)
                 if result['selected'][0]['present']:
                     needed.add(result['selected'][0]['frame'])
@@ -174,7 +230,7 @@ def evaluate(traces, presented, source_rows, fractions=((0, 1), (1, 2), (3, 4), 
             actual_times.append(p['submit_xr_ns'])
             actual_ages.append((p['submit_xr_ns']-min(p['left_receive_xr_ns'], p['right_receive_xr_ns']))/1e6)
     source_summary = {k: v for k, v in joined.items() if k != 'system_to_app_frames'}
-    return dict(schema=1, status='pass', analysis_kind='frozen_history_hypothesis',
+    return dict(schema=1, status='pass', analysis_kind='frozen_history_hypothesis', selector=selector_name,
                 observed_trace_records=len(traces), warmup_ns=warmup_ns,
                 observed_diagnostic_control=dict(warm_unique_frames=len(actual_times),
                     unique_frame_cadence_hz=cadence(actual_times), first_receive_age_ms=distribution(actual_ages)),

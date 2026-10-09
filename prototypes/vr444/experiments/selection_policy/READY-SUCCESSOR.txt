@@ -1,0 +1,89 @@
+Ready-successor admission research, 2026-10-09
+============================================
+
+Outcome
+Requiring an already complete later pair before advancing a selection preserves
+much more conditional cadence in the frozen run05 observations. It still does
+not reach the software target and is not a measured live optimization.
+
+                                Warm first pairs   Cadence       Age p95    p99
+Observed diagnostic control     1900               89.2205 Hz    26.9277   29.8273 ms
+Full-period hypothesis          1712               80.4260 Hz    17.4688   19.3126 ms
+Ready-successor hypothesis      1879               88.2815 Hz    21.3582   22.7998 ms
+
+The last row changes 106/1,900 warm encoded selections; 105 advance the actual
+latched application-frame set and one reuses it. Both local-previous and recurrent
+hypothetical-previous models produce the same result in this acquisition. A
+single diagnostic trace, holding histories/submission times fixed, cannot predict
+resource contention, altered decoder-slot ownership, subsequent arrivals or
+feedback. The 88.2815 Hz number is conditional and close to the real 88 Hz gate;
+it is not a repeated live cadence pass. No gate is relaxed or evaluated here.
+
+Policy and containment
+ready_successor_policy.h is a standalone opt-in metadata prototype. Disabled is
+exactly closest-target. Enabling it while disabling the successor condition
+reproduces the fractional horizon prototype. Actual selection still requires
+complete coherent stereo/alpha, the original current horizon, forward frame and
+target identities and exact history slots. Retained fallback metadata is never
+rewritten or clamped.
+
+An admission strictly beyond the closest frame additionally requires a complete
+later encoded pair in the same observed history. That witness must have a larger
+frame ID and source target, matching stereo/alpha metadata, and a source target
+within twice the current replacement horizon. The selected candidate itself
+never exceeds the original one-horizon cap. Exact boundaries are inclusive.
+The witness is an observation only: no resource is reserved, no ownership is
+extended and no future render opportunity is guaranteed. A late/incomplete or
+metadata-mismatched witness cannot authorize advancement. Choosing the closest
+eligible candidate does not require a witness.
+
+Independent evidence constraints
+The generic counterfactual evaluator now independently checks every hypothetical
+choice against exact existing history or retained-pair metadata, declared horizon,
+decoder index, readiness, stereo/alpha and forward identity guards. A pluggable
+research selector cannot invent later receive timestamps, fabricate a fallback,
+use another slot or exceed its declared horizon to improve reported numbers.
+Every supporting successor also needs an exact complete history pair and a valid
+host source/application join, even when it is never selected. The original trace
+and all 300 original manifest files are verified before analysis; source files
+are rechecked afterward. Raw acquisition summaries remain unchanged.
+
+Validation
+  python3 -B -m unittest discover -s validation/wivrn-codecs/tests
+210 Python tests pass. New tests cover exact second-horizon boundary, absent and
+mismatched successor eyes/alpha, nonadvancing target witnesses, retained fallback,
+missing source evidence for an unselected supporting pair, and malicious
+hypothetical selectors that forge metadata, horizon, ownership or support slots.
+
+  python3 -B prototypes/vr444/experiments/selection_policy/validate_horizon.py \
+    --approach ready-successor --out NEW_VALIDATION.json
+20,000 generated histories include 10,000 coherent ordered triples and 10,000
+mixed malformed/partial cases. Disabled and successor-filter-off behavior match
+their independent baselines exactly. The generator exercises 4,037 advancing
+choices with valid complete successors. Boundary, alpha, incomplete-eye,
+nonregression, bad-configuration and INT64 endpoint cases pass ASan/UBSan.
+256 C++ serialized fixtures agree with independently written Python decisions
+and successor-slot witnesses. The fixtures and tests do not measure performance.
+ready-successor-validation-20261009.json records source hashes and commands.
+
+  python3 -B prototypes/vr444/experiments/selection_policy/ready_successor.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --out NEW_COUNTERFACTUAL.json
+ready-successor-counterfactual-20261009.json contains both models, the unrestricted
+horizon comparison, exact source/evidence hashes and explicit assumptions. It
+cannot overwrite an existing output or write inside the original acquisition.
+Earlier horizon receipts remain historical artifacts bound to their own source
+hashes in commit 747a9ed; they are not rewritten to use this later evaluator.
+
+No native overlay, binary, ADB setting or headset state is changed by this branch.
+A later hardware comparison would need matching binaries, the complete attempt
+telemetry contract, representative moving content, exact output checks and
+separate untraced repeated latency/cadence measurements. The current hardware
+acquisition suspension remains in effect.
+
+Primary timing reference
+  https://registry.khronos.org/OpenXR/specs/1.1-khr/html/xrspec.html#frame-synchronization
+Runtime targets and complete encoded-frame identities do not establish optical
+display time or simulation/input freshness. Local source/latch callback evidence
+and independently validated selection snapshots supply the narrower facts used
+here; no cross-device clock subtraction is used.

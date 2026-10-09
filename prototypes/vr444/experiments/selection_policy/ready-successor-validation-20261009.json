@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "approach": "ready-successor",
+  "checks": [
+    {
+      "name": "ASan/UBSan compile",
+      "command": [
+        "/usr/bin/clang++",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pedantic",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-I/home/blux/spatial-bridge/.worktrees/sub15-compositor/validation/wivrn-codecs/integration/source-overlay/common",
+        "/home/blux/spatial-bridge/.worktrees/sub15-compositor/prototypes/vr444/experiments/selection_policy/ready_successor_test.cpp",
+        "-o",
+        "/tmp/sub15-horizon-checks-64lfff06/ready-successor-test"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "name": "ASan/UBSan semantics",
+      "command": [
+        "/tmp/sub15-horizon-checks-64lfff06/ready-successor-test"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Ready-successor PASS: 20000 disabled/filter-off equivalence histories; 4045 advancing choices with independent complete-successor witnesses; boundary/alpha/overflow checks\n"
+    },
+    {
+      "name": "C++ fixture serialization",
+      "command": [
+        "/tmp/sub15-horizon-checks-64lfff06/ready-successor-test",
+        "--fixtures"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "independent_python_replays": 256
+    }
+  ],
+  "synthetic_fixtures_only": true,
+  "source_sha256": {
+    "prototypes/vr444/experiments/selection_policy/validate_horizon.py": "0c49944572f89e2b268f857f59f60c7b200e0ceb74a082e42953028da2c2fab8",
+    "prototypes/vr444/experiments/selection_policy/counterfactual.py": "457e1dfc95cded883547b7a531f0f0752eae8411830fd1bd0b36b8ecb14256dc",
+    "prototypes/vr444/experiments/selection_policy/horizon_policy.h": "3309374300c6596691391ab33be14b19a12458eff4e2a6b5f33d9df452bec3bf",
+    "prototypes/vr444/experiments/selection_policy/horizon_policy_test.cpp": "e9cbbeaf40c05babfe7cd1d052298d4db7884b89355983b71c20fefc675d4201",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/selection_policy.h": "ae68144a97d08e143d68156d585266f47fdb1abf83bfee295382287a017e459e",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/selection_trace.h": "cd876e7b876dbe7978554be241291be759904ad6b6c2abad70bffee1338f9e77",
+    "validation/wivrn-codecs/tests/test_selection_counterfactual.py": "0682b5132a8e7ee0b3360de0747812cf8baee1b55e4541f3476958ecec02e8ea",
+    "prototypes/vr444/experiments/selection_policy/ready_successor.py": "cd50fedec4a5b97410521068bf36d2af3e12edacfe847606fcc21dbb115b930c",
+    "prototypes/vr444/experiments/selection_policy/ready_successor_policy.h": "3c591db7bb8c6e063197c5b734ffb3247156ef97e6c7c3d73dc6f4ab8ae90f05",
+    "prototypes/vr444/experiments/selection_policy/ready_successor_test.cpp": "cc3c406f2972dc4e75957c95626458b02f6447f575a381c3965cb89cfb37c617",
+    "validation/wivrn-codecs/tests/test_ready_successor.py": "22dfacb913fee34ec985e7676caf19fca0360cb47f621fdaa3fe3d89920ce220"
+  },
+  "native_or_headset_changes": false,
+  "measured_speedup": false,
+  "limitations": [
+    "No actual selector integration or timing measurement.",
+    "LeakSanitizer disabled under ptrace; ASan/UBSan remain active."
+  ]
+}
