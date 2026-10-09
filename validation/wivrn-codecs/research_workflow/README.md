@@ -8,6 +8,10 @@ Read [CODEC-DEVELOPMENT.txt](../../../CODEC-DEVELOPMENT.txt), [the experiment co
 
 The user has declared rooted Quest Pro eye tracking decoupled for research: **independent left/right foveating regions and per-eye gaze/movement prediction are in scope**. Treat this as an assumed capability pending a device API/capture receipt. See [EYE-TRACKING-RESEARCH.md](EYE-TRACKING-RESEARCH.md) and [research-assumptions.json](research-assumptions.json). Rolling reviews should consider these hypotheses while retaining coherent stereo, explicit quality comparisons and measured latency/cadence gates.
 
+## Parallel alternate-protocol workstream
+
+The user has also authorized dedicated parallel research on alternate host/client protocols for a Magisk/Singularity-rooted Quest Pro, Intel NUC 12 Extreme i7, and user-confirmed direct 2.5 GbE Ethernet to an ASUS RT-AXE7800 with 6 GHz available. Read [PROTOCOL-RESEARCH.md](PROTOCOL-RESEARCH.md), the [initial four-agent study](protocol-research/20261009T090350Z.md), and [protocol-research-plan.json](protocol-research-plan.json). Carry the transport, topology, Linux/radio and integration hypotheses into rolling reviews while preserving the same evidence and qualification boundaries.
+
 ## Research window
 
 The user described 270 minutes remaining at 2026-10-09 07:02:40 UTC. The reconciliation checkpoint is **2026-10-09 13:32:40 Europe/Prague (11:32:40 UTC)**. See [window.json](window.json). This checkpoint organizes evidence; it does not terminate other agents or promote a branch.
