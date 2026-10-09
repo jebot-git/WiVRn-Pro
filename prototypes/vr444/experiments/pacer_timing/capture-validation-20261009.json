@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "validation/wivrn-codecs/tests"
+  ],
+  "cwd": "/home/blux/spatial-bridge/.worktrees/sub15-compositor",
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "...............................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 239 tests in 4.314s\n\nOK\n",
+  "sources_sha256": {
+    "prototypes/vr444/experiments/pacer_timing/validate_capture.py": "216ea8e3357d3b551412a282fd5f372d7b72c287fb63322b2e85681a4a0a38d1",
+    "prototypes/vr444/experiments/pacer_timing/join_source.py": "efb62c56134eda148180052338e83ea185f61161df7983bde3af6a9749d94b5e",
+    "prototypes/vr444/experiments/pacer_timing/analyze.py": "52e988abb06fa88c9d44486d566d8cb69c4ecba8db56a1f677e70a3911bda5e1",
+    "prototypes/vr444/experiments/compositor_freshness/analyze.py": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10",
+    "validation/wivrn-codecs/integration/native_compare.py": "22f31c4c629e34c1e8fa4825f667292d08fe53b779d5eb1ed938adb39a49c02c",
+    "validation/wivrn-codecs/integration/latency_policy.py": "6a12fe0e306d8e2d0f8c1f231b68688cc387c40490561019dc5417fca49a23a4",
+    "validation/wivrn-codecs/tests/test_native_compare.py": "a242234d909919dfd5868fa3b8927e83b159063079fc734d9fab5bab4b726415",
+    "validation/wivrn-codecs/tests/test_latency_policy.py": "2932c016ad96b719bebd557c61608d3b9fad619990ca4211b08cde67dc821c37",
+    "validation/wivrn-codecs/tests/test_pacer_source_join.py": "cd1ac525f59af10b78cc9214eb48b6e019f9d49af4c28229cba0e8d44f9a4940"
+  },
+  "native_build": false,
+  "device_commands_executed": false,
+  "headset_operations": false,
+  "measured_speedup": false,
+  "latency_gate_evaluated": false,
+  "scope": "Pure launch-option/preflight/file-evaluation/identity-join tests; no runtime acquisition."
+}

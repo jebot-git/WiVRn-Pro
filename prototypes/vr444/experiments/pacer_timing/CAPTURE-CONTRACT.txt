@@ -1,0 +1,89 @@
+PACER CAPTURE AND EXACT HOST SOURCE JOIN -- 2026-10-09
+
+Purpose and boundary
+The host pacer recorder now has a reviewable comparison-runner opt-in and a
+strict identity join to accepted compositor input. This is acquisition support
+for a future diagnostic experiment. No headset command, installation, linked
+native build, timing measurement or new capture was performed for this change.
+Headset operations remain suspended. The original run05 contains no pacer
+trace, so it cannot be reinterpreted as observing these budgets.
+
+The source-overlay pacer changes, including CONSTRUCTOR-ORDER.txt, still need
+root's coordinated native integration, build and receipt update. This branch
+does not edit integration.patch or overlay-manifest.json. A helper source file
+existing is a necessary preflight condition, not proof that a binary includes
+it; normal source/binary provenance requirements remain applicable.
+
+Explicit activation
+native_compare.py accepts --pacer-trace, default false. It requires all of:
+  --mode custom-vr444
+  --decoder-backend cpu-neon
+  --candidate-trace
+  --source-trace
+The runner continues to scrub inherited WIVRN_CODEC_PACER_TRACE, then sets
+only its dedicated host/pacer-trace.jsonl output when explicitly requested.
+The three pacer helper files must exist before any ADB/device command and
+before output-directory creation. Their source hashes join run provenance.
+Invalid combinations and non-boolean direct-call controls fail immediately.
+
+The existing graceful teardown interval is unchanged. The recorder writes
+its complete file at close; a pre-termination footer observation is recorded
+but absence at that instant alone does not invalidate a later complete file.
+The final evaluator requires complete, non-dropped, valid pacer and source
+contracts. A missing/partial file fails. An unexpected pacer file while the
+option is off also fails. All enabled captures block promotion/release even
+if every diagnostic integrity check passes.
+
+Join and time domains
+join_source.py first runs both original strict input analyzers. Ambiguous
+projection ownership or selected source input lacking unambiguous application
+generations fails. Each accepted compositor frame must match exactly one
+pacer record on BOTH its system frame ID and its returned host display target.
+This rejects collisions across pacer instances instead of choosing one. Its
+prediction timestamp must not follow the accepted compositor input timestamp.
+Extra predictions that never became accepted input are allowed.
+
+The accepted source period need not equal the prediction's input period:
+feedback can update get_frame_duration() between predict and commit. Joining
+period equality would invent an invariant that native code does not promise.
+The exact returned target and frame ID are copied through the compositor and
+therefore provide the actual join contract. The per-instance predictor's
+native arithmetic and sequence checks remain strict in analyze.py.
+
+Client present evidence supplies distinct selected wire IDs only. These IDs
+are source-validated and then identify the host population to summarize:
+  mean wake-to-present estimate;
+  safe decode estimate;
+  mean render-to-display estimate;
+  prediction to accepted compositor input;
+  accepted input minus desired present;
+  display target minus accepted input.
+All subtraction stays in the host monotonic namespace. No host time is
+subtracted from a client timestamp. The population includes startup and all
+selected IDs across acquisition, not only the latency evaluator's warm first
+submissions. Join rows preserve source and prediction sequence IDs for audit.
+
+Interpretation
+These are observed estimator values and host phases, not measured optical
+latency or budgets proven removable. Accepted compositor input does not prove
+encoded delivery or optical display. A complete footer covers admitted
+predictions until recorder close, not an unobserved process tail. This branch
+does not repair an original failed run, change qualification limits, or claim
+that reducing any one stage reaches sub-15ms.
+
+Offline evidence
+capture-validation-20261009.json binds the runner, policy, analyzers and tests
+to the 239-test passing Python suite. New tests exercise exact target joins,
+period changes between prediction and commit, late predictions, cross-instance
+ambiguity, unaccepted predictions, clock-domain rejection, translated phases,
+missing selected IDs, invalid footers, launch-option validation, inherited
+environment scrubbing, missing-overlay failure before any device command, and
+file-only final evaluation. No device commands are executed by this receipt.
+
+Reproduce from this worktree with a new output file:
+  python3 prototypes/vr444/experiments/pacer_timing/validate_capture.py \
+    --out /tmp/pacer-capture-validation-new.json
+
+The receipt records an offline test run, not authorization to execute a future
+live run. Future acquisition still requires the headset suspension to be
+lifted and coordinated native integration and build evidence to be completed.
