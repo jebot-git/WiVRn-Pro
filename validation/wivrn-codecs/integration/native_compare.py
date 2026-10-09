@@ -604,6 +604,18 @@ def run(args):
     # Correct evidence collection can pass while the candidate remains too slow.
     # Keep latency explicitly release-blocking without discarding failed candidates.
     if args.mode in CUSTOM_MODES:
+        research_path = Path(__file__).with_name('research_latency.py')
+        try:
+            spec = importlib.util.spec_from_file_location('codec_research_latency', research_path)
+            research_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(research_module)
+            result['research_latency_single_run'] = research_module.evaluate(
+                read_rows(output/'client/codec-test-present.jsonl'),
+                json.loads((output/'provenance.json').read_text()))
+            result['research_latency_source_sha256'] = sha(research_path)
+            result['research_targets_sha256'] = sha(research_path.with_name('RESEARCH-TARGETS.json'))
+        except Exception as exc:
+            result['research_latency_single_run'] = {'status': 'fail', 'errors': [str(exc)], 'goal_verified': False}
         policy_path = Path(__file__).with_name('latency_policy.py')
         try:
             spec = importlib.util.spec_from_file_location('codec_latency_policy', policy_path)
