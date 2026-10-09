@@ -1,0 +1,926 @@
+{
+  "case_count": 26,
+  "real_capture_pairs": 12,
+  "synthetic_duplicated_eye_cases": 14,
+  "measured_stereo_arm_invocations": 3224,
+  "captured_summary_by_base_q": {
+    "1": {
+      "compact_copy": {
+        "capture_pairs": 4,
+        "median_of_pair_medians_ms": 5.65733
+      },
+      "mapped_coherent": {
+        "capture_pairs": 4,
+        "median_of_pair_medians_ms": 4.893065
+      },
+      "cpu_canonical": {
+        "capture_pairs": 4,
+        "median_of_pair_medians_ms": 0.944364
+      },
+      "full_copy": {
+        "capture_pairs": 4,
+        "median_of_pair_medians_ms": 5.191365
+      }
+    },
+    "8": {
+      "compact_copy": {
+        "capture_pairs": 8,
+        "median_of_pair_medians_ms": 7.007785
+      },
+      "mapped_coherent": {
+        "capture_pairs": 8,
+        "median_of_pair_medians_ms": 6.29979
+      },
+      "cpu_canonical": {
+        "capture_pairs": 8,
+        "median_of_pair_medians_ms": 1.37727
+      },
+      "full_copy": {
+        "capture_pairs": 8,
+        "median_of_pair_medians_ms": 6.42881
+      }
+    }
+  },
+  "per_case": [
+    {
+      "name": "corpus/synthetic/chroma-lines-q1.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 7.30103,
+          "p95_ms": 8.51988,
+          "max_ms": 8.5461
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 6.60607,
+          "p95_ms": 7.67446,
+          "max_ms": 7.76016
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 4.06275,
+          "p95_ms": 4.26612,
+          "max_ms": 4.32806
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.95957,
+          "p95_ms": 7.8303,
+          "max_ms": 8.66922
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/chroma-lines-q8.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 11.1706,
+          "p95_ms": 14.6629,
+          "max_ms": 14.9975
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 10.5172,
+          "p95_ms": 12.6757,
+          "max_ms": 12.8874
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 5.48925,
+          "p95_ms": 5.82833,
+          "max_ms": 6.83477
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 10.6432,
+          "p95_ms": 13.8229,
+          "max_ms": 13.8898
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/constant-q1.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 3.14331,
+          "p95_ms": 3.63892,
+          "max_ms": 3.8736
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 2.4534,
+          "p95_ms": 2.91807,
+          "max_ms": 3.23436
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 0.659797,
+          "p95_ms": 0.73946,
+          "max_ms": 1.35407
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 2.66658,
+          "p95_ms": 2.94361,
+          "max_ms": 3.04129
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/constant-q8.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 2.64346,
+          "p95_ms": 3.02239,
+          "max_ms": 3.02871
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 2.40609,
+          "p95_ms": 2.90029,
+          "max_ms": 3.0756
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 0.67834,
+          "p95_ms": 0.780962,
+          "max_ms": 0.786194
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 2.6155,
+          "p95_ms": 3.08412,
+          "max_ms": 3.09728
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/edges-q1.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 4.50088,
+          "p95_ms": 5.52583,
+          "max_ms": 5.74949
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 4.22266,
+          "p95_ms": 5.42398,
+          "max_ms": 6.72582
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 5.33826,
+          "p95_ms": 5.65142,
+          "max_ms": 5.80761
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 4.17305,
+          "p95_ms": 4.83212,
+          "max_ms": 7.6993
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/edges-q8.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 8.94443,
+          "p95_ms": 9.64762,
+          "max_ms": 10.2139
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 8.45926,
+          "p95_ms": 9.32301,
+          "max_ms": 9.34159
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 7.63161,
+          "p95_ms": 7.76287,
+          "max_ms": 7.78074
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 8.67336,
+          "p95_ms": 9.41809,
+          "max_ms": 9.6723
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/gradient-q1.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 10.0501,
+          "p95_ms": 11.2685,
+          "max_ms": 11.4345
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 8.92083,
+          "p95_ms": 10.3823,
+          "max_ms": 10.5338
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 8.80138,
+          "p95_ms": 9.0393,
+          "max_ms": 9.05395
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 8.97636,
+          "p95_ms": 10.5366,
+          "max_ms": 11.5928
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/gradient-q8.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 3.70603,
+          "p95_ms": 4.2673,
+          "max_ms": 4.46366
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 3.01562,
+          "p95_ms": 3.38124,
+          "max_ms": 3.54911
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 0.707148,
+          "p95_ms": 0.770435,
+          "max_ms": 0.773693
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 3.30275,
+          "p95_ms": 3.78421,
+          "max_ms": 3.8316
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/partial-17x19-qmap.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 2.99412,
+          "p95_ms": 4.0278,
+          "max_ms": 4.75783
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 2.49754,
+          "p95_ms": 3.51174,
+          "max_ms": 3.68145
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 0.00929,
+          "p95_ms": 0.022056,
+          "max_ms": 0.025875
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 2.5038,
+          "p95_ms": 3.53572,
+          "max_ms": 3.78783
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/partial-1x1-constant.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 0.644003,
+          "p95_ms": 0.848826,
+          "max_ms": 0.868023
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 0.363752,
+          "p95_ms": 0.677125,
+          "max_ms": 0.8256
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 0.000651,
+          "p95_ms": 0.00072,
+          "max_ms": 0.000737
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 0.394109,
+          "p95_ms": 0.901145,
+          "max_ms": 1.00614
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/seeded-noise-q1.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 10.2396,
+          "p95_ms": 12.6097,
+          "max_ms": 12.9461
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 9.82638,
+          "p95_ms": 11.4937,
+          "max_ms": 11.9802
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 9.40048,
+          "p95_ms": 9.63136,
+          "max_ms": 9.69307
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 9.58154,
+          "p95_ms": 11.814,
+          "max_ms": 11.9365
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/seeded-noise-q8.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 11.4288,
+          "p95_ms": 12.6589,
+          "max_ms": 12.9835
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 10.2217,
+          "p95_ms": 11.9068,
+          "max_ms": 12.0764
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 9.44899,
+          "p95_ms": 9.83014,
+          "max_ms": 9.84432
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 10.2784,
+          "p95_ms": 11.8948,
+          "max_ms": 12.0156
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/text-like-q1.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 6.84273,
+          "p95_ms": 8.22081,
+          "max_ms": 8.37592
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 6.29665,
+          "p95_ms": 7.5989,
+          "max_ms": 7.77815
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 3.87527,
+          "p95_ms": 4.04068,
+          "max_ms": 4.15319
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.43638,
+          "p95_ms": 7.89285,
+          "max_ms": 7.94936
+        }
+      }
+    },
+    {
+      "name": "corpus/synthetic/text-like-q8.rpt",
+      "synthetic_duplicated_eyes": true,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 13.4873,
+          "p95_ms": 14.3639,
+          "max_ms": 14.6556
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 12.6561,
+          "p95_ms": 14.6044,
+          "max_ms": 14.774
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 6.00351,
+          "p95_ms": 6.27475,
+          "max_ms": 6.37709
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 12.8237,
+          "p95_ms": 13.4891,
+          "max_ms": 14.3736
+        }
+      }
+    },
+    {
+      "name": "corpus/lossless/1080",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 5.95206,
+          "p95_ms": 7.33191,
+          "max_ms": 7.47364
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 5.29924,
+          "p95_ms": 6.5461,
+          "max_ms": 6.58242
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 0.943521,
+          "p95_ms": 1.15795,
+          "max_ms": 1.50733
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 5.55881,
+          "p95_ms": 6.84888,
+          "max_ms": 6.93246
+        }
+      }
+    },
+    {
+      "name": "corpus/lossless/1260",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 5.12944,
+          "p95_ms": 5.47944,
+          "max_ms": 6.07845
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 4.46415,
+          "p95_ms": 5.48244,
+          "max_ms": 5.5191
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 0.914394,
+          "p95_ms": 1.01593,
+          "max_ms": 1.04911
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 4.61397,
+          "p95_ms": 5.32261,
+          "max_ms": 5.56255
+        }
+      }
+    },
+    {
+      "name": "corpus/lossless/180",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 5.3626,
+          "p95_ms": 6.61472,
+          "max_ms": 6.63959
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 4.48689,
+          "p95_ms": 4.92218,
+          "max_ms": 5.73539
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 0.945207,
+          "p95_ms": 1.03014,
+          "max_ms": 1.06402
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 4.82392,
+          "p95_ms": 5.25586,
+          "max_ms": 6.43174
+        }
+      }
+    },
+    {
+      "name": "corpus/lossless/360",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 1,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 6.04744,
+          "p95_ms": 7.5341,
+          "max_ms": 7.91315
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 5.74228,
+          "p95_ms": 6.88651,
+          "max_ms": 6.89275
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.16943,
+          "p95_ms": 1.28742,
+          "max_ms": 1.28872
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 5.97927,
+          "p95_ms": 7.03795,
+          "max_ms": 7.23877
+        }
+      }
+    },
+    {
+      "name": "corpus/paired-a/1080",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 7.33634,
+          "p95_ms": 8.13883,
+          "max_ms": 8.28842
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 6.31844,
+          "p95_ms": 7.31934,
+          "max_ms": 7.41223
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.38569,
+          "p95_ms": 1.49992,
+          "max_ms": 1.5491
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.35474,
+          "p95_ms": 7.7226,
+          "max_ms": 7.74875
+        }
+      }
+    },
+    {
+      "name": "corpus/paired-a/1170",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 6.93235,
+          "p95_ms": 8.52662,
+          "max_ms": 9.71567
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 6.28114,
+          "p95_ms": 7.21482,
+          "max_ms": 7.62366
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.47465,
+          "p95_ms": 1.60696,
+          "max_ms": 1.61716
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.50288,
+          "p95_ms": 7.54797,
+          "max_ms": 7.61882
+        }
+      }
+    },
+    {
+      "name": "corpus/paired-a/1260",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 7.60919,
+          "p95_ms": 8.68527,
+          "max_ms": 8.76254
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 6.7327,
+          "p95_ms": 8.87675,
+          "max_ms": 9.83703
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.66552,
+          "p95_ms": 1.79063,
+          "max_ms": 1.81225
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.78582,
+          "p95_ms": 8.00151,
+          "max_ms": 8.07423
+        }
+      }
+    },
+    {
+      "name": "corpus/paired-a/1350",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 7.08322,
+          "p95_ms": 8.4348,
+          "max_ms": 8.5102
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 6.55118,
+          "p95_ms": 8.30404,
+          "max_ms": 8.5916
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.29299,
+          "p95_ms": 1.47101,
+          "max_ms": 1.96394
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.60235,
+          "p95_ms": 7.93021,
+          "max_ms": 8.35152
+        }
+      }
+    },
+    {
+      "name": "corpus/paired-b/1080",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 7.43152,
+          "p95_ms": 8.32863,
+          "max_ms": 8.70557
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 6.40078,
+          "p95_ms": 7.8828,
+          "max_ms": 8.33909
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.53042,
+          "p95_ms": 1.6765,
+          "max_ms": 1.69121
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.70201,
+          "p95_ms": 7.82803,
+          "max_ms": 7.92594
+        }
+      }
+    },
+    {
+      "name": "corpus/paired-b/1170",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 6.35296,
+          "p95_ms": 7.76846,
+          "max_ms": 8.13482
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 5.89471,
+          "p95_ms": 7.91679,
+          "max_ms": 7.93118
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.19458,
+          "p95_ms": 1.38835,
+          "max_ms": 1.39163
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.32554,
+          "p95_ms": 8.0267,
+          "max_ms": 8.3047
+        }
+      }
+    },
+    {
+      "name": "corpus/paired-b/1260",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 6.7162,
+          "p95_ms": 7.67979,
+          "max_ms": 7.70657
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 5.93255,
+          "p95_ms": 6.87253,
+          "max_ms": 6.97398
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.36885,
+          "p95_ms": 1.49279,
+          "max_ms": 1.5238
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.22529,
+          "p95_ms": 7.09829,
+          "max_ms": 7.31844
+        }
+      }
+    },
+    {
+      "name": "corpus/paired-b/1350",
+      "synthetic_duplicated_eyes": false,
+      "base_q": 8,
+      "arms": {
+        "compact_copy": {
+          "samples": 31,
+          "p50_ms": 6.61586,
+          "p95_ms": 7.71731,
+          "max_ms": 8.6201
+        },
+        "mapped_coherent": {
+          "samples": 31,
+          "p50_ms": 5.99933,
+          "p95_ms": 7.03018,
+          "max_ms": 7.11008
+        },
+        "cpu_canonical": {
+          "samples": 31,
+          "p50_ms": 1.26095,
+          "p95_ms": 1.3987,
+          "max_ms": 1.4487
+        },
+        "full_copy": {
+          "samples": 31,
+          "p50_ms": 6.15369,
+          "p95_ms": 7.04942,
+          "max_ms": 8.93129
+        }
+      }
+    }
+  ],
+  "host_stage_only": true,
+  "headset_used": false,
+  "sub15_gate_evaluated": false,
+  "promotion_blocked": true,
+  "limitations": [
+    "Existing desktop processes and GPU workloads are not controlled.",
+    "CPU RGBA input is already available; earlier VR444 decode/quantization, LZ4, network and client expansion are excluded.",
+    "Every GPU run includes intermediate poison, full output clear and host readback poison.",
+    "Repeated static-input host stage timings cannot establish moving-scene headset or optical latency."
+  ],
+  "pass": true,
+  "result_sha256": "a700b2796a4319043e167a58928b9b34f9d8d70724d2858d5f52a36cfe0cfdbc",
+  "conditions": {
+    "start_utc": "2026-10-09T06:51:54.669387+00:00",
+    "other_teams_confirmed_idle": true,
+    "existing_desktop_workload": "uncontrolled",
+    "headset_used": false,
+    "corpus_manifest_sha256": "f3e7ffc5ef06407fcc83ba93d7b1298aa6837e227a5ab18182fd64888a9c0787",
+    "process_seconds": 24.126769866998075,
+    "exit_code": 0,
+    "finish_utc": "2026-10-09T06:52:18.834349+00:00",
+    "corpus_unchanged": true,
+    "manifest_unchanged": true
+  },
+  "schema": 1,
+  "experiment": "palette-host-timing",
+  "core_source_commit": "c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd",
+  "artifacts": {
+    "validation/results/sub15-palette-host-timing/measured31-20261009T065154Z/conditions.json": {
+      "sha256": "6b06c1e22e703faa14d85dfbea23c6996c1520cb86f8953c66135a575341314e",
+      "bytes": 429
+    },
+    "validation/results/sub15-palette-host-timing/measured31-20261009T065154Z/input-hashes.json": {
+      "sha256": "774fc5f23504a413d65e54bbb7d813f7f792028351aa2d290007d8a4d76b903f",
+      "bytes": 11347
+    },
+    "validation/results/sub15-palette-host-timing/measured31-20261009T065154Z/report.json": {
+      "sha256": "3fd19ab88f70ae3276c95543e036426bed1272c78e640d183910448614f6dc94",
+      "bytes": 21280
+    },
+    "validation/results/sub15-palette-host-timing/measured31-20261009T065154Z/result.json": {
+      "sha256": "a700b2796a4319043e167a58928b9b34f9d8d70724d2858d5f52a36cfe0cfdbc",
+      "bytes": 1219297
+    },
+    "validation/results/sub15-palette-host-timing/measured31-20261009T065154Z/stderr.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "source_binary_and_shader_sha256": {
+    "prototypes/vr444/experiments/palette_output_memory/bench.cpp": "373c65c4ea694a24af41a75be2c98a58192a4a84446a8556f0b449c7f6047a7d",
+    "prototypes/vr444/experiments/palette_output_memory/bench-build.sh": "882931540196580ad856625b2ac7ca8ca00285f296f2c99708a919453a4cbe12",
+    "prototypes/vr444/experiments/palette_output_memory/bench_audit.py": "ab13e3e7fec465d4ca731139edae89a8f72ee090efb165b6db623ae7e6e15c51",
+    "prototypes/vr444/experiments/palette_output_memory/test_bench_audit.py": "9ac2201eb578650aeaf2d747d90ae47e7bb1c47011cb2a86232d32f3b67e3d88",
+    "prototypes/vr444/experiments/palette_output_memory/build/palette-bench": "bd1b00a6542c1e226128c792579a8dd0fca1289c1773b9bbd5fcb52aaea36be0",
+    "prototypes/vr444/experiments/palette_gpu_encode/encoder.hpp": "09db894d945985259e1bcba4bd1f0e0e83f5ddf388f17358b022382537d9502d",
+    "prototypes/vr444/experiments/palette_gpu_encode/fixtures.hpp": "18acddec25972122c4b83b139e0c7316388b1dcb13bf2316cba489baa86f63be",
+    "prototypes/vr444/experiments/rgb_palette/rgb_palette.cpp": "9235f3dd3aa3eec1f8ff343e3e7507519a1c831c1af0c05ab03888f36f6eb80a",
+    "prototypes/vr444/experiments/palette_output_memory/build/shaders/compact.spv": "b1c44740ba3c4f504ef0cda4740e8576d78757dd74568f13e23c8a4fe3ab1106",
+    "prototypes/vr444/experiments/palette_output_memory/build/shaders/encode.spv": "23babf51175ae1c38020df4e11c4ea2a26d0ddb51618e96304ebdb5eb64d1348",
+    "prototypes/vr444/experiments/palette_output_memory/build/shaders/scan.spv": "ec029a18e8703307552d4933f57030c4a77f676056a0e130bca0549dd7bd0f63"
+  },
+  "verification": {
+    "audit_unit_tests": 7,
+    "bench_specific_negative_mutations": 10,
+    "build": "host clang++ O2 warnings as errors",
+    "shader_and_core_correctness": "predecessor c79807f receipt",
+    "all_measured_canonical_bytes_and_decoded_pixels_exact": true
+  },
+  "retained_initial_setup_failure": {
+    "path": "validation/results/sub15-palette-host-timing/smoke.stderr",
+    "sha256": "29350ca55dc30521419d44aee0cdb117c258cebbcf346bfd1eb08401067d23c9",
+    "reason": "Synthetic names rejected before results were emitted; corrected by explicit origin-aware pairing."
+  }
+}

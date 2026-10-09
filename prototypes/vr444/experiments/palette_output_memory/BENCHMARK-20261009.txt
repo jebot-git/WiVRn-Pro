@@ -1,0 +1,78 @@
+Canonical RPT1 encoder host timing, 2026-10-09
+
+None of the three current GPU output paths beat the canonical CPU encoder on
+the preserved capture pairs. This is a negative result for these complete host
+input prototypes. It is not a measurement of a renderer-resident GPU encoder,
+headset decoding, compositor scheduling, network delivery or optical latency.
+
+Median of captured-pair medians, milliseconds for a complete stereo pair:
+  Base format    Pairs    CPU      Full copy    Mapped output    Compact copy
+  Q1                 4   0.944        5.191            4.893           5.657
+  Q8                 8   1.377        6.429            6.300           7.008
+Each per-pair median has 31 measured repetitions after three warmups per arm.
+These are medians of pair medians, not pooled percentiles or confidence bounds.
+Per-case p50, p95 and maximum values are retained in host-timing-20261009.json.
+No arm is promoted from this evidence.
+
+Protocol and coverage
+bench.cpp uses the exact CPU encoder and the three c79807f output paths on the
+same source pixels. It rotates the four arm orders by case and repetition.
+The corpus contains 24 captured eyes, paired by exact directory/frame/eye identity,
+and 14 synthetic images. The latter explicitly use duplicate left/right images.
+All 38 exported inputs are accounted for: 12 actual capture pairs plus 14 synthetic
+profiles, 26 profiles x 4 arms x 31 repetitions = 3,224 measured invocations.
+Every measured output matched the canonical RPT packet and decoded input RGBA.
+The source corpus and its manifest were hashed before and after the batch and
+were unchanged. See CORPUS-ERRATUM-20261009.txt for corrected historical labels.
+
+The outer wall clock includes complete-pair preflight, per-eye validation,
+allocations within encode/run, upload, host readback poison, GPU intermediate
+poison and full-capacity clear, command recording/submission, observed fences,
+timestamp retrieval, CPU body/header assembly and CRC. One-time Vulkan/pipeline
+setup, prepared reference construction, printing and independent exactness checks
+are outside the timed interval. CPU RGBA is already available: prior VR444
+decode/quantization, LZ4, network and client image expansion are excluded.
+The CPU path has no invented zero-valued component times: uninstrumented fields
+are null. Both CPU and GPU include the common complete-pair source preflight.
+
+The Intel Arc A770 hardware ICD was selected explicitly. Other research teams
+confirmed idle throughout the 24.13-second batch. Existing desktop processes and
+GPU workloads were not controlled, and the device is not a headset. The batch
+used repeated static inputs and retained validation poison/clear operations.
+It cannot isolate shader cost or predict renderer integration performance.
+
+Component observations
+Captured upload medians were about 0.22 ms per stereo pair in every GPU arm.
+Mapped output's device timestamp span was 3.50 ms for Q1 and 4.55 ms for Q8;
+its submission/wait wall component was 4.17 ms and 5.36 ms respectively. These
+component summaries use the same median-of-pair-medians aggregation. They show
+that the measured input memcpy alone does not explain the whole-path deficit.
+They do not identify the shader as the sole cause: the span also contains clears,
+poison, memory work and possible desktop contention. Compact output's timestamp
+span additionally contains the CPU dependency between its two submissions.
+Device span overlaps submission/wait and must never be added to it. Marginal
+component medians/percentiles need not sum to the outer wall statistic.
+
+Validation and provenance
+Seven audit unit tests passed, including incomplete/forged source pairing,
+missing arms, fabricated CPU components and understated copy/submission costs.
+The benchmark built with warnings as errors. Core encoder and shader sources
+are the previously qualified c79807f versions; this branch adds the interleaved
+timing harness and interpretation. An independent compositor-team static review
+of those output paths found no blocker in ownership, bounds or visibility.
+The first preparation smoke rejected unrecognized synthetic names before results
+were emitted; its rejected setup log is retained alongside the completed run.
+Captured pixel bytes are kept locally; the receipt records only hashes/numbers.
+
+Reproduce
+  bash prototypes/vr444/experiments/palette_output_memory/bench-build.sh
+  VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json \
+    prototypes/vr444/experiments/palette_output_memory/build/palette-bench \
+    prototypes/vr444/experiments/palette_output_memory/build/shaders \
+    EXPORTED_RPT_DIRECTORY 31 > RESULT.json
+  python3 prototypes/vr444/experiments/palette_output_memory/bench_audit.py \
+    RESULT.json EXPORT_MANIFEST.json --out REPORT.json
+  python3 -m unittest discover \
+    -s prototypes/vr444/experiments/palette_output_memory -v
+Reproduction requires the complete local corpus and prior shader build. Do not
+compare concurrent research runs as quiet measurements. No headset is accessed.

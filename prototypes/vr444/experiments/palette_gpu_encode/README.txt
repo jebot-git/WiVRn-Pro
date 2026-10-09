@@ -69,7 +69,8 @@ Coverage and observed qualification,2026-10-09
 Default130 fixtures:112 generated stereo Q1/Q8 cases over seven shapes and
 eight patterns, eight scan-boundary shapes/patterns, six independent all-mode
 goldens and four independent run fixtures. --full adds16 cases at576x640;
---max-size adds constant and high-entropy2048x2048 cases. The38 captured exports
+--max-size adds constant and high-entropy2048x2048 cases. The38 prepared exports
+(24 captured eyes and14 synthetic cases)
 produce a full186-case suite. Independent input goldens can be noncanonical;
 they supply exact pixels and are canonically re-encoded before GPU comparison.
 Generated eyes differ; imported single-eye fixtures are duplicated as a pair.

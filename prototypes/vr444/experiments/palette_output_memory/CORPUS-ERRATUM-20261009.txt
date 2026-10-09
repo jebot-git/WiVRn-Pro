@@ -1,0 +1,29 @@
+Corpus origin label correction,2026-10-09
+
+The RPT export at /tmp/sub15-rgb-palette-gpu-corpus contains38 prepared cases:
+24 captured eyes (eight each in lossless, paired-a and paired-b) and14 synthetic
+cases. They form12 actual captured stereo pairs, plus14 separate synthetic
+images. Earlier palette GPU README shorthand called all38 cases captured; that
+wording was inaccurate. Exactness checks and numerical fixture counts are valid
+and unchanged. Captured/synthetic origin affects interpretation, not codec bytes.
+
+Affected historical snapshots:
+  9d5fdd3e6959b141869e5074062b25ee7a7ff1b8 palette_gpu full144 cases
+  145310492b351e1d17e9cdfbb8ac34129e097096 palette_gpu_encode full186 cases
+  c79807f058c72d3fe5abbd9d7f19018ef4ea9ddd palette_output_memory full190 cases
+These correctness runs duplicated each imported single-eye input as a stereo
+pair; their generated stereo cases retained different eye contents. Historical
+JSON case names can contain a captured/ prefix even for synthetic entries. That
+prefix described the imported directory, not independently verified origin.
+The corresponding immutable receipts/raw result hashes are not rewritten.
+
+The original direct_image_gpu134-case run is unaffected: it used a different
+.payload corpus with38 real frame/eye captures (frames90 through1710), not this
+RPT export. Its38-capture description remains accurate.
+
+The new host timing harness pairs the24 captured eyes by exact directory/frame
+and eye suffix, and explicitly marks the14 synthetic profiles as duplicated-eye
+pairs. It rejects unmatched capture eyes and audits every manifest entry; no
+synthetic/high-entropy profile is silently dropped. The first preparation smoke
+rejected the synthetic names before emitting results. That rejected setup log is
+retained locally under validation/results/sub15-palette-host-timing/smoke.stderr.
