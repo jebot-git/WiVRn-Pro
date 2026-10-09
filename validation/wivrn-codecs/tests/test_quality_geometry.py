@@ -60,7 +60,7 @@ class QualityGeometry(unittest.TestCase):
                 with self.assertRaises(ValueError):live.capture_geometry(root,'rrb32-q1',path,rows)
 
     def test_wire_identity_crc_shape_and_size_rejected(self):
-        for index,value in [(0,0),(1,2),(2,4097),(2,1),(3,4097),(4,1),(5,1),(6,91),(7,124),(8,0),(9,1)]:
+        for index,value in [(0,0),(1,2),(2,4097),(2,1),(2,576),(3,640),(3,4097),(4,1),(5,1),(6,91),(7,124),(8,0),(9,1)]:
             with self.subTest(index=index,value=value),tempfile.TemporaryDirectory() as folder:
                 root=Path(folder);path,_,header,body,rows=self.fixture(root);header[index]=value
                 path.with_suffix('.envelope').write_bytes(struct.pack('<6I2Q2I',*header)+body)
