@@ -251,6 +251,10 @@
     "before_sha256": null,
     "after_sha256": "cd876e7b876dbe7978554be241291be759904ad6b6c2abad70bffee1338f9e77"
   },
+  "common/codec_test/source_mapping.h": {
+    "before_sha256": null,
+    "after_sha256": "fb6a1f49aa3b3ccbdcef2859474dbec7dbf1bb1607fea32b22054323723375d6"
+  },
   "common/codec_test/stereo_admission.h": {
     "before_sha256": null,
     "after_sha256": "0bcb44f97ae6e68d18e8b5d070c31521d0fd8f38b33fdd9b84e6677eceb60192"
@@ -321,11 +325,15 @@
   },
   "server/compositor/compositor.cpp": {
     "before_sha256": "8412ee2d713922aed6d318eeb38a361a900e47c26f505b4a93c9d272fd7575ac",
-    "after_sha256": "3097bca5fe842c0b581c6769e41537fb09fb9494255f1f46aad7429edce5a565"
+    "after_sha256": "e8a7c3972771a1823dd506d4aa273879351b9f7c620c690600713df3d2083a5c"
   },
   "server/compositor/foveation.cpp": {
     "before_sha256": "939a8d73d0e22d131c576e07ab229a276962c5dcd31893713a20ed0f50c5f8ca",
-    "after_sha256": "9c82a03efdbae35f7fbfb88e5dcbe8def439d1e471f473163de5e187115113ae"
+    "after_sha256": "d536741b629d1ce389bd3f195534e28b579f50dbda0be09388ebe53a628d26bc"
+  },
+  "server/compositor/foveation.h": {
+    "before_sha256": "5c731f75172a8a911a7a75e7d1a75f21b7ba4adb6c51bdb4f3266a817330e106",
+    "after_sha256": "5779527f710d8058e064ab0dd0afd250ccdb6ff99c10fb9f2d31285505dfe2d5"
   },
   "server/compositor/pacer.cpp": {
     "before_sha256": "2fd824158a9e49022e93c2e92c2ad4b0e1fd8e71491cfa8868fd68312938d1b6",

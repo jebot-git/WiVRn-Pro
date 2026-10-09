@@ -8877,6 +8877,147 @@ index 0000000..a21eac6
 +    out << "}\n";
 +}
 +}
+diff --git a/common/codec_test/source_mapping.h b/common/codec_test/source_mapping.h
+new file mode 100644
+index 0000000..ef13bc4
+--- /dev/null
++++ b/common/codec_test/source_mapping.h
+@@ -0,0 +1,135 @@
++// SPDX-License-Identifier: MIT
++#pragma once
++// Test-only immutable source mapping evidence. No source pixels or pose are
++// synthesized; native image handles identify objects only within this process.
++#include <algorithm>
++#include <array>
++#include <bit>
++#include <cstdio>
++#include <cstdlib>
++#include <memory>
++#include <mutex>
++#include <atomic>
++#include <span>
++#include <stdexcept>
++#include <string_view>
++#include <cstdint>
++
++namespace wivrn::codec_test::source_mapping {
++inline constexpr uint32_t max_axis=4096, max_params=129, stride=90, capacity=128;
++struct Eye {
++    uint64_t swapchain=0,image=0,image_view=0;
++    uint32_t image_index=0,array_index=0,source_width=0,source_height=0;
++    uint32_t source_array_size=0,source_face_count=0,source_sample_count=0,source_mip_count=0,source_image_count=0;
++    uint64_t source_create_flags=0;
++    uint32_t source_format=0,view_format=0;
++    std::array<int32_t,4> rect{};
++    std::array<uint32_t,4> fov_bits_lrud{};
++    uint32_t x_params_count=0,y_params_count=0;
++    std::array<uint16_t,max_params> x_params{},y_params{};
++    std::array<uint32_t,max_axis+1> x_edges{},y_edges{};
++};
++struct Record {
++    uint64_t compositor=0,frame=0,warp=0,semaphore_value=0;
++    int64_t layer_target_ns=0,submit_return_host_ns=0,complete_host_ns=0;
++    uint64_t layer_flags=0;
++    uint32_t width=0,height=0,layer_count=0,layer_type=0,layer_index=0;
++    bool flip_y=false,direct_projection=false,view_space=false;
++    std::array<Eye,2> eyes{};
++};
++inline bool supported(const Record& r) noexcept {
++    if(!r.compositor || r.frame>uint64_t(INT64_MAX) || r.frame%stride || !r.semaphore_value ||
++       r.layer_target_ns<=0 || r.submit_return_host_ns<=0 || r.complete_host_ns<r.submit_return_host_ns ||
++       r.view_space || !r.direct_projection || r.layer_count!=1 || r.layer_index!=0 || r.layer_type>1 ||
++       !r.width || !r.height || r.width>max_axis || r.height>max_axis || uint64_t(r.width)*r.height>4194304) return false;
++    for(const auto& e:r.eyes) {
++        if(!e.swapchain || !e.image || !e.image_view || !e.source_width || !e.source_height ||
++           e.source_width>max_axis || e.source_height>max_axis || uint64_t(e.source_width)*e.source_height>4194304 ||
++           !e.x_params_count || !e.y_params_count || e.x_params_count>max_params || e.y_params_count>max_params ||
++           !(e.x_params_count&1) || !(e.y_params_count&1) || e.rect[0]<0 || e.rect[1]<0 ||
++           e.rect[2]<=0 || e.rect[3]<=0 || uint64_t(e.rect[0])+uint32_t(e.rect[2])>e.source_width ||
++           uint64_t(e.rect[1])+uint32_t(e.rect[3])>e.source_height ||
++           e.source_format!=43 || e.view_format!=43 || e.source_array_size!=1 || e.source_face_count!=1 ||
++           e.source_sample_count!=1 || e.source_mip_count!=1 || !e.source_image_count || e.source_image_count>16 ||
++           e.image_index>=e.source_image_count || e.array_index!=0) return false;
++        // Initial application route is opaque RGBA8_SRGB, positive subrects;
++        // descending X is not reordered by the actual shader and is rejected.
++        for(uint32_t x=0;x<r.width;++x)
++            if(e.x_edges[x]>=e.x_edges[x+1] || e.x_edges[x+1]>e.source_width) return false;
++        for(uint32_t y=0;y<r.height;++y)
++            if(e.y_edges[y]>e.source_height || e.y_edges[y+1]>e.source_height ||
++               (r.flip_y ? e.y_edges[y]<=e.y_edges[y+1] : e.y_edges[y]>=e.y_edges[y+1])) return false;
++    }
++    return true;
++}
++class Trace {
++    FILE* output=nullptr;
++    std::unique_ptr<Record[]> records;
++    uint32_t count=0,dropped=0,failed=0;
++    std::atomic<bool> active{false};
++    std::mutex mutex;
++    template<class T> void array(std::span<const T> values) noexcept {
++        std::fputc('[',output);
++        for(size_t i=0;i<values.size();++i)std::fprintf(output,"%s%lld",i?",":"",(long long)values[i]);
++        std::fputc(']',output);
++    }
++public:
++    explicit Trace(const char* path,bool contract=true) {
++        if(!path||!*path)return;
++        if(!contract || path[0]!='/')throw std::runtime_error("source mapping requires explicit Q1 quality/source capture and absolute new trace path");
++        records=std::make_unique<Record[]>(capacity);
++        output=std::fopen(path,"wx");if(!output)throw std::runtime_error("cannot create source mapping trace");active=true;
++    }
++    Trace(const Trace&)=delete;Trace&operator=(const Trace&)=delete;
++    bool enabled() const noexcept {return active.load();}
++    bool sample(uint64_t frame) const noexcept{return active.load()&&frame<=uint64_t(INT64_MAX)&&frame%stride==0;}
++    void failure() noexcept {std::lock_guard lock(mutex);if(active)++failed;}
++    void append(const Record& r) noexcept {
++        std::lock_guard lock(mutex);
++        if(!active)return;
++        if(!supported(r)){++failed;return;}
++        if(count==capacity){++dropped;return;}
++        records[count++]=r;
++    }
++    void flush() noexcept {
++        std::lock_guard lock(mutex);
++        if(!active)return;
++        active=false;
++        std::fprintf(output,"{\"type\":\"header\",\"schema\":1,\"capacity\":128,\"sample_stride\":90,\"max_axis\":4096,\"max_params\":129,\"shader\":\"foveation_rgb.comp\",\"sampling\":\"integer_texelFetch_max4x4_average_linear_then_srgb\",\"opaque_rgba_srgb_only\":true,\"quality_only\":true,\"latency_eligible\":false,\"native_handle_scope\":\"process_local_only\"}\n");
++        for(uint32_t i=0;i<count;++i){const auto&r=records[i];
++            std::fprintf(output,"{\"type\":\"mapping\",\"sequence\":%u,\"compositor_id\":%llu,\"frame\":%llu,\"warp\":%llu,\"semaphore_value\":%llu,\"layer_target_host_ns\":%lld,\"submit_return_host_ns\":%lld,\"complete_host_ns\":%lld,\"layer_flags\":%llu,\"width\":%u,\"height\":%u,\"layer_count\":%u,\"layer_type\":%u,\"layer_index\":%u,\"flip_y\":%s,\"direct_projection\":%s,\"view_space\":%s,\"producer_complete\":true,\"eyes\":[",i+1,(unsigned long long)r.compositor,(unsigned long long)r.frame,(unsigned long long)r.warp,(unsigned long long)r.semaphore_value,(long long)r.layer_target_ns,(long long)r.submit_return_host_ns,(long long)r.complete_host_ns,(unsigned long long)r.layer_flags,r.width,r.height,r.layer_count,r.layer_type,r.layer_index,r.flip_y?"true":"false",r.direct_projection?"true":"false",r.view_space?"true":"false");
++            for(uint32_t eye=0;eye<2;++eye){const auto&e=r.eyes[eye];
++                std::fprintf(output,"%s{\"eye\":%u,\"swapchain_id\":%llu,\"image_id\":%llu,\"image_view_id\":%llu,\"image_index\":%u,\"array_index\":%u,\"source_width\":%u,\"source_height\":%u,\"source_create_flags\":%llu,\"source_vk_format\":%u,\"view_vk_format\":%u,\"view_format_provenance\":\"pinned_comp_swapchain_view_creation\",\"src_rect\":",eye?",":"",eye,(unsigned long long)e.swapchain,(unsigned long long)e.image,(unsigned long long)e.image_view,e.image_index,e.array_index,e.source_width,e.source_height,(unsigned long long)e.source_create_flags,e.source_format,e.view_format);
++                array<int32_t>(e.rect);
++                std::fprintf(output,",\"source_array_size\":%u,\"source_face_count\":%u,\"source_sample_count\":%u,\"source_mip_count\":%u,\"source_image_count\":%u",e.source_array_size,e.source_face_count,e.source_sample_count,e.source_mip_count,e.source_image_count);std::fputs(",\"source_fov_bits_lrud\":",output);array<uint32_t>(e.fov_bits_lrud);
++                std::fputs(",\"x_params\":",output);array<uint16_t>({e.x_params.data(),e.x_params_count});
++                std::fputs(",\"y_params\":",output);array<uint16_t>({e.y_params.data(),e.y_params_count});
++                std::fputs(",\"x_edges\":",output);array<uint32_t>({e.x_edges.data(),r.width+1});
++                std::fputs(",\"y_edges\":",output);array<uint32_t>({e.y_edges.data(),r.height+1});std::fputc('}',output);
++            }std::fputs("]}\n",output);
++        }
++        if(!std::ferror(output))std::fprintf(output,"{\"type\":\"footer\",\"records\":%u,\"dropped\":%u,\"failed\":%u,\"complete\":%s}\n",count,dropped,failed,failed||dropped?"false":"true");
++        std::fclose(output);output=nullptr;
++    }
++    ~Trace(){flush();}
++};
++// Once GPU-path admission begins, any exception/timeout before known producer
++// completion invalidates the entire trace, including unsampled frame failures.
++class Completion {
++    Trace& trace_; bool done_=false;
++public:
++    explicit Completion(Trace& value) noexcept:trace_(value){}
++    Completion(const Completion&)=delete;Completion&operator=(const Completion&)=delete;
++    ~Completion(){if(!done_)trace_.failure();}
++    void complete() noexcept {done_=true;}
++};
++inline Trace& trace() {
++    auto env=[](const char*name)->std::string_view{const auto p=std::getenv(name);return p?std::string_view(p):std::string_view{};};
++    const auto source=env("WIVRN_CODEC_SOURCE_TRACE"),evidence=env("WIVRN_CODEC_TEST_EVIDENCE");
++    static Trace value(std::getenv("WIVRN_CODEC_SOURCE_MAPPING_TRACE"),
++        env("WIVRN_CODEC_TEST")=="rrb32-q1"&&env("WIVRN_CODEC_TEST_Q")=="1"&&env("WIVRN_CODEC_TEST_COMPRESSION")=="none"&&
++        env("WIVRN_CODEC_TEST_QUALITY_CAPTURE")=="1"&&!source.empty()&&source.front()=='/'&&!evidence.empty()&&evidence.front()=='/'&&
++        env("WIVRN_CODEC_TEST_FRAME_STRIDE")=="1");
++    return value;
++}
++} // namespace wivrn::codec_test::source_mapping
 diff --git a/common/codec_test/stereo_admission.h b/common/codec_test/stereo_admission.h
 new file mode 100644
 index 0000000..128dadd
@@ -10424,10 +10565,10 @@ index 0000000..625c9a2
 +} // namespace wivrn::codec_test
 +#endif
 diff --git a/server/compositor/compositor.cpp b/server/compositor/compositor.cpp
-index c87c8a4..75f16d4 100644
+index c87c8a4..3bcb9f7 100644
 --- a/server/compositor/compositor.cpp
 +++ b/server/compositor/compositor.cpp
-@@ -20,6 +20,8 @@
+@@ -20,10 +20,19 @@
  // Copyright 2025-2026, NVIDIA CORPORATION.
  
  #include "compositor.h"
@@ -10436,7 +10577,27 @@ index c87c8a4..75f16d4 100644
  #include "encoder/encode_batch.h"
  #include "utils/performance.h"
  #include "wivrn_ipc.h"
-@@ -114,6 +116,8 @@ std::array<vk::Format, 3> image_formats(int bit_depth)
+ #include <cmath>
++#ifdef WIVRN_CODEC_TESTS
++#include "codec_test/source_mapping.h"
++#include "vk/vk_format.h"
++#include "codec_test/metadata.h"
++#include <optional>
++#include <bit>
++#endif
+ 
+ // Monado includes
+ #include "driver/xrt_cast.h"
+@@ -33,7 +42,7 @@
+ #include "util/u_debug.h"
+ #include "util/u_handles.h"
+ #include "util/u_time.h"
+-#include "vk/vk_helpers.h"
++#include "vk/vk_format.h"
+ 
+ #include "driver/wivrn_session.h"
+ #include "encoder/video_encoder.h"
+@@ -114,6 +123,8 @@ std::array<vk::Format, 3> image_formats(int bit_depth)
  std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::CommandPool command_pool, std::span<wivrn::encoder_settings> encoders)
  {
  	auto formats = image_formats(encoders[0].bit_depth);
@@ -10445,7 +10606,7 @@ index c87c8a4..75f16d4 100644
  
  	vk::StructureChain image_info{
  	        vk::ImageCreateInfo{
-@@ -169,7 +173,7 @@ std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::C
+@@ -169,7 +180,7 @@ std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::C
  		                        .viewType = vk::ImageViewType::e2DArray,
  		                        .format = formats[0],
  		                        .subresourceRange = {
@@ -10454,7 +10615,7 @@ index c87c8a4..75f16d4 100644
  		                                .levelCount = 1,
  		                                .layerCount = image_info.get().arrayLayers,
  		                        },
-@@ -183,7 +187,7 @@ std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::C
+@@ -183,7 +194,7 @@ std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::C
  		                        .viewType = vk::ImageViewType::e2DArray,
  		                        .format = formats[1],
  		                        .subresourceRange = {
@@ -10463,7 +10624,18 @@ index c87c8a4..75f16d4 100644
  		                                .levelCount = 1,
  		                                .layerCount = image_info.get().arrayLayers,
  		                        },
-@@ -330,6 +334,46 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+@@ -316,6 +327,10 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+ 		return XRT_SUCCESS;
+ 	}
+ 
++#ifdef WIVRN_CODEC_TESTS
++    codec_test::source_mapping::Completion source_mapping_completion(codec_test::source_mapping::trace());
++#endif
++
+ #ifdef XRT_FEATURE_RENDERDOC
+ 	if (auto r = renderdoc())
+ 		r->StartFrameCapture(NULL, NULL);
+@@ -330,6 +345,46 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
  	};
  
  	trace::instant_feedback("begin", frame.rendering.id, os_monotonic_get_ns());
@@ -10510,7 +10682,64 @@ index c87c8a4..75f16d4 100644
  
  	cmd_pool.reset();
  	cmd.begin({.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-@@ -430,6 +474,7 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+@@ -337,6 +392,14 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+ 	cmd.resetQueryPool(*query_pool, 0, 3);
+ 	cmd.writeTimestamp(vk::PipelineStageFlagBits::eTopOfPipe, *query_pool, 0);
+ 
++#ifdef WIVRN_CODEC_TESTS
++    std::optional<codec_test::source_mapping::Record> source_mapping_record;
++    if(codec_test::source_mapping::trace().sample(frame.rendering.id)) {
++        source_mapping_record.emplace();auto& r=*source_mapping_record;
++        r.compositor=reinterpret_cast<uintptr_t>(this);r.frame=frame.rendering.id;
++        r.layer_count=layer_accum.layer_count;
++    }
++#endif
+ 	bool flip_y = false;
+ 	std::array<vk::ImageView, 2> src;
+ 	std::array<xrt_rect, 2> src_rect;
+@@ -350,6 +413,13 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+ 	     layer_accum.layers[0].data.type == XRT_LAYER_PROJECTION_DEPTH))
+ 	{
+ 		const auto & layer = layer_accum.layers[0];
++#ifdef WIVRN_CODEC_TESTS
++        if(source_mapping_record){auto& r=*source_mapping_record;r.direct_projection=true;
++            r.layer_type=layer.data.type;r.layer_flags=layer.data.flags;r.flip_y=layer.data.flip_y;
++            r.view_space=(layer.data.flags&XRT_LAYER_COMPOSITION_VIEW_SPACE_BIT)!=0;
++            r.layer_target_ns=layer.data.timestamp;
++        }
++#endif
+ 		for (int view = 0; view < 2; ++view)
+ 		{
+ 			const auto & data = (layer.data.type == XRT_LAYER_PROJECTION ? layer.data.proj.v : layer.data.depth.v)[view];
+@@ -362,6 +432,27 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+ 			flip_y = layer.data.flip_y;
+ 			view_info.pose[view] = xrt_cast(data.pose);
+ 			view_info.fov[view] = xrt_cast(data.fov);
++#ifdef WIVRN_CODEC_TESTS
++            if(source_mapping_record){
++                auto& e=source_mapping_record->eyes[view];
++                const auto* chain=reinterpret_cast<const struct comp_swapchain*>(comp_layer_get_swapchain(&layer,view));
++                const auto& ci=chain->vkic.info;
++                e.swapchain=reinterpret_cast<uintptr_t>(chain);
++                e.image=(uint64_t)(VkImage)chain->vkic.images[data.sub.image_index].handle;
++                e.image_view=(uint64_t)(VkImageView)src[view];
++                e.image_index=data.sub.image_index;e.array_index=data.sub.array_index;
++                e.source_width=ci.width;e.source_height=ci.height;e.source_create_flags=ci.create;e.source_format=ci.format;
++                e.source_array_size=ci.array_size;e.source_face_count=ci.face_count;e.source_sample_count=ci.sample_count;
++                e.source_mip_count=ci.mip_count;e.source_image_count=chain->vkic.image_count;
++                // Mirrors pinned comp_swapchain view creation. Vulkan has no
++                // image-view format query; this is a source-bound derivation.
++                e.view_format=(ci.create&XRT_SWAPCHAIN_CREATE_SAMPLE_AS_SRGB)
++                    ?vk_format_convert_unorm_to_srgb((VkFormat)ci.format):(VkFormat)ci.format;
++                e.rect={data.sub.rect.offset.w,data.sub.rect.offset.h,data.sub.rect.extent.w,data.sub.rect.extent.h};
++                e.fov_bits_lrud={std::bit_cast<uint32_t>(data.fov.angle_left),std::bit_cast<uint32_t>(data.fov.angle_right),
++                    std::bit_cast<uint32_t>(data.fov.angle_up),std::bit_cast<uint32_t>(data.fov.angle_down)};
++            }
++#endif
+ 		}
+ 	}
+ 	else
+@@ -430,6 +521,7 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
  		auto now = os_monotonic_get_ns();
  		session.add_tracking_request(device_id::EYE_GAZE, frame.rendering.desired_present_time_ns, now, now);
  	}
@@ -10518,28 +10747,83 @@ index c87c8a4..75f16d4 100644
  	view_info.foveation = foveation.foveate(
  	        vk.device,
  	        cmd,
-@@ -783,6 +828,9 @@ compositor::compositor(wivrn_session & session) :
+@@ -440,6 +532,12 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+ 	        src_rect,
+ 	        src_fov,
+ 	        view_info.alpha);
++#ifdef WIVRN_CODEC_TESTS
++    if(source_mapping_record){
++        foveation.test_source_mapping(*source_mapping_record);
++        source_mapping_record->warp=codec_test::warp_hash(view_info);
++    }
++#endif
+ 
+ 	for (auto & encoder: encoders)
+ 	{
+@@ -502,6 +600,10 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+ 		});
+ 	}
+ 
++#ifdef WIVRN_CODEC_TESTS
++    if(source_mapping_record){source_mapping_record->semaphore_value=sem_info.value;
++        source_mapping_record->submit_return_host_ns=os_monotonic_get_ns();}
++#endif
+ 	pacer.mark_timing_point(COMP_TARGET_TIMING_POINT_SUBMIT_END, frame.rendering.id, os_monotonic_get_ns());
+ 	auto info = pacer.present_to_info(frame.rendering.desired_present_time_ns);
+ 
+@@ -531,17 +633,26 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
+ 
+ 	comp_frame_clear_locked(&frame.rendering);
+ 
+-	if (vk.device.waitSemaphores(vk::SemaphoreWaitInfo{
++	const auto compositor_completion = vk.device.waitSemaphores(vk::SemaphoreWaitInfo{
+ 	                                     .semaphoreCount = 1,
+ 	                                     .pSemaphores = &*sem,
+ 	                                     .pValues = &sem_info.value,
+ 	                             },
+-	                             U_TIME_1S_IN_NS) == vk::Result::eTimeout)
++	                             U_TIME_1S_IN_NS);
++	if (compositor_completion == vk::Result::eTimeout)
+ 	{
+ 		U_LOG_IFL_W(log_level, "compositor timeout");
++
+ 	}
+ 	else
+ 	{
++#ifdef WIVRN_CODEC_TESTS
++        if(compositor_completion==vk::Result::eSuccess){
++            if(source_mapping_record){source_mapping_record->complete_host_ns=os_monotonic_get_ns();
++                codec_test::source_mapping::trace().append(*source_mapping_record);}
++            source_mapping_completion.complete();
++        }
++#endif
+ 		auto [res, ts] = query_pool.getResults<uint64_t>(
+ 		        0,
+ 		        3,
+@@ -783,6 +894,10 @@ compositor::compositor(wivrn_session & session) :
          squasher(vk, render_extent(session.get_info())),
          foveation(vk, images[0].image.info().extent)
  {
 +#ifdef WIVRN_CODEC_TESTS
 +	(void)codec_test::source_trace();
++    (void)codec_test::source_mapping::trace();
 +#endif
  	comp_base * c_base = this;
  	// Ensure we can safely cast pointers
  	assert(intptr_t(&base) == intptr_t(this));
-@@ -857,6 +905,9 @@ compositor::~compositor()
+@@ -857,6 +972,10 @@ compositor::~compositor()
  	}
  	encoder_wakeup.notify_all();
  	encoder_thread.join();
 +#ifdef WIVRN_CODEC_TESTS
 +	codec_test::source_trace().flush();
++    codec_test::source_mapping::trace().flush();
 +#endif
  	comp_base * c_base = this;
  	comp_swapchain_shared_garbage_collect(&cscs);
  	comp_swapchain_shared_destroy(&cscs, &c_base->vk);
 diff --git a/server/compositor/foveation.cpp b/server/compositor/foveation.cpp
-index 47bb7f2..1b96bd0 100644
+index 47bb7f2..561f278 100644
 --- a/server/compositor/foveation.cpp
 +++ b/server/compositor/foveation.cpp
 @@ -18,6 +18,7 @@
@@ -10559,6 +10843,61 @@ index 47bb7f2..1b96bd0 100644
  	auto spc = make_specialization_constants(alpha_width);
  	std::array res{
  	        vk::raii::Pipeline{
+@@ -582,6 +583,28 @@ void foveation::update_ubo(
+ 	std::memcpy(gpu_buffer.data<ubo_data>(), &ubo, sizeof(ubo));
+ }
+ 
++#ifdef WIVRN_CODEC_TESTS
++void foveation::test_source_mapping(codec_test::source_mapping::Record& out)
++{
++    using namespace codec_test::source_mapping;
++    std::lock_guard lock(mutex);
++    out.width=foveated_size.width;out.height=foveated_size.height;
++    if(!out.width||!out.height||out.width>max_axis||out.height>max_axis||uint64_t(out.width)*out.height>4194304)
++        throw std::runtime_error("source mapping encoded geometry exceeds bounds");
++    const auto actual=gpu_buffer.data<ubo_data>();
++    for(size_t eye=0;eye<2;++eye){
++        auto& e=out.eyes[eye];
++        if(params[eye].x.empty()||params[eye].y.empty()||params[eye].x.size()>max_params||params[eye].y.size()>max_params)
++            throw std::runtime_error("source mapping parameter population exceeds bounds");
++        e.x_params_count=params[eye].x.size();e.y_params_count=params[eye].y.size();
++        std::copy(params[eye].x.begin(),params[eye].x.end(),e.x_params.begin());
++        std::copy(params[eye].y.begin(),params[eye].y.end(),e.y_params.begin());
++        std::copy_n(actual->x+eye*RENDER_FOVEATION_BUFFER_DIMENSIONS,out.width+1,e.x_edges.begin());
++        std::copy_n(actual->y+eye*RENDER_FOVEATION_BUFFER_DIMENSIONS,out.height+1,e.y_edges.begin());
++    }
++}
++#endif
++
+ std::array<to_headset::foveation_parameter, 2> foveation::foveate(
+         vk::raii::Device & device,
+         vk::raii::CommandBuffer & cmd,
+diff --git a/server/compositor/foveation.h b/server/compositor/foveation.h
+index e35f748..f8e79e4 100644
+--- a/server/compositor/foveation.h
++++ b/server/compositor/foveation.h
+@@ -25,6 +25,9 @@
+ #include "xrt/xrt_defines.h"
+ 
+ #include <mutex>
++#ifdef WIVRN_CODEC_TESTS
++#include "codec_test/source_mapping.h"
++#endif
+ #include <vulkan/vulkan_raii.hpp>
+ 
+ struct render_resources;
+@@ -84,6 +87,11 @@ class foveation
+ 	        std::array<xrt_fov, 2> src_fov);
+ 
+ public:
++#ifdef WIVRN_CODEC_TESTS
++    // Snapshot exactly the cached UBO bytes used by the just-recorded dispatch.
++    // Caller retains the copy until its own compositor submission completes.
++    void test_source_mapping(codec_test::source_mapping::Record&);
++#endif
+ 	foveation(wivrn::vk_bundle &,
+ 	          vk::Extent3D foveated_size);
+ 
 diff --git a/server/compositor/pacer.cpp b/server/compositor/pacer.cpp
 index e4fb501..36e6d3a 100644
 --- a/server/compositor/pacer.cpp

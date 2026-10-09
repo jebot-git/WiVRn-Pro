@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "source": "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-v3-build",
+  "from_build_receipt_sha256": "2a8a39094e4537e7057f772409e4a7ebae7b0bb054a9b9237479ac34cece4e7e",
+  "overlay_files_verified": 97,
+  "changes": [
+    {
+      "path": "common/codec_test/source_mapping.h",
+      "before": null,
+      "after": "fb6a1f49aa3b3ccbdcef2859474dbec7dbf1bb1607fea32b22054323723375d6"
+    },
+    {
+      "path": "server/compositor/compositor.cpp",
+      "before": "3097bca5fe842c0b581c6769e41537fb09fb9494255f1f46aad7429edce5a565",
+      "after": "e8a7c3972771a1823dd506d4aa273879351b9f7c620c690600713df3d2083a5c"
+    },
+    {
+      "path": "server/compositor/foveation.cpp",
+      "before": "9c82a03efdbae35f7fbfb88e5dcbe8def439d1e471f473163de5e187115113ae",
+      "after": "d536741b629d1ce389bd3f195534e28b579f50dbda0be09388ebe53a628d26bc"
+    },
+    {
+      "path": "server/compositor/foveation.h",
+      "before": "5c731f75172a8a911a7a75e7d1a75f21b7ba4adb6c51bdb4f3266a817330e106",
+      "after": "5779527f710d8058e064ab0dd0afd250ccdb6ff99c10fb9f2d31285505dfe2d5"
+    }
+  ],
+  "scope": "isolated v3 source preparation, no build/installation/qualification yet"
+}

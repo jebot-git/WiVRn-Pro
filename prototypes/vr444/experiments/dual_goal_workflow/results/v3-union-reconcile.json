@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "prior_commit": "4d372d71ceb9382b9c2274076787f7d8b6971832",
+  "prior_manifest_sha256": "4625576837a9b7a7a182edee4b4cf485fb0d519950d3dc0051c40b4b2840a011",
+  "baseline_subset": "/tmp/sub15-pacer-before93",
+  "native_baseline": "/home/blux/spatial-bridge/.worktrees/wivrn-codec-tests",
+  "added_baseline_sha256": {
+    "common/codec_test/source_mapping.h": null,
+    "server/compositor/foveation.h": "5c731f75172a8a911a7a75e7d1a75f21b7ba4adb6c51bdb4f3266a817330e106"
+  },
+  "files": 97,
+  "patch_sha256": "ebad022f4b3cab6431c3268c0da60afaaf3cc8a96a9141b2e4cb20546d509566",
+  "manifest_sha256": "83228b5d3e505af7802e5d53d25a20ca55928dbaf32329d9d3293e33b7ea7cbd",
+  "native_baseline_modified": false,
+  "parity_verification_required": true
+}
