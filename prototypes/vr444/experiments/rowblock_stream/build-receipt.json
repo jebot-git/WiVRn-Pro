@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "sanitizers": [
+    "address",
+    "undefined"
+  ],
+  "commands": [
+    [
+      "/usr/bin/clang",
+      "-O1",
+      "-g",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-MMD",
+      "-MF",
+      "/tmp/wivrn-rowblock-stream-build/lz4.d",
+      "-c",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/native_lz4/vendor/lz4.c",
+      "-o",
+      "/tmp/wivrn-rowblock-stream-build/lz4.o"
+    ],
+    [
+      "/usr/bin/clang++",
+      "-std=c++20",
+      "-pthread",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-MMD",
+      "-I",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/native_lz4",
+      "-I",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444",
+      "-MF",
+      "/tmp/wivrn-rowblock-stream-build/native.d",
+      "-c",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/prototypes/vr444/experiments/rowblock_stream/native.cpp",
+      "-o",
+      "/tmp/wivrn-rowblock-stream-build/native.o"
+    ],
+    [
+      "/usr/bin/clang++",
+      "-std=c++20",
+      "-O1",
+      "-g",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-MMD",
+      "-MF",
+      "/tmp/wivrn-rowblock-stream-build/codec.d",
+      "-c",
+      "/home/blux/spatial-bridge/.worktrees/sub15-transport/validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp",
+      "-o",
+      "/tmp/wivrn-rowblock-stream-build/codec.o"
+    ],
+    [
+      "/usr/bin/clang++",
+      "-pthread",
+      "-fsanitize=address,undefined",
+      "/tmp/wivrn-rowblock-stream-build/native.o",
+      "/tmp/wivrn-rowblock-stream-build/codec.o",
+      "/tmp/wivrn-rowblock-stream-build/lz4.o",
+      "-o",
+      "/tmp/wivrn-rowblock-stream-build/native"
+    ]
+  ],
+  "compiler_versions": {
+    "/usr/bin/clang": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang.cfg\n",
+    "/usr/bin/clang++": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)\nTarget: x86_64-redhat-linux-gnu\nThread model: posix\nInstalledDir: /usr/bin\nConfiguration file: /etc/clang/x86_64-redhat-linux-gnu-clang++.cfg\n"
+  },
+  "sources_sha256": {
+    "prototypes/vr444/experiments/rowblock_stream/native.cpp": "2ca924ce483b2517cc0df8064c31386df679750a4ce832370655c3e6bee84dc6",
+    "prototypes/vr444/experiments/rowblock_stream/build.py": "22ccf5720f2ce2181d096865de00cfb52010bb357bdf3c8233e05b2093f77c84",
+    "prototypes/vr444/experiments/rowblocks_workers/workers.hpp": "6ff6370e89929d03bcd7dc10b81c967363430c532422096cbac5216b34ef9903",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "ea35ce11cd12a690db5ec7187bc20689a56288a25c01fd1229056e67d38f9dbe",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706"
+  },
+  "compiler_dependencies": [
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp",
+    "prototypes/vr444/experiments/rowblock_stream/native.cpp",
+    "prototypes/vr444/experiments/rowblocks_workers/workers.hpp",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp"
+  ],
+  "binary": "/tmp/wivrn-rowblock-stream-build/native",
+  "binary_sha256": "b91316dc2ce68f04730e4c58622a9317a139786b769b588695375aed6eebd7cc"
+}

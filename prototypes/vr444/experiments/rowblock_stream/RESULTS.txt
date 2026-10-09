@@ -1,0 +1,51 @@
+VXB1 qualification, 2026-10-09
+=============================
+
+20 protocol tests passed, including 500 deterministic record-bit mutations,
+CRC-repaired invalid LZ4, odd/partial blocks, 512-block stereo completion, whole
+stereo withholding, valid descriptor/manifest conflicts, orphan expiry, epoch
+reset, receiver-issued tickets, and fresh expiry during final assembly.
+
+The final immutable-input qualification passed:
+  104 profile/block-size cases (26 stereo profiles x 4 row sizes)
+   94 eligible cases; 10 over-cap cases rejected before whole-pair emission
+  658 logical delivery replays (94 x 7 scenarios)
+  376 exact canonical RRB stereo publications (four successful scenarios)
+  282 whole-stereo withholds (DATA lost, corrupted or truncated)
+   94 native ASan/UBSan both-eye VR444/RGBA/RRB byte-oracle invocations
+    5 native malformed-input cases rejected without success output or sanitizer
+      diagnostics: each eye corrupt, right truncation, source shape above pixel
+      cap, and right-eye RGBA oracle corruption.
+
+Corpus: 24 actual captured eyes forming 12 matched stereo pairs, plus 14 synthetic
+profiles explicitly duplicated across the eyes. All four row sizes are included.
+All source, input, binary, compiler-receipt and export-manifest hashes matched
+before/after. The committed qualification.json retains per-case/scenario results
+and those hashes. Build commands and compiler-discovered dependencies are bound
+in build-receipt.json. No headset or socket operations were performed.
+
+Captured-pair framing cost (aggregate, not a time measurement)
+-----------------------------------------------------------
+Rows   Mean RRB pair bytes   Mean UDP payload bytes   Aggregate excess   Records
+ 16         44458.000              49210.000                10.689%       82..117
+ 32         42189.917              45446.583                 7.719%       42..90
+ 64         40927.333              43490.000                 6.262%       22..74
+128         40152.417              42445.083                 5.710%       16..66
+
+These UDP payload totals include two manifests and every DATA header. They omit
+IP/link overhead; per-case declared IPv4 byte totals add 28 bytes per record.
+RRB canonical headers/tables are reconstructed, not transmitted as DATA. Small
+independent blocks therefore increase record/framing costs despite early
+availability. No CPU/GPU/network overlap or throughput advantage was measured.
+
+Maximum observed retained pending payload was 245640 bytes in this corpus.
+The theoretical 524368-byte retained payload cap is not peak RSS: temporary
+joined/assembled copies, prior publication and Python metadata are additional.
+Peer review found no bounds/publication blocker and prompted this clarification.
+
+This approach establishes a bounded, exact byte interface for a future streaming
+pipeline. A source block lost without recovery prevents full stereo completion.
+The incremental sender can discover a later over-budget block and permanently
+abort the frame; it does not silently switch content/format or partially publish.
+Actual overlap, compression/transport contention, GPU consumption, headset
+capability, live deadlines and end-to-end latency remain untested.
