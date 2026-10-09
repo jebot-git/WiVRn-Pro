@@ -1,0 +1,59 @@
+Codec-test gaze timing provenance telemetry
+==========================================
+
+This instrumentation is compiled only with WIVRN_CODEC_TESTS. It is off unless
+the application configuration directory contains codec-test-gaze-timing.txt with
+the token 1 before the stream tracking thread starts. It also requires the
+existing eye_gaze feature to be enabled with its permission already granted, an
+existing gaze action space, and XR_EXT_eye_gaze_interaction enabled in the current
+instance. It neither activates eye tracking nor requests permission. The existing
+permission/configuration gate is rechecked before each instrumented poll.
+
+Output is codec-test/gaze-timing.jsonl under that configuration directory. The
+file is truncated on each eligible stream start, so archive it before reconnecting.
+Each stream has a sequence starting at 1 that counts instrumented gaze locate
+calls. A maximum of 6000 rows is emitted, at most one per 100 ms; sequence gaps
+are expected. After the cap no further timing instrumentation is performed.
+No positions, directions, eye images, or biometric identity data are logged.
+
+Each row preserves the scheduled poll time separately from actual xrLocateSpace
+begin/end, requested pose time, returned EXT pose-expression time, result,
+location flags, and output pose flags. All times use the headset's local OpenXR
+clock; host timestamps cannot be subtracted without a separate clock mapping.
+The returned time may be future predicted, interpolated, clamped or unavailable
+(zero). It is NOT camera acquisition time or a measured gaze sensor age. Failed
+locates mark time/validity booleans false even if raw fields contain values.
+Orientation and position validity/tracked flags are independent. In the fallback
+world-space path output_pose_flags additionally reflect the view transformation;
+the raw location_flags and timing concern only the eye-space locate call.
+
+The existing tracking.production_timestamp, requested locate time, network
+protocol, foveation geometry and pose values are unchanged. Timing calls and
+at-most-10-Hz flushed diagnostic file I/O add overhead while opted in; file I/O
+is outside the measured locate interval but affects subsequent scheduling.
+This is provenance telemetry, not an unbiased end-to-end latency benchmark.
+
+Run the independent helper test from the workspace root:
+  c++ -std=c++20 -Wall -Wextra -Werror \
+    -I.worktrees/wivrn-codec-tests/common \
+    validation/wivrn-codecs/integration/gaze_timing_test.cpp \
+    -o /tmp/wivrn-gaze-timing-test
+  /tmp/wivrn-gaze-timing-test
+
+The tests cover missing/future/past expression time, failed locates, independent
+validity flags, reversed poll order, rate/row limits, sequence overflow and signed
+clock extrema. No live gaze or actual runtime output is claimed by these tests.
+
+The Python evidence validator integration/gaze_metrics.py additionally checks the
+JSON schema/types, increasing sequence, time ordering, emission interval/cap,
+and the correspondence between OpenXR location flags and WiVRn packet flags.
+It returns off for disabled collection with no records; unverified for missing
+or exclusively unavailable/failed/orientation-invalid times; pass when at least
+one successful orientation-valid pose has a nonzero expression time; invalid
+for contradictory or malformed evidence. Future pose-expression time is valid.
+A pass establishes this telemetry contract, not physical sensor acquisition age.
+Run its independent tests with:
+  python3 -m unittest discover -s validation/wivrn-codecs/tests -p test_gaze_metrics.py
+
+Primary specification (consulted 2026-10-08):
+https://registry.khronos.org/OpenXR/specs/1.1/man/html/XrEyeGazeSampleTimeEXT.html

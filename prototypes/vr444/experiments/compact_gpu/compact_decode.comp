@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: MIT
+// Based on the existing MIT VR444 cooperative inverse transform. Independent
+// prototype: compact VRI2 DC-only/legacy payloads, never the live codec shader.
+#version 450
+#ifndef WORKGROUP
+#define WORKGROUP 128
+#endif
+layout(local_size_x=WORKGROUP) in;
+layout(set=0,binding=0,std430) readonly buffer Wire { uint wire[]; };
+layout(set=0,binding=1,std430) readonly buffer Records { uvec2 records[]; };
+layout(set=0,binding=2,std430) writeonly buffer Output { uint rgba[]; };
+layout(set=0,binding=3,std430) writeonly buffer Status { uint status[]; };
+layout(push_constant) uniform Params { uint width,height,count,bytes; } pc;
+shared int values[768];
+shared int scratch[768];
+shared uint error;
+uint offset,length,bitpos;
+int half_floor(int x){return x>=0?x/2:-((-x+1)/2);}
+int unzig(uint x){return (x&1)!=0?-int((x+1)/2):int(x/2);}
+uint get_bits(uint n){
+    if(n>16 || bitpos+n>length*8){error=3;return 0;}
+    uint absolute=offset*8+bitpos,word=absolute/32,shift=absolute%32;
+    if(word>=wire.length()){error=4;return 0;}
+    uint value=wire[word]>>shift;
+    if(shift+n>32){if(word+1>=wire.length()){error=4;return 0;}value|=wire[word+1]<<(32-shift);}
+    bitpos+=n;return value&((1u<<n)-1);
+}
+bool parse_legacy(uint q){
+    for(uint i=0;i<768;i++)values[i]=0;
+    for(uint c=0;c<3;c++){
+        int dc=unzig(get_bits(11));if((c==0&&(dc<0||dc>255))||(c!=0&&abs(dc)>255)){error=5;return false;}values[c*256]=dc;
+        for(uint base=1;base<256;base+=16)if(get_bits(1)!=0){
+            uint width=get_bits(4),mode=get_bits(2);
+            if(width<1||width>11||mode>2){error=6;return false;}
+            uint repeated=mode==0?get_bits(width):0,mask=mode==2?get_bits(16):65535;
+            if(base==241&&mode==2&&(mask&32768)!=0){error=7;return false;}
+            for(uint i=base;i<min(base+16,256);i++){
+                uint v=mode==0?repeated:(((mask&(1u<<(i-base)))!=0)?get_bits(width):0);
+                int ac=unzig(v)*int(q);if(abs(ac)>1536){error=8;return false;}values[c*256+i]=ac;
+            }
+        }
+    }
+    if(error!=0)return false;
+    if(((bitpos+31)/32)*32!=length*8){error=9;return false;}
+    for(uint i=0;i<31&&bitpos<length*8;i++)if(get_bits(1)!=0){error=10;return false;}
+    return error==0;
+}
+// Conservative scalar legacy fallback. Only lane 0 calls this function.
+// Constant tiles skip this entire inverse; all lanes cooperate in pixel fill.
+void inverse_transform(){
+    for(int n=2;n<=16;n*=2)for(int axis=0;axis<2;axis++){
+        bool col=axis==0;uint pairs=uint(n*n/2);
+        for(uint job=0;job<3*pairs;++job){
+            int c=int(job/pairs),line=int(job%pairs)/(n/2),i=int(job%pairs)%(n/2);
+            int p=c*256+(col?i*16+line:line*16+i),d=values[p+(col?n*8:n/2)],b=values[p]-half_floor(d);
+            int outp=c*256+(col?2*i*16+line:line*16+2*i);scratch[outp]=b+d;scratch[outp+(col?16:1)]=b;
+        }
+        for(uint job=0;job<uint(3*n*n);++job){int c=int(job)/(n*n),i=int(job)%(n*n),p=c*256+(i/n)*16+i%n;values[p]=scratch[p];}
+    }
+}
+uint rgb(int y,int co,int cg){int t=y-half_floor(cg),g=cg+t,b=t-half_floor(co),r=b+co;return uint(clamp(r,0,255))|(uint(clamp(g,0,255))<<8)|(uint(clamp(b,0,255))<<16)|0xff000000;}
+void main(){
+    uint tile=gl_WorkGroupID.x,lane=gl_LocalInvocationID.x;
+    if(tile>=pc.count)return;
+    // Group-uniform rejection before touching any indexed storage buffer.
+    if(tile>=records.length()||tile>=status.length())return;
+    uvec2 record=records[tile];offset=record.x;length=record.y&2047;uint mode=(record.y>>11)&1,q=(record.y>>12)&2047;bitpos=0;
+    if(lane==0){
+        error=0;
+        if(pc.width==0||pc.height==0||pc.width>4096||pc.height>4096||pc.width*pc.height>8388608||pc.width*pc.height>rgba.length()||pc.count!=((pc.width+15)/16)*((pc.height+15)/16))error=1;
+        if((record.y>>23)!=0||q<1||q>1024||pc.bytes>wire.length()*4||offset>pc.bytes||length>pc.bytes-offset)error=2;
+        if(mode==1?length!=4:(length<12||length>1280||length%4!=0))error=2;
+        if(error==0){
+            if(mode==1){values[0]=int(get_bits(8));values[256]=int(get_bits(9))-255;values[512]=int(get_bits(9))-255;
+                if(abs(values[256])>255||abs(values[512])>255||get_bits(6)!=0)error=5;
+            }else parse_legacy(q);
+        }
+    }
+    barrier();
+    if(error!=0){if(lane==0)status[tile]=error;return;}
+    if(mode==0&&lane==0)inverse_transform();
+    barrier();
+    uint nx=(pc.width+15)/16,bx=(tile%nx)*16,by=(tile/nx)*16;
+    for(uint i=lane;i<256;i+=WORKGROUP){uint x=i%16,y=i/16;if(bx+x<pc.width&&by+y<pc.height){
+        uint p=mode==1?rgb(values[0],values[256],values[512]):rgb(values[i],values[256+i],values[512+i]);rgba[(by+y)*pc.width+bx+x]=p;
+    }}
+    if(lane==0)status[tile]=0;
+}

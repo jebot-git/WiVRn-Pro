@@ -1,0 +1,145 @@
+WiVRn codec adapter protocol v1
+===============================
+An adapter is an executable invoked without a shell:
+  adapter probe|run|stop --request /abs/request.json --response /abs/response.json
+It must write one JSON response and exit 0 on protocol success. stdout/stderr
+are retained. Stop must be idempotent and restore only state captured by this
+suite, never terminate an unrelated active session. Run is bounded by acquisition
+time +180 s; probe/stop by 60 s. The adapter owns remote process-group cleanup,
+including cleanup after a killed/timed-out invocation. Use a watchdog/session
+token so a runner crash cannot leave the VR test instance running indefinitely.
+Probe is read-only. Run launches a dedicated test instance after a successful
+probe. Implement deployment/install separately; this protocol does not publish.
+
+Probe request: {schema:1, cases:[...], output_dir:absolute-directory}.
+Probe response (values shown indicate what a REAL implementation must establish):
+  schema: 1
+  provenance: "hardware"
+  host: {model:"Intel Arc A770", verified:true, evidence:[paths/hashes]}
+  client: {model:"Meta Quest Pro", verified:true, evidence:[paths/hashes]}
+  implementations: {"hevc-carrier":{...}, "vulkan-vr444":{...}}
+For each implementation provide these true flags only when actually implemented:
+  wivrn_integrated, dynamic_foveation, atomic_frame_warp, stereo_frame_ids,
+  clock_sync, bounded_telemetry, quality_capture, network_bytes, runtime_provenance
+Also return supported arrays: rate_modes, kernels, gaze_patterns,
+network_profiles, lifecycle_tests, measurements. Values are the exact strings in
+plans.py. HEVC has kernels=[]; Vulkan has rate_modes=["protected-budget"].
+Optical must not appear in measurements without a ready calibrated physical rig.
+capture_corpus_sha256 identifies a manifest hashing each VR corpus input.
+
+Before asserting readiness, exercise the requested format/size/rate, target GPU
+and decoder, actual frame warp and image import/export on the real devices.
+Record Vulkan device/driver IDs, queried limits/extensions, selected render node,
+installed driver/media versions, kernel/firmware, WiVRn commit/config and APK
+version/signing identity. Record A770 memory variant instead of assuming 16 GB.
+MediaCodecInfo advertising support is insufficient: configure and decode samples,
+including full-range luma stride and colour patterns at the actual carrier size.
+Record QoS/frequency/thermal/power state, compositor load, headset refresh rate,
+gaze permission/session validity, network MTU and measured available goodput.
+
+Run request includes schema, run_id, complete case, seed, network profile,
+output_dir and isolation policy. Supply frames 0..expected_frames-1 inclusive;
+expected_frames=(warmup_s+duration_s)*fps; first warmup_s*fps are warmup. Frame IDs
+are run-local logical stereo frame indices; map actual WiVRn IDs explicitly.
+frame/eye warp IDs are immutable across encode, transport, decode and display.
+One codec stereo carrier can share hardware timing between eyes; do not duplicate
+byte counts! Assign carrier bytes to eye0 and zero to eye1, or split exactly once.
+Report shared hardware timing semantics in provenance, not two independent jobs.
+
+Run response:
+  {schema:1,status:"completed",run_id:"...",
+   trace:{path:"trace.jsonl",sha256:"..."},
+   quality:{path:"quality.json",sha256:"..."},
+   checks:{path:"checks.json",sha256:"..."}}
+Paths must resolve inside the run directory. Write artifacts completely before
+responding. A blocked/failed codec must not write status=completed. Include exact
+effective QSV ICQ/CQP/CBR options and driver readback, Vulkan variant/Q maps,
+deadline/budget fit failures, packet/frame recovery, resource maxima and thermal
+samples as additional hashed evidence. Include a hashes.json manifest for all
+reference/capture/instrument/warp evidence used to derive scalar results.
+
+Trace JSONL, first line:
+  {"type":"run","schema":1,"run_id":"example","case_id":"case-id",
+   "implementation":"vulkan-vr444","provenance":"hardware",
+   "target_verified":true,"wivrn_integrated":true,
+   "reference_clock":"headset","fps":90,"expected_frames":3150,
+   "warmup_frames":450,"measurement_duration_ns":30000000000,
+   "telemetry_dropped":0,"wire_layer":"IP+UDP+application",
+   "clock_maps":{"host":[
+     {"local_ns":1000000000,"reference_ns":2000000000,"uncertainty_ns":100000},
+     {"local_ns":33000000000,"reference_ns":34000000000,"uncertainty_ns":100000}]}}
+Actual run metadata must include version/settings/identity hashes and source
+timing semantics. The timestamps above are examples only, never measurements.
+
+Event line:
+  {"type":"event","run_id":"example","frame":451,"eye":0,
+   "stage":"encode_start","ts_ns":5010000000,"clock":"host","warp_id":902}
+Required stages for every non-dropped eye-frame:
+  render_ready, encode_start, encode_end, send_first, send_last,
+  recv_first, recv_last, decode_start, decode_end, present_submit, predicted_display
+Use integer monotonic nanoseconds. Do not use wallclock. Clock maps use measured
+sync anchors with conservative uncertainty bounds (including path asymmetry and
+drift between anchors); max allowed anchor uncertainty is 0.5 ms, max extrapolation
+1 s. The analyzer fits piecewise affine mappings without double epoch conversion.
+Cross-clock pair uncertainty is the sum of both bounds. Large uncertainty or
+missing mapping makes cross-clock metrics unavailable. Store sync raw samples.
+WiVRn times already converted to headset clock must say clock="headset".
+
+Define encode_start as operation begin and encode_end as encoded data ready;
+decode_start as accepted decoder work and decode_end as image ready for its next
+consumer, including required synchronization. CPU API return/submission alone
+does not prove GPU completion. Record CPU wrapper times and device timestamp
+query/fence times in separate raw evidence, clearly labelled; map GPU clocks
+with validTimestampBits/calibration and queue-family support checks. Async/pipeline
+overlap is allowed. Do not invent absent completion timestamps from send_end.
+render_ready includes actual producer synchronization. present_submit is actual
+submission to the OpenXR presentation path; predicted_display is the associated
+predictedDisplayTime, not an observed display timestamp.
+
+send_last additionally contains payload_bytes and wire_bytes (per eye-frame,
+including a partial frame that drops); wire_bytes >= payload_bytes. Account
+retransmissions/headers once at the specified layer, including any integrity/FEC
+metadata. Store layer breakdown and actual measurement-window timestamps. The
+denominator is the measured steady-window duration, excluding warmup.
+predicted_display additionally contains paired_frame (must equal frame), pair_id
+(same for both eyes) and applied_warp_id (must equal this eye's warp_id).
+frame_drop replaces the completed pipeline, includes a nonempty reason and any
+events up to abandonment; no predicted_display may coexist for that eye-frame.
+Repeats/timewarp of old content are not new encoded frames: retain repeat counters
+in raw evidence; mark the missed new frame dropped. Never rewrite its frame ID.
+
+Optional optical_motion/optical_photon events must be paired physical observations
+with matching stimulus/frame IDs, declared instrument clock mapping and a nonempty
+optical_calibration object in run metadata. Include instrument/sample rate/exposure,
+spatial scanout location, physical onset definition, alignment method, calibration
+file hashes and error bounds. A rendered flash alone is render-to-photon, not
+motion-to-photon; do not label it optical_motion. Raw optical evidence is required.
+
+quality.json contains codec_only and source_to_presented objects with per-zone
+output equivalent to stimuli.quality(). At minimum both protected entries require
+pixels>0, measured=true, exact boolean and finite psnr_db (null only when exact).
+Aggregate sum-squared-errors and counts across both eyes and all sampled steady
+frames. Retain the per-eye/time/zone distributions and angular warp masks; capture
+sampling must be predetermined and disclosed so difficult frames are not omitted.
+Report RGB/colour-difference errors, temporal flicker and fine-chroma attenuation.
+Separate subjective comfort/text-legibility assessment from numerical acceptance.
+
+checks.json requires booleans with supporting hashed evidence:
+  gaze_fallback, warp_alignment, stereo_coherence, resource_bounds, colour_range,
+  thermal_telemetry, requested_settings_applied, network_profile_verified
+For measurement=recovery require recovery_verified; for lifecycle require
+lifecycle_verified. These mean the relevant assertions were measured/exercised,
+not default true values. Record time-to-first-valid-stereo, HEVC IDR/reference
+recovery, eye desynchronization, pending queue counts, leak deltas and thermal
+throttling. Low bitrate/PSNR/latency scalars cannot replace these correctness gates.
+
+Stop response: {schema:1,restored:true,evidence:[restoration record]}.
+An unconfirmed restore fails the run and must be investigated before continuing.
+
+Suite 0.2.0 optical extension
+============================
+For measurement=optical, OPTICAL.txt adds mandatory instrument samples,
+calibration and raw calibration evidence, predeclared trial windows, separate
+scene-update/reprojected-view capability gates and per-stratum acceptance.
+The older optional optical event pairs above are diagnostics only and cannot
+qualify these dedicated physical motion-to-photon runs.

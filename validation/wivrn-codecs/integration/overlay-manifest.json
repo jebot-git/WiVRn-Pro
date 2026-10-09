@@ -1,0 +1,246 @@
+{
+  "CMakeLists.txt": {
+    "before_sha256": "963fa3f84a00246704381fdd5faff337edda4c2980ccbc8c0a98f28441a9268c",
+    "after_sha256": "18bb3720e0f409da723dca97801e6eeaa0f8cc3901373e631dbf7ad67a25f615"
+  },
+  "assets/codec-test/decode-coop128.spv": {
+    "before_sha256": null,
+    "after_sha256": "47b9027b5e9aa73de850ef946a606b68fc7787829239fe946f9fb5674dff38e0"
+  },
+  "assets/codec-test/decode-coop128dc.spv": {
+    "before_sha256": null,
+    "after_sha256": "ef7f0cb75ef62e753ea29634c517e8ce5d875dba92c39342f8fad42e4f00c11b"
+  },
+  "assets/codec-test/decode-coop64.spv": {
+    "before_sha256": null,
+    "after_sha256": "06a4f6760ed97bf7aa897024862f5568d207f4b1dd35b2bf192a2fda2efe2f08"
+  },
+  "assets/codec-test/decode.spv": {
+    "before_sha256": null,
+    "after_sha256": "90d9fe82c49c81aeb57bfa0ec95d249850bd82856d4fd655ff6ef9af2d6863a3"
+  },
+  "assets/codec-test/encode-coop128.spv": {
+    "before_sha256": null,
+    "after_sha256": "08f46f4e1ba61702e4d56665776b2c874350ee698ce9976484414f399be9fb2e"
+  },
+  "assets/codec-test/encode-coop64.spv": {
+    "before_sha256": null,
+    "after_sha256": "3e534f0e9e2fe717b83340319ac648e8750aad7bb54c2eb925c061568b3774ae"
+  },
+  "assets/codec-test/encode.spv": {
+    "before_sha256": null,
+    "after_sha256": "c1d79637a60f1663b7eb7723537a5bb4457a94005a6e7c65b46dd29de92f9986"
+  },
+  "build.gradle": {
+    "before_sha256": "dbbd6ff3a1b8c829810ad59637af654172d19f016f3738624c34727b6446a234",
+    "after_sha256": "db126f9b8d01cc24ff948fd6fa2c501814ba473f49ab4b56f425bb6dc9e7c15c"
+  },
+  "client/CMakeLists.txt": {
+    "before_sha256": "e299fa5c87c346ffe358a2b16ce627e75acb4eeaade242bdf2a9c1ef890e7a7b",
+    "after_sha256": "8ca78af774102d5e647e433d07af1a6b34d3226543c6f733d8e5c524fa3ee594"
+  },
+  "client/application.cpp": {
+    "before_sha256": "a3a2ed3304dfd26a9636606213e2eaaff407d80520f647de5df65810ddbfccd7",
+    "after_sha256": "56be47e927de63dbd38ef8e6a34cfdde2fba6860a9fef8906162fe4883f2c5e5"
+  },
+  "client/application.h": {
+    "before_sha256": "27fff30f031b8a562ffe17014fbbe9553e2a874cf7e80f95a85ae48c546abb90",
+    "after_sha256": "73c0a80e1e5956f40f4c6c7a6ba47b2259fcf61ff9ceaee098409687bcd59382"
+  },
+  "client/decoder/decoder.cpp": {
+    "before_sha256": "8bceb66e388b282bd3864330d50ec3c4fe27dde09db3645cc02419e7cdbcb5cb",
+    "after_sha256": "b40e2e8b57ffd33828ac2a7f61be23f786c0cf624a27f11b4aaee8be7daf690c"
+  },
+  "client/decoder/decoder.h": {
+    "before_sha256": "3117211c4fbc51e251ed8f4398803ff6f85ce4555375da84018e464c909b7871",
+    "after_sha256": "15b851a41aa253d1767beaca068769fc3a9d1697bd03e62745654c571901fc4d"
+  },
+  "client/decoder/test_decoder.cpp": {
+    "before_sha256": null,
+    "after_sha256": "d128c6be00fddf171dbc9a6781dad7c9557f7f88bc4cf70f7d10863d153dcad7"
+  },
+  "client/decoder/test_decoder.h": {
+    "before_sha256": null,
+    "after_sha256": "a755208228a11dfd51e4e0f7c93cf6869c5a1431374e79d4a5f6a8643951e933"
+  },
+  "client/decoder/test_gpu_decoder.cpp": {
+    "before_sha256": null,
+    "after_sha256": "2411a813a1f396445e5fff3394afabeaa698f1485f28d3a209ffacd68a662b96"
+  },
+  "client/decoder/test_gpu_decoder.h": {
+    "before_sha256": null,
+    "after_sha256": "c8ebaa71d14c4c61344c2ec8387e51d5424b5e883e56c3928d04612a4c14c8db"
+  },
+  "client/java/org/meumeu/wivrn/CodecTestDecoder.java": {
+    "before_sha256": null,
+    "after_sha256": "c0905e5883c59eadd2e844bb3cbc7c3c632dc66fa580363a138c9864d0c51c6a"
+  },
+  "client/java/org/meumeu/wivrn/MainActivity.java": {
+    "before_sha256": "7467e6167c7e8283d1794312ab04bbedc368a5f87d0ddacf647958e352b04679",
+    "after_sha256": "56d6cfccf269e4f447194a671898be0d5a5fe4021f59da442875ec07b7b2ed82"
+  },
+  "client/scene.cpp": {
+    "before_sha256": "4fc4340f85003b180ea379329c50ddeeaef803121ce07a5ef4d51bfe52a704c8",
+    "after_sha256": "852e925e4a1ed0e3008e6bbe702cb1899a937ec89cfec073f35e68d315a6f9eb"
+  },
+  "client/scenes/stream.cpp": {
+    "before_sha256": "27250cf4d1dd6549f62f6a25b3aa33833cb6238cdc1ff1339a69bb07ef740584",
+    "after_sha256": "52139a44d61445895c022c6a383ba6c27a451e7517e90b8e9f70e855e8ecc2cc"
+  },
+  "client/scenes/stream.h": {
+    "before_sha256": "d04badaf6c9f403076a6f5051c7e0fad0748cc64a13c30796ad2db025cb14d25",
+    "after_sha256": "f15581f05e449c489ca0578b216960529b74aaefbc63166677e2da6aa61a6ad3"
+  },
+  "client/scenes/stream_defoveator.cpp": {
+    "before_sha256": "11be925cd47b7cadbf07b8f21253f3b95135a9df9623c93abef51ba7aa0b8b82",
+    "after_sha256": "a9d9b8e4e15853fcf406a6a162042d900e1862c8ee6b2051d922ff88aacb62b8"
+  },
+  "client/scenes/stream_defoveator.h": {
+    "before_sha256": "e307c1ba633f2f8b31bbdfcaa26ab2d5e94f4734bd5c78ded005283832268981",
+    "after_sha256": "9eb2660bc62b75342bd1c5e333311649c48e00531f9f84ff78d498ebe3ceca55"
+  },
+  "client/scenes/stream_tracking.cpp": {
+    "before_sha256": "a2065a3d859541b5248ba92b3cfa53009fbeb6b708ed9b2856e79d3c66819027",
+    "after_sha256": "65a33beacc0991ae8ee2f9425c6564409205c96358d1d8bba69ed92a325b8bbc"
+  },
+  "client/wivrn_client.cpp": {
+    "before_sha256": "2ea21c24c39da70b05ff2245b8b1903bce0c91879fbcb34fb854200d81363877",
+    "after_sha256": "2d4244cc6596cb73d4d0957a886e865ba36cd937358b9eddc69f2fe03eb0e5ad"
+  },
+  "common/CMakeLists.txt": {
+    "before_sha256": "b4a09e59bd76d23e02198b627fe7aeb2117502334752a7bc2ff51a60ae16bcb7",
+    "after_sha256": "1e9789236a123c6eb28d3386f5b5e98d4650b87faefb9e847e97882e2ecc26ec"
+  },
+  "common/codec_test/compression/README.txt": {
+    "before_sha256": null,
+    "after_sha256": "75d89495e654de6d22e9896d1020a1c8d55848ade890ad303daae4b78264d3b0"
+  },
+  "common/codec_test/compression/frame_compression.h": {
+    "before_sha256": null,
+    "after_sha256": "78a30e1a24e6d160b53f22815561d34388da9a7564c2700c458bfcc815b40973"
+  },
+  "common/codec_test/compression/vendor/LICENSE": {
+    "before_sha256": null,
+    "after_sha256": "8b58c446121a109ccf32edc094bba3010a3d85e4ee3702950db55e4d3e87736c"
+  },
+  "common/codec_test/compression/vendor/lz4.c": {
+    "before_sha256": null,
+    "after_sha256": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539"
+  },
+  "common/codec_test/compression/vendor/lz4.h": {
+    "before_sha256": null,
+    "after_sha256": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f"
+  },
+  "common/codec_test/compression/vendor/provenance.json": {
+    "before_sha256": null,
+    "after_sha256": "c93be50f298475c23d263e4ecc4e6d17254bc2d6e23e5fc2c8e72770d5f34595"
+  },
+  "common/codec_test/compression/wpc1.h": {
+    "before_sha256": null,
+    "after_sha256": "a7811b328b5918b21e3d1eacffdb17a8ee191f8590db40144c680a4e153857c5"
+  },
+  "common/codec_test/gaze_timing.h": {
+    "before_sha256": null,
+    "after_sha256": "0caa6bbeaa3b1813631476a67fa192c6c8b8707e4ad739842a80794f9c47daeb"
+  },
+  "common/codec_test/layer_filter.h": {
+    "before_sha256": null,
+    "after_sha256": "bf8a19ffea35580a99eb41bf1f19d9056f70df755ac9e29899f3934761ae6f2c"
+  },
+  "common/codec_test/metadata.h": {
+    "before_sha256": null,
+    "after_sha256": "91aa619f7e6c7a7511533c55c609d2366164baa193e8242e8ad54c0a63ca0196"
+  },
+  "common/codec_test/selection_trace.h": {
+    "before_sha256": null,
+    "after_sha256": "af90f164eb8b705e00ede85d36f1fb4ea296afd3d9b7fc4ec173705a1d05551f"
+  },
+  "common/codec_test/stereo_admission.h": {
+    "before_sha256": null,
+    "after_sha256": "0bcb44f97ae6e68d18e8b5d070c31521d0fd8f38b33fdd9b84e6677eceb60192"
+  },
+  "common/codec_test/vr444/codec.cpp": {
+    "before_sha256": null,
+    "after_sha256": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff"
+  },
+  "common/codec_test/vr444/codec.hpp": {
+    "before_sha256": null,
+    "after_sha256": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706"
+  },
+  "common/codec_test/vr444/direct.cpp": {
+    "before_sha256": null,
+    "after_sha256": "796017f83b4a2159b3adb65876f14ce9b2ffeaef348d7907be0cc784d9621905"
+  },
+  "common/codec_test/vr444/direct.hpp": {
+    "before_sha256": null,
+    "after_sha256": "7577105236e1787ba627ef467411bb591748b79d96537b3fe0392689e32ad8bd"
+  },
+  "common/codec_test/vr444/shaders/codec.comp": {
+    "before_sha256": null,
+    "after_sha256": "48b0c0afeea6946d38116e16ecff788f379992167e291f4d10c2483c372eb154"
+  },
+  "common/codec_test/vr444/shaders/codec_coop.comp": {
+    "before_sha256": null,
+    "after_sha256": "c1323aa51285dd0991e5102e9112efc70091ca5e1db4f5e8e9d3922893fcdf4b"
+  },
+  "common/codec_test/vr444/shaders/constant_decode.comp": {
+    "before_sha256": null,
+    "after_sha256": "8bd015cecac79349bba4ed722e5706a2e8761f27f60ec96a3acd81da370c75ba"
+  },
+  "common/codec_test/vr444/vulkan_runner.cpp": {
+    "before_sha256": null,
+    "after_sha256": "95a8cdf86e0affdaf081c61d34f3a0580ca5e080ad92fe7d2d6179fcb9648181"
+  },
+  "common/codec_test/vr444/vulkan_runner.hpp": {
+    "before_sha256": null,
+    "after_sha256": "55b7e1d684dda079cca14bf14b99be79da7c7ebbabcdbc351cf2c74ac5d24099"
+  },
+  "common/codec_test/wire.h": {
+    "before_sha256": null,
+    "after_sha256": "0f44c63ba32326677b3d282a904e19429f8a9ce07c22d482fec15c7121cee485"
+  },
+  "server/CMakeLists.txt": {
+    "before_sha256": "380d2793d25625d3d3cf9d41bbb027104f90d6d6de89d983d2aa777d9959e1cf",
+    "after_sha256": "7977e01277f71a3f35a4af3563d63a41656f7567ffdfbb94163e4718f310c21d"
+  },
+  "server/compositor/compositor.cpp": {
+    "before_sha256": "8412ee2d713922aed6d318eeb38a361a900e47c26f505b4a93c9d272fd7575ac",
+    "after_sha256": "01296d959553613362248988089177c6aed0b973bf8690c16b16ae1c40e71c93"
+  },
+  "server/compositor/foveation.cpp": {
+    "before_sha256": "939a8d73d0e22d131c576e07ab229a276962c5dcd31893713a20ed0f50c5f8ca",
+    "after_sha256": "9c82a03efdbae35f7fbfb88e5dcbe8def439d1e471f473163de5e187115113ae"
+  },
+  "server/compositor/shaders/foveation_rgb.comp": {
+    "before_sha256": null,
+    "after_sha256": "3770a28be8d2ffd31cb7883725624f94cbacefcc4d9d1241de6564de0a2ad3be"
+  },
+  "server/driver/wivrn_hmd.cpp": {
+    "before_sha256": "be7414ced4d460bc62eb851182442a93c5e114ba4b58d818adf751b2f470e395",
+    "after_sha256": "90df9b120bba84f977089d2ce07477d21bd8505108a80518a4c2cf2e4b9a1581"
+  },
+  "server/encoder/encoder_settings.cpp": {
+    "before_sha256": "38f71e9deb0b6335acb5bcbd9d6f60874f9168bb3534c6b8f2ffe95e339f49f2",
+    "after_sha256": "c3f5c472905cd56ff2cf53fa68a19bd30363fe061254257d5f58a2e86fbf2271"
+  },
+  "server/encoder/video_encoder.cpp": {
+    "before_sha256": "abd28c399ec1879e82f3aa9d0bf482c3ee8be34826edf31d041f0686540892b7",
+    "after_sha256": "de966ba70c511e57f1bfe15a8f21df8a08c546a3c16009f9d73bc974c9e13917"
+  },
+  "server/encoder/video_encoder.h": {
+    "before_sha256": "f38acd68943892da9bebfdd788cba963d4c0d7b58810faa22be405e5dcee0d00",
+    "after_sha256": "6c8b247906345ac15dc2b939412ee36388b06203f9e16c3996452ef106387aad"
+  },
+  "server/encoder/video_encoder_test.cpp": {
+    "before_sha256": null,
+    "after_sha256": "ef25c93f183db0360c02b9177bb83f9b7a4dab00b4e1d2a5e048a05aa93ea197"
+  },
+  "server/encoder/video_encoder_test.h": {
+    "before_sha256": null,
+    "after_sha256": "cc1eb4b00841d746a23738b2a0a6ebbb64d8622c23a814e1aad3c79a242ecdc3"
+  },
+  "server/main.cpp": {
+    "before_sha256": "3a23a48f86aa77e1092dd14ab6ffb0a90e8a5ab04bee3743db8316500ebc073a",
+    "after_sha256": "e01251a0b964b38865f20a3ab7504b9284b40df60032d3282ddbf7e651ae4dec"
+  }
+}

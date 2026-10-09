@@ -1,0 +1,64 @@
+Suite 0.2.0 optical extension validation, 2026-10-08
+===================================================
+38 total harness tests passed with ResourceWarning promoted to an error.
+New optical checks cover a known physical-channel delay, uncertainty bounds,
+per-eye/scanout coverage, missing photons/trials, predeclared schedules/windows,
+duplicates, noisy crossings, baseline, calibration expiry and channel correction,
+clock gaps, NaN, excessive uncertainty, reversed causality, conservative target
+limits, simulation provenance, optical plan/readiness, and rejection of legacy
+optical timing events as a substitute for instrument capture.
+
+Optical captures used by automated tests are synthetic and explicitly labelled
+simulation. Physical A770/Quest/rig measurements remain pending. The prior frozen
+codec bundles and suite 0.1.0 are retained unchanged. The records below describe
+validation inherited from the prior release.
+
+Validation performed 2026-10-08
+================================
+25 Python harness tests passed, including missing/duplicate frames, clock sync
+absence/uncertainty/extrapolation, no double conversion, negative durations,
+warp and stereo mismatches, telemetry drops, explicit frame drops and byte
+accounting, optical calibration, deterministic matrices/stimuli/gaze faults,
+chroma damage, network deadlines/bursts, artifact path/hash validation, cleanup
+after run failure and a simulated full adapter roundtrip rejected as hardware.
+ResourceWarning was promoted to an error in the final unit-test run.
+
+Frozen codec checks passed:
+  HEVC carrier: two Python tests, including full-range lossless software HEVC
+  roundtrip through ffmpeg/libx265.
+  Vulkan transport: six Python tests.
+  Vulkan reference self-test: lossless/lossy RGB444, odd dimensions, framing,
+  all truncations and 2,000 bounded mutations.
+  Dynamic-foveation reference self-test.
+  GPU/reference consistency for baseline, coop64 and coop128 on software Vulkan.
+
+Native bounded trace recorder:
+  Linux C++17 build with warnings-as-errors; ring-full handling and 100-event
+  flush verified. Clang AddressSanitizer + UndefinedBehaviorSanitizer passed
+  with ASAN_OPTIONS=detect_leaks=0. LeakSanitizer cannot operate under this
+  sandbox's ptrace environment; leak detection was not performed.
+  Android arm64/API29 NDK 29.0.14206865 cross-build passed. Not run on Quest.
+
+Scale check:
+  198,000 synthetic events / 9,000 stereo frames / 30,291,689 bytes ingested,
+  analyzed in approximately 2.09 seconds here; report status software_only.
+  This checks analyzer operation at larger input size, not codec or device speed.
+
+Adapter scaffold readiness:
+  Expected exit 2 / blocked; zero hardware test sessions launched. Absent real
+  WiVRn integration, target identity and optical/corpus capabilities are reported.
+
+Environment:
+  No accessible /dev/dri A770 device. Vulkan selected llvmpipe LLVM22.1.8,
+  CPU device type. No Quest hardware measurements, deployed APK, live service
+  change or Meta channel upload. All performance acceptance thresholds remain
+  provisional engineering targets.
+
+Workspace evidence (not portable paths):
+  evidence/wivrn-codec-suite-20261008/suite-final-tests.log
+  evidence/wivrn-codec-suite-20261008/local-smoke/
+  evidence/wivrn-codec-suite-20261008/native-sanitizer.log
+  evidence/wivrn-codec-suite-20261008/scale-report.json
+  evidence/wivrn-codec-suite-20261008/scale-summary.json
+  evidence/wivrn-codec-suite-20261008/host-capabilities.json
+  evidence/wivrn-codec-suite-20261008/readiness-check/

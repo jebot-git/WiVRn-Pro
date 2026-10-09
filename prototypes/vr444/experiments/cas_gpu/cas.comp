@@ -1,0 +1,32 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+// Integration wrapper only; vendor headers are unmodified AMD MIT source.
+#define A_GPU 1
+#define A_GLSL 1
+#include "vendor/ffx_a.h"
+layout(set=0,binding=0,rgba32f) readonly uniform image2D srcEye;
+layout(set=0,binding=1,rgba32f) writeonly uniform image2D dstEye;
+layout(push_constant) uniform Params { uvec4 const0; uvec4 const1; uvec4 size; } pc;
+AF3 CasLoad(ASU2 p) { return imageLoad(srcEye,clamp(p,ivec2(0),ivec2(pc.size.xy)-1)).rgb; }
+void CasInput(inout AF1 r,inout AF1 g,inout AF1 b) {} // already linear RGB
+#include "vendor/ffx_cas.h"
+layout(local_size_x=8,local_size_y=8) in;
+void main() {
+ uvec2 xy=gl_GlobalInvocationID.xy;
+ if(any(greaterThanEqual(xy,pc.size.zw)))return;
+ precise vec2 at=vec2(xy)*uintBitsToFloat(pc.const0.xy)+uintBitsToFloat(pc.const0.zw);
+ ivec2 nearest=clamp(ivec2(floor(at+.5)),ivec2(0),ivec2(pc.size.xy)-1);
+ vec4 color; color.a=imageLoad(srcEye,nearest).a; // mask/alpha never sharpened
+#ifdef BYPASS
+ ivec2 base=ivec2(floor(at)); vec2 f=fract(at);
+ color.rgb=mix(mix(CasLoad(base),CasLoad(base+ivec2(1,0)),f.x),
+               mix(CasLoad(base+ivec2(0,1)),CasLoad(base+ivec2(1,1)),f.x),f.y);
+#else
+#ifdef SHARPEN_ONLY
+ CasFilter(color.r,color.g,color.b,xy,pc.const0,pc.const1,true);
+#else
+ CasFilter(color.r,color.g,color.b,xy,pc.const0,pc.const1,false);
+#endif
+#endif
+ imageStore(dstEye,ivec2(xy),color); // linear RGBA32F, no implicit/extra EOTF/OETF
+}

@@ -1,0 +1,182 @@
+Reproducing the raw-RGBA / BC7 texture sampling experiment
+========================================================
+Scope
+texture_sample_bench.cpp and texture_sample.comp test compressed texture uploads
+and sampling, not a general BC7 encoder, OpenXR integration, network throughput,
+visual acceptability, or motion-to-photon latency. No root is required. Fixtures
+are 576x640 images made from 4x4 solid-color blocks, with changing block colors
+on each frame. Mode 6 equal BC7 endpoints and zero P-bits represent these even
+RGBA channel values exactly; alpha is 254. This limited fixture is deliberately
+easy to verify. Its throughput may not represent other BC7 modes or mixed modes.
+
+Eight cases are tested: RGBA8/BC7, UNORM/sRGB, nearest/bilinear filtering. Bilinear
+coordinates use a quarter-texel offset and exercise block boundaries. CPU
+reference values apply sRGB transfer to RGB before interpolation and keep alpha
+linear. Every output channel of every pixel is checked, including warmups, with
+absolute linear-float tolerance 0.0021; NaN/Inf fails. This tolerance accommodates
+texture sampling precision and is not a perceptual quality threshold. The tests
+do not cover odd image extents, all BC7 modes, malformed blocks, or VR scenes.
+The 0.0021 cutoff is this experiment's original numerical acceptance gate, not
+a claimed Vulkan conformance limit. It remains unchanged after the Quest's raw
+sRGB case exceeded it. See the diagnostic discussion below.
+
+Build from repository root
+Requires host C++20 compiler/Vulkan headers/loader and the installed Android NDK.
+The commands below match this workspace and produce separate reproduction files
+so an already running benchmark's executable is never overwritten.
+
+c++ -std=c++20 -O2 -Wall -Wextra -Wno-missing-field-initializers \
+  '-DTEXTURE_BCDEC_HEADER="vendor/bcdec.h"' \
+  validation/wivrn-codecs/integration/texture_sample_bench.cpp \
+  -lvulkan -o /tmp/wivrn-texture-sample-host-manual
+
+/home/blux/Android/Sdk/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++ \
+  -std=c++20 -O2 -static-libstdc++ \
+  validation/wivrn-codecs/integration/texture_sample_bench.cpp \
+  -lvulkan -o /tmp/wivrn-texture-sample-android-manual
+
+/home/blux/Android/Sdk/ndk/29.0.14206865/shader-tools/linux-x86_64/glslc \
+  --target-env=vulkan1.1 -O \
+  validation/wivrn-codecs/integration/texture_sample.comp \
+  -o /tmp/wivrn-texture-sample-manual.spv
+
+Independent fixture-only check (CPU, no Vulkan calls)
+/tmp/wivrn-texture-sample-host-manual --fixture-check
+
+Expected result:
+{"independent_bcdec_reference":true,"frames":128,"blocks":2949120,"pass":true}
+
+The exact BC7 fixture bytes decode back to the known RGBA colors with bcdec.
+2,949,120 counts all generated blocks, not distinct colors, VR scenes, or display
+frames. This does not validate all possible BC7 blocks. Header provenance is
+vendor/BCDEC-PROVENANCE.txt; its original MIT license is retained in bcdec.h.
+The Android binary omits this optional CPU dependency, but still validates every
+GPU-sampled output against the mathematical fixture/sRGB/filtering reference.
+
+GPU runs (serialize with all other headset/host GPU benchmarks)
+Usage: texture_sample_bench shader.spv [physical_device_index] [measured_frames] [--manual-srgb-only]
+Default device index is 0; default measured frames 30, accepted range 5..300.
+Each case also runs five warmups. Software Vulkan physical devices are rejected.
+Unsupported sampled+linear-filter+transfer-destination formats are reported as
+supported:false, never as reference_pass:true. Numerical reference failures
+remain reference_pass:false but all eight cases are attempted. Their worst
+actual/expected values, pixel coordinate, channel, frame seed and source codes
+are recorded. Any reference failure gives final exit 1 and a complete
+JSON report. Vulkan errors/nonfinite data still abort immediately and may leave
+partial JSON. Require both exit 0 and complete JSON for an all-pass claim.
+
+Host, with outer watchdog:
+timeout --signal=TERM --kill-after=5s 180s \
+  /tmp/wivrn-texture-sample-host-manual /tmp/wivrn-texture-sample-manual.spv 0 30 \
+  > /tmp/wivrn-texture-host.json 2> /tmp/wivrn-texture-host.stderr
+
+For Android, copy the Android executable and shader to /data/local/tmp using ADB,
+chmod the executable, then run it there with device index 0 and 30 frames. Use a
+watchdog on the device process, not only on the host adb client: terminating adb
+alone can leave device GPU work running. The primary test runner owns ADB and
+device serialization. No ADB/GPU invocation was performed by the fixture-only
+check recorded alongside this document.
+
+Timing interpretation and resource safety
+One context/image/staging/output/readback set is persistent within each format.
+Each frame changes the input. upload_gpu_ms covers image transition/upload;
+sample_gpu_ms covers the texture sampling compute dispatch; readback_gpu_ms
+covers copying its RGBA32F output buffer to CPU-visible memory. Output is
+576*640*16 bytes regardless of source format. The sample metric includes output
+SSBO writes and is not an isolated texture-unit measurement.
+
+upload_sample_readback_wall_ms includes input memcpy, command recording, submit
+and fence wait; it excludes fixture construction and CPU reference validation.
+Warmups, pipeline/resource initialization and descriptor updates are excluded.
+Reference validation between frames creates idle gaps, so this is not a sustained
+90 Hz thermal/cadence or concurrent compositor test. Percentiles use nearest-rank
+selection. Measurements from competing GPU workloads are not comparable.
+Schema 2 precomputes the unchanged float sRGB formula for all 256 code values,
+avoiding repeated CPU pow calculations. GPU work and shader are unchanged.
+
+Every submitted command buffer is fence-complete before host access/reuse.
+Destructor calls vkDeviceWaitIdle before releasing Vulkan resources, including
+on exceptions. This protects in-flight object lifetimes, but a hung driver can
+block that cleanup even after the 2-second fence wait expires. The external
+process watchdog is necessary. There is no claim of an internally bounded
+recovery path. Do not embed this standalone teardown policy in the live app.
+
+Evidence and hashes
+validation/results/vulkan-optimization-0.5.0/texture-fixture-check.json is the
+actual fixture-only output. texture-fixture-provenance.json records command,
+exit result, upstream commit/license and SHA256s of sources, vendored reference,
+shader, and built executables. That receipt records reproduction inputs and CPU
+verification; separate host/Quest result files are needed for GPU claims.
+
+Initial numerical finding and interpretation
+The primary runner's initial schema-1 Quest run in texture-sample-opt05 passed
+raw UNORM nearest/bilinear, then stopped at raw sRGB nearest with max error
+0.003678. The same eight-case host run completed. The failure is preserved;
+schema 2 adds diagnostics and continues other cases without relaxing the gate.
+The source version used for schema 1 preceded the LUT/diagnostic change; its
+binaries remain separately named without the -fast suffix.
+
+The Vulkan image-read specification applies the sRGB EOTF to RGB and leaves
+alpha linear. Our reference implements that conversion order. A reviewed
+Khronos CTS texture-filtering path uses output-format-dependent tolerances,
+subtracting one accuracy bit for nearest-only and two otherwise from an 8-bit
+render target. That is a different test/reference contract; it does not justify
+silently raising this probe's threshold or claiming a Vulkan violation here.
+Do not attribute the Quest discrepancy to fixed-point hardware, BC7, transport,
+or Singularity without further isolating evidence. The schema-2 diagnostics are
+intended to compare raw and BC7 behavior at the same input code values.
+
+The primary runner's completed schema-2 texture-sample-opt05b/quest.json shows
+all four UNORM cases passing and all four sRGB cases exceeding the unchanged
+gate. Every sRGB case has the same worst diagnostic: seed 0, x=116, y=0, B channel,
+four source codes all 242, actual 0.891601562, expected 0.887923181, absolute error
+0.003678381. Matching raw/BC7 and nearest/bilinear discrepancies suggest their
+shared sRGB conversion path rather than BC7 fixture encoding or interpolation
+across a block boundary. That is an inference, not proof of the driver's internal
+arithmetic or conformance status. The schema-2 host result passes all eight cases.
+GPU timing tables are retained in those result files; passing mechanics/performance
+on these solid-block fixtures does not establish acceptable compressed VR quality.
+
+Optional manual EOTF follow-up (schema 3)
+The updated binary defaults to the same eight hardware sampling cases. To run
+only the four manual-conversion cases, append --manual-srgb-only:
+
+timeout --signal=TERM --kill-after=5s 180s \
+  /tmp/wivrn-texture-sample-host-manual /tmp/wivrn-texture-sample-manual.spv \
+  0 30 --manual-srgb-only \
+  > /tmp/wivrn-texture-host-manual.json 2> /tmp/wivrn-texture-host-manual.stderr
+
+These cases use RGBA8_UNORM and BC7_UNORM images containing the same sRGB-encoded
+fixture bytes. For nearest, the shader fetches one texel and evaluates the sRGB
+EOTF explicitly in float arithmetic. For bilinear, it fetches four neighbors,
+evaluates the EOTF on each, then interpolates the linear values at quarter-texel
+offset. Edge coordinates clamp explicitly; alpha bypasses conversion. This
+isolates the cost and accuracy of replacing hardware sRGB conversion/filtering.
+It is not merely applying EOTF after hardware interpolation, which would change
+the expected output around block boundaries.
+
+The CPU reference and original 0.0021 gate are unchanged. CPU expected values use
+host std::pow results cached for each byte and a separately coded weighted sum;
+GPU values use shader pow and nested mix after texelFetch. Both intentionally
+implement the same specified equation, independently; the reference is not
+computed from observed GPU values. Existing bcdec verification still independently
+checks the compressed fixture bytes. Every frame is verified outside wall timing.
+
+Schema 3 adds srgb_experiment=manual_EOTF_before_filtering or hardware_sampling.
+Manual format labels end in _MANUAL_SRGB. The new shader push-constant block is
+16 bytes instead of 12; pair the new *-manual SPIR-V and binaries. Do not mix the
+old shader and new binary when attempting a manual-conversion experiment.
+The added uniform shader branch may change compiled code/performance even in
+default hardware mode; retain source/SPIR-V hashes with all comparisons.
+
+Prior *-fast binaries, texture_sample.spv and texture-fixture-provenance.json are
+unchanged. Their corresponding schema-2 source/doc files were preserved under
+results/vulkan-optimization-0.5.0/texture-schema2-baseline (relative to validation).
+texture-manual-fixture-provenance.json records new source/SPIR-V/binary hashes,
+the CPU-only fixture recheck, and hashes of those preserved baseline inputs.
+It makes no GPU result claim; use separately captured host/Quest manual reports.
+
+Primary format reference
+https://learn.microsoft.com/en-us/windows/uwp/graphics-concepts/bc7-format
+https://docs.vulkan.org/spec/latest/chapters/images.html#images-texel-decode
+https://github.com/KhronosGroup/VK-GL-CTS/blob/main/external/vulkancts/modules/vulkan/texture/vktTextureFilteringTests.cpp

@@ -1,0 +1,37 @@
+Research basis: direct CPU writes to Vulkan upload memory
+
+Measured motivation
+In completed 0.13.1 CPU runs, staging memcpy medians for submitted post-warmup eyes
+were 0.218386..0.264479 ms, versus total decode/upload medians 1.32714..1.55573 ms.
+This is a bounded possible saving, not a prediction that all copy time is removable
+from end-to-end latency. The inverse algorithm stays unchanged in this experiment.
+
+Primary Vulkan memory reference, consulted 2026-10-09
+https://docs.vulkan.org/spec/latest/chapters/memory.html
+https://docs.vulkan.org/refpages/latest/refpages/source/VkMemoryPropertyFlagBits.html
+HOST_VISIBLE permits host mapping. HOST_COHERENT removes the explicit host cache
+flush/invalidate requirement; HOST_CACHED separately identifies host-cached memory.
+Thus coherence alone does not establish equal performance to ordinary CPU memory.
+The prototype records the selected flags/type instead of assuming a cache policy.
+Coherent writes precede queue submission; completed fences and the existing
+transfer-to-host barrier precede readback access.
+
+Primary Arm guidance, consulted 2026-10-09
+https://documentation-service.arm.com/static/67 a 62 b 17091 bfc 3 e 0 a 947695?token=
+The Arm GPU Best Practices Developer Guide recommends sequential writes or memcpy
+for coherent upload memory to suit CPU write combining. It is vendor guidance,
+not measured Adreno behavior. Our tiled inverse writes 16-pixel row segments and
+partial edges, so removing a sequential memcpy can change CPU memory efficiency.
+The cached and direct-mapped alternatives therefore require on-device timing.
+
+Actual prior allocation, not an architectural assumption
+Frozen 0.13 Quest standalone upload selected flags 15 (DEVICE_LOCAL, HOST_VISIBLE,
+HOST_COHERENT, HOST_CACHED). Host Arc selected 14 (HOST_VISIBLE, HOST_COHERENT,
+HOST_CACHED). The new benchmark records its own flags and all memory types. Neither
+these flags nor Arm guidance predicts the live VMA-selected type or final speed.
+
+Diagnostics/publication are a separate experiment
+Read-only analysis found capture-correlated receive-to-ready residuals around 2 ms,
+versus roughly 0.1 ms for noncapture frames; multiple stages contribute. Design and
+hashed evidence are in 0.14 decode/DIAGNOSTIC-DESIGN.txt and diagnostic-cost-evidence.json.
+No logging, publication or live-source change is implemented by this experiment.

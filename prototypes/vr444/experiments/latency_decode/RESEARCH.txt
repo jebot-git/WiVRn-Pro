@@ -1,0 +1,34 @@
+Research basis and bounded hypothesis
+
+Local measured motivation
+validation/results/native-codec-comparison-0.12.0/BOTTLENECKS.txt records custom
+client decode/upload medians 8.248 and 7.613 ms versus GPU dispatch 4.719 and
+4.221 ms in the two custom runs. LZ4 decode was about 0.021 ms. The current
+compact-to-expanded representation is 1,843,200 slot bytes per 576x640 eye,
+versus 1,474,560 output RGBA bytes. These observations motivate testing elimination
+of expansion and GPU inverse; they do not predict live CPU backend latency.
+
+Wire/reference implementation (primary local sources)
+.worktrees/wivrn-codec-tests/common/codec_test/vr444/codec.cpp
+.worktrees/wivrn-codec-tests/common/codec_test/vr444/vulkan_runner.cpp
+The compact grammar and exact CPU decode are the oracle. The experimental
+constant shortcut uses the same canonical AC-mask condition as the reviewed
+coop128dc decoder; every one of the 48 active AC positions has a negative fixture.
+This design changes neither coefficient quantization nor reconstructed pixels.
+
+Primary architecture reference
+Arm Neon Intrinsics Reference:
+https://arm-software.github.io/acle/neon_intrinsics/advsimd.html
+Consulted 2026-10-08. AArch64 load/store, vector add/subtract, signed arithmetic
+right shift and zip intrinsics support the exact integer lifting implementation.
+The arithmetic shift supplies floor-half for negative detail coefficients, and
+zip restores interleaved samples. This reference establishes operation semantics;
+it does not promise performance on the Quest SoC. On-device timing and exactness
+are required. No claim about Vulkan driver performance is inferred from it.
+
+Decision
+Implement compact direct scalar decode plus the same parser with NEON inverse.
+Avoid changing protocol, neural reconstruction or tile quantization in this probe:
+those introduce separate quality and integration variables without explaining the
+measured decode-stage overhead. RGBA upload and scheduling remain explicit later
+gates. No optical motion-to-photon claim is possible from this standalone harness.

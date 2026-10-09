@@ -1,0 +1,93 @@
+// SPDX-License-Identifier: MIT
+#version 450
+// Portable baseline: integer arithmetic, no subgroup, FP16 or video extensions.
+// One invocation per tile deliberately prioritizes verifiability over occupancy.
+layout(local_size_x=32) in;
+layout(set=0,binding=0,std430) readonly buffer Input { uint rgba[]; };
+layout(set=0,binding=1,std430) buffer Stream { uint slots[]; };
+layout(set=0,binding=2,std430) buffer Lengths { uint lengths[]; };
+layout(set=0,binding=3,std430) writeonly buffer Output { uint result[]; };
+layout(set=0,binding=4,std430) readonly buffer Quantizers { uint tile_q[]; };
+layout(push_constant) uniform Params { uint width,height,q,count; } pc;
+const uint STRIDE=320;
+int v[768];
+uint tile,bitpos;
+int half_floor(int x) { return x>=0 ? x/2 : -((-x+1)/2); }
+uint zigzag(int x) { return x>=0 ? uint(x*2) : uint(-2*x-1); }
+int unzigzag(uint x) { return (x&1)!=0 ? -int((x+1)/2) : int(x/2); }
+void put_bits(uint value,uint n) {
+    for(uint i=0;i<n;i++,bitpos++) slots[tile*STRIDE+bitpos/32] |= ((value>>i)&1)<<(bitpos%32);
+}
+uint get_bits(uint n) {
+    uint value=0;
+    for(uint i=0;i<n;i++,bitpos++) {
+        // Defensive cap; CPU validation is still mandatory for network input.
+        if(bitpos/32<min(lengths[tile],STRIDE)) value|=((slots[tile*STRIDE+bitpos/32]>>(bitpos%32))&1)<<i;
+    }
+    return value;
+}
+void transform(uint c,bool inverse) {
+    int tmp[16];
+    for(int n=inverse?2:16; inverse?n<=16:n>=2; n=inverse?n*2:n/2) {
+        for(int axis=0;axis<2;axis++) {
+            bool col=inverse ? axis==0 : axis==1;
+            for(int line=0;line<n;line++) {
+                for(int i=0;i<n/2;i++) {
+                    if(!inverse) {
+                        int p=int(c)*256+(col?2*i*16+line:line*16+2*i);
+                        int z=v[p+(col?16:1)],d=v[p]-z;
+                        tmp[i]=z+half_floor(d);tmp[i+n/2]=d;
+                    } else {
+                        int p=int(c)*256+(col?i*16+line:line*16+i);
+                        int d=v[p+(col?n*8:n/2)],z=v[p]-half_floor(d);
+                        tmp[2*i]=z+d;tmp[2*i+1]=z;
+                    }
+                }
+                for(int i=0;i<n;i++)v[int(c)*256+(col?i*16+line:line*16+i)]=tmp[i];
+            }
+        }
+    }
+}
+void main() {
+    tile=gl_GlobalInvocationID.x;if(tile>=pc.count)return;bitpos=0;
+    uint nx=(pc.width+15)/16,bx=(tile%nx)*16,by=(tile/nx)*16;
+#ifdef ENCODE
+    for(uint i=0;i<STRIDE;i++) slots[tile*STRIDE+i]=0;
+    for(uint y=0;y<16;y++)for(uint x=0;x<16;x++) {
+        uint p=rgba[min(by+y,pc.height-1)*pc.width+min(bx+x,pc.width-1)];
+        int r=int(p&255),g=int((p>>8)&255),b=int((p>>16)&255);
+        int co=r-b,t=b+half_floor(co),cg=g-t;
+        v[y*16+x]=t+half_floor(cg);v[256+y*16+x]=co;v[512+y*16+x]=cg;
+    }
+    for(uint c=0;c<3;c++) {
+        transform(c,false);put_bits(zigzag(v[c*256]),11);
+        for(uint i=1;i<256;i++){int a=v[c*256+i];v[c*256+i]=(a<0?-1:1)*((abs(a)+int(tile_q[tile])/2)/int(tile_q[tile]));}
+        for(uint base=1;base<256;base+=16) {
+            uint end=min(base+16,256),mx=0,n=0,mask=0,nonzero=0;bool same=true;
+            for(uint i=base;i<end;i++){int a=v[c*256+i];mx=max(mx,zigzag(a));same=same && a==v[c*256+base];if(a!=0){mask|=1u<<(i-base);nonzero++;}}
+            for(uint z=mx;z!=0;z>>=1)n++;
+            put_bits(n!=0?1:0,1);
+            if(n!=0){
+                uint mode=same?0:((16+nonzero*n<(end-base)*n)?2:1);put_bits(n,4);put_bits(mode,2);
+                if(mode==0)put_bits(zigzag(v[c*256+base]),n);
+                else {if(mode==2)put_bits(mask,16);for(uint i=base;i<end;i++)if(mode==1 || v[c*256+i]!=0)put_bits(zigzag(v[c*256+i]),n);}
+            }
+        }
+    }
+    lengths[tile]=(bitpos+31)/32;
+#else
+    for(uint i=0;i<768;i++)v[i]=0;
+    for(uint c=0;c<3;c++) {
+        v[c*256]=unzigzag(get_bits(11));
+        for(uint base=1;base<256;base+=16)if(get_bits(1)!=0){
+            uint n=get_bits(4),mode=get_bits(2),repeated=mode==0?get_bits(n):0,mask=mode==2?get_bits(16):0xffff;
+            for(uint i=base;i<min(base+16,256);i++){uint a=mode==0?repeated:(((mask&(1u<<(i-base)))!=0)?get_bits(n):0);v[c*256+i]=unzigzag(a)*int(tile_q[tile]);}
+        }
+        transform(c,true);
+    }
+    for(uint y=0;y<16 && by+y<pc.height;y++)for(uint x=0;x<16 && bx+x<pc.width;x++) {
+        uint i=y*16+x;int t=v[i]-half_floor(v[512+i]),g=v[512+i]+t,b=t-half_floor(v[256+i]),r=b+v[256+i];
+        result[(by+y)*pc.width+bx+x]=uint(clamp(r,0,255))|(uint(clamp(g,0,255))<<8)|(uint(clamp(b,0,255))<<16)|0xff000000;
+    }
+#endif
+}

@@ -1,0 +1,2926 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8193abf1..9ca8ca4e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -48,6 +48,7 @@ option(WIVRN_BUILD_DASHBOARD "Build WiVRn dashboard" OFF)
+ option(WIVRN_BUILD_WIVRNCTL "Build wivrnctl" ON)
+ option(WIVRN_BUILD_DISSECTOR "Build Wireshark dissector" OFF)
+ option(WIVRN_BUILD_TEST "Build test binaries" OFF)
++option(WIVRN_AUDIO_AB_STOCK "Use default upstream v26.9 audio handling (OFF enables experimental keep-alive)" ON)
+ option(WIVRN_WERROR "Treat warnings as errors" OFF)
+ option(WIVRN_OPTIMIZE_SHADERS "Run spirv-opt on compiled shaders" ON)
+ option(WIVRN_DEBUG_SHADERS "Compile shaders with debug information" OFF)
+diff --git a/build.gradle b/build.gradle
+index f32b3ee4..c35f0228 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -168,6 +168,7 @@ android {
+                           '-DWIVRN_CSS=' + css,
+                           '-DWIVRN_COMPRESS_GLB=' + compressGlb,
+                           '-DWIVRN_ADDRESS_SANITIZER=' + asan,
++                          '-DWIVRN_AUDIO_AB_STOCK=' + (project.findProperty('wivrn_audio_ab_stock') ?: 'ON'),
+                           ] +
+                           fetchcontentBaseDir + (project.hasProperty('wivrn_offline') ? ['-DFETCHCONTENT_FULLY_DISCONNECTED=ON'] : [])
+                 resValue "string", "app_name", project.hasProperty('wivrn_app_name') ? project.wivrn_app_name : "WiVRn Pro"
+diff --git a/client/CMakeLists.txt b/client/CMakeLists.txt
+index 9809a222..8742bdc9 100644
+--- a/client/CMakeLists.txt
++++ b/client/CMakeLists.txt
+@@ -80,6 +80,12 @@ if(ANDROID)
+         "audio/android/*.cpp"
+         "decoder/android/*.cpp"
+         )
++    configure_file(audio/ab_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/audio_ab_config.h)
++    target_include_directories(wivrn PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
++    if(WIVRN_AUDIO_AB_STOCK)
++        list(REMOVE_ITEM PLATFORM_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/audio/android/audio.cpp")
++        list(APPEND PLATFORM_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/audio/android/stock/audio.cpp")
++    endif()
+     target_sources(wivrn PRIVATE ${PLATFORM_SOURCE})
+ 
+     if (WIVRN_ADDRESS_SANITIZER)
+diff --git a/client/audio/audio.h b/client/audio/audio.h
+index 1564f065..e6e92488 100644
+--- a/client/audio/audio.h
++++ b/client/audio/audio.h
+@@ -20,7 +20,12 @@
+ #pragma once
+ 
+ #ifdef __ANDROID__
++#include "audio_ab_config.h"
++#if WIVRN_AUDIO_AB_STOCK
++#include "android/stock/audio.h"
++#else
+ #include "android/audio.h"
++#endif
+ namespace wivrn
+ {
+ using audio = ::wivrn::android::audio;
+diff --git a/client/configuration.cpp b/client/configuration.cpp
+index 96bb2757..a3ed08ca 100644
+--- a/client/configuration.cpp
++++ b/client/configuration.cpp
+@@ -345,6 +345,7 @@ const std::vector<config_field> & configuration::config_fields()
+ 	        scalar("minimum_refresh_rate", &configuration::minimum_refresh_rate),
+ 	        scalar("stream_scale", &configuration::stream_scale),
+ 	        scalar("codec", &configuration::codec),
++	        scalar("decoder_low_latency", &configuration::decoder_low_latency),
+ 	        scalar("bit_depth", &configuration::bit_depth),
+ 	};
+ 	return fields;
+diff --git a/client/configuration.h b/client/configuration.h
+index 86366d47..1ed135c3 100644
+--- a/client/configuration.h
++++ b/client/configuration.h
+@@ -111,6 +111,7 @@ public:
+ 	float override_foveation_pitch = -10 * M_PI / 180;
+ 	float override_foveation_distance = 3;
+ 
++	bool decoder_low_latency = true;
+ 	bool high_power_mode = true;
+ 	uint32_t fps_divider = 1;
+ 
+diff --git a/client/decoder/android/android_decoder.cpp b/client/decoder/android/android_decoder.cpp
+index aaa3b32f..8548a84d 100644
+--- a/client/decoder/android/android_decoder.cpp
++++ b/client/decoder/android/android_decoder.cpp
+@@ -140,8 +140,7 @@ decoder::decoder(
+ 	{
+ 		AMediaFormat_ptr format(AMediaFormat_new());
+ 		AMediaFormat_setString(format.get(), AMEDIAFORMAT_KEY_MIME, mime(description.codec[stream_index]));
+-		// AMediaFormat_setInt32(format.get(), "vendor.qti-ext-dec-low-latency.enable", 1); // Qualcomm low
+-		// latency mode
++
+ 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_WIDTH, width);
+ 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_HEIGHT, height);
+ 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_OPERATING_RATE, std::ceil(description.frame_rate));
+@@ -155,7 +154,17 @@ decoder::decoder(
+ 		char * codec_name;
+ 		check(AMediaCodec_getName(media_codec.get(), &codec_name), "AMediaCodec_getName");
+ 		spdlog::info("Created MediaCodec decoder \"{}\"", codec_name);
++		const bool low_latency = application::get_config().decoder_low_latency;
++		const bool qualcomm = std::string_view(codec_name).find("qti") != std::string_view::npos || std::string_view(codec_name).find("qcom") != std::string_view::npos;
+ 		AMediaCodec_releaseName(media_codec.get(), codec_name);
++		if (low_latency)
++		{
++			// Literal keeps compatibility with the API 29 minimum. Older codecs
++			// ignore unknown standard keys; Qualcomm gets its vendor key too.
++			AMediaFormat_setInt32(format.get(), "low-latency", 1);
++			if (qualcomm)
++				AMediaFormat_setInt32(format.get(), "vendor.qti-ext-dec-low-latency.enable", 1);
++		}
+ 
+ 		ANativeWindow * window;
+ 
+@@ -170,8 +179,26 @@ decoder::decoder(
+ 		check(AMediaCodec_setAsyncNotifyCallback(media_codec.get(), callback, this),
+ 		      "AMediaCodec_setAsyncNotifyCallback");
+ 
+-		check(AMediaCodec_configure(media_codec.get(), format.get(), window, nullptr /* crypto */, 0 /* flags */),
+-		      "AMediaCodec_configure");
++		auto status = AMediaCodec_configure(media_codec.get(), format.get(), window, nullptr, 0);
++		if (status != AMEDIA_OK && low_latency)
++		{
++			spdlog::warn("Decoder {} rejected low-latency configuration ({}), retrying without hints", stream_index, int(status));
++			// Start with a fresh codec after a failed configure.
++			media_codec.reset();
++			media_codec.reset(AMediaCodec_createDecoderByType(mime(description.codec[stream_index])));
++			if (!media_codec)
++				throw std::runtime_error("Cannot recreate decoder");
++			check(AMediaCodec_setAsyncNotifyCallback(media_codec.get(), callback, this), "AMediaCodec_setAsyncNotifyCallback");
++			AMediaFormat_clear(format.get());
++			AMediaFormat_setString(format.get(), AMEDIAFORMAT_KEY_MIME, mime(description.codec[stream_index]));
++			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_WIDTH, width);
++			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_HEIGHT, height);
++			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_OPERATING_RATE, std::ceil(description.frame_rate));
++			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_PRIORITY, 0);
++			status = AMediaCodec_configure(media_codec.get(), format.get(), window, nullptr, 0);
++		}
++		check(status, "AMediaCodec_configure");
++		spdlog::info("Decoder {} low-latency requested: {}", stream_index, low_latency);
+ 
+ 		check(AMediaCodec_start(media_codec.get()), "AMediaCodec_start");
+ 	}
+@@ -290,7 +317,8 @@ void decoder::on_image_available(void * context, AImageReader * reader)
+ 			if (state.owner)
+ 			{
+ 				scene = state.owner->weak_scene.lock();
+-				if (scene) state.owner->on_image_available(reader);
++				if (scene)
++					state.owner->on_image_available(reader);
+ 			}
+ 		}
+ 	}
+@@ -317,7 +345,8 @@ void decoder::on_image_available(AImageReader * reader)
+ 	AImage * tmp;
+ 	auto status = AImageReader_acquireLatestImage(image_reader.get(), &tmp);
+ 	// acquireLatestImage can consume images belonging to already queued callbacks.
+-	if (status == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE) return;
++	if (status == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE)
++		return;
+ 	check(status, "AImageReader_acquireLatestImage");
+ 	image.reset(tmp);
+ 
+diff --git a/client/java/BroadcastReceiver.java b/client/java/BroadcastReceiver.java
+deleted file mode 100644
+index 6f932fb6..00000000
+--- a/client/java/BroadcastReceiver.java
++++ /dev/null
+@@ -1,7 +0,0 @@
+-package org.meumeu.wivrn;
+-
+-public class BroadcastReceiver extends android.content.BroadcastReceiver
+-{
+-	@Override
+-	public native void onReceive(android.content.Context ctxt, android.content.Intent intent);
+-}
+diff --git a/client/java/MainActivity.java b/client/java/MainActivity.java
+deleted file mode 100644
+index 48e758c7..00000000
+--- a/client/java/MainActivity.java
++++ /dev/null
+@@ -1,74 +0,0 @@
+-package org.meumeu.wivrn;
+-
+-public class MainActivity extends android.app.NativeActivity
+-{
+-	private volatile boolean microphoneActivityResumed = false;
+-	private final java.util.concurrent.atomic.AtomicInteger microphoneCaptureEpoch = new java.util.concurrent.atomic.AtomicInteger();
+-
+-	@Override
+-	protected void onResume()
+-	{
+-		super.onResume();
+-		microphoneCaptureEpoch.incrementAndGet();
+-		microphoneActivityResumed = true;
+-	}
+-
+-	@Override
+-	protected void onPause()
+-	{
+-		microphoneActivityResumed = false;
+-		microphoneCaptureEpoch.incrementAndGet();
+-		super.onPause();
+-	}
+-
+-	public int getMicrophoneCaptureEpoch()
+-	{
+-		return microphoneCaptureEpoch.get();
+-	}
+-
+-	static
+-	{
+-		System.loadLibrary("wivrn");
+-	}
+-
+-	@Override
+-	public native void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+-
+-	@Override
+-	public native void onNewIntent(android.content.Intent intent);
+-
+-	@Override
+-	public native void onActivityResult(int requestCode, int resultCode, android.content.Intent data);
+-
+-	// Called by the native audio owner. Query only; never change system privacy.
+-	public int getMicrophoneCaptureBlockReason()
+-	{
+-		try
+-		{
+-			if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED)
+-				return 1;
+-			android.media.AudioManager audio = getSystemService(android.media.AudioManager.class);
+-			if (audio == null || audio.isMicrophoneMute())
+-				return 2;
+-			if (!microphoneActivityResumed)
+-				return 4;
+-			return 0;
+-		}
+-		catch (RuntimeException error)
+-		{
+-			return 8; // Failed queries must not enable capture or recovery retries.
+-		}
+-	}
+-
+-	private android.content.BroadcastReceiver BatteryInfoReceiver = null;
+-
+-	@Override
+-	protected void onCreate(android.os.Bundle savedInstanceState)
+-	{
+-		super.onCreate(savedInstanceState);
+-
+-		this.BatteryInfoReceiver = new BroadcastReceiver();
+-
+-		this.registerReceiver(this.BatteryInfoReceiver, new android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED));
+-	}
+-}
+diff --git a/client/passthrough_cutout.h b/client/passthrough_cutout.h
+index eb5644dd..a5c3a378 100644
+--- a/client/passthrough_cutout.h
++++ b/client/passthrough_cutout.h
+@@ -10,7 +10,7 @@ struct rectangle {
+     float width=0, height=0;
+     bool valid() const { return room_calibration::valid(pose) && std::isfinite(width) && std::isfinite(height) && width>=.1f && height>=.1f && width<=3 && height<=3; }
+ };
+-struct hand { XrVector3f position{}; float press=0; int source=0; bool valid=false; };
++struct hand { XrVector3f position{}; float press=0; int source=0; bool valid=false; XrQuaternionf orientation{0,0,0,1}; };
+ inline XrVector3f cross(XrVector3f a, XrVector3f b) { return {a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x}; }
+ inline float dot(XrVector3f a, XrVector3f b) { return a.x*b.x+a.y*b.y+a.z*b.z; }
+ // Homogeneous ray-to-rectangle transform. 48 bytes, within Vulkan's minimum
+@@ -59,21 +59,26 @@ class editor {
+     std::optional<spot> anchor;
+     std::optional<rectangle> saved, draft;
+     std::optional<XrPosef> plane;
++    struct grab_state { size_t index; XrPosef hand_pose; rectangle rect; };
++    struct resize_origin { std::array<XrVector3f,2> hands, corners; };
++    std::optional<grab_state> grab;
++    std::optional<resize_origin> resize;
+     bool armed=false;
+     XrTime pressed_since=0, last_time=0;
+     uint64_t generation=0;
+     std::array<int,2> sources{};
+-    void reset_gesture() { armed=false; pressed_since=0; plane.reset(); draft.reset(); sources={}; }
++    void reset_gesture() { armed=false; pressed_since=0; plane.reset(); draft.reset(); grab.reset(); resize.reset(); sources={}; }
+ public:
+     bool designing=false, enabled=true;
+     std::string message;
+     explicit editor(std::filesystem::path path = {}) : file(std::move(path)) { load(); }
++    bool manipulating() const { return grab.has_value(); }
+     bool has_saved() const { return saved.has_value(); }
+     bool available(const spatial::snapshot & s) const { return capture_anchor(s).has_value(); }
+     void begin(const spatial::snapshot & s) {
+         if (!available(s)) { message="Localize a saved room marker before designing a cutout."; return; }
+         designing=true; generation=s.generation; reset_gesture();
+-        message="Release both triggers/pinches. Pull your hands to opposite diagonal corners, then hold both triggers or pinches to confirm.";
++        message="Release both triggers/pinches. Place your hands at opposite diagonal corners. Move both to pan, turn the pair to yaw, and pull apart to resize. Hold one trigger/pinch to grab and tilt; hold both to save.";
+     }
+     void cancel() { designing=false; reset_gesture(); }
+     std::optional<rectangle> locate(const spatial::snapshot & s) const {
+@@ -91,25 +96,65 @@ public:
+         }
+         if (now<=last_time || (last_time && now-last_time>250'000'000)) reset_gesture();
+         last_time=now;
+-        for (const auto & h:hands) if (!h.valid || !room_calibration::valid({{0,0,0,1},h.position}) || !std::isfinite(h.press)) {
++        for (const auto & h:hands) if (!h.valid || !room_calibration::valid({h.orientation,h.position}) || !std::isfinite(h.press)) {
+             reset_gesture(); message="Both controllers or both hands must be tracked. Release to resume."; return;
+         }
+         std::array current_sources{hands[0].source,hands[1].source};
+         if (sources!=current_sources) { reset_gesture(); sources=current_sources; }
+-        if (!plane) {
+-            auto forward=rotate(s.head.pose.orientation,{0,0,-1});
+-            if (std::hypot(forward.x,forward.z)<.2f) return;
+-            float yaw=std::atan2(-forward.x,-forward.z);
+-            auto a=hands[0].position,b=hands[1].position;
+-            plane=XrPosef{{0,std::sin(yaw/2),0,std::cos(yaw/2)},{(a.x+b.x)/2,(a.y+b.y)/2,(a.z+b.z)/2}};
++        if (grab && hands[grab->index].press<.25f) {
++            // Rebase both corners on release so returning to resize preserves
++            // the tilted pose and dimensions, even if the other hand stayed put.
++            auto local=inverse(draft->pose);
++            auto a=compose(local,{hands[0].orientation,hands[0].position}).position;
++            auto b=compose(local,{hands[1].orientation,hands[1].position}).position;
++            float x=std::copysign(draft->width/2,b.x-a.x);
++            float y=std::copysign(draft->height/2,b.y-a.y);
++            resize=resize_origin{{hands[0].position,hands[1].position},
++                {compose(draft->pose,{{0,0,0,1},{-x,-y,0}}).position,
++                 compose(draft->pose,{{0,0,0,1},{x,y,0}}).position}};
++            grab.reset();
++        }
++        if (!grab && armed && draft) {
++            for (size_t i=0;i<2;++i) if (hands[i].press>=.75f && hands[1-i].press<.25f) {
++                grab=grab_state{i,{hands[i].orientation,hands[i].position},*draft};
++                resize.reset(); break;
++            }
++        }
++        if (grab) {
++            auto & h=hands[grab->index];
++            auto motion=compose(XrPosef{h.orientation,h.position},inverse(grab->hand_pose));
++            draft=rectangle{compose(motion,grab->rect.pose),grab->rect.width,grab->rect.height};
++            plane=draft->pose;
++        } else {
++            std::array positions{hands[0].position,hands[1].position};
++            if (resize) for (size_t i=0;i<2;++i) {
++                auto p=positions[i],h=resize->hands[i],c=resize->corners[i];
++                positions[i]={c.x+p.x-h.x,c.y+p.y-h.y,c.z+p.z-h.z};
++            }
++            // Resize/yaw within the current tilted frame instead of snapping
++            // back to world-up. The midpoint still pans freely in all axes.
++            auto base=plane.value_or(XrPosef{{0,0,0,1},{}});
++            auto a=compose(inverse(base),{{0,0,0,1},positions[0]}).position;
++            auto b=compose(inverse(base),{{0,0,0,1},positions[1]}).position;
++            XrVector3f across{b.x-a.x,0,b.z-a.z};
++            float width=std::hypot(across.x,across.z);
++            if (width>=.1f) {
++                auto right=plane ? XrVector3f{1,0,0} : rotate(s.head.pose.orientation,{1,0,0});
++                if (dot(across,right)<0) { across.x=-across.x; across.z=-across.z; }
++                float yaw=std::atan2(-across.z,across.x);
++                auto p=positions[0],q=positions[1];
++                auto orientation=multiply(base.orientation,{0,std::sin(yaw/2),0,std::cos(yaw/2)});
++                float length=std::sqrt(orientation.x*orientation.x+orientation.y*orientation.y+orientation.z*orientation.z+orientation.w*orientation.w);
++                orientation={orientation.x/length,orientation.y/length,orientation.z/length,orientation.w/length};
++                plane=XrPosef{orientation,
++                    {(p.x+q.x)/2,(p.y+q.y)/2,(p.z+q.z)/2}};
++            }
++            rectangle next{plane.value_or(XrPosef{{0,0,0,1},{}}),width,std::abs(a.y-b.y)};
++            draft=next.valid()?std::optional(next):std::nullopt;
+         }
+-        auto a=compose(inverse(*plane),{{0,0,0,1},hands[0].position}).position;
+-        auto b=compose(inverse(*plane),{{0,0,0,1},hands[1].position}).position;
+-        rectangle next{compose(*plane,{{0,0,0,1},{(a.x+b.x)/2,(a.y+b.y)/2,(a.z+b.z)/2}}),std::abs(a.x-b.x),std::abs(a.y-b.y)};
+-        draft=next.valid()?std::optional(next):std::nullopt;
+         if (hands[0].press<.25f && hands[1].press<.25f) armed=true;
+         if (!draft) { pressed_since=0; message="Separate diagonal corners: width and height must each be 10 cm to 3 m."; return; }
+-        message="Preview: hold BOTH triggers or BOTH pinches to save. Cancel keeps the previous cutout.";
++        message="Preview: hold ONE trigger/pinch and move or rotate that hand to pan/tilt. Release to resize. Hold BOTH triggers or BOTH pinches to save.";
+         if (!armed || hands[0].press<.75f || hands[1].press<.75f) { pressed_since=0; return; }
+         if (!pressed_since) pressed_since=now;
+         if (now-pressed_since<200'000'000) return;
+diff --git a/client/scenes/gui_settings.cpp b/client/scenes/gui_settings.cpp
+index a7147042..33cf2ab9 100644
+--- a/client/scenes/gui_settings.cpp
++++ b/client/scenes/gui_settings.cpp
+@@ -306,6 +306,24 @@ void settings_streaming(const settings_context & ctx)
+ 	const std::string disconnect_tip = ctx.in_game ? _C("tooltip for disabled settings", "Disconnect to change this setting.") : std::string{};
+ 	std::vector<setting> list;
+ 
++	list.push_back({
++	        .id = "##stream_quality",
++	        .label = _("Stream quality preset"),
++	        .description = _("Performance: 30% per-axis resolution; balanced: 40%; quality: 50%. Selecting a preset fixes the size independently of eye-tracking permission."),
++	        .ui = ui_kind::combo,
++	        .get_int = [&config] {
++            const float scale = config.get_stream_scale();
++            if (std::abs(scale - 0.3f) < 0.001f) return 1;
++            if (std::abs(scale - 0.4f) < 0.001f) return 2;
++            if (std::abs(scale - 0.5f) < 0.001f) return 3;
++            return 0; },
++	        .set_int = [&config](int v) {
++            if (v >= 1 && v <= 3) { config.set_stream_scale(0.2f + v * 0.1f); config.save(); } },
++	        .options = [] { return std::vector<std::string>{_("Custom"), _("Performance"), _("Balanced"), _("Quality")}; },
++	        .default_int = default_config.get_stream_scale() < 0.4f ? 1 : 3,
++	        .enabled = [&ctx] { return not ctx.in_game; },
++	        .disabled_tooltip = disconnect_tip,
++	});
+ 	list.push_back({
+ 	        .id = "##foveation",
+ 	        .label = _("Foveated encoding"),
+@@ -327,6 +345,18 @@ void settings_streaming(const settings_context & ctx)
+ 	        .disabled_tooltip = disconnect_tip,
+ 	});
+ 
++	list.push_back({
++	        .id = "##decoder_low_latency",
++	        .label = _("Low-latency decoding"),
++	        .description = _("Ask the headset decoder to minimise buffering. Reconnect to apply."),
++	        .ui = ui_kind::toggle,
++	        .get_bool = [&config] { return config.decoder_low_latency; },
++	        .set_bool = [&config](bool v) { config.decoder_low_latency = v; config.save(); },
++	        .default_bool = default_config.decoder_low_latency,
++	        .enabled = [&ctx] { return not ctx.in_game; },
++	        .disabled_tooltip = disconnect_tip,
++	});
++
+ 	auto codec_name = [](std::optional<wivrn::video_codec> codec) -> std::string {
+ 		if (not codec)
+ 			return _C("Codec", "Automatic");
+diff --git a/client/scenes/stream.cpp b/client/scenes/stream.cpp
+index 916612eb..509b9244 100644
+--- a/client/scenes/stream.cpp
++++ b/client/scenes/stream.cpp
+@@ -1265,7 +1265,15 @@ void scenes::stream::exit()
+ void scenes::stream::setup(const to_headset::video_stream_description & description)
+ {
+ 	spdlog::info("Video stream (re)initialization, refresh rate {}", description.refresh_rate);
+-	session.set_refresh_rate(description.refresh_rate);
++	// A description is a snapshot of the server's last observed display rate,
++	// not a new request. Echoing it during recovery can undo a newer rate change
++	// and trigger another encoder/decoder rebuild indefinitely. Only bootstrap
++	// the display once; explicit rate commands and the settings UI own changes.
++	if (!initial_refresh_rate_applied)
++	{
++		initial_refresh_rate_applied = true;
++		session.set_refresh_rate(description.refresh_rate);
++	}
+ 	// An unchanged description is also a restart boundary. Retire both eyes
+ 	// together; do not destroy codecs while holding the lock used by callbacks.
+ 	decltype(decoders) retired;
+@@ -1310,7 +1318,6 @@ void scenes::stream::setup_reprojection_swapchain(uint32_t swapchain_width, uint
+ 	assert(swapchain_height);
+ 	device.waitIdle();
+ 	spdlog::info("swapchain setup, refresh rate {}", video_stream_description->refresh_rate);
+-	session.set_refresh_rate(video_stream_description->refresh_rate);
+ 
+ 	auto views = system.view_configuration_views(viewconfig);
+ 
+diff --git a/client/scenes/stream.h b/client/scenes/stream.h
+index d4a79d28..a7d95fff 100644
+--- a/client/scenes/stream.h
++++ b/client/scenes/stream.h
+@@ -91,6 +91,8 @@ private:
+ 	std::optional<std::thread> tracking_thread;
+ 
+ 	std::shared_mutex decoder_mutex;
++	// Network-thread state: decoder recovery must not replay an old display rate.
++	bool initial_refresh_rate_applied = false;
+ 	std::optional<to_headset::video_stream_description> video_stream_description;
+ 	std::array<accumulator_images, decoder_count> decoders; // Locked by decoder_mutex
+ 
+diff --git a/client/scenes/stream_actions.cpp b/client/scenes/stream_actions.cpp
+index 3c517933..b5b0fe2f 100644
+--- a/client/scenes/stream_actions.cpp
++++ b/client/scenes/stream_actions.cpp
+@@ -111,7 +111,7 @@ void scenes::stream::update_cutout(XrTime time)
+         auto space = application::space(spaces[i]);
+         if (space && value && XR_SUCCEEDED(xrLocateSpace(space, application::space(xr::spaces::world), time, &location))
+             && wivrn::room_calibration::tracked({location.pose, location.locationFlags}))
+-            hands[i] = {location.pose.position, value->second, 1, true};
++            hands[i] = {location.pose.position, value->second, 1, true, location.pose.orientation};
+     }
+     if ((!hands[0].valid || !hands[1].valid) && system.hand_tracking_supported())
+     {
+@@ -125,12 +125,14 @@ void scenes::stream::update_cutout(XrTime time)
+             {
+                 const auto & a = (*joints)[XR_HAND_JOINT_THUMB_TIP_EXT].first;
+                 const auto & b = (*joints)[XR_HAND_JOINT_INDEX_TIP_EXT].first;
++                const auto & wrist = (*joints)[XR_HAND_JOINT_WRIST_EXT].first;
+                 constexpr auto flags = XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_POSITION_TRACKED_BIT;
+-                if ((a.locationFlags & flags) == flags && (b.locationFlags & flags) == flags)
++                if ((a.locationFlags & flags) == flags && (b.locationFlags & flags) == flags
++                    && wivrn::room_calibration::tracked({wrist.pose, wrist.locationFlags}))
+                 {
+                     auto p = a.pose.position, q = b.pose.position;
+                     float distance = std::sqrt((p.x-q.x)*(p.x-q.x) + (p.y-q.y)*(p.y-q.y) + (p.z-q.z)*(p.z-q.z));
+-                    hands[i] = {{(p.x+q.x)/2, (p.y+q.y)/2, (p.z+q.z)/2}, std::clamp((.05f-distance)/.03f, 0.f, 1.f), 2, true};
++                    hands[i] = {{(p.x+q.x)/2, (p.y+q.y)/2, (p.z+q.z)/2}, std::clamp((.05f-distance)/.03f, 0.f, 1.f), 2, true, wrist.pose.orientation};
+                 }
+             }
+     }
+diff --git a/client/scenes/stream_gui.cpp b/client/scenes/stream_gui.cpp
+index 5ec6a568..9f59c682 100644
+--- a/client/scenes/stream_gui.cpp
++++ b/client/scenes/stream_gui.cpp
+@@ -434,7 +434,7 @@ void scenes::stream::gui_settings(float)
+ 			{
+ 				auto & portal = spatial->portal;
+ 				ImGui::SeparatorText("Anchored passthrough cutout");
+-				ImGui::TextWrapped("Place your controllers or hands at opposite diagonal corners of an upright window. Its plane faces you when drawing begins. Release, pull apart, then hold both triggers or pinch both hands to confirm.");
++				ImGui::TextWrapped("Place your controllers or hands at opposite diagonal corners of a window. Release both inputs. Move both hands together to pan in any direction, turn the pair to yaw, and pull apart to resize. Hold one trigger or pinch to grab the window, then move or rotate that hand to pan, tilt, or roll it without resizing. Release to resize again. Hold both triggers or pinch both hands to confirm.");
+ 				if (portal.designing)
+ 				{
+ 					if (ImGui::Button("Cancel cutout design")) portal.cancel();
+@@ -471,6 +471,9 @@ void scenes::stream::gui_settings(float)
+ 		{
+ 			wivrn::gui::settings_audio(ctx);
+ #ifdef __ANDROID__
++#if WIVRN_AUDIO_AB_STOCK
++			ImGui::TextWrapped("Audio test A: stock WiVRn 26.9. Microphone capture follows PC application demand.");
++#else
+ 			ImGui::Spacing();
+ 			ImGui::BeginDisabled(!ctx.config.check_feature(feature::microphone));
+ 			bool capture = mic_capture_enabled;
+@@ -482,6 +485,7 @@ void scenes::stream::gui_settings(float)
+ 			ImGui::TextWrapped("Release capture for one second, then reopen in compatibility mode. Voice processing may sound different. The VR session stays connected.");
+ 			ImGui::EndDisabled();
+ 			ImGui::EndDisabled();
++#endif
+ #endif
+ 			break;
+ 		}
+diff --git a/client/scenes/stream_network.cpp b/client/scenes/stream_network.cpp
+index 92340a7b..1d47c4e3 100644
+--- a/client/scenes/stream_network.cpp
++++ b/client/scenes/stream_network.cpp
+@@ -36,6 +36,7 @@ void scenes::stream::process_packets()
+ 		try
+ 		{
+ #ifdef __ANDROID__
++			#if !WIVRN_AUDIO_AB_STOCK
+ 			if (audio_handle)
+ 			{
+ 				audio_handle->set_capture_enabled(mic_capture_enabled);
+@@ -43,6 +44,7 @@ void scenes::stream::process_packets()
+ 					audio_handle->restart_microphone();
+ 				audio_handle->send_microphone_data();
+ 			}
++			#endif
+ 			network_session->poll(*this, std::chrono::milliseconds(audio_handle ? 10 : 500));
+ #else
+ 			network_session->poll(*this, std::chrono::milliseconds(500));
+@@ -112,6 +114,11 @@ void scenes::stream::operator()(to_headset::feature_control && control)
+ 
+ void scenes::stream::operator()(to_headset::audio_stream_description && desc)
+ {
++#if defined(__ANDROID__) && WIVRN_AUDIO_AB_STOCK
++	spdlog::info("Audio backend: upstream v26.9 (default)");
++#else
++	spdlog::info("Audio backend: experimental session keep-alive");
++#endif
+ 	audio_handle.emplace(desc, *network_session, instance);
+ }
+ 
+@@ -128,8 +135,9 @@ void scenes::stream::operator()(to_headset::video_stream_description && desc)
+ void scenes::stream::operator()(to_headset::refresh_rate_change && rate)
+ {
+ 	spdlog::info("refresh rate change request: {}", rate.hz);
++	initial_refresh_rate_applied = true;
+ 	session.set_refresh_rate(rate.hz);
+-	std::shared_lock lock(decoder_mutex);
++	std::unique_lock lock(decoder_mutex);
+ 	if (video_stream_description)
+ 		video_stream_description->refresh_rate = rate.hz;
+ }
+diff --git a/dashboard/shora/wivrn_dashboard.py b/dashboard/shora/wivrn_dashboard.py
+index 42abee9e..db442efa 100644
+--- a/dashboard/shora/wivrn_dashboard.py
++++ b/dashboard/shora/wivrn_dashboard.py
+@@ -9,11 +9,11 @@ import sys
+ import tomllib
+ 
+ from PySide6.QtCore import QObject, QProcess, QTimer, Signal, QSaveFile, QIODevice, QFileDevice, QEvent, Qt
+-from PySide6.QtGui import QIcon
++from PySide6.QtGui import QIcon, QTextCursor
+ from PySide6.QtDBus import QDBusConnection, QDBusMessage, QDBusPendingCallWatcher, QDBusVariant
+ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QFormLayout, QHBoxLayout,
+     QLabel, QPushButton, QComboBox, QCheckBox, QLineEdit, QPlainTextEdit, QSpinBox, QInputDialog,
+-    QMenu, QSystemTrayIcon, QScrollArea)
++    QMenu, QSystemTrayIcon, QScrollArea, QFrame)
+ from shora_qt import HubWindow, STYLE
+ from tracking_panel import DEFAULTS
+ 
+@@ -24,6 +24,14 @@ PROFILE = CONFIG_HOME / 'wivrn-pro' / 'shora.toml'
+ SOCKET = Path(os.environ.get('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}')) / 'wivrn-pro' / 'ShoraControl'
+ 
+ 
++def encoder_presets():
++    here = Path(__file__).resolve()
++    for directory in (here.parents[1] / 'encoder-presets', here.parents[2] / 'fork/encoder-presets'):
++        if (directory / 'profiles').is_dir():
++            return {p.stem: json.loads(p.read_text()) for p in sorted((directory / 'profiles').glob('*.json'))}
++    return {}
++
++
+ def atomic_save(path, text, expected):
+     """Avoid silently overwriting another editor's changes; commit complete files."""
+     current = path.read_text() if path.exists() else None
+@@ -165,6 +173,23 @@ class StreamingPanel(QWidget):
+         self.status = QLabel('WiVRn service is stopped')
+         self.status.setWordWrap(True)
+         layout.addWidget(self.status)
++        self.presets = encoder_presets()
++        self.preset = QComboBox()
++        self.preset.addItem('Choose an encoder preset', None)
++        for name, profile in self.presets.items():
++            self.preset.addItem(profile['title'], name)
++        self.preset_qp = QSpinBox(); self.preset_qp.setRange(1, 51); self.preset_qp.setValue(24)
++        self.preset_qp.setPrefix('QP '); self.preset_qp.setEnabled(False)
++        self.preset_qp.setToolTip('CQP quantizer: lower values improve quality and increase uncapped traffic.')
++        self.load_preset = QPushButton('Load preset')
++        self.load_preset.setEnabled(False)
++        preset_row = QHBoxLayout()
++        preset_row.addWidget(self.preset, 1); preset_row.addWidget(self.preset_qp); preset_row.addWidget(self.load_preset)
++        layout.addLayout(preset_row)
++        self.preset_notice = QLabel('Load a preset into the editor, then save for the next streaming session.')
++        self.preset_notice.setWordWrap(True); layout.addWidget(self.preset_notice)
++        self.preset.currentIndexChanged.connect(self.preset_selected)
++        self.load_preset.clicked.connect(self.load_encoder_preset)
+         form = QFormLayout()
+         self.encoder = QComboBox()
+         self.encoder.addItems(['Preserve current layout', 'auto', 'vaapi', 'vulkan', 'qsv'])
+@@ -186,6 +211,7 @@ class StreamingPanel(QWidget):
+         layout.addLayout(form)
+         layout.addWidget(QLabel('Full configuration JSON (application, OpenVR, custom encoder layouts and other options)'))
+         self.raw = QPlainTextEdit()
++        self.raw.setMinimumHeight(180)
+         layout.addWidget(self.raw, 1)
+         row = QHBoxLayout()
+         self.apply = QPushButton('Save WiVRn settings')
+@@ -206,6 +232,14 @@ class StreamingPanel(QWidget):
+             button = QPushButton(text); button.clicked.connect(lambda _, m=method, a=args: backend.method(m, *a)); pair.addWidget(button)
+         layout.addLayout(pair)
+         self.keys = QComboBox(); layout.addWidget(self.keys)
++        # Keep the selected text and padded edit area readable. The enclosing
++        # tab scrolls when space is tight instead of crushing these controls.
++        for control in (self.preset, self.encoder, self.codec, self.depth, self.keys,
++                        self.preset_qp, self.port, self.hostname):
++            control.setMinimumHeight(max(36, control.fontMetrics().height() + 18))
++        for combo in (self.preset, self.encoder, self.codec, self.depth):
++            combo.setMinimumWidth(max(combo.fontMetrics().horizontalAdvance(combo.itemText(i))
++                                      for i in range(combo.count())) + 48)
+         keyrow = QHBoxLayout()
+         rename = QPushButton('Rename headset'); rename.clicked.connect(self.rename_key); keyrow.addWidget(rename)
+         revoke = QPushButton('Forget selected headset'); revoke.clicked.connect(self.revoke_key); keyrow.addWidget(revoke)
+@@ -221,6 +255,46 @@ class StreamingPanel(QWidget):
+     def changed(self, *_):
+         if not self.loading: self.dirty = True
+ 
++    def preset_selected(self, *_):
++        profile = self.presets.get(self.preset.currentData())
++        self.load_preset.setEnabled(profile is not None)
++        cqp = bool(profile and profile['requires_cqp_branch'])
++        self.preset_qp.setEnabled(cqp)
++        if not profile:
++            self.preset_notice.setText('Load a preset into the editor, then save for the next streaming session.')
++            return
++        if cqp:
++            self.preset_qp.setValue(int(profile['host_config']['encoder']['options']['qp']))
++        client = profile['headset_settings']
++        rate = ('CQP is uncapped; the headset bitrate slider has no effect.' if cqp else
++                f"Set the headset bitrate to {client['bitrate_mbps']} Mbit/s; this host preset cannot set it.")
++        self.preset_notice.setText(f"{rate} Headset: {client['refresh_rate_hz']} Hz, {client['foveation_percent']}% foveation, "
++                                  f"{client['codec']}, 8-bit, low-latency decoding on, SpaceWarp off. Keep render resolution unchanged. "
++                                  'Save and reconnect to apply.')
++
++    def load_encoder_preset(self):
++        profile = self.presets.get(self.preset.currentData())
++        if not profile: return
++        try:
++            # Fold unsaved controls into the draft before replacing encoder options.
++            value = self.configuration()
++            host = copy.deepcopy(profile['host_config'])
++            if profile['requires_cqp_branch']:
++                host['encoder']['options']['qp'] = str(self.preset_qp.value())
++            value.update(host)
++            self.loading = True
++            self.raw.setPlainText(json.dumps(value, indent=2))
++            self.encoder.setCurrentIndex(0); self.codec.setCurrentIndex(0)
++            self.depth.setCurrentIndex({8: 1, 10: 2}.get(value.get('bit-depth'), 0))
++            self.tcp.setChecked(value.get('tcp-only', False))
++            self.initial_controls = self.controls()
++            self.loading = False
++            self.dirty = True
++            self.notice.setText('Preset loaded into the editor. Save WiVRn settings, then reconnect the headset.')
++        except (ValueError, TypeError, KeyError) as error:
++            self.loading = False
++            self.notice.setText(str(error))
++
+     def saved(self):
+         self.dirty = False
+         self.notice.setText('Settings saved. They apply to the next streaming session.')
+@@ -246,11 +320,16 @@ class StreamingPanel(QWidget):
+             self.latest = json.loads(state.get('JsonConfiguration') or '{}')
+             if self.latest is None: self.latest = {}
+             if not isinstance(self.latest, dict): raise ValueError('Configuration must be an object')
+-            if not self.dirty: self.reload()
++            if not self.dirty and self.latest != self.original:
++                self.reload(preserve_view=True)
+         except (ValueError, TypeError) as error: self.notice.setText(str(error))
+ 
+-    def reload(self):
++    def reload(self, preserve_view=False):
+         if self.latest is None: return
++        cursor = self.raw.textCursor()
++        position, anchor = cursor.position(), cursor.anchor()
++        vertical = self.raw.verticalScrollBar().value()
++        horizontal = self.raw.horizontalScrollBar().value()
+         self.loading = True
+         self.original = copy.deepcopy(self.latest)
+         self.raw.setPlainText(json.dumps(self.original, indent=2))
+@@ -266,6 +345,14 @@ class StreamingPanel(QWidget):
+         self.wayvr.setChecked(overlay.get('enabled', True))
+         self.wayvr_dashboard.setChecked(overlay.get('dashboard', True))
+         self.initial_controls = self.controls()
++        if preserve_view:
++            cursor = self.raw.textCursor()
++            last = self.raw.document().characterCount() - 1
++            cursor.setPosition(min(anchor, last))
++            cursor.setPosition(min(position, last), QTextCursor.MoveMode.KeepAnchor)
++            self.raw.setTextCursor(cursor)
++            self.raw.verticalScrollBar().setValue(vertical)
++            self.raw.horizontalScrollBar().setValue(horizontal)
+         self.loading = False; self.dirty = False
+ 
+     def controls(self):
+@@ -335,7 +422,11 @@ class Dashboard(HubWindow):
+         self.detach_button.setText('Restart WiVRn')
+         self.detach_button.clicked.disconnect()
+         self.detach_button.clicked.connect(lambda: self.backend.service('restart'))
+-        self.tabs.insertTab(0, StreamingPanel(self.backend), 'WiVRn streaming')
++        streaming_scroll = QScrollArea()
++        streaming_scroll.setWidgetResizable(True)
++        streaming_scroll.setFrameShape(QFrame.Shape.NoFrame)
++        streaming_scroll.setWidget(StreamingPanel(self.backend))
++        self.tabs.insertTab(0, streaming_scroll, 'WiVRn streaming')
+         self.tabs.setCurrentIndex(0)
+         self.logs.setPlaceholderText('Service logs: journalctl --user -u wivrn-pro.service\nTracking diagnostics and calibration messages appear below.')
+         self.backend.failure.connect(self.show_error)
+diff --git a/fork/ANCHORED-PASSTHROUGH.md b/fork/ANCHORED-PASSTHROUGH.md
+index fdd66eba..c28feaea 100644
+--- a/fork/ANCHORED-PASSTHROUGH.md
++++ b/fork/ANCHORED-PASSTHROUGH.md
+@@ -135,7 +135,7 @@ and headset runtime support remain prerequisites.
+ 
+ ## Implemented client prototype
+ 
+-The branch now implements **one upright, two-sided rectangular cutout** in the
++The branch now implements **one freely oriented, two-sided rectangular cutout** in the
+ streaming client. It removes all streamed PC content inside the aperture; local
+ WiVRn menus/controllers remain separate layers. No Monado key configuration or
+ application MR support is needed.
+@@ -145,7 +145,14 @@ application MR support is needed.
+    capture → Anchored passthrough cutout → Design cutout**.
+ 3. Release both triggers/pinches. Put the controllers or tracked hands at opposite
+    diagonal corners and pull them apart horizontally and vertically. The upright
+-   plane's heading is fixed when the gesture begins; its center follows the pair.
++   plane follows the horizontal line between your hands: turn the pair around its
++   midpoint to yaw the window, or move both hands together to pan it left/right,
++   up/down, or nearer/further away. Keep their separation unchanged to preserve
++   size while moving. The window starts upright and does not turn with your head.
++   Hold **one trigger or one pinch** to grab a corner, then move or rotate that
++   controller/hand to pan, pitch, or roll the entire window without changing its
++   size. Press the other trigger/pinch while holding to save, or release to resume
++   resizing in the tilted plane. Releasing does not snap the window back upright.
+    Width and height must each be 10 cm–3 m. A teal outline surrounds the live
+    passthrough preview.
+ 4. Hold **both triggers** or **both thumb/index pinches** together for 0.2 seconds
+diff --git a/fork/build-server.sh b/fork/build-server.sh
+index 90e9b943..783ba70e 100755
+--- a/fork/build-server.sh
++++ b/fork/build-server.sh
+@@ -4,10 +4,11 @@ set -euo pipefail
+ cd "$(dirname "$0")/.."
+ # Extra arguments permit encoder choices, dependency caches, and install prefix.
+ cmake -S . -B build/server -G Ninja \
++  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+   -DWIVRN_BUILD_CLIENT=OFF -DWIVRN_BUILD_SERVER=ON \
+   -DWIVRN_BUILD_SERVER_LIBRARY=ON -DWIVRN_BUILD_DASHBOARD=ON \
+   -DWIVRN_BUILD_WIVRNCTL=OFF -DWIVRN_USE_VAAPI=ON \
+-  -DWIVRN_USE_PIPEWIRE=ON \
+-  -DWIVRN_USE_VULKAN_ENCODE=ON -DWIVRN_OPTIMIZE_SHADERS=OFF -DWIVRN_WERROR=ON \
++  -DWIVRN_USE_PIPEWIRE=ON -DWIVRN_AUDIO_AB_STOCK=ON \
++  -DWIVRN_USE_VULKAN_ENCODE=ON -DWIVRN_OPTIMIZE_SHADERS=ON -DWIVRN_WERROR=ON \
+   -DGIT_DESC=v26.9-pro1 -DGIT_COMMIT="$(git rev-parse HEAD)" "$@"
+ cmake --build build/server --target wivrn-server openxr_wivrn --parallel "${BUILD_JOBS:-6}"
+diff --git a/fork/meta/README.md b/fork/meta/README.md
+index ca5e4e9c..74209c21 100644
+--- a/fork/meta/README.md
++++ b/fork/meta/README.md
+@@ -2,6 +2,13 @@
+ 
+ Meta app: `3443645619141564`. Release channel: `ALPHA`.
+ 
++Normal Android and host builds use the pinned upstream v26.9 audio subsystem.
++The experimental keep-alive backend is opt-in only (`WIVRN_AUDIO_AB_STOCK=OFF`
++on CMake, `-Pwivrn_audio_ab_stock=OFF` on Gradle). The October 7 A/B runs
++recorded persistent digital silence with keep-alive; upstream audio recovered
++after sleep/wake, although both implementations were initially silent.
++The default audio selection retains the video blackout fixes and other Pro features.
++
+ Build a non-debuggable APK with an externally stored release key:
+ 
+ ```sh
+diff --git a/fork/test-offline.sh b/fork/test-offline.sh
+index 7bf6215d..4cac5679 100755
+--- a/fork/test-offline.sh
++++ b/fork/test-offline.sh
+@@ -12,6 +12,8 @@ cxx=${CXX:-c++}
+ build/native-tests/audio-recovery-test
+ "$cxx" -std=c++23 -Wall -Wextra -Werror -pthread -Iserver fork/tests/video_recovery_test.cpp -o build/native-tests/video-recovery-test
+ build/native-tests/video-recovery-test
++"$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/refresh_rate_test.cpp -o build/native-tests/refresh-rate-test
++build/native-tests/refresh-rate-test
+ spdlog_flags=()
+ if pkg-config --exists spdlog; then
+   read -r -a spdlog_flags <<< "$(pkg-config --cflags --libs spdlog)"
+diff --git a/fork/tests/passthrough_cutout_test.cpp b/fork/tests/passthrough_cutout_test.cpp
+index fbf4a291..52f142fa 100644
+--- a/fork/tests/passthrough_cutout_test.cpp
++++ b/fork/tests/passthrough_cutout_test.cpp
+@@ -10,12 +10,131 @@ static bool inside(cutout::projection p,float x,float y) {
+     float u=p[0][0]*x+p[0][1]*y+p[0][2],v=p[1][0]*x+p[1][1]*y+p[1][2],w=p[2][0]*x+p[2][1]*y+p[2][2];
+     return p[0][3]!=0 && w>1e-5f && std::abs(u/w)<1 && std::abs(v/w)<1;
+ }
++static void check_placement_controls(spatial::snapshot s) {
++    auto file=std::filesystem::temp_directory_path()/("wivrn-cutout-placement-"+std::to_string(getpid()));
++    for (int source : {1,2}) { // Controllers and tracked-hand pinches share geometry.
++        std::filesystem::remove(file);
++        cutout::editor e(file);
++        e.begin(s);
++        XrTime now=1'000'000'000;
++        std::array<cutout::hand,2> hands{};
++        XrPosef pose{{0,0,0,1},{0,1.5f,-1}};
++        auto tick=[&] {
++            hands[0].position=compose(pose,{{0,0,0,1},{-.4f,-.3f,0}}).position;
++            hands[1].position=compose(pose,{{0,0,0,1},{.4f,.3f,0}}).position;
++            for (auto & h:hands) { h.valid=true; h.source=source; }
++            now+=20'000'000; e.update(s,hands,now);
++        };
++        auto check=[&](const cutout::rectangle & rect) {
++            assert(std::abs(rect.width-.8f)<1e-5 && std::abs(rect.height-.6f)<1e-5);
++            auto p=rect.pose.position,q=pose.position;
++            assert(std::abs(p.x-q.x)<1e-5 && std::abs(p.y-q.y)<1e-5 && std::abs(p.z-q.z)<1e-5);
++            auto right=rotate(rect.pose.orientation,{1,0,0}),expected=rotate(pose.orientation,{1,0,0});
++            assert(cutout::dot(right,expected)>.99999f);
++            assert(rotate(rect.pose.orientation,{0,1,0}).y>.99999f);
++        };
++        tick(); assert(e.locate(s)); check(*e.locate(s));
++        // Pan left/right, vertically and in depth without changing dimensions.
++        pose.position={.7f,.9f,-1.8f}; tick(); check(*e.locate(s));
++        // Rotate beyond edge-on to the initial view without width collapsing.
++        for (float yaw : {.4f,.8f,1.2f,1.6f,2.f}) {
++            pose.orientation={0,std::sin(yaw/2),0,std::cos(yaw/2)};
++            tick(); check(*e.locate(s));
++        }
++        // Looking away must not rotate a design already placed with the hands.
++        s.head.pose.orientation={0,1,0,0}; tick(); check(*e.locate(s));
++        // Moving diagonally and rotating at the same time preserves the rectangle.
++        pose.position={-1.1f,1.8f,-.6f};
++        pose.orientation={0,std::sin(1.2f),0,std::cos(1.2f)}; tick(); check(*e.locate(s));
++        std::swap(hands[0].position,hands[1].position);
++        now+=20'000'000; e.update(s,hands,now); check(*e.locate(s));
++        hands[0].press=hands[1].press=1;
++        for (int i=0;i<12;++i) tick();
++        assert(e.has_saved() && !e.designing); check(*e.locate(s));
++        cutout::editor loaded(file); assert(loaded.locate(s)); check(*loaded.locate(s));
++        // An almost vertical hand pair has no usable width and cannot confirm.
++        e.begin(s); hands[0].press=hands[1].press=0; tick();
++        hands[1].position.x=hands[0].position.x;
++        hands[1].position.z=hands[0].position.z;
++        hands[0].press=hands[1].press=1;
++        for (int i=0;i<20;++i) { now+=20'000'000; e.update(s,hands,now); }
++        assert(e.designing && !e.locate(s));
++        e.cancel(); check(*e.locate(s));
++        s.head.pose.orientation={0,0,0,1};
++    }
++    std::filesystem::remove(file);
++}
++static void check_tilt_controls(spatial::snapshot s) {
++    auto file=std::filesystem::temp_directory_path()/("wivrn-cutout-tilt-"+std::to_string(getpid()));
++    auto check=[](const cutout::rectangle & a,const cutout::rectangle & b) {
++        assert(std::abs(a.width-b.width)<1e-4 && std::abs(a.height-b.height)<1e-4);
++        auto p=a.pose.position,q=b.pose.position;
++        assert(std::abs(p.x-q.x)<1e-4 && std::abs(p.y-q.y)<1e-4 && std::abs(p.z-q.z)<1e-4);
++        for (auto axis : {XrVector3f{1,0,0},XrVector3f{0,1,0},XrVector3f{0,0,1}})
++            assert(cutout::dot(rotate(a.pose.orientation,axis),rotate(b.pose.orientation,axis))>.99999f);
++    };
++    for (int source : {1,2}) for (size_t holder : {0u,1u}) {
++        std::filesystem::remove(file);
++        cutout::editor e(file);
++        std::array<cutout::hand,2> hands{{{{-.4f,1.2f,-1},0,source,true},{{.4f,1.8f,-1},0,source,true}}};
++        XrTime now=1'000'000'000;
++        auto tick=[&] { now+=20'000'000; e.update(s,hands,now); };
++        e.begin(s); tick(); assert(e.locate(s));
++        auto original=*e.locate(s);
++        hands[holder].press=1; tick(); assert(e.manipulating()); check(*e.locate(s),original);
++        auto pivot=hands[holder].position;
++        // Tilt forward, backwards, nearly horizontal, and roll, with both
++        // controller grips and tracked wrists, using either hand as the pivot.
++        cutout::rectangle expected;
++        for (float pitch : {.6f,-.7f,1.5707963f}) {
++            auto orientation=multiply(XrQuaternionf{std::sin(pitch/2),0,0,std::cos(pitch/2)},
++                XrQuaternionf{0,0,std::sin(.3f),std::cos(.3f)});
++            hands[holder].orientation=orientation;
++            hands[holder].position={pivot.x+.2f,pivot.y+.1f,pivot.z-.3f};
++            auto motion=compose(XrPosef{orientation,hands[holder].position},inverse({{0,0,0,1},pivot}));
++            expected={compose(motion,original.pose),original.width,original.height};
++            tick(); check(*e.locate(s),expected);
++        }
++        // Release with the other hand unmoved: no resize or pose jump.
++        hands[holder].press=0; tick(); assert(!e.manipulating()); check(*e.locate(s),expected);
++        for (int i=0;i<10;++i) tick();
++        check(*e.locate(s),expected);
++        // Two-hand pan remains available in the tilted frame.
++        for (auto & h:hands) { h.position.x+=.1f; h.position.z-=.2f; }
++        expected.pose.position.x+=.1f; expected.pose.position.z-=.2f;
++        tick(); check(*e.locate(s),expected);
++        // Resize along the tilted window's width axis, not world horizontal.
++        auto right=rotate(expected.pose.orientation,{1,0,0});
++        for (size_t i=0;i<2;++i) {
++            float sign=i==0?-.1f:.1f;
++            hands[i].position.x+=sign*right.x;
++            hands[i].position.y+=sign*right.y;
++            hands[i].position.z+=sign*right.z;
++        }
++        expected.width+=.2f; tick(); check(*e.locate(s),expected);
++        // Pick it up again and confirm directly from the tilt gesture.
++        hands[holder].press=1; tick(); check(*e.locate(s),expected);
++        hands[1-holder].press=1;
++        for (int i=0;i<12;++i) tick();
++        assert(e.has_saved() && !e.designing); check(*e.locate(s),expected);
++        cutout::editor loaded(file); assert(loaded.locate(s)); check(*loaded.locate(s),expected);
++        // Bad orientation cannot leave a grabbed preview or confirm a save.
++        e.begin(s); hands[0].press=hands[1].press=0; tick();
++        hands[holder].press=1; tick(); assert(e.manipulating());
++        hands[holder].orientation.x=std::numeric_limits<float>::quiet_NaN(); tick();
++        assert(!e.manipulating() && !e.locate(s));
++        e.cancel(); check(*e.locate(s),expected);
++    }
++    std::filesystem::remove(file);
++}
+ int main() {
+     spatial::snapshot s;
+     s.active=true; s.generation=1;
+     s.head={{{0,0,0,1},{0,1.7f,0}},15};
+     s.markers[0].uuid[0]=42; s.markers[0].persisted=true;
+     s.markers[0].pose={{{0,0,0,1},{2,1,-2}},15};
++    check_placement_controls(s);
++    check_tilt_controls(s);
+     auto file=std::filesystem::temp_directory_path()/("wivrn-cutout-test-"+std::to_string(getpid()));
+     std::filesystem::remove(file);
+     cutout::editor e(file);
+@@ -97,6 +216,18 @@ int main() {
+     // Near-plane crossing: off-axis ray intersection, no projection divide by z.
+     rect.pose={{0,std::sin(.65f),0,std::cos(.65f)},{.3f,0,-.05f}};
+     assert(cutout::project(rect,eye,fov,false)[0][3]==1);
++    // Tilted/rolled masks still intersect the actual rectangle in each eye.
++    rect={{multiply(XrQuaternionf{std::sin(.5f),0,0,std::cos(.5f)},
++        XrQuaternionf{0,0,std::sin(.35f),std::cos(.35f)}),{0,0,-1}},.8f,.6f};
++    fov={-.78539816f,.78539816f,.78539816f,-.78539816f};
++    for (float eye_x : {-.032f,.032f}) {
++        eye={{0,0,0,1},{eye_x,0,0}};
++        auto projection=cutout::project(rect,eye,fov,false);
++        for (float x : {0.f,.3f,.5f}) {
++            auto point=compose(compose(inverse(eye),rect.pose),{{0,0,0,1},{x,.1f,0}}).position;
++            assert(inside(projection,point.x/-point.z,point.y/point.z)==(x<.4f));
++        }
++    }
+     rect.width=std::numeric_limits<float>::quiet_NaN(); assert(cutout::project(rect,eye,fov,false)[0][3]==0);
+     std::cout<<"Cutout geometry, stereo masks, gestures, persistence and tracking-loss checks passed\n";
+ }
+diff --git a/fork/tests/performance_feed_test.cpp b/fork/tests/performance_feed_test.cpp
+index 1477f8d6..214e70eb 100644
+--- a/fork/tests/performance_feed_test.cpp
++++ b/fork/tests/performance_feed_test.cpp
+@@ -55,6 +55,43 @@ int main()
+ 	f.times_displayed = 100;
+ 	s.update(f, 109);
+ 	assert(s.frames == count && s.seen.size() == 256 && s.repeats == 2);
++	// Coherent measurements survive newer partial feedback and repeated display.
++	stream_performance coherent;
++	from_headset::feedback full{};
++	full.frame_index = 42;
++	full.times_displayed = 1;
++	full.encode_begin = 1'000'000;
++	full.encode_end = 2'000'000;
++	full.send_begin = 3'000'000;
++	full.received_first_packet = 4'000'000;
++	full.received_last_packet = full.sent_to_decoder = 5'000'000;
++	full.received_from_decoder = 8'000'000;
++	full.blitted = 19'000'000;
++	full.displayed = 31'000'000;
++	coherent.update(full, 200);
++	assert(coherent.first_display.frame_index == 42);
++	auto repeat = full;
++	repeat.times_displayed = 2;
++	repeat.displayed += 11'000'000;
++	coherent.update(repeat, 201);
++	assert(coherent.first_display.displayed == 31'000'000);
++	assert(coherent.first_display_updated_ns == 200);
++	auto partial = full;
++	partial.frame_index = 43;
++	partial.blitted = partial.displayed = 0;
++	partial.times_displayed = 0;
++	coherent.update(partial, 202);
++	assert(coherent.first_display.frame_index == 42);
++	assert(coherent.timings[0].frame == 43 && coherent.timings[3].frame == 42);
++	auto invalid = full;
++	invalid.frame_index = 44;
++	invalid.blitted = invalid.received_from_decoder - 1;
++	coherent.update(invalid, 203);
++	assert(coherent.first_display.frame_index == 42);
++	auto older = full;
++	older.frame_index = 41;
++	coherent.update(older, 204);
++	assert(coherent.first_display.frame_index == 42);
+ 	char directory[] = "/tmp/wivrn-perf-native-XXXXXX";
+ 	assert(mkdtemp(directory));
+ 	pacing_app_factory pacers;
+@@ -84,6 +121,23 @@ int main()
+ 		assert(data.at("streams")[0].at("encode_ms") == 2.0);
+ 		assert(data.at("streams")[0].at("decode_ms").is_null());
+ 		assert(data.at("streams")[0].at("repeats") == 1);
++		assert(data.at("streams")[0].at("stage_frames").at("encode") == 10);
++		assert(data.at("streams")[0].at("first_display").is_null());
++		feed.on_feedback(full, 90);
++		for (int n = 0; n < 30; n++)
++		{
++			std::ifstream input(std::string(directory) + "/performance.json");
++			input >> data;
++			if (!data.at("streams")[0].at("first_display").is_null()) break;
++			std::this_thread::sleep_for(std::chrono::milliseconds(20));
++		}
++		const auto & first = data.at("streams")[0].at("first_display");
++		assert(first.at("frame_index") == 42);
++		double sum = 0;
++		for (const auto * name: {"encode_ms", "encode_to_send_ms", "delivery_ms", "decoder_queue_ms", "decode_ms", "decoded_to_blit_ms", "blit_to_predicted_display_ms"})
++			sum += first.at(name).get<double>();
++		assert(sum == first.at("encode_to_predicted_display_ms").get<double>());
++		assert(sum == 30 && first.at("decoded_to_blit_ms") == 11);
+ 		struct stat st{};
+ 		assert(!stat((std::string(directory) + "/performance.json").c_str(), &st));
+ 		assert((st.st_mode & 0777) == 0600);
+diff --git a/fork/tests/performance_feed_test.py b/fork/tests/performance_feed_test.py
+index 05aecfd4..6a9ee457 100644
+--- a/fork/tests/performance_feed_test.py
++++ b/fork/tests/performance_feed_test.py
+@@ -5,7 +5,7 @@ import json, shlex, subprocess
+ root=Path(__file__).resolve().parents[2]
+ entry=next(c for c in json.loads((root/'build/server/compile_commands.json').read_text()) if c['file'].endswith('/performance_feed.cpp'))
+ args=shlex.split(entry['command']); index=args.index('-o'); del args[index:index+2]; args.remove('-c')
+-args += ['-fno-fast-math','-pthread','-I'+str(root/'server/driver'),str(root/'fork/tests/performance_feed_test.cpp'),str(root/'build/server/common/libwivrn-common.a'),'-lcrypto','-o','/tmp/wivrn-performance-feed-test']
++args += ['-UNDEBUG','-fno-fast-math','-pthread','-I'+str(root/'server/driver'),str(root/'fork/tests/performance_feed_test.cpp'),str(root/'build/server/common/libwivrn-common.a'),'-lcrypto','-o','/tmp/wivrn-performance-feed-test']
+ subprocess.run(args,cwd=entry['directory'],check=True)
+ subprocess.run(['/tmp/wivrn-performance-feed-test'],check=True)
+ print('Native telemetry: deduplication, reordering, latency stages, publication, permissions and cleanup passed')
+diff --git a/fork/tests/test_dashboard.py b/fork/tests/test_dashboard.py
+index 2ae13029..aac25514 100644
+--- a/fork/tests/test_dashboard.py
++++ b/fork/tests/test_dashboard.py
+@@ -10,7 +10,8 @@ import unittest
+ os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'dashboard/shora'))
+ from PySide6.QtCore import QObject, Signal
+-from PySide6.QtWidgets import QApplication
++from PySide6.QtWidgets import QApplication, QScrollArea, QStyleOptionComboBox, QStyle
++from PySide6.QtGui import QTextCursor
+ from wivrn_dashboard import Dashboard, StreamingPanel, atomic_save, merge_tuning
+ from shora_qt import STYLE
+ 
+@@ -41,6 +42,45 @@ class DashboardTests(unittest.TestCase):
+         self.panel.tcp.setChecked(True); self.panel.save()
+         self.assertEqual(self.server.calls[-1],('save',{'tcp-only':True},{}))
+     def test_noop_is_lossless(self): self.assertEqual(self.panel.configuration(), self.config)
++    def test_preset_load_preserves_draft_and_only_saves_explicitly(self):
++        self.panel.hostname.setText('draft-host')
++        self.panel.preset.setCurrentIndex(self.panel.preset.findData('hevc-balanced-100'))
++        self.panel.load_preset.click()
++        value = self.panel.configuration()
++        self.assertEqual(value['hostname'], 'draft-host')
++        self.assertEqual(value['unknown-future'], self.config['unknown-future'])
++        self.assertEqual(value['application'], self.config['application'])
++        self.assertEqual(value['encoder']['encoder'], 'qsv')
++        self.assertEqual(value['encoder']['options']['gpb'], '0')
++        self.assertEqual(value['bit-depth'], 8)
++        self.assertFalse(value['tcp-only'])
++        self.assertEqual(self.server.calls, [])
++        self.assertIn('100 Mbit/s', self.panel.preset_notice.text())
++        self.server.state.emit({'JsonConfiguration':json.dumps(self.config)})
++        self.assertEqual(self.panel.configuration(), value)
++        self.panel.save()
++        self.assertEqual(self.server.calls[-1], ('save', value, self.config))
++    def test_cqp_preset_custom_quantizer_and_return_to_cbr(self):
++        self.panel.preset.setCurrentIndex(self.panel.preset.findData('hevc-cqp-24-experimental'))
++        self.assertTrue(self.panel.preset_qp.isEnabled())
++        self.panel.preset_qp.setValue(30)
++        self.panel.load_preset.click()
++        options = self.panel.configuration()['encoder']['options']
++        self.assertEqual(options['rate_control'], 'cqp')
++        self.assertEqual(options['qp'], '30')
++        self.assertEqual(options['low_delay_brc'], '0')
++        self.assertIn('uncapped', self.panel.preset_notice.text())
++        self.panel.preset.setCurrentIndex(self.panel.preset.findData('hevc-balanced-100'))
++        self.panel.load_preset.click()
++        self.assertFalse(self.panel.preset_qp.isEnabled())
++        self.assertNotIn('rate_control', self.panel.configuration()['encoder']['options'])
++        self.assertNotIn('qp', self.panel.configuration()['encoder']['options'])
++    def test_preset_does_not_discard_invalid_json(self):
++        self.panel.raw.setPlainText('{broken')
++        self.panel.preset.setCurrentIndex(self.panel.preset.findData('hevc-balanced-100'))
++        self.panel.load_preset.click()
++        self.assertEqual(self.panel.raw.toPlainText(), '{broken')
++        self.assertEqual(self.server.calls, [])
+     def test_checkbox_preserves_encoder_layout_and_unknown_values(self):
+         self.panel.tcp.setChecked(True)
+         expected = copy.deepcopy(self.config); expected['tcp-only'] = True
+@@ -58,6 +98,52 @@ class DashboardTests(unittest.TestCase):
+         self.server.state.emit({'JsonConfiguration':'{"hostname":"external"}'})
+         self.assertEqual(self.panel.hostname.text(), 'local-draft')
+         self.assertEqual(self.panel.original, self.config)
++    def test_status_poll_preserves_json_scroll_and_selection(self):
++        config = {**self.config, 'long-list': list(range(200))}
++        state = {'JsonConfiguration': json.dumps(config)}
++        self.server.state.emit(state)
++        self.panel.resize(900, 1000); self.panel.show(); self.app.processEvents()
++        cursor = self.panel.raw.textCursor()
++        cursor.setPosition(300); cursor.setPosition(340, QTextCursor.MoveMode.KeepAnchor)
++        self.panel.raw.setTextCursor(cursor)
++        bar = self.panel.raw.verticalScrollBar()
++        bar.setValue(bar.maximum() // 2)
++        before = bar.value()
++        self.assertGreater(before, 0)
++        changes = []
++        self.panel.raw.textChanged.connect(lambda: changes.append(True))
++        for _ in range(5): self.server.state.emit(state)
++        self.assertEqual(changes, [])
++        self.assertEqual(bar.value(), before)
++        self.assertEqual(self.panel.raw.textCursor().position(), 340)
++        self.assertEqual(self.panel.raw.textCursor().anchor(), 300)
++        # Real external config updates still refresh, keeping the reading position.
++        config['external-option'] = True
++        self.server.state.emit({'JsonConfiguration': json.dumps(config)})
++        self.assertTrue(self.panel.configuration()['external-option'])
++        self.assertEqual(bar.value(), before)
++        self.assertEqual(self.panel.raw.textCursor().position(), 340)
++        self.assertEqual(self.panel.raw.textCursor().anchor(), 300)
++    def test_small_window_scrolls_instead_of_clipping_encoder_controls(self):
++        with tempfile.TemporaryDirectory() as directory:
++            window = Dashboard(self.server, Path(directory)/'shora.toml', Path(directory)/'control', attach=False)
++            window.poll.stop(); window.resize(900, 720); window.show(); self.app.processEvents()
++            try:
++                scroll = window.tabs.widget(0)
++                self.assertIsInstance(scroll, QScrollArea)
++                panel = scroll.widget()
++                panel.preset.setCurrentIndex(panel.preset.findData('hevc-cqp-24-experimental'))
++                self.app.processEvents()
++                self.assertGreater(scroll.verticalScrollBar().maximum(), 0)
++                for combo in (panel.preset, panel.encoder, panel.codec, panel.depth):
++                    option = QStyleOptionComboBox(); combo.initStyleOption(option)
++                    rect = combo.style().subControlRect(QStyle.ComplexControl.CC_ComboBox, option,
++                                                       QStyle.SubControl.SC_ComboBoxEditField, combo)
++                    self.assertGreaterEqual(rect.height(), combo.fontMetrics().height())
++                    self.assertGreaterEqual(rect.width(), combo.fontMetrics().horizontalAdvance(combo.currentText()))
++                window.grab().save('/tmp/wivrn-streaming-layout-fixed.png')
++            finally:
++                window.close()
+     def test_wayvr_defaults_do_not_rewrite_existing_config(self):
+         self.assertTrue(self.panel.wayvr.isChecked())
+         self.assertTrue(self.panel.wayvr_dashboard.isChecked())
+diff --git a/fork/tests/video_recovery_test.cpp b/fork/tests/video_recovery_test.cpp
+index 306aa581..1ea3ff17 100644
+--- a/fork/tests/video_recovery_test.cpp
++++ b/fork/tests/video_recovery_test.cpp
+@@ -1,8 +1,10 @@
+ // SPDX-License-Identifier: GPL-3.0-or-later
++#include "compositor/gaze_state.h"
+ #include "encoder/encode_batch.h"
+ #include "encoder/recovery_policy.h"
+ #include "encoder/slot_ring.h"
+ #include <array>
++#include <barrier>
+ #include <cassert>
+ #include <iostream>
+ #include <memory>
+@@ -103,6 +105,56 @@ int main()
+ 		for (auto & f: streams)
+ 			assert(f->committed);
+ 	}
++	{
++		wivrn::batch_executor executor;
++		std::array<std::unique_ptr<fake>, 3> streams;
++		for (unsigned i = 0; i < 3; ++i)
++		{
++			streams[i] = std::make_unique<fake>();
++			streams[i]->stream_idx = i;
++		}
++		std::barrier rendezvous(3);
++		for (unsigned batch = 0; batch < 100; ++batch)
++		{
++			unsigned failures = 0;
++			for (auto & f: streams)
++			{
++				f->committed = false;
++				assert(f->slots.reserve());
++			}
++			wivrn::encode_batch(streams, std::array{true, true, true}, [&](fake & f) {
++                auto lease = f.slots.consume();
++                rendezvous.arrive_and_wait(); // cannot pass if workers serialize
++                assert(!f.committed); // commit must wait for all streams
++                if (batch % 2 == 0 && f.stream_idx == batch % 3) throw std::runtime_error("injected"); }, [&](fake &, const std::exception &) { ++failures; }, &executor);
++			assert(failures == (batch % 2 == 0 ? 1u : 0u));
++			for (auto & f: streams)
++				assert(f->committed == (batch % 2 != 0));
++		}
++		unsigned called = 0;
++		wivrn::encode_batch(streams, std::array{true, false, false}, [&](fake &) { ++called; }, [](fake &, const std::exception &) { assert(false); }, &executor);
++		assert(called == 1);
++		for (auto & f: streams)
++			assert(!f->committed);
++	}
++	{
++		struct quat
++		{
++			float x = 0, y = 0, z = 0, w = 0;
++		};
++		wivrn::gaze_state<quat> gaze;
++		const auto now = std::chrono::steady_clock::now();
++		gaze.update({0, 0, 0, 1}, true, now);
++		assert(gaze.get(now + std::chrono::milliseconds(99)).w == 1);
++		assert(gaze.get(now + std::chrono::milliseconds(101)).w == 0);
++		gaze.update({0, 0, 0, 1}, true, now);
++		gaze.update({0, 0, 0, 1}, false, now);
++		assert(gaze.get(now).w == 0);
++		gaze.update({0, 0, 0, 10}, true, now);
++		assert(gaze.get(now).w == 0);
++		gaze.update({0, 0, 0, std::bit_cast<float>(0x7fc00000u)}, true, now);
++		assert(gaze.get(now).w == 0);
++	}
+ 	// Exercise the production ring with concurrent producer/consumer ownership.
+ 	wivrn::slot_ring<2> concurrent;
+ 	std::counting_semaphore<2> queued{0};
+diff --git a/fork/wayvr-import.json b/fork/wayvr-import.json
+index 7e6adca1..f223cac8 100644
+--- a/fork/wayvr-import.json
++++ b/fork/wayvr-import.json
+@@ -728,7 +728,7 @@
+   },
+   "fork_sha256": {
+     "wayvr/build.rs": "6f496da15871563c86c10a9d44f2e82f2cf33c895a571f26eb2ececaf55cf4c1",
+-    "wayvr/src/main.rs": "0ee70f009f79fd43e9bb069b1b8f72ca9e0ee685b51a89d885af9808319f158e",
++    "wayvr/src/main.rs": "95d775ae177037c230c12ace99fffb37045ac98e745097fd021daab5ca99f30f",
+     "wayvr/src/overlays/dashboard.rs": "d45c4b52033e399e0c03c287d0a79f27ec7225591458fdb37ef7fe68141a8101",
+     "dash-frontend/assets/gui/tab/home.xml": "897cf5fecaa7ed770791e6526ca6fd084a2e0e270ed75a3369604bc4aac6e44c",
+     "dash-frontend/src/tab/home.rs": "fa35db9373957459f68c05e4748537bd70c11aba67f1ef86380245e45a6d79c0",
+@@ -736,9 +736,9 @@
+     "wayvr/src/gui/panel/label.rs": "121757db6c03087035238191880fbf968977c0488ee8dcb6126d9fd71c495693",
+     "wayvr/src/state.rs": "180a5ac669ad15789c39270b9861aadefefc0e3ae666417eb8af297c39eb6539",
+     "wlx-common/src/dash_interface.rs": "49dbe44ff105eb3c22e9da7e741f1d2a1529d13d892f2b77f0e052d44cc5ee8b",
+-    "wayvr/src/backend/input.rs": "81b9a4fadb1e82265d77202d8f8a7c067b81eea72f06af50dad7f87fe187d3e0",
++    "wayvr/src/backend/input.rs": "48abd963c350a964002c89b93e8eb890e9ff610b602bb96dda08456699005904",
+     "wayvr/src/backend/openxr/helpers.rs": "9308c0b3546434e11f76b2a524e6eaecf91c13943e7d5f4265ae2e6defbb6bbc",
+-    "wayvr/src/backend/openxr/input.rs": "75b32824e9859d6d687fa4130e098cf21117bce65e4533b9f099cf786e35c364",
++    "wayvr/src/backend/openxr/input.rs": "54280dafd7adaa0e19fc18feafb022ba692e14cbcde941ba72b0935bd455a1da",
+     "wayvr/src/backend/openxr/mod.rs": "8b1c811f69886af7426bf286f04e78e300f3292e48d3643812734bc43ac58764",
+     "wayvr/src/windowing/window.rs": "1a58e01d0c66528ece83c19bf50cfc40f9198c71c15a391ee06f1ab21d27adfe",
+     "wayvr/src/overlays/screen/backend.rs": "340a53906ed31e482849de8067711043849aaae96af0904e99923d5d5f69677e",
+@@ -750,6 +750,7 @@
+     "wayvr/src/subsystem/input.rs": "5bb25ba69e88aa4dea52b8d367b25f46aba583b9990299bb0b5bde4814dbe7b7",
+     "wayvr/src/gui/asset.rs": "44d34b8346d45e69d6fd6990ecae504fb5cec6b0ff6e83c6c4fe1f65a0429db3",
+     "wayvr/src/gui/panel/device_list.rs": "5e15deb9a9377cc45bdc15d2d069bb940b856e3ae511ea60bf97ffe03aa6a2c7",
+-    "wayvr/src/graphics/dmabuf.rs": "107d0416590aee6e2209d50020d891238d7801848ee7fc1b9663720ff7576e3a"
++    "wayvr/src/graphics/dmabuf.rs": "107d0416590aee6e2209d50020d891238d7801848ee7fc1b9663720ff7576e3a",
++    "dash-frontend/assets/lang/en.json": "c811211af457e73da4cddda0897c3915156d81c75ba93b33e09da9625aa9d345"
+   }
+ }
+diff --git a/patches/wayvr/0001-managed-worker.patch b/patches/wayvr/0001-managed-worker.patch
+index e0d4ae83..a2ec2d01 100644
+--- a/patches/wayvr/0001-managed-worker.patch
++++ b/patches/wayvr/0001-managed-worker.patch
+@@ -9,6 +9,17 @@
+        <!-- main button list -->
+        <div flex_direction="row" gap="8" margin_top="32">
+          <MenuButton id="btn_apps" icon="@/dashboard/apps.svg" translation="APPLICATIONS" />
++--- a/dash-frontend/assets/lang/en.json
+++++ b/dash-frontend/assets/lang/en.json
++@@ -136,7 +136,7 @@
++ 		"FEATURES": "Features",
++ 		"FOCUS_FOLLOWS_MOUSE_MODE": "Mouse move on trigger touch",
++ 		"HANDSFREE_POINTER": "Handsfree mode",
++-		"HANDSFREE_POINTER_HELP": "Input to use when motion\ncontrollers are unavailable.\nLeft pinch is grab, right is click.",
+++		"HANDSFREE_POINTER_HELP": "Input when controllers are unavailable.\nTracked hands: thumb + index = left mouse,\nthumb + middle = middle mouse,\nthumb + ring = right mouse.\nFist = move; two fists apart/together = resize.\nWithout joint tracking: left pinch grabs, right clicks.",
++ 		"HANDSFREE_ALT_TAB": "App switcher aim",
++ 		"HANDSFREE_ALT_TAB_HELP": "Hold Super+X, aim at the desired window, then release to switch focus.",
++ 		"DIAGNOSTICS": "Diagnostics",
+ --- a/dash-frontend/src/tab/home.rs
+ +++ b/dash-frontend/src/tab/home.rs
+ @@ -27,7 +27,18 @@
+@@ -97,24 +108,24 @@
+ -}
+ --- a/wayvr/src/assets/gui/watch.xml
+ +++ b/wayvr/src/assets/gui/watch.xml
+-@@ -31,6 +31,13 @@
+-   </template>
+-   <template name="Tracker">
++@@ -33,6 +33,13 @@
+      <Device idx="${idx}" src="@/watch/track.svg" />
+-+  </template>
+-+
++   </template>
++ 
+ +  <template name="ShoraTracker">
+ +    <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
+ +      <sprite width="32" height="32" src_builtin="@/watch/track.svg" color="on_background" />
+ +      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
+ +    </rectangle>
+-   </template>
+-
+++  </template>
+++
+    <template name="Screen">
+-@@ -127,14 +134,20 @@
++     <Button macro="button_style" id="overlay_${idx}" tooltip_str="${name}" _press="::OverlayToggle ${name}">
++       <sprite width="38" height="38" src_builtin="@/edit/screen.svg" />
++@@ -127,8 +134,8 @@
+              <Clock />
+            </div>
+-
++ 
+ -          <!-- Four buttons -->
+ -          <div flex_direction="column" gap="8">
+ +          <!-- Four columns, two rows; tracking resets occupy the last column. -->
+@@ -122,19 +133,20 @@
+              <div gap="8">
+                <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
+                  <sprite src_builtin="@/watch/keyboard.svg" width="40" height="40" />
+-               </Button>
++@@ -136,6 +143,12 @@
+                <Button id="btn_edit_mode" macro="button_style" _press="::EditToggle" tooltip="WATCH.EDIT_MODE" tooltip_side="left">
+                  <sprite width="40" height="40" src="@/watch/edit.svg" />
+-+              </Button>
++               </Button>
+ +              <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
+ +                <sprite width="40" height="40" src_builtin="@/watch/sticks.svg" />
+ +              </Button>
+ +              <Button id="btn_full_reset" macro="button_style" _press="::TrackingFullReset" tooltip_str="Full reset: stand upright and face forward. Three-second countdown; press again to cancel." tooltip_side="left">
+ +                <sprite width="40" height="40" src_builtin="@/watch/full-reset.svg" />
+-               </Button>
+++              </Button>
+              </div>
+              <div gap="8">
+-@@ -144,9 +157,17 @@
++               <Button macro="button_style" _press="::PlayspaceRecenter" tooltip="WATCH.RECENTER" tooltip_side="left">
++@@ -144,10 +157,18 @@
+                <Button macro="button_style" _press="::PlayspaceFixFloor" tooltip="WATCH.FIX_FLOOR" tooltip_side="left">
+                  <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
+                </Button>
+@@ -147,14 +159,15 @@
+              </div>
+            </div>
+          </rectangle>
+-+
++ 
+ +        <label id="tracking_reset_status" _source="tracking_reset" size="16" width="440" color="on_background" />
+-
+++
+          <!-- Bottom buttons -->
+          <div flex_direction="row" gap="8">
++           <div gap="4">
+ --- a/wayvr/src/backend/input.rs
+ +++ b/wayvr/src/backend/input.rs
+-@@ -75,6 +75,10 @@
++@@ -75,8 +75,13 @@
+      pub picking_focus: FocusPickState,
+      processes: Vec<Child>,
+      disable_lerp_until: Instant,
+@@ -164,8 +177,11 @@
+ +    pub joysticks_enabled: bool,
+      pub head_yaw_total: f64,
+      head_last_yaw: Option<f64>,
+++    two_hand_grab: Option<(OverlayID, crate::hand_resize::HandResize)>,
+  }
+-@@ -91,6 +95,9 @@
++ 
++ impl InputState {
++@@ -91,8 +96,12 @@
+              handsfree_state: PointerState::default(),
+              picking_focus: FocusPickState::None,
+              disable_lerp_until: Instant::now(),
+@@ -174,8 +190,11 @@
+ +            joysticks_enabled: false,
+              head_yaw_total: 0.0,
+              head_last_yaw: None,
+++            two_hand_grab: None,
+          }
+-@@ -349,6 +356,16 @@
++     }
++ 
++@@ -349,6 +358,17 @@
+      pub(super) interaction: InteractionState,
+      pub tracked: bool,
+      pub handsfree: bool,
+@@ -189,10 +208,11 @@
+ +    touch_press: crate::hand_touch::TouchPress,
+ +    touch_needs_neutral: bool,
+ +    pub cancel_interaction: bool,
+++    hand_grab_needs_release: bool,
+      /// distance of the most recent ray hit on a wayland client window, used for drag n drop
+      pub last_wvr_hit_distance: Option<f32>,
+  }
+-@@ -367,8 +384,35 @@
++@@ -367,10 +387,38 @@
+              interaction: InteractionState::default(),
+              tracked: false,
+              handsfree: false,
+@@ -206,10 +226,11 @@
+ +            touch_press: Default::default(),
+ +            touch_needs_neutral: false,
+ +            cancel_interaction: false,
+++            hand_grab_needs_release: false,
+              last_wvr_hit_distance: None,
+          }
+-+    }
+-+
++     }
++ 
+ +    pub fn attachment_pose(&self) -> Affine3A {
+ +        self.wrist_pose.map_or(self.pose, |wrist| {
+ +            // Map the existing controller attachment frame onto the back of
+@@ -225,10 +246,12 @@
+ +            );
+ +            wrist * on_wrist * watch.inverse()
+ +        })
+-     }
+- 
+++    }
+++
+      pub const fn hand(&self) -> Option<LeftRight> {
+-@@ -451,6 +495,9 @@
++         match self.idx {
++             0 => Some(LeftRight::Left),
++@@ -451,6 +499,9 @@
+      maybe_hit: Option<(PointerHit, RayHit)>,
+      hmd: &Affine3A,
+  ) {
+@@ -238,7 +261,15 @@
+      let Some((hit, raw_hit)) = maybe_hit else {
+          return;
+      };
+-@@ -523,6 +570,129 @@
++@@ -499,6 +550,7 @@
++ where
++     O: Default,
++ {
+++    if update_two_hand_grab(overlays, app) { return [None, None]; }
++     let hits = if app.input_state.pointers[1].last_click > app.input_state.pointers[0].last_click {
++         let right = interact_hand(1, overlays, app);
++         let left = interact_hand(0, overlays, app);
++@@ -523,6 +575,129 @@
+      [hits[0].1, hits[1].1]
+  }
+  
+@@ -368,7 +399,7 @@
+  fn interact_hand<O>(
+      idx: usize,
+      overlays: &mut OverlayWindowManager<O>,
+-@@ -531,15 +701,30 @@
++@@ -531,16 +706,31 @@
+  where
+      O: Default,
+  {
+@@ -396,17 +427,18 @@
+ +    }
+      let mut pointer = &mut app.input_state.pointers[idx];
+      let pending_haptics = pointer.pending_haptics.take();
+--
++ 
+ -    if !pointer.tracked {
+ -        pointer.interaction.should_block_input = false;
+ -        pointer.interaction.should_block_poses = false;
+ -        pointer.interaction.kbd_block_activated = false;
+ -        return (None, pending_haptics); // no hit
+ -    }
+- 
++-
+      // already grabbing, ignore everything else
+      if let Some(grab_data) = pointer.interaction.grabbed {
+-@@ -689,6 +874,9 @@
++         if let Some(grabbed) = overlays.mut_by_id(grab_data.grabbed_id) {
++@@ -689,6 +879,9 @@
+      if let Some(hovered_id) = hovered_id
+          && let Some(hovered) = overlays.mut_by_id(hovered_id)
+      {
+@@ -416,7 +448,7 @@
+          log::debug!("{} on_left (no hit)", hovered.config.name);
+          hovered.config.backend.on_left(app, pointer_idx);
+          hovered.hover_pointers[pointer_idx] = false;
+-@@ -799,9 +987,19 @@
++@@ -799,9 +992,19 @@
+      let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
+  
+      for (id, overlay) in overlays.iter() {
+@@ -436,7 +468,7 @@
+          if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
+              continue;
+          }
+-@@ -817,6 +1015,9 @@
++@@ -817,6 +1020,9 @@
+          }
+      }
+  
+@@ -446,7 +478,103 @@
+      hits.sort_by(|a, b| a.dist.total_cmp(&b.dist));
+  
+      for hit in hits {
+-@@ -1135,3 +1336,77 @@
++@@ -1115,6 +1321,95 @@
++     }
++ }
++ 
+++// Both hands manipulate one existing fist grab. Controller grabs and two
+++// different windows retain their ordinary, independent interaction paths.
+++fn hand_grip(pointer: &Pointer) -> bool {
+++    pointer.hand_tracking && pointer.tracked && pointer.now.grab
+++        && !pointer.cancel_interaction && !pointer.joystick_owned
+++        && pointer.wrist_pose.is_some_and(|p| p.is_finite())
+++}
+++fn two_hand_target(pointers: &[Pointer; 2]) -> Option<OverlayID> {
+++    if !pointers.iter().all(hand_grip) { return None; }
+++    let left = pointers[0].interaction.grabbed;
+++    let right = pointers[1].interaction.grabbed;
+++    match (left, right) {
+++        (Some(a), Some(b)) if !a.grab_anchor && !b.grab_anchor && a.grabbed_id == b.grabbed_id => Some(a.grabbed_id),
+++        (Some(a), None) | (None, Some(a)) if !a.grab_anchor => Some(a.grabbed_id),
+++        _ => None,
+++    }
+++}
+++fn update_two_hand_grab<O: Default>(overlays: &mut OverlayWindowManager<O>, app: &mut AppState) -> bool {
+++    for pointer in &mut app.input_state.pointers {
+++        if pointer.hand_grab_needs_release {
+++            if !pointer.now.grab { pointer.hand_grab_needs_release = false; }
+++            pointer.now.grab = false;
+++        }
+++    }
+++    let mut interrupted = app.input_state.mouse_priority.active()
+++        || app.input_state.pointers.iter().any(|p| !p.tracked || !p.hand_tracking
+++            || p.cancel_interaction || p.joystick_owned || p.wrist_pose.is_none_or(|pose| !pose.is_finite()));
+++    if let Some((id, resize)) = app.input_state.two_hand_grab {
+++        let both = !interrupted && app.input_state.pointers.iter().all(hand_grip);
+++        let transform = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform));
+++        if both && transform.is_some() {
+++            let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
+++            let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
+++            if let Some(value) = resize.update(left, right) {
+++                let overlay = overlays.mut_by_id(id).unwrap();
+++                overlay.config.active_state.as_mut().unwrap().transform = value;
+++                overlay.config.pause_movement = true;
+++                overlay.config.dirty = true;
+++                return true;
+++            }
+++            interrupted = true;
+++        }
+++        // Rebase the surviving fist at the final resized transform. Tracking
+++        // loss/ownership changes cancel both instead and require opening them.
+++        app.input_state.two_hand_grab = None;
+++        let surviving = !interrupted && transform.is_some() && app.input_state.pointers.iter().any(hand_grip);
+++        let mut dropped = false;
+++        for idx in 0..2 {
+++            if !interrupted && transform.is_some() && hand_grip(&app.input_state.pointers[idx]) {
+++                let pointer = &mut app.input_state.pointers[idx];
+++                pointer.interaction.grabbed = Some(GrabData {
+++                    grabbed_id: id, grab_anchor: false, offset: pointer.pose.inverse() * transform.unwrap(),
+++                });
+++            } else {
+++                // A handoff is not a drop; only save/hide grab helpers once
+++                // when the last hand lets go.
+++                if surviving || dropped { app.input_state.pointers[idx].interaction.grabbed = None; }
+++                release_pointer(idx, overlays, app);
+++                dropped = true;
+++                if interrupted || transform.is_none() { app.input_state.pointers[idx].hand_grab_needs_release = true; }
+++            }
+++        }
+++        return false;
+++    }
+++    if interrupted { return false; }
+++    let Some(id) = two_hand_target(&app.input_state.pointers) else { return false; };
+++    let Some(transform) = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform)) else { return false; };
+++    let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
+++    let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
+++    let Some(resize) = crate::hand_resize::HandResize::start(transform, left, right) else {
+++        return true; // Freeze until the fists have a usable separation.
+++    };
+++    for idx in 0..2 {
+++        let now = app.input_state.pointers[idx].now;
+++        let before = app.input_state.pointers[idx].before;
+++        // Clear any click/hover ownership without ending the existing grab.
+++        app.input_state.pointers[idx].interaction.grabbed = None;
+++        release_pointer(idx, overlays, app);
+++        let pointer = &mut app.input_state.pointers[idx];
+++        pointer.now = now; pointer.before = before; pointer.tracked = true;
+++        pointer.interaction.grabbed = Some(GrabData {
+++            grabbed_id: id, grab_anchor: false, offset: pointer.pose.inverse() * transform,
+++        });
+++    }
+++    app.input_state.two_hand_grab = Some((id, resize));
+++    if let Some(overlay) = overlays.mut_by_id(id) { overlay.config.pause_movement = true; }
+++    true
+++}
+++
++ fn ray_test(
++     ray_origin: &Affine3A,
++     overlay: OverlayID,
++@@ -1135,3 +1430,105 @@
+          dist,
+      })
+  }
+@@ -455,6 +583,34 @@
+ +mod hand_attachment_tests {
+ +    use super::*;
+ +    #[test]
+++    fn resizing_requires_two_tracked_fists_and_one_target() {
+++        let mut ids = slotmap::SlotMap::<OverlayID, ()>::with_key();
+++        let first = ids.insert(());
+++        let second = ids.insert(());
+++        let mut pointers = [Pointer::new(0), Pointer::new(1)];
+++        for p in &mut pointers {
+++            p.tracked = true; p.hand_tracking = true; p.now.grab = true;
+++            p.wrist_pose = Some(Affine3A::IDENTITY);
+++        }
+++        assert!(two_hand_target(&pointers).is_none());
+++        pointers[0].interaction.grabbed = Some(GrabData { grabbed_id: first, ..Default::default() });
+++        assert_eq!(two_hand_target(&pointers), Some(first));
+++        pointers[1].interaction.grabbed = Some(GrabData { grabbed_id: second, ..Default::default() });
+++        assert!(two_hand_target(&pointers).is_none());
+++        pointers[1].interaction.grabbed = pointers[0].interaction.grabbed;
+++        assert_eq!(two_hand_target(&pointers), Some(first));
+++        pointers[1].tracked = false; assert!(two_hand_target(&pointers).is_none());
+++        pointers[1].tracked = true; pointers[1].hand_tracking = false;
+++        assert!(two_hand_target(&pointers).is_none());
+++        pointers[1].hand_tracking = true; pointers[1].cancel_interaction = true;
+++        assert!(two_hand_target(&pointers).is_none());
+++        pointers[1].cancel_interaction = false; pointers[1].joystick_owned = true;
+++        assert!(two_hand_target(&pointers).is_none());
+++        pointers[1].joystick_owned = false;
+++        pointers[0].interaction.grabbed.as_mut().unwrap().grab_anchor = true;
+++        assert!(two_hand_target(&pointers).is_none());
+++    }
+++    #[test]
+ +    fn wrist_attachment_preserves_controller_frame_and_faces_back_of_hand() {
+ +        let mut pointer = Pointer::new(0);
+ +        pointer.pose = Affine3A::from_translation(glam::Vec3::X);
+@@ -585,7 +741,7 @@
+          let (physical_inputs, physical_input_map) =
+              create_physical_inputs(&action_set, &xr.instance, &profiles)?;
+  
+-@@ -288,7 +312,40 @@
++@@ -288,9 +312,42 @@
+                  OpenXrPointer::new(xr, right_source)?,
+              ],
+              handsfree_pointer: OpenXrPointer::new(xr, fallback_source)?,
+@@ -613,8 +769,8 @@
+ +            ],
+ +            started: Instant::now(),
+          })
+-+    }
+-+
++     }
++ 
+ +    pub fn reset_hands(&mut self) {
+ +        self.joystick_link.disconnect();
+ +        for pad in &mut self.thumb_pads {
+@@ -623,9 +779,11 @@
+ +        for hand in &mut self.hand_input {
+ +            hand.reset();
+ +        }
+-     }
+- 
+++    }
+++
+      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
++         let action = &self.pointers[hand].source.haptics;
++ 
+ @@ -348,6 +405,7 @@
+          if picking_focus.is_none() {
+              let should_disable_lerp = app.input_state.should_disable_lerp();
+@@ -634,7 +792,7 @@
+                  let pointer = &mut app.input_state.pointers[i];
+                  self.pointers[i].update(
+                      pointer,
+-@@ -356,6 +414,138 @@
++@@ -356,6 +414,139 @@
+                      !should_disable_lerp,
+                      physical_inputs,
+                  )?;
+@@ -750,8 +908,9 @@
+ +                            pointer.now.move_mouse = true;
+ +                            pointer.now.click_modifier_middle =
+ +                                sample.gesture == Gesture::MiddleClick;
+++                            // A fist follows wrist rotation instead of reorienting toward the head.
+ +                            pointer.now.click_modifier_right =
+-+                                sample.gesture == Gesture::RightClick;
+++                                matches!(sample.gesture, Gesture::RightClick | Gesture::Grab);
+ +                        }
+ +                    }
+ +                }
+@@ -773,14 +932,10 @@
+                  any_tracked |= pointer.tracked;
+              }
+          } else {
+-@@ -371,10 +561,27 @@
++@@ -371,10 +562,27 @@
+                  pointer.now = PointerState::default();
+                  pointer.tracked = false;
+                  pointer.handsfree = false;
+--            }
+--        }
+--
+--        if !picking_focus.is_none() || !any_tracked {
+ +                pointer.wrist_pose = None;
+ +                pointer.index_tip = None;
+ +                pointer.joystick_pad = None;
+@@ -788,9 +943,10 @@
+ +            }
+ +            for hand in &mut self.hand_input {
+ +                hand.reset();
+-+            }
+-+        }
+-+
++             }
++         }
++ 
++-        if !picking_focus.is_none() || !any_tracked {
+ +        // Joint gestures own hand mode, including loss/rearming; do not reintroduce
+ +        // the old handsfree native pinch bindings as a duplicate input source.
+ +        if xr.focused
+@@ -805,7 +961,7 @@
+              self.handsfree_pointer.update_handsfree(
+                  &mut app.input_state.pointers[0],
+                  xr,
+-@@ -386,6 +593,13 @@
++@@ -386,6 +594,13 @@
+              )?;
+          }
+  
+@@ -1091,7 +1247,7 @@
+                  }
+                  Ok(Command::SetPointerAccel { accel, speed }) => {
+                      pointer_accel = PointerAccelConfig { accel, speed };
+-@@ -460,17 +451,9 @@
++@@ -460,19 +451,11 @@
+              continue;
+          }
+  
+@@ -1102,13 +1258,15 @@
+          if poll_fd.revents & (libc::POLLERR | libc::POLLHUP | libc::POLLNVAL) != 0 {
+              log::error!("libinput poll fd became invalid; input worker is exiting");
+              break 'worker;
+--        }
+--
+--        if poll_fd.revents & libc::POLLIN == 0 {
+--            continue;
+          }
+  
++-        if poll_fd.revents & libc::POLLIN == 0 {
++-            continue;
++-        }
++-
+          if let Err(error) = libinput.dispatch() {
++             if error.kind() != io::ErrorKind::WouldBlock {
++                 log::warn!("libinput dispatch failed: {error}");
+ @@ -500,7 +483,7 @@
+              }
+          }
+@@ -1163,7 +1321,6 @@
+ -    runtime_devices
+ -        .values()
+ -        .all(|state| state.pressed_keys.is_empty())
+--}
+ +fn all_inputs_released(runtime_devices: &HashMap<LibinputDevice, RuntimeDeviceState>) -> bool {
+ +    runtime_devices.values().all(RuntimeDeviceState::released)
+ +}
+@@ -1241,7 +1398,7 @@
+ +        state.pressed_buttons.clear();
+ +        assert!(state.released());
+ +    }
+-+}
++ }
+ --- a/wayvr/src/backend/wayvr/mod.rs
+ +++ b/wayvr/src/backend/wayvr/mod.rs
+ @@ -518,6 +518,7 @@
+@@ -1252,7 +1409,7 @@
+                      for client in &wvr_server.manager.clients {
+                          if client.client.id() != client_id {
+                              continue;
+-@@ -557,7 +558,19 @@
++@@ -557,8 +558,20 @@
+                              }
+                          }
+  
+@@ -1263,15 +1420,16 @@
+ +                                .as_ref()
+ +                                .is_some_and(|m| m.hover_window == window_handle);
+                          wvr_server.wm.remove_window(window_handle);
+-+                    }
++                     }
+ +                    if release_input || wvr_server.wm.windows.is_empty() {
+ +                        app.hid_provider.set_input_focus(
+ +                            Some(wvr_server),
+ +                            crate::subsystem::input::InputFocus::PhysicalScreen,
+ +                        );
+-                     }
+++                    }
+                  }
+                  WayVRTask::VisibilityChange(window_handle, visible) => {
++                     if let Some(oid) = wvr_server.window_to_overlay.get(&window_handle) {
+ @@ -692,6 +705,17 @@
+              wvr_server.manager.cleanup_handles();
+          }
+@@ -1389,10 +1547,21 @@
+              self.wm.mouse = None;
+          }
+      }
++--- a/wayvr/src/graphics/dmabuf.rs
+++++ b/wayvr/src/graphics/dmabuf.rs
++@@ -26,7 +26,7 @@
++             anyhow::bail!("DMA-buf plane has no FD");
++         };
++ 
++-        log::info!(
+++        log::debug!(
++             "DMA-buf import start: {}x{}, format={:?}, modifier={:?}, planes={}",
++             frame.format.width,
++             frame.format.height,
+ --- a/wayvr/src/gui/asset.rs
+ +++ b/wayvr/src/gui/asset.rs
+ @@ -4,6 +4,21 @@
+-
++ 
+  impl wgui::assets::AssetProvider for GuiAsset {
+      fn load_from_path(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
+ +        if path == "watch/full-reset.svg" {
+@@ -1472,7 +1641,7 @@
+ +++ b/wayvr/src/gui/panel/label.rs
+ @@ -52,6 +52,43 @@
+      };
+-
++ 
+      let callback: EventCallback<AppState, S> = match source {
+ +        "tracking_reset" => Box::new(|common, data, app, _| {
+ +            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(
+@@ -1516,7 +1685,7 @@
+                  log_missing_attrib(parser_state, TAG, "_device");
+ --- a/wayvr/src/main.rs
+ +++ b/wayvr/src/main.rs
+-@@ -23,13 +23,35 @@
++@@ -23,13 +23,37 @@
+  mod config;
+  mod graphics;
+  mod gui;
+@@ -1526,6 +1695,8 @@
+ +#[cfg(feature = "openxr")]
+ +#[path = "../../../hand_input.rs"]
+ +mod hand_input;
+++#[path = "../../../hand_resize.rs"]
+++mod hand_resize;
+ +#[cfg(feature = "openxr")]
+ +#[path = "../../../hand_joystick.rs"]
+ +mod hand_joystick;
+@@ -1552,7 +1723,7 @@
+  
+  use std::{
+      path::PathBuf,
+-@@ -184,6 +206,9 @@
++@@ -184,6 +208,9 @@
+  
+      if RESTART.load(Ordering::Relaxed) {
+          log::warn!("Restarting...");
+@@ -1613,17 +1784,6 @@
+  
+          if pressed {
+ -            set_next_move(app.session.config.click_freeze_time_ms as _);
+--        }
+--
+--        app.hid_provider.inner.send_button(btn, pressed);
+--
+--        if !pressed {
+--            return;
+--        }
+--        let pos = self.mouse_transform.transform_point2(hit.uv);
+--        app.hid_provider
+--            .inner
+--            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
+ +            if !app.input_state.pointers[hit.pointer].hand_tracking {
+ +                set_next_move(app.session.config.click_freeze_time_ms as _);
+ +            }
+@@ -1632,12 +1792,21 @@
+ +            app.hid_provider
+ +                .inner
+ +                .mouse_move(DVec2::new(pos.x as _, pos.y as _));
+-+        }
++         }
++-
++-        app.hid_provider.inner.send_button(btn, pressed);
++-
++-        if !pressed {
++-            return;
+ +        // Captured physical events share this virtual device. An ordinary
+ +        // physical mouse has its own device, so always release our own button.
+ +        if pressed || !app.input_state.mouse_priority.captured_button_held(btn) {
+ +            app.hid_provider.inner.send_button(btn, pressed);
+-+        }
++         }
++-        let pos = self.mouse_transform.transform_point2(hit.uv);
++-        app.hid_provider
++-            .inner
++-            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
+      }
+  
+      fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {
+@@ -1709,10 +1878,17 @@
+                  wvr_server.send_mouse_button(
+ --- a/wayvr/src/shaders/mod.rs
+ +++ b/wayvr/src/shaders/mod.rs
+-@@ -31,6 +31,24 @@
+-         super::load(
+-             gfx,
+-             include_bytes!(concat!(env!("OUT_DIR"), "/color.frag.spv")),
++@@ -42,6 +42,24 @@
++     }
++ }
++ 
+++pub mod frag_hand_pad {
+++    use super::{Arc, DescriptorBinding, DescriptorType, ShaderModule, ShaderStage, WGfx};
+++
+++    pub fn load(gfx: &WGfx) -> anyhow::Result<Arc<ShaderModule>> {
+++        super::load(
+++            gfx,
+++            include_bytes!(concat!(env!("OUT_DIR"), "/hand_pad.frag.spv")),
+ +            ShaderStage::Fragment,
+ +            &[DescriptorBinding::new(
+ +                0,
+@@ -1724,16 +1900,9 @@
+ +    }
+ +}
+ +
+-+pub mod frag_hand_pad {
+-+    use super::{Arc, DescriptorBinding, DescriptorType, ShaderModule, ShaderStage, WGfx};
+-+
+-+    pub fn load(gfx: &WGfx) -> anyhow::Result<Arc<ShaderModule>> {
+-+        super::load(
+-+            gfx,
+-+            include_bytes!(concat!(env!("OUT_DIR"), "/hand_pad.frag.spv")),
+-             ShaderStage::Fragment,
+-             &[DescriptorBinding::new(
+-                 0,
++ pub mod frag_grid {
++     use super::{Arc, ShaderModule, ShaderStage, WGfx};
++ 
+ --- a/wayvr/src/state.rs
+ +++ b/wayvr/src/state.rs
+ @@ -55,6 +55,8 @@
+@@ -1756,7 +1925,7 @@
+              anchor_grabbed: false,
+ --- a/wayvr/src/subsystem/input.rs
+ +++ b/wayvr/src/subsystem/input.rs
+-@@ -46,14 +46,14 @@
++@@ -46,15 +46,15 @@
+          wvr_server: Option<&mut WvrServerState>,
+          value: InputFocus,
+      ) -> bool {
+@@ -1768,13 +1937,14 @@
+              false
+          } else {
+              self.input_focus = value;
+--
++ 
+ -            if let Some(wvr_server) = wvr_server {
+ -                wvr_server.set_input_focus(matches!(value, InputFocus::WayVR));
+ -            }
+- 
++-
+              true
+          }
++     }
+ --- a/wayvr/src/windowing/window.rs
+ +++ b/wayvr/src/windowing/window.rs
+ @@ -270,7 +270,7 @@
+@@ -1841,14 +2011,3 @@
+  	fn window_list(&mut self, data: &mut T) -> anyhow::Result<Vec<WvrWindow>>;
+  	fn window_set_visible(&mut self, data: &mut T, handle: WvrWindowHandle, visible: bool) -> anyhow::Result<()>;
+  	fn window_request_close(&mut self, data: &mut T, handle: WvrWindowHandle) -> anyhow::Result<()>;
+---- a/wayvr/src/graphics/dmabuf.rs
+-+++ b/wayvr/src/graphics/dmabuf.rs
+-@@ -26,7 +26,7 @@
+-             anyhow::bail!("DMA-buf plane has no FD");
+-         };
+-
+--        log::info!(
+-+        log::debug!(
+-             "DMA-buf import start: {}x{}, format={:?}, modifier={:?}, planes={}",
+-             frame.format.width,
+-             frame.format.height,
+diff --git a/server/CMakeLists.txt b/server/CMakeLists.txt
+index c9ca4cde..65826675 100644
+--- a/server/CMakeLists.txt
++++ b/server/CMakeLists.txt
+@@ -209,9 +209,14 @@ if (WIVRN_BUILD_SERVER)
+ 	endif()
+ 
+ 	if(WIVRN_USE_PIPEWIRE)
++		set(WIVRN_PIPEWIRE_SOURCE audio/audio_pipewire.cpp)
++		if(WIVRN_AUDIO_AB_STOCK)
++			set(WIVRN_PIPEWIRE_SOURCE audio/stock/audio_pipewire.cpp)
++			target_include_directories(wivrn-server PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/audio")
++		endif()
+ 		target_sources(
+ 			wivrn-server
+-			PRIVATE audio/audio_pipewire.cpp
++			PRIVATE ${WIVRN_PIPEWIRE_SOURCE}
+ 			)
+ 		target_link_libraries(wivrn-server PRIVATE PkgConfig::libpipewire)
+ 	endif()
+@@ -288,6 +293,11 @@ if (WIVRN_BUILD_SERVER)
+     install(DIRECTORY shora/backend/licenses/ DESTINATION share/licenses/wivrn-pro/shora COMPONENT ShoraNotices)
+     install(FILES shora/vendor/solarxr-protocol/LICENSE-APACHE shora/vendor/solarxr-protocol/LICENSE-MIT DESTINATION share/licenses/wivrn-pro/shora/solarxr COMPONENT ShoraNotices)
+     install(PROGRAMS ../fork/subscribe.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME wivrn-pro-spatial)
++    configure_file(../fork/encoder-presets/wivrn-pro-encoder-preset.in wivrn-pro-encoder-preset @ONLY)
++    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/wivrn-pro-encoder-preset DESTINATION ${CMAKE_INSTALL_BINDIR})
++    install(PROGRAMS ../fork/encoder-presets/wivrn-host-preset DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets)
++    install(FILES ../fork/encoder-presets/README.txt DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets)
++    install(DIRECTORY ../fork/encoder-presets/profiles DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets FILES_MATCHING PATTERN "*.json")
+     install(FILES shora/LICENSE-APACHE shora/LICENSE-MIT shora/backend/THIRD_PARTY.md DESTINATION share/licenses/wivrn-pro/shora)
+ 
+ 	install(FILES dist/firewalld-wivrn.xml
+diff --git a/server/compositor/compositor.cpp b/server/compositor/compositor.cpp
+index e5972650..c87c8a40 100644
+--- a/server/compositor/compositor.cpp
++++ b/server/compositor/compositor.cpp
+@@ -21,6 +21,7 @@
+ 
+ #include "compositor.h"
+ #include "encoder/encode_batch.h"
++#include "utils/performance.h"
+ #include "wivrn_ipc.h"
+ #include <cmath>
+ 
+@@ -639,6 +640,25 @@ int compositor::acquire_image()
+ 
+ void compositor::encoder_work(std::stop_token tok)
+ {
++	const char * parallel_env = std::getenv("WIVRN_PARALLEL_QSV");
++	const bool parallel = (!parallel_env || std::string_view(parallel_env) != "0") &&
++	                      std::ranges::all_of(settings, [](const auto & s) { return s.encoder_name == "qsv"; });
++	std::unique_ptr<batch_executor> executor;
++	if (parallel)
++	{
++		try
++		{
++			executor = std::make_unique<batch_executor>();
++		}
++		catch (const std::exception & e)
++		{
++			U_LOG_W("Cannot start QSV workers, using serial encoding: %s", e.what());
++		}
++	}
++	U_LOG_I("QSV parallel stream encoding: %s", executor ? "enabled" : "disabled");
++	latency_samples batch_latency;
++	std::array<latency_samples, 3> encode_latency;
++
+ 	while (!tok.stop_requested())
+ 	{
+ 		std::unique_lock video_lock(video_mutex);
+@@ -689,12 +709,17 @@ void compositor::encoder_work(std::stop_token tok)
+ 			continue;
+ 		}
+ 		auto & image = images[req];
++		const auto batch_start = profile_enabled() ? performance_clock::now() : performance_clock::time_point{};
+ 		encode_batch(encoders, image.submitted, [&](video_encoder & encoder) {
++    const auto start = profile_enabled() ? performance_clock::now() : performance_clock::time_point{};
+     encoder.encode(session, image.view_info, image.frame_index);
++    if (profile_enabled()) encode_latency[encoder.stream_idx].add(elapsed_ms(start), "encode", encoder.stream_idx);
+     if (description_requested || image.frame_index < video_frame_floor) throw encoder_reconfiguration{}; }, [&](video_encoder & encoder, const std::exception & e) {
+     if (dynamic_cast<const encoder_reconfiguration *>(&e)) return;
+     encoder.request_recovery();
+-    U_LOG_W("Encode error on stream %u: %s", encoder.stream_idx, e.what()); });
++    U_LOG_W("Encode error on stream %u: %s", encoder.stream_idx, e.what()); }, executor.get());
++		if (profile_enabled())
++			batch_latency.add(elapsed_ms(batch_start), "stereo-batch");
+ 		image.busy = false;
+ 	}
+ }
+diff --git a/server/compositor/foveation.cpp b/server/compositor/foveation.cpp
+index b973da65..47bb7f2e 100644
+--- a/server/compositor/foveation.cpp
++++ b/server/compositor/foveation.cpp
+@@ -444,10 +444,9 @@ void foveation::update_tracking(const from_headset::tracking & tracking)
+ 		if (pose.device != device_id::EYE_GAZE)
+ 			continue;
+ 
+-		if ((pose.flags & orientation_ok) != orientation_ok)
+-			return;
+-
+-		gaze = xrt_cast(pose.pose.orientation);
++		tracked_gaze.update(xrt_cast(pose.pose.orientation),
++		                    (pose.flags & orientation_ok) == orientation_ok,
++		                    std::chrono::steady_clock::now());
+ 		return;
+ 	}
+ }
+@@ -511,6 +510,7 @@ void foveation::update_ubo(
+ {
+ 	// Check if the last value is still valid
+ 	std::lock_guard lock(mutex);
++	gaze = tracked_gaze.get(std::chrono::steady_clock::now());
+ 	if (last.flip_y == flip_y and
+ 	    last.src[0] == src_rect[0] and
+ 	    last.src[1] == src_rect[1] and
+diff --git a/server/compositor/foveation.h b/server/compositor/foveation.h
+index 1914b208..e35f7487 100644
+--- a/server/compositor/foveation.h
++++ b/server/compositor/foveation.h
+@@ -19,6 +19,7 @@
+ 
+ #pragma once
+ 
++#include "gaze_state.h"
+ #include "vk/allocation.h"
+ #include "wivrn_packets.h"
+ #include "xrt/xrt_defines.h"
+@@ -47,6 +48,7 @@ class foveation
+ 
+ 	float eye_x[2] = {}; // eye x position
+ 	xrt_quat gaze = {};
++	gaze_state<xrt_quat> tracked_gaze;
+ 	from_headset::override_foveation_center manual_foveation = {};
+ 	std::array<to_headset::foveation_parameter, 2> params;
+ 
+diff --git a/server/driver/performance_feed.cpp b/server/driver/performance_feed.cpp
+index 41ac3a88..db67b274 100644
+--- a/server/driver/performance_feed.cpp
++++ b/server/driver/performance_feed.cpp
+@@ -50,6 +50,19 @@ void stream_performance::update(const from_headset::feedback & f, int64_t now)
+ 		    (!t.updated_ns || f.frame_index >= t.frame))
+ 			t = {f.frame_index, start, end, now};
+ 	}
++	// All intervals below telescope to encode -> predicted display for ONE
++	// frame. Never replace its first-presentation result with a repeat.
++	const std::array<int64_t, 8> chain{f.encode_begin, f.encode_end, f.send_begin,
++	                                 f.received_last_packet, f.sent_to_decoder,
++	                                 f.received_from_decoder, f.blitted, f.displayed};
++	if (f.times_displayed == 1 && chain.front() > 0 &&
++	    std::is_sorted(chain.begin(), chain.end()) &&
++	    chain.back() - chain.front() <= 2'000'000'000 &&
++	    (!first_display_updated_ns || f.frame_index > first_display.frame_index))
++	{
++		first_display = f;
++		first_display_updated_ns = now;
++	}
+ 	if (!updated_ns || f.frame_index >= last.frame_index)
+ 	{
+ 		last = f;
+@@ -149,7 +162,28 @@ void performance_feed::run()
+ 						return nullptr;
+ 					return duration_ms(t.start, t.end);
+ 				};
+-				video.push_back({{"id", i}, {"updated_ns", s.updated_ns}, {"frames", s.frames}, {"repeats", s.repeats}, {"encode_ms", latency(0)}, {"delivery_ms", latency(1)}, {"decode_ms", latency(2)}, {"encode_display_ms", latency(3)}});
++				auto stage_frame = [&](unsigned i) -> nlohmann::json {
++					const auto & t = s.timings[i];
++					if (!t.updated_ns || monotonic_ns() - t.updated_ns > 2'000'000'000)
++						return nullptr;
++					return t.frame;
++				};
++				nlohmann::json first = nullptr;
++				if (s.first_display_updated_ns && monotonic_ns() - s.first_display_updated_ns <= 2'000'000'000)
++				{
++					const auto & f = s.first_display;
++					first = {{"frame_index", f.frame_index}, {"updated_ns", s.first_display_updated_ns},
++					         {"encode_ms", duration_ms(f.encode_begin, f.encode_end)},
++					         {"encode_to_send_ms", duration_ms(f.encode_end, f.send_begin)},
++					         {"delivery_ms", duration_ms(f.send_begin, f.received_last_packet)},
++					         {"decoder_queue_ms", duration_ms(f.received_last_packet, f.sent_to_decoder)},
++					         {"decode_ms", duration_ms(f.sent_to_decoder, f.received_from_decoder)},
++					         {"decoded_to_blit_ms", duration_ms(f.received_from_decoder, f.blitted)},
++					         {"blit_to_predicted_display_ms", duration_ms(f.blitted, f.displayed)},
++					         {"encode_to_predicted_display_ms", duration_ms(f.encode_begin, f.displayed)}};
++				}
++				video.push_back({{"id", i}, {"updated_ns", s.updated_ns}, {"frames", s.frames}, {"repeats", s.repeats}, {"encode_ms", latency(0)}, {"delivery_ms", latency(1)}, {"decode_ms", latency(2)}, {"encode_display_ms", latency(3)},
++				                 {"stage_frames", {{"encode", stage_frame(0)}, {"delivery", stage_frame(1)}, {"decode", stage_frame(2)}, {"encode_display", stage_frame(3)}}}, {"first_display", first}});
+ 			}
+ 			auto data = nlohmann::json({{"version", 1}, {"pid", getpid()}, {"session", session}, {"updated_ns", monotonic_ns()}, {"target_hz", target}, {"apps", apps}, {"streams", video}}).dump();
+ 			// Exclusive temporary file, replaced atomically; never follow a symlink.
+diff --git a/server/driver/performance_feed.h b/server/driver/performance_feed.h
+index 6a3c2ca7..259395f3 100644
+--- a/server/driver/performance_feed.h
++++ b/server/driver/performance_feed.h
+@@ -24,6 +24,10 @@ struct stream_performance
+ 	uint64_t frames = 0, repeats = 0;
+ 	int64_t updated_ns = 0;
+ 	from_headset::feedback last{};
++	// A coherent first presentation; legacy stage measurements can refer to
++	// different frames and can include later presentations of a repeated frame.
++	from_headset::feedback first_display{};
++	int64_t first_display_updated_ns = 0;
+ 	struct timing
+ 	{
+ 		uint64_t frame = 0;
+diff --git a/server/driver/wivrn_session.cpp b/server/driver/wivrn_session.cpp
+index d82a0bf9..1d35a3ee 100644
+--- a/server/driver/wivrn_session.cpp
++++ b/server/driver/wivrn_session.cpp
+@@ -24,6 +24,7 @@
+ #include "application.h"
+ #include "configuration.h"
+ #include "driver/app_pacer.h"
++#include "driver/refresh_rate_policy.h"
+ #include "driver/xrt_cast.h"
+ #include "server/ipc_server.h"
+ #include "utils/load_icon.h"
+@@ -1078,14 +1079,7 @@ struct refresh_rate_adjuster
+ 
+ 		// Maximum refresh rate the application can reach
+ 		auto app_rate = float(U_TIME_1S_IN_NS) / pacers.get_frame_time();
+-		// Get the highest rate reachable by the application
+-		// If none can be reached, set it to the maximum
+-		auto requested = info.available_refresh_rates.back();
+-		for (auto rate: info.available_refresh_rates)
+-		{
+-			if (rate > locked->minimum_refresh_rate and rate < app_rate * (rate == last ? 1. : 0.9))
+-				requested = rate;
+-		}
++		auto requested = select_refresh_rate(info.available_refresh_rates, locked->minimum_refresh_rate, app_rate, last);
+ 		if (requested != last)
+ 		{
+ 			U_LOG_I("requesting refresh rate: %.0f (app rate %.1f)", requested, app_rate);
+diff --git a/server/encoder/encode_batch.h b/server/encoder/encode_batch.h
+index 96dde281..a8d68759 100644
+--- a/server/encoder/encode_batch.h
++++ b/server/encoder/encode_batch.h
+@@ -1,5 +1,7 @@
+ // SPDX-License-Identifier: GPL-3.0-or-later
+ #pragma once
++#include "batch_executor.h"
++#include <array>
+ #include <exception>
+ 
+ namespace wivrn
+@@ -7,24 +9,42 @@ namespace wivrn
+ // Keep consuming submitted slots after a failure. Async stereo packets are
+ // committed only after both eyes have completed this batch without throwing.
+ template <typename Encoders, typename Mask, typename Encode, typename Failure>
+-void encode_batch(Encoders & encoders, const Mask & submitted, Encode encode, Failure failure)
++void encode_batch(Encoders & encoders, const Mask & submitted, Encode encode, Failure failure, batch_executor * executor = nullptr)
+ {
+-	bool keep = submitted[0] && submitted[1];
+-	for (auto & encoder: encoders)
+-	{
+-		if (!submitted[encoder->stream_idx])
+-			continue;
++	std::array<std::exception_ptr, 3> errors{};
++	auto work = [&](size_t i) {
++		if (i >= encoders.size() || !submitted[encoders[i]->stream_idx])
++			return;
+ 		try
+ 		{
+-			encode(*encoder);
++			encode(*encoders[i]);
+ 		}
+-		catch (const std::exception & e)
++		catch (...)
+ 		{
+-			keep = false;
+-			failure(*encoder, e);
++			errors[i] = std::current_exception();
+ 		}
+-	}
++	};
++	if (executor)
++		executor->run(work);
++	else
++		for (size_t i = 0; i < encoders.size(); ++i)
++			work(i);
++	bool keep = submitted[0] && submitted[1];
++	for (const auto & error: errors)
++		keep &= !error;
++	// Commit only after all workers have completed. A failed eye discards the
++	// entire stereo batch; error reporting/recovery is serialized afterwards.
+ 	for (auto & encoder: encoders)
+ 		encoder->commit_encoded(keep);
++	for (size_t i = 0; i < encoders.size(); ++i)
++		if (errors[i])
++			try
++			{
++				std::rethrow_exception(errors[i]);
++			}
++			catch (const std::exception & e)
++			{
++				failure(*encoders[i], e);
++			}
+ }
+ } // namespace wivrn
+diff --git a/server/encoder/encoder_settings.cpp b/server/encoder/encoder_settings.cpp
+index 9ee6b6de..4cc70887 100644
+--- a/server/encoder/encoder_settings.cpp
++++ b/server/encoder/encoder_settings.cpp
+@@ -18,6 +18,7 @@
+  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  */
+ #include "encoder_settings.h"
++#include "rate_control.h"
+ 
+ #include "driver/configuration.h"
+ #include "driver/wivrn_session.h"
+@@ -79,8 +80,12 @@ void print_encoders(const std::array<wivrn::encoder_settings, 3> & encoders)
+ 	for (auto & encoder: encoders)
+ 	{
+ 		str << "\n\t* " << encoder.encoder_name << " (" << magic_enum::enum_name(encoder.codec) << " " << encoder.bit_depth << "-bit)"
+-		    << "\n\t  size: " << encoder.width << "x" << encoder.height
+-		    << "\n\t  bitrate: " << int(encoder.bitrate / 100'000) / 10. << "Mbit/s";
++		    << "\n\t  size: " << encoder.width << "x" << encoder.height;
++		const auto qp = cqp_quantizer(encoder.options, encoder.encoder_name == encoder_qsv && (encoder.codec == video_codec::h264 || encoder.codec == video_codec::h265));
++		if (qp)
++			str << "\n\t  rate control: CQP " << *qp << " (uncapped; bitrate slider ignored)";
++		else
++			str << "\n\t  bitrate: " << int(encoder.bitrate / 100'000) / 10. << "Mbit/s";
+ 	}
+ 	U_LOG_I("%s", str.str().c_str());
+ }
+@@ -230,6 +235,7 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle,
+ 		dst.device = src.device;
+ 
+ 		std::tie(dst.encoder_name, dst.codec) = prober.select_encoder(src);
++		cqp_quantizer(dst.options, dst.encoder_name == encoder_qsv && (dst.codec == video_codec::h264 || dst.codec == video_codec::h265));
+ 	}
+ 
+ 	auto width = align(info.stream_eye_width, 64);
+diff --git a/server/encoder/ffmpeg/video_encoder_va.cpp b/server/encoder/ffmpeg/video_encoder_va.cpp
+index c1f4e4c6..73220fea 100644
+--- a/server/encoder/ffmpeg/video_encoder_va.cpp
++++ b/server/encoder/ffmpeg/video_encoder_va.cpp
+@@ -23,6 +23,8 @@
+ #include "video_encoder_va.h"
+ 
+ #include "encoder/encoder_settings.h"
++#include "encoder/rate_control.h"
++#include "rate_control.h"
+ 
+ #include "os/os_time.h"
+ #include "util/u_logging.h"
+@@ -511,11 +513,15 @@ void video_encoder_va::present_image(vk::Image y_cbcr, vk::SemaphoreSubmitInfo,
+ 
+ void video_encoder_va::push_frame(bool idr, uint8_t slot)
+ {
++	const auto start = profile_enabled() ? performance_clock::now() : performance_clock::time_point{};
+ 	if (vk.device.waitForFences(*in[slot].fence, true, 1'000'000'000) == vk::Result::eTimeout)
+ 		throw std::runtime_error("timeout");
+ 
++	if (profile_enabled())
++		fence_latency.add(elapsed_ms(start), "copy-fence-wait", stream_idx);
+ 	if (auto s = ts_pool.collect(slot))
+ 	{
++		copy_latency.add(s->duration_ns / 1e6, "gpu-copy", stream_idx);
+ 		wivrn::trace::gpu_slice(wivrn::trace::gpu_track::va_copy,
+ 		                        "vk_copy_luma_chroma",
+ 		                        s->begin_ns,
+@@ -579,6 +585,7 @@ void video_encoder_va::open_codec()
+ 		throw std::runtime_error("failed to allocate VAAPI encoder");
+ 	}
+ 
++	const auto qp = cqp_quantizer(codec_settings.options, use_qsv && (codec_settings.codec == video_codec::h264 || codec_settings.codec == video_codec::h265));
+ 	AVDictionary * opts = nullptr;
+ 	av_dict_set(&opts, "async_depth", "1", 0);
+ 	switch (codec_settings.codec)
+@@ -607,10 +614,12 @@ void video_encoder_va::open_codec()
+ 			av_dict_set(&opts, "look_ahead", "0", 0);
+ 		av_dict_set(&opts, "forced_idr", "1", 0);
+ 		av_dict_set(&opts, "preset", "veryfast", 0);
+-		av_dict_set(&opts, "low_delay_brc", "1", 0);
++		av_dict_set(&opts, "low_delay_brc", qp ? "0" : "1", 0);
+ 	}
+ 	for (auto option: codec_settings.options)
+ 	{
++		if (option.first == "rate_control" || option.first == "qp")
++			continue;
+ 		av_dict_set(&opts, option.first.c_str(), option.second.c_str(), 0);
+ 	}
+ 
+@@ -626,11 +635,9 @@ void video_encoder_va::open_codec()
+ 	encoder_ctx->color_trc = AVCOL_TRC_BT709;
+ 	encoder_ctx->color_primaries = AVCOL_PRI_BT709;
+ 	encoder_ctx->max_b_frames = 0;
+-	encoder_ctx->bit_rate = codec_settings.bitrate;
+ 	encoder_ctx->gop_size = use_qsv ? 240 : std::numeric_limits<decltype(encoder_ctx->gop_size)>::max();
+ 	encoder_ctx->hw_frames_ctx = av_buffer_ref(use_qsv ? qsv_frames.get() : vaapi_frame_ctx.get());
+-	encoder_ctx->rc_max_rate = codec_settings.bitrate;
+-	encoder_ctx->rc_buffer_size = int(codec_settings.bitrate / codec_settings.fps);
++	configure_rate_control(*encoder_ctx, qp, codec_settings.bitrate, codec_settings.fps);
+ 
+ 	err = avcodec_open2(encoder_ctx.get(), codec, &opts);
+ 	av_dict_free(&opts);
+@@ -659,7 +666,8 @@ bool video_encoder_va::recover(unsigned attempt)
+ 	qsv_device.reset();
+ #if WIVRN_USE_VAAPI
+ 	// Stay on VAAPI for the rest of this runtime session after fallback.
+-	if (use_qsv && attempt >= 2)
++	// CQP is QSV-only: retry QSV instead of silently changing to CBR.
++	if (use_qsv && attempt >= 2 && !cqp_quantizer(codec_settings.options, true))
+ 	{
+ 		use_qsv = false;
+ 		codec_settings.encoder_name = encoder_vaapi;
+@@ -679,7 +687,8 @@ bool video_encoder_va::apply_pending_settings()
+ {
+ 	const auto bitrate = pending_bitrate.exchange(0);
+ 	const auto fps = pending_framerate.exchange(0);
+-	const bool changed = (bitrate && bitrate != codec_settings.bitrate) || (fps && fps != codec_settings.fps);
++	const auto qp = cqp_quantizer(codec_settings.options, use_qsv && (codec_settings.codec == video_codec::h264 || codec_settings.codec == video_codec::h265));
++	const bool changed = (!qp && bitrate && bitrate != codec_settings.bitrate) || (fps && fps != codec_settings.fps);
+ 	if (!changed)
+ 		return true;
+ 	if (bitrate)
+@@ -693,8 +702,11 @@ bool video_encoder_va::apply_pending_settings()
+ 		request_reconfigure();
+ 		throw encoder_reconfiguration{};
+ 	}
+-	encoder_ctx->bit_rate = codec_settings.bitrate;
+-	encoder_ctx->rc_max_rate = codec_settings.bitrate;
++	if (!qp)
++	{
++		encoder_ctx->bit_rate = codec_settings.bitrate;
++		encoder_ctx->rc_max_rate = codec_settings.bitrate;
++	}
+ 	encoder_ctx->framerate = AVRational{.num = int(codec_settings.fps * 1000), .den = 1000};
+ 	idr->reset();
+ 	return true;
+diff --git a/server/encoder/ffmpeg/video_encoder_va.h b/server/encoder/ffmpeg/video_encoder_va.h
+index 9bed2e92..085f2ec0 100644
+--- a/server/encoder/ffmpeg/video_encoder_va.h
++++ b/server/encoder/ffmpeg/video_encoder_va.h
+@@ -22,6 +22,7 @@
+ #include "encoder/encoder_settings.h"
+ #include "ffmpeg_helper.h"
+ #include "utils/gpu_timestamp_pool.h"
++#include "utils/performance.h"
+ #include "video_encoder_ffmpeg.h"
+ 
+ #include <array>
+@@ -65,6 +66,7 @@ class video_encoder_va : public video_encoder_ffmpeg
+ 	std::array<in_t, num_slots> in;
+ 
+ 	gpu_timestamp_pool ts_pool;
++	latency_samples copy_latency, fence_latency;
+ 
+ public:
+ 	video_encoder_va(wivrn::vk_bundle &, const wivrn::encoder_settings & settings, uint8_t stream_index);
+diff --git a/server/utils/gpu_timestamp_pool.cpp b/server/utils/gpu_timestamp_pool.cpp
+index 4c980658..b23c3c33 100644
+--- a/server/utils/gpu_timestamp_pool.cpp
++++ b/server/utils/gpu_timestamp_pool.cpp
+@@ -27,25 +27,20 @@
+ 
+ #include "gpu_timestamp_pool.h"
+ 
++#include "performance.h"
+ #include "wivrn_trace.h"
+ #include "wivrn_vk_bundle.h"
+-
+-#ifdef WIVRN_USE_PERFETTO
+ #include <array>
+-#include <cassert>
+-#endif
+ 
+ namespace wivrn
+ {
+-// No tracing build ⇒ no timestamp consumer; keep the pool disabled.
+-gpu_timestamp_pool::gpu_timestamp_pool([[maybe_unused]] wivrn::vk_bundle & vk,
+-                                       [[maybe_unused]] uint32_t queue_family_index,
+-                                       [[maybe_unused]] uint32_t slot_count,
+-                                       [[maybe_unused]] const std::string & name)
++// Timestamp allocation is opt-in through tracing or lightweight profiling.
++gpu_timestamp_pool::gpu_timestamp_pool(wivrn::vk_bundle & vk,
++                                       uint32_t queue_family_index,
++                                       uint32_t slot_count,
++                                       const std::string & name)
+ {
+-#ifdef WIVRN_USE_PERFETTO
+-	// Runtime tracing off: skip the pool instead of recording timestamps we'd drop.
+-	if (!wivrn::trace::is_enabled())
++	if (!wivrn::trace::is_enabled() && !profile_enabled())
+ 		return;
+ 	auto qprops = vk.physical_device.getQueueFamilyProperties();
+ 	if (queue_family_index >= qprops.size() or qprops[queue_family_index].timestampValidBits == 0)
+@@ -57,12 +52,13 @@ gpu_timestamp_pool::gpu_timestamp_pool([[maybe_unused]] wivrn::vk_bundle & vk,
+ 	});
+ 	vk.name(pool, name);
+ 	frame_indices.assign(slot_count, 0);
+-#endif
++	timestamp_period = vk.physical_device.getProperties().limits.timestampPeriod;
++	timestamp_bits = qprops[queue_family_index].timestampValidBits;
+ }
+ 
+ void gpu_timestamp_pool::cmd_begin(const vk::raii::CommandBuffer & cmd, uint8_t slot, uint64_t frame_index, vk::PipelineStageFlagBits2 stage)
+ {
+-	if (not *pool)
++	if (not*pool)
+ 		return;
+ 	cmd.resetQueryPool(*pool, slot * 2, 2);
+ 	cmd.writeTimestamp2(stage, *pool, slot * 2);
+@@ -71,32 +67,29 @@ void gpu_timestamp_pool::cmd_begin(const vk::raii::CommandBuffer & cmd, uint8_t
+ 
+ void gpu_timestamp_pool::cmd_end(const vk::raii::CommandBuffer & cmd, uint8_t slot, vk::PipelineStageFlagBits2 stage) const
+ {
+-	if (not *pool)
++	if (not*pool)
+ 		return;
+ 	cmd.writeTimestamp2(stage, *pool, slot * 2 + 1);
+ }
+ 
+ std::optional<gpu_timestamp_pool::sample> gpu_timestamp_pool::collect(uint8_t slot)
+ {
+-#ifdef WIVRN_USE_PERFETTO
+-	if (not *pool)
++	if (not*pool)
+ 		return std::nullopt;
+-	::vk_bundle * cal = wivrn::trace::calibration_source();
+-	assert(cal != nullptr);
+-	// Read both queries into a stack array, no allocation.
+ 	auto [res, times] = pool.getResult<std::array<uint64_t, 2>>(slot * 2, 2, sizeof(uint64_t), vk::QueryResultFlagBits::e64 | vk::QueryResultFlagBits::eWait);
+-	if (res != vk::Result::eSuccess or times[1] < times[0])
++	if (res != vk::Result::eSuccess)
+ 		return std::nullopt;
+-	if (vk_convert_timestamps_to_host_ns(cal, times.size(), times.data()) != VK_SUCCESS)
+-		return std::nullopt;
+-	return sample{
+-	        .begin_ns = static_cast<int64_t>(times[0]),
+-	        .end_ns = static_cast<int64_t>(times[1]),
+-	        .frame_index = frame_indices[slot],
+-	};
+-#else
+-	(void)slot;
+-	return std::nullopt;
++	const uint64_t mask = timestamp_bits == 64 ? ~uint64_t{0} : (uint64_t{1} << timestamp_bits) - 1;
++	const double duration = ((times[1] - times[0]) & mask) * timestamp_period;
++	int64_t begin = 0, end = 0;
++#ifdef WIVRN_USE_PERFETTO
++	if (auto cal = wivrn::trace::calibration_source(); cal && trace::is_enabled())
++		if (vk_convert_timestamps_to_host_ns(cal, times.size(), times.data()) == VK_SUCCESS)
++		{
++			begin = times[0];
++			end = times[1];
++		}
+ #endif
++	return sample{duration, begin, end, frame_indices[slot]};
+ }
+ } // namespace wivrn
+diff --git a/server/utils/gpu_timestamp_pool.h b/server/utils/gpu_timestamp_pool.h
+index 821471f3..33153f04 100644
+--- a/server/utils/gpu_timestamp_pool.h
++++ b/server/utils/gpu_timestamp_pool.h
+@@ -32,14 +32,18 @@ struct vk_bundle;
+ // copy durations for tracing. Conversion to host monotonic ns goes through
+ // monado's vk_convert_timestamps_to_host_ns (via wivrn::trace::calibration_source)
+ // so the calibration cache is shared with any future monado-side perfetto
+-// producer. If runtime tracing is off, the calibration source is missing, or
++// producer. WIVRN_PROFILE also enables raw duration measurements without Perfetto. If both
++// profiling and tracing are off, or
+ // the queue family doesn't support timestamps, the pool stays disabled and
+-// every method is a no-op. Default-constructed instances are also disabled,
++// every method is a no-op. Host timestamps are zero without trace calibration.
++// Default-constructed instances are also disabled,
+ // so members can be declared before being assigned.
+ class gpu_timestamp_pool
+ {
+ 	vk::raii::QueryPool pool = nullptr;
+ 	std::vector<uint64_t> frame_indices;
++	double timestamp_period = 0;
++	uint32_t timestamp_bits = 0;
+ 
+ public:
+ 	gpu_timestamp_pool() = default;
+@@ -50,6 +54,7 @@ public:
+ 
+ 	struct sample
+ 	{
++		double duration_ns;
+ 		int64_t begin_ns;
+ 		int64_t end_ns;
+ 		uint64_t frame_index;
+diff --git a/server/utils/wivrn_trace.cpp b/server/utils/wivrn_trace.cpp
+index 872e7f3d..21592d82 100644
+--- a/server/utils/wivrn_trace.cpp
++++ b/server/utils/wivrn_trace.cpp
+@@ -27,6 +27,7 @@
+ #include "util/u_logging.h"
+ #include "utils/xdg_base_directory.h"
+ 
++#include <array>
+ #include <cstdint>
+ #include <cstdlib>
+ #include <ctime>
+@@ -57,6 +58,9 @@ bool enabled = false;
+ ::vk_bundle * calibration = nullptr;
+ 
+ perfetto::Track g_encoder_track(1);
++// Concurrent eye encoders and GPU work must not overlap on one slice track.
++std::array<perfetto::Track, 3> g_stream_encoders{perfetto::Track(10), perfetto::Track(11), perfetto::Track(12)};
++std::array<perfetto::Track, 3> g_stream_gpu{perfetto::Track(20), perfetto::Track(21), perfetto::Track(22)};
+ perfetto::Track g_compositor_track(2);
+ perfetto::Track g_network_track(3);
+ perfetto::Track g_feedback_track(4);
+@@ -223,12 +227,12 @@ void start_inprocess_session()
+ 	U_LOG_I("wivrn::trace: in-process session started, %u KiB buffer", buffer_kb);
+ }
+ 
+-perfetto::Track & cpu_track_obj(cpu_track d)
++perfetto::Track & cpu_track_obj(cpu_track d, uint8_t stream)
+ {
+ 	switch (d)
+ 	{
+ 		case cpu_track::encoder:
+-			return g_encoder_track;
++			return stream < g_stream_encoders.size() ? g_stream_encoders[stream] : g_encoder_track;
+ 		case cpu_track::compositor:
+ 			return g_compositor_track;
+ 		case cpu_track::network:
+@@ -292,6 +296,11 @@ void init()
+ 		perfetto::TrackEvent::SetTrackDescriptor(trk, desc);
+ 	};
+ 	set_track_name(g_encoder_track, "WiVRn encoder");
++	for (size_t i = 0; i < g_stream_encoders.size(); ++i)
++	{
++		set_track_name(g_stream_encoders[i], ("WiVRn encoder " + std::to_string(i)).c_str());
++		set_track_name(g_stream_gpu[i], ("WiVRn GPU " + std::to_string(i)).c_str());
++	}
+ 	set_track_name(g_compositor_track, "WiVRn compositor");
+ 	set_track_name(g_network_track, "WiVRn network");
+ 	set_track_name(g_feedback_track, "WiVRn feedback");
+@@ -347,9 +356,11 @@ void gpu_slice(gpu_track, const char * slice_name, int64_t begin_ns, int64_t end
+ {
+ 	if (!initialized)
+ 		return;
+-	// gpu_track is unused today (all slices share the encoder track); kept for future GPU lanes.
+-	TRACE_EVENT_BEGIN("wivrn_encoder_gpu", perfetto::DynamicString(slice_name), g_encoder_track, static_cast<uint64_t>(begin_ns), "frame", frame, "stream", static_cast<uint32_t>(stream));
+-	TRACE_EVENT_END("wivrn_encoder_gpu", g_encoder_track, static_cast<uint64_t>(end_ns));
++	if (begin_ns <= 0 || end_ns < begin_ns)
++		return;
++	auto & track = stream < g_stream_gpu.size() ? g_stream_gpu[stream] : g_encoder_track;
++	TRACE_EVENT_BEGIN("wivrn_encoder_gpu", perfetto::DynamicString(slice_name), track, static_cast<uint64_t>(begin_ns), "frame", frame, "stream", static_cast<uint32_t>(stream));
++	TRACE_EVENT_END("wivrn_encoder_gpu", track, static_cast<uint64_t>(end_ns));
+ }
+ 
+ #define WIVRN_CPU_BEGIN(CAT, trk, name, ts, frame, stream) \
+@@ -384,7 +395,7 @@ scope::~scope()
+ 	if (!active)
+ 		return;
+ 	const int64_t end_ns = os_monotonic_get_ns();
+-	perfetto::Track & trk = cpu_track_obj(which);
++	perfetto::Track & trk = cpu_track_obj(which, stream);
+ 	switch (which)
+ 	{
+ 		case cpu_track::encoder:
+@@ -407,7 +418,7 @@ void cpu_instant(cpu_track which, const char * name, uint64_t frame, uint8_t str
+ 	if (!initialized)
+ 		return;
+ 	const int64_t ts = os_monotonic_get_ns();
+-	perfetto::Track & trk = cpu_track_obj(which);
++	perfetto::Track & trk = cpu_track_obj(which, stream);
+ 	switch (which)
+ 	{
+ 		case cpu_track::encoder:
+@@ -427,7 +438,7 @@ void cpu_begin(cpu_track which, uint8_t stream, uint64_t frame, const char * nam
+ 	if (!initialized)
+ 		return;
+ 	const int64_t ts = os_monotonic_get_ns();
+-	perfetto::Track & trk = cpu_track_obj(which);
++	perfetto::Track & trk = cpu_track_obj(which, stream);
+ 	switch (which)
+ 	{
+ 		case cpu_track::encoder:
+@@ -442,12 +453,12 @@ void cpu_begin(cpu_track which, uint8_t stream, uint64_t frame, const char * nam
+ 	}
+ }
+ 
+-void cpu_end(cpu_track which, uint8_t, uint64_t, const char *)
++void cpu_end(cpu_track which, uint8_t stream, uint64_t, const char *)
+ {
+ 	if (!initialized)
+ 		return;
+ 	const int64_t ts = os_monotonic_get_ns();
+-	perfetto::Track & trk = cpu_track_obj(which);
++	perfetto::Track & trk = cpu_track_obj(which, stream);
+ 	switch (which)
+ 	{
+ 		case cpu_track::encoder:
+diff --git a/server/wayvr/CMakeLists.txt b/server/wayvr/CMakeLists.txt
+index 50d2baea..95be6260 100644
+--- a/server/wayvr/CMakeLists.txt
++++ b/server/wayvr/CMakeLists.txt
+@@ -16,7 +16,7 @@ add_custom_command(OUTPUT "${wayvr_binary}" "${wayvrctl_binary}"
+         ${CARGO_EXECUTABLE} build ${wayvr_args} --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/upstream/Cargo.toml"
+     COMMAND ${CMAKE_COMMAND} -E env "CARGO_TARGET_DIR=${WIVRN_WAYVR_TARGET_DIR}" "CARGO_BUILD_JOBS=4"
+         ${CARGO_EXECUTABLE} build ${wayvrctl_args} --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/upstream/Cargo.toml"
+-    DEPENDS performance.rs performance_panel.rs performance.xml ${wayvr_sources} wivrn_tests.rs shora_battery.rs shora_reset.rs icons/full-reset.svg icons/mounting-reset.svg hand_input.rs hand_touch.rs hand_joystick.rs hand_double_tap.rs mouse_priority.rs hand_pad.rs hand_pad.frag
++    DEPENDS performance.rs performance_panel.rs performance.xml ${wayvr_sources} wivrn_tests.rs shora_battery.rs shora_reset.rs icons/full-reset.svg icons/mounting-reset.svg hand_input.rs hand_resize.rs hand_touch.rs hand_joystick.rs hand_double_tap.rs mouse_priority.rs hand_pad.rs hand_pad.frag
+     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/upstream"
+     VERBATIM)
+ add_custom_target(wivrn-wayvr ALL DEPENDS "${wayvr_binary}" "${wayvrctl_binary}")
+diff --git a/server/wayvr/upstream/dash-frontend/assets/lang/en.json b/server/wayvr/upstream/dash-frontend/assets/lang/en.json
+index 4a2e4e98..0f51dde6 100644
+--- a/server/wayvr/upstream/dash-frontend/assets/lang/en.json
++++ b/server/wayvr/upstream/dash-frontend/assets/lang/en.json
+@@ -136,7 +136,7 @@
+ 		"FEATURES": "Features",
+ 		"FOCUS_FOLLOWS_MOUSE_MODE": "Mouse move on trigger touch",
+ 		"HANDSFREE_POINTER": "Handsfree mode",
+-		"HANDSFREE_POINTER_HELP": "Input to use when motion\ncontrollers are unavailable.\nLeft pinch is grab, right is click.",
++		"HANDSFREE_POINTER_HELP": "Input when controllers are unavailable.\nTracked hands: thumb + index = left mouse,\nthumb + middle = middle mouse,\nthumb + ring = right mouse.\nFist = move; two fists apart/together = resize.\nWithout joint tracking: left pinch grabs, right clicks.",
+ 		"HANDSFREE_ALT_TAB": "App switcher aim",
+ 		"HANDSFREE_ALT_TAB_HELP": "Hold Super+X, aim at the desired window, then release to switch focus.",
+ 		"DIAGNOSTICS": "Diagnostics",
+diff --git a/server/wayvr/upstream/wayvr/src/backend/input.rs b/server/wayvr/upstream/wayvr/src/backend/input.rs
+index 387b87c4..4cdfda26 100644
+--- a/server/wayvr/upstream/wayvr/src/backend/input.rs
++++ b/server/wayvr/upstream/wayvr/src/backend/input.rs
+@@ -81,6 +81,7 @@ pub struct InputState {
+     pub joysticks_enabled: bool,
+     pub head_yaw_total: f64,
+     head_last_yaw: Option<f64>,
++    two_hand_grab: Option<(OverlayID, crate::hand_resize::HandResize)>,
+ }
+ 
+ impl InputState {
+@@ -100,6 +101,7 @@ impl InputState {
+             joysticks_enabled: false,
+             head_yaw_total: 0.0,
+             head_last_yaw: None,
++            two_hand_grab: None,
+         }
+     }
+ 
+@@ -366,6 +368,7 @@ pub struct Pointer {
+     touch_press: crate::hand_touch::TouchPress,
+     touch_needs_neutral: bool,
+     pub cancel_interaction: bool,
++    hand_grab_needs_release: bool,
+     /// distance of the most recent ray hit on a wayland client window, used for drag n drop
+     pub last_wvr_hit_distance: Option<f32>,
+ }
+@@ -394,6 +397,7 @@ impl Pointer {
+             touch_press: Default::default(),
+             touch_needs_neutral: false,
+             cancel_interaction: false,
++            hand_grab_needs_release: false,
+             last_wvr_hit_distance: None,
+         }
+     }
+@@ -546,6 +550,7 @@ pub fn interact<O>(
+ where
+     O: Default,
+ {
++    if update_two_hand_grab(overlays, app) { return [None, None]; }
+     let hits = if app.input_state.pointers[1].last_click > app.input_state.pointers[0].last_click {
+         let right = interact_hand(1, overlays, app);
+         let left = interact_hand(0, overlays, app);
+@@ -1316,6 +1321,95 @@ where
+     }
+ }
+ 
++// Both hands manipulate one existing fist grab. Controller grabs and two
++// different windows retain their ordinary, independent interaction paths.
++fn hand_grip(pointer: &Pointer) -> bool {
++    pointer.hand_tracking && pointer.tracked && pointer.now.grab
++        && !pointer.cancel_interaction && !pointer.joystick_owned
++        && pointer.wrist_pose.is_some_and(|p| p.is_finite())
++}
++fn two_hand_target(pointers: &[Pointer; 2]) -> Option<OverlayID> {
++    if !pointers.iter().all(hand_grip) { return None; }
++    let left = pointers[0].interaction.grabbed;
++    let right = pointers[1].interaction.grabbed;
++    match (left, right) {
++        (Some(a), Some(b)) if !a.grab_anchor && !b.grab_anchor && a.grabbed_id == b.grabbed_id => Some(a.grabbed_id),
++        (Some(a), None) | (None, Some(a)) if !a.grab_anchor => Some(a.grabbed_id),
++        _ => None,
++    }
++}
++fn update_two_hand_grab<O: Default>(overlays: &mut OverlayWindowManager<O>, app: &mut AppState) -> bool {
++    for pointer in &mut app.input_state.pointers {
++        if pointer.hand_grab_needs_release {
++            if !pointer.now.grab { pointer.hand_grab_needs_release = false; }
++            pointer.now.grab = false;
++        }
++    }
++    let mut interrupted = app.input_state.mouse_priority.active()
++        || app.input_state.pointers.iter().any(|p| !p.tracked || !p.hand_tracking
++            || p.cancel_interaction || p.joystick_owned || p.wrist_pose.is_none_or(|pose| !pose.is_finite()));
++    if let Some((id, resize)) = app.input_state.two_hand_grab {
++        let both = !interrupted && app.input_state.pointers.iter().all(hand_grip);
++        let transform = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform));
++        if both && transform.is_some() {
++            let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
++            let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
++            if let Some(value) = resize.update(left, right) {
++                let overlay = overlays.mut_by_id(id).unwrap();
++                overlay.config.active_state.as_mut().unwrap().transform = value;
++                overlay.config.pause_movement = true;
++                overlay.config.dirty = true;
++                return true;
++            }
++            interrupted = true;
++        }
++        // Rebase the surviving fist at the final resized transform. Tracking
++        // loss/ownership changes cancel both instead and require opening them.
++        app.input_state.two_hand_grab = None;
++        let surviving = !interrupted && transform.is_some() && app.input_state.pointers.iter().any(hand_grip);
++        let mut dropped = false;
++        for idx in 0..2 {
++            if !interrupted && transform.is_some() && hand_grip(&app.input_state.pointers[idx]) {
++                let pointer = &mut app.input_state.pointers[idx];
++                pointer.interaction.grabbed = Some(GrabData {
++                    grabbed_id: id, grab_anchor: false, offset: pointer.pose.inverse() * transform.unwrap(),
++                });
++            } else {
++                // A handoff is not a drop; only save/hide grab helpers once
++                // when the last hand lets go.
++                if surviving || dropped { app.input_state.pointers[idx].interaction.grabbed = None; }
++                release_pointer(idx, overlays, app);
++                dropped = true;
++                if interrupted || transform.is_none() { app.input_state.pointers[idx].hand_grab_needs_release = true; }
++            }
++        }
++        return false;
++    }
++    if interrupted { return false; }
++    let Some(id) = two_hand_target(&app.input_state.pointers) else { return false; };
++    let Some(transform) = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform)) else { return false; };
++    let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
++    let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
++    let Some(resize) = crate::hand_resize::HandResize::start(transform, left, right) else {
++        return true; // Freeze until the fists have a usable separation.
++    };
++    for idx in 0..2 {
++        let now = app.input_state.pointers[idx].now;
++        let before = app.input_state.pointers[idx].before;
++        // Clear any click/hover ownership without ending the existing grab.
++        app.input_state.pointers[idx].interaction.grabbed = None;
++        release_pointer(idx, overlays, app);
++        let pointer = &mut app.input_state.pointers[idx];
++        pointer.now = now; pointer.before = before; pointer.tracked = true;
++        pointer.interaction.grabbed = Some(GrabData {
++            grabbed_id: id, grab_anchor: false, offset: pointer.pose.inverse() * transform,
++        });
++    }
++    app.input_state.two_hand_grab = Some((id, resize));
++    if let Some(overlay) = overlays.mut_by_id(id) { overlay.config.pause_movement = true; }
++    true
++}
++
+ fn ray_test(
+     ray_origin: &Affine3A,
+     overlay: OverlayID,
+@@ -1341,6 +1435,34 @@ fn ray_test(
+ mod hand_attachment_tests {
+     use super::*;
+     #[test]
++    fn resizing_requires_two_tracked_fists_and_one_target() {
++        let mut ids = slotmap::SlotMap::<OverlayID, ()>::with_key();
++        let first = ids.insert(());
++        let second = ids.insert(());
++        let mut pointers = [Pointer::new(0), Pointer::new(1)];
++        for p in &mut pointers {
++            p.tracked = true; p.hand_tracking = true; p.now.grab = true;
++            p.wrist_pose = Some(Affine3A::IDENTITY);
++        }
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[0].interaction.grabbed = Some(GrabData { grabbed_id: first, ..Default::default() });
++        assert_eq!(two_hand_target(&pointers), Some(first));
++        pointers[1].interaction.grabbed = Some(GrabData { grabbed_id: second, ..Default::default() });
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[1].interaction.grabbed = pointers[0].interaction.grabbed;
++        assert_eq!(two_hand_target(&pointers), Some(first));
++        pointers[1].tracked = false; assert!(two_hand_target(&pointers).is_none());
++        pointers[1].tracked = true; pointers[1].hand_tracking = false;
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[1].hand_tracking = true; pointers[1].cancel_interaction = true;
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[1].cancel_interaction = false; pointers[1].joystick_owned = true;
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[1].joystick_owned = false;
++        pointers[0].interaction.grabbed.as_mut().unwrap().grab_anchor = true;
++        assert!(two_hand_target(&pointers).is_none());
++    }
++    #[test]
+     fn wrist_attachment_preserves_controller_frame_and_faces_back_of_hand() {
+         let mut pointer = Pointer::new(0);
+         pointer.pose = Affine3A::from_translation(glam::Vec3::X);
+diff --git a/server/wayvr/upstream/wayvr/src/backend/openxr/input.rs b/server/wayvr/upstream/wayvr/src/backend/openxr/input.rs
+index 12ec3d2e..794a1db4 100644
+--- a/server/wayvr/upstream/wayvr/src/backend/openxr/input.rs
++++ b/server/wayvr/upstream/wayvr/src/backend/openxr/input.rs
+@@ -526,8 +526,9 @@ impl OpenXrInputSource {
+                             pointer.now.move_mouse = true;
+                             pointer.now.click_modifier_middle =
+                                 sample.gesture == Gesture::MiddleClick;
++                            // A fist follows wrist rotation instead of reorienting toward the head.
+                             pointer.now.click_modifier_right =
+-                                sample.gesture == Gesture::RightClick;
++                                matches!(sample.gesture, Gesture::RightClick | Gesture::Grab);
+                         }
+                     }
+                 }
+diff --git a/server/wayvr/upstream/wayvr/src/main.rs b/server/wayvr/upstream/wayvr/src/main.rs
+index 65ffd9cd..806fe03b 100644
+--- a/server/wayvr/upstream/wayvr/src/main.rs
++++ b/server/wayvr/upstream/wayvr/src/main.rs
+@@ -29,6 +29,8 @@ mod hand_double_tap;
+ #[cfg(feature = "openxr")]
+ #[path = "../../../hand_input.rs"]
+ mod hand_input;
++#[path = "../../../hand_resize.rs"]
++mod hand_resize;
+ #[cfg(feature = "openxr")]
+ #[path = "../../../hand_joystick.rs"]
+ mod hand_joystick;

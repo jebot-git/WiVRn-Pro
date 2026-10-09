@@ -1,0 +1,68 @@
+Standalone optimal-SRGB image upload/readback experiment
+
+This is a new source and binary, preserving the earlier CPU/GPU inverse A/B probe.
+  bash prototypes/vr444/experiments/latency_decode/build-upload.sh [OUTPUT_DIR]
+  OUTPUT_DIR/upload-probe-host CORPUS 7
+  OUTPUT_DIR/upload-probe-android CORPUS 21
+No shader directory, APK or headset wearing required. Parent owns device actions.
+The same 38 captured payloads and 84 deterministic generated cases are exercised.
+
+Per iteration
+1. Unmeasured preparation clears the optimal R8G8B8A8_SRGB image to alpha 0 and
+   waits for that submission, poisons cached RGBA and readback memory to 0x5a.
+   The reference decoder always emits alpha 255, so a stale/omitted upload cannot
+   pass merely because consecutive expected images happen to be identical.
+2. Timed NEON (SSE2 on host) direct decode writes private cached RGBA. This includes
+   its internal preflight; the caller's initial Shape and allocation are reused.
+3. Timed memcpy writes coherent mapped transfer staging.
+4. Transition GENERAL -> TRANSFER_DST_OPTIMAL, copy buffer into the SRGB image,
+   transition to GENERAL with shader-read visibility, submit and wait for fence.
+5. Stop decode-through-upload timer. Compare CPU output with reference.
+6. Separately timed validation command transitions to TRANSFER_SRC_OPTIMAL, copies
+   image to a different coherent buffer, returns image to GENERAL, and issues the
+   transfer-write -> host-read dependency. Wait for its fence, then compare every
+   readback byte with CPU reference, including alpha and partial edge pixels.
+Both warmup and timed iterations must pass both exactness checks.
+
+Recorded timing boundaries
+cpu_decode_ms: direct decode only, including its bounds pass.
+staging_copy_ms: CPU memcpy to coherent Vulkan staging only.
+upload_submit_fence_ms: queue submit + fence wait, excludes command recording.
+decode_through_upload_ms: decode + copy + command recording + upload/fence.
+readback_submit_fence_ms: separate validation submit/fence only.
+readback_record_submit_fence_ms: validation recording + submit/fence.
+No poison/clear, oracle comparison or validation readback time is included in
+reported decode-through-upload time. Their effects on cache/queue state still
+exist. All times are host steady-clock wall durations, not GPU transfer timestamps.
+
+Scope limits
+This is an idle standalone graphics queue/device, not the XR application's shared
+queue or compositor. No stream packet work, LZ4, scheduling, stereo publication,
+sampling/EOTF or display is exercised. The library preflight/resize call outside
+live decode is not included, since Shape and output are reused here. The image
+has an extra TRANSFER_SRC usage for validation; first-compatible device-local
+allocation here is not a guarantee of the same VMA choice as live. Memory flags
+and device identity are recorded. Unworn testing is a transfer viability/oracle
+check, not live latency or motion-to-photon measurement.
+
+Host negative control
+A separate deliberately broken host source omits vkCmdCopyBufferToImage while
+preserving clear/readback. It must exit 1 with 'optimal SRGB image byte mismatch'.
+This proves that the readback oracle detects missing image uploads. The modified
+negative-control source/binary and expected failure output are preserved under
+decode/build-upload and host-upload-negative*. They are not Android candidates.
+
+Audit
+  python3 prototypes/vr444/experiments/latency_decode/summarize_upload.py RESULT.json
+Checks exactness booleans, case count, nonsoftware device, coherent host memory,
+all finite sample arrays and matching median/p95/max. Reports averages of case
+quantiles, not pooled latency percentiles. The optional Vulkan validation layer
+was unavailable on the host; no validation-layer pass is claimed.
+
+Primary synchronization/copy references (consulted 2026-10-08)
+https://docs.vulkan.org/guide/latest/synchronization_examples.html
+https://docs.vulkan.org/spec/latest/chapters/synchronization.html#synchronization-submission-host-writes
+https://docs.vulkan.org/spec/latest/chapters/copies.html
+Submission provides ordering for preceding coherent host writes. Image transfers
+still require the corresponding layouts and access dependencies. A separate
+transfer-to-host dependency and completed fence precede readback comparison.

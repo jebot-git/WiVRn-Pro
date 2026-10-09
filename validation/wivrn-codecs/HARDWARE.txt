@@ -1,0 +1,100 @@
+Standalone hardware tests — suite 0.3.0
+======================================
+Run from the extracted suite directory with the Quest authorized in `adb devices`:
+
+  python3 suite.py verify .
+  python3 hardware.py --bundles bundles --serial YOUR_ADB_SERIAL \
+    --render-node /dev/dri/renderD129 --out /absolute/path/to/new-evidence
+
+The output directory must not exist. Confirm the render node first: this profile
+requires PCI vendor/device 8086:56a0 (Arc A770) and selects the matching Vulkan
+device automatically. No software GPU or software Android decoder fallback is
+allowed. Multiple matching host devices are rejected as ambiguous. Use --decoder
+with a name from mediacodec.json to select another eligible hardware decoder.
+
+The archive includes hardware/android/codec-harness.jar (DEX, min API 29).
+Building directly from source additionally requires an Android SDK with API 36,
+build-tools 36.1.0, and JAVA_HOME pointing to a JDK with javac (17 or newer):
+
+  JAVA_HOME=/path/to/jdk bash hardware/build.sh
+
+Host runtime dependencies: Python >=3.11, numpy, adb, ffmpeg/ffprobe with libx265
+and hevc_qsv, Vulkan loader, and working Intel iHD/oneVPL access to the A770 node.
+The script installs no packages or APKs and changes no live WiVRn configuration.
+All device jobs run in an owned random /data/local/tmp/codec-hardware-* directory,
+with device-side timeout guards plus host timeouts. Cleanup deletes only that
+directory. --keep-device-files retains it for investigation; the path is recorded
+in config.json. A host crash can leave files behind, but device commands expire.
+
+Default coverage
+================
+1. Verify frozen codec payloads; record host driver/PCI/Vulkan evidence and headset
+   Android, thermal and battery snapshots before and after the run.
+2. Run CPU correctness/foveation checks and baseline/coop64/coop128 GPU correctness
+   on both Arc and Quest. Repeat cold 576x640 uniform and foveated dispatches three
+   times per kernel per device. --repeats accepts 1..100.
+3. Encode a deterministic 576x640 RGBA ramp/pattern on the host CPU at Q1/4/8/16;
+   transfer each bitstream by ADB, decode with all three Quest GPU kernels, pull
+   the output and compare byte-for-byte with the host CPU decoder (12 cases).
+   This checks the wire/file boundary. ADB is not a streaming network measurement.
+4. Generate 30-frame full-range RGB-in-luma HEVC carriers at requested 50/100/150
+   Mb/s with both libx265 and Arc hevc_qsv. Preserve bitstreams, actual payload
+   rates, source-to-decoded RGB quality and exact encoder commands. Synthetic
+   scenes may use much less than the requested bitrate. No rate-mode readback or
+   encoder-latency claim is made. --encoders can select either or both encoders.
+5. Query Android MediaCodecInfo, select hardware HEVC explicitly and actually
+   decode 1152x1920 carriers with paced 90 Hz input, at most four pending frames,
+   a 120-second internal watchdog, exact expected count/order/PTS, and EOS checks.
+6. Capture first/middle/last raw Y planes using getOutputImage, honoring crop,
+   row stride and pixel stride. Reconstruct stereo RGB panels and compare every
+   captured byte with FFmpeg's extracted Y plane from the same bitstream; report
+   source-to-decoded PSNR separately for each eye. Preserve sampled planes and
+   the complete software-reference hash. Decode and format checks cover every
+   frame; pixel-quality checks cover the three predetermined samples.
+7. Run a separate decode pass without image/file capture and report queue-input
+   to dequeue-output p50/p95/p99 after five warmup frames. If Android advertises
+   standard low-latency mode, repeat both passes with that mode requested. If it
+   does not, record unsupported and finish with pass_with_limitations, never
+   imply the mode was enabled. Configuration strings are evidence of requested
+   settings, not proof of vendor-internal behavior.
+
+Use --frames 900 for ten-second carriers (6..900 supported). This is still a short
+standalone run, not the original 30-minute compositor-contention soak. Encoding
+and reference generation need several GB of temporary free disk at 900 frames.
+The run writes REPORT.txt, summary.json, per-command logs, capability JSON,
+raw/result/quality evidence and hashes.json. Exact pixel equality is represented
+as exact=true and psnr_db=null. A failure returns exit 2; pass and explicitly
+limited pass return 0. Interrupted runs remain incomplete. Frozen packages are
+immutable; make a new version for future changes.
+
+Hardware observations from development validation, 2026-10-08
+===========================================================
+Arc A770 and Quest Pro Adreno (TM) 650 passed all three GPU kernel correctness
+paths and 12 transferred Q1/4/8/16 cases. Both libx265 and Arc QSV generated
+30-frame carriers at all three requested rates; the Quest Qualcomm hardware
+decoder returned all frames and all captured luma matched FFmpeg byte-for-byte.
+The observed luma row stride was 1536 bytes for a visible width of 1152.
+Neither advertised Quest HEVC hardware decoder exposed standard low-latency
+support. This remains an explicit limitation. The development evidence is in
+validation/results/hardware-development-01 in the source workspace; its older
+runner labels this limitation blocked/incomplete, with no failed command/check.
+The final runner distinguishes unsupported optional mode from failed decode.
+
+Limits retained
+===============
+Cold Vulkan object creation, mapped buffers and CPU reference work are outside
+the displayed GPU dispatch timing and preclude sustained production estimates.
+MediaCodec queue timing includes scheduling, polling and queued work; it is not
+isolated decoder-engine latency. A 30-frame run leaves only 25 timed samples;
+p99 is low-confidence below 1000 samples. The harness has no Surface, OpenXR,
+AHardwareBuffer reconstruction/import, actual gaze session, Wi-Fi transport,
+clock synchronization, physical photon instrument, or comfort assessment.
+ICQ/CQP, dynamic rate control, lifecycle/recovery under WiVRn and compositor/thermal
+soak remain behind the original adapter contract. Do not mark those flags ready
+based on standalone results. `suite.py run --adapter adapter_template.py ...`
+continues to report blocked correctly.
+
+Android API references used by the harness:
+  https://developer.android.com/reference/android/media/MediaCodec
+  https://developer.android.com/reference/android/media/Image.Plane
+  https://developer.android.com/reference/android/media/MediaCodecInfo.CodecCapabilities

@@ -1,0 +1,76 @@
+Opt-in integration contract (proposal; no live files changed here)
+
+Files and compilation
+Copy direct.hpp and direct.cpp into common/codec_test/vr444/ of the isolated test
+worktree, preserving SPDX headers and namespace direct. Add
+codec_test/vr444/direct.cpp to the existing wivrn-test-codec STATIC sources inside
+the if(WIVRN_CODEC_TESTS) block in common/CMakeLists.txt. The normal production
+build must remain unchanged. Include codec_test/vr444/direct.hpp in the dedicated
+test decoder. These two files require C++20 only, no new libraries or shader
+assets. Current common target uses -O2, while the probe uses -O3: record that
+optimization-level difference or explicitly apply -O3 to direct.cpp for parity.
+AArch64 selects NEON at compile time; verify actual vector_backend() telemetry.
+The current Android API 29 toolchain compiles this standalone source successfully.
+
+Backend selection
+Use a new opt-in backend such as cpu-neon for Kind::vr444 only. Preserve resident
+and readback defaults/validation for other choices. Check transport CRC and outer
+codec flags through existing code first, then decompress into the existing bounded
+workspace. Keep the compact body alive for the duration of decode. Do not call
+vr444::unpack, vr444::validate, GpuSession or test_gpu_decoder for the CPU branch.
+
+Suggested first integration
+1. Call direct::preflight(body). Compare width and height to the negotiated image
+   extent before resizing buffers. The library checks internal dimensions but
+   cannot know the negotiated stream dimensions.
+2. Reuse a worker-private cached std::vector<uint32_t> of exactly width*height.
+   Call direct::decode(body, shape, pixels, true). Shape is revalidated internally;
+   full coefficient grammar and padding are checked in this call.
+3. Only after successful return copy the pixels into the image slot's existing
+   mapped staging buffer. Preserve upload ownership, image transitions, queue
+   serialization, upload fence wait, failure cleanup and paired publication.
+   Existing staging is HOST_VISIBLE|HOST_COHERENT; verify mapped write visibility
+   follows the existing CPU upload path. Do not write a buffer still GPU-owned.
+4. Retain pixels for exact capture on existing capture frames. Keep all decoded
+   pixels private until the upload completes and existing pair admission succeeds.
+5. Emit actual decoder_backend=cpu-neon and decoder_kernel=direct-neon, plus
+   vector_backend() and CPU decode duration. decode_gpu_ms must be unavailable/0
+   with an explicit backend label; do not present CPU work as GPU dispatch time.
+   Measure parse/decode, staging copy, queue/fence wait and total decode-upload.
+
+Why a cached intermediate first
+The standalone benchmark writes a normal CPU buffer. A mapped coherent Vulkan
+allocation need not have equivalent CPU cache behavior. Direct output to staging
+can remove one copy, but is a separate experiment; first preserve comparable CPU
+memory behavior and measure the staging copy cost. The API allows direct staging
+output if lifetime, alignment, nonoverlap and GPU ownership are proven, but this
+probe has not measured that memory type.
+
+Untrusted-input review
+- Magic and version exactly match reference v1/v2; no additional wire flags exist
+  in this inner frame. Outer flags/CRC remain the existing caller's responsibility.
+- Header dimensions, q, tile count, every per-tile q and tile byte range are checked
+  in preflight before the caller allocates by dimensions. No trailing bytes allowed.
+- decode rechecks every supplied Shape field and exact RGBA span length, rejects
+  source/output alias and pointer-range wrap, and parses within each record.
+- Coefficient bit width <=11 means signed decoded magnitude <=1024. q<=1024 makes
+  the pre-validation product <=1,048,576, safely inside int32. Each AC coefficient
+  must then be <=1536 in magnitude, DC <=255. The eight 1D lifting stages grow
+  each magnitude by at most approximately 1.5x per stage (plus rounding), well
+  within int32. NEON signed shift agrees with scalar floor-half for negative values.
+- Sparse final mask bit 15, reserved group mode, extra tile words and nonzero
+  padding are rejected exactly as the reference does. DC shortcut admits only
+  canonical zero AC flags/padding, not arbitrary three-word records.
+- Additional explicit 16 MiB compact-wire cap is stricter than the reference's
+  theoretical maximum dimension/record combination. At 576x640 the maximum
+  record payload is <2 MiB, so current stream frames are unaffected. Do not claim
+  unrestricted acceptance equivalence outside this intentional cap.
+- A malformed late tile may leave private output partially written. Any exception
+  must drop the entire frame/pair and must not publish or submit that output.
+
+Promotion gate
+Require Android self-test and complete captured/generated exactness, then a new
+bounded worn stereo integration run with actual backend telemetry, CPU reference
+capture match and post-xrEndFrame timing. Preserve previous frozen APK and host
+results separately. A standalone speedup is a viability signal, not a motion-to-
+photon result or proof that the new path wins for dense imagery/thermal steady state.

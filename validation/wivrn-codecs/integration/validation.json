@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "serial": "230YC01D8W000E",
+  "profile": "latency-critical-development",
+  "build_version": "0.14.0",
+  "results_version": "0.14.1",
+  "qualification": "not_ready",
+  "priority": "mission_critical",
+  "current_build_live_status": "diagnostic_traces_pass",
+  "installed_apk_sha256": "d8574f8c4838bd04029ebb241399d82fac192f60abcfaa234700dcf536d982c0",
+  "server_sha256": "5aff6f0fcaa32d9683c442195db2d93bca29580195c8690f41cc69f70569f82d",
+  "standalone_decode_repeat_status": "exact_pass",
+  "standalone_decode_report": "/home/blux/spatial-bridge/validation/results/latency-critical-0.13.0/decode/REPORT.txt",
+  "latency_policy": "LATENCY-POLICY.json",
+  "release_ready": false,
+  "historical_validation_receipt": "/home/blux/spatial-bridge/validation/results/latency-critical-0.13.0/validation-receipt-before.json",
+  "promotion_status": "blocked_diagnostic_trace",
+  "previous_results": "latency-research-0.14.0",
+  "current_build_live_plan": "/home/blux/spatial-bridge/validation/results/latency-traces-0.14.1/live-plan.json",
+  "current_build_live_report": "/home/blux/spatial-bridge/validation/results/latency-traces-0.14.1/REPORT.txt"
+}

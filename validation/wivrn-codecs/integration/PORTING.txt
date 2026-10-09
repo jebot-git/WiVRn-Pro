@@ -1,0 +1,128 @@
+Implemented 0.11 test integration hooks (2026-10-08)
+===================================================
+This section describes the current isolated test worktree. The historical
+qualification checklist below remains future work; it is not a production port.
+
+common/codec_test/compression/frame_compression.h and vendor/lz4.c:
+  C++20 bounded/stateless WPC1 wrapper with pinned LZ4 and runtime ARM CRC.
+  select(raw, workspace, minimum_saving_bytes=64) returns original bytes unless
+  the complete compressed wrapper saves the threshold. decode() returns only
+  after exact bounded output and CRC checks. Keep workspaces per concurrent
+  operation; returned spans borrow caller/workspace storage. Compile vendor C
+  into the WIVRN_CODEC_TESTS-only codec library and preserve license/provenance.
+
+common/codec_test/wire.h and server/encoder/video_encoder_test.cpp:
+  WCT reserved bytes 44..47 now hold flag_lz4 (mask 1, only for VR444). Unknown flags
+  and compressed HEVC/raw kinds are rejected; flags-zero layout is unchanged.
+  WIVRN_CODEC_TEST_COMPRESSION=none|lz4 explicitly opts the sender in. Copy the
+  selected view into the owned envelope before reusing its workspace. Emit
+  requested/attempted/applied, original/wire bytes and compression duration.
+
+client/decoder/test_decoder.cpp:
+  files/codec-test-compression.txt must explicitly contain lz4 to accept flagged
+  frames. Default none rejects them. Validate outer frame/eye/warp and CRC first;
+  decompress on the eye worker before VR444 parsing/GPU submission. On failure,
+  drop/mark the pair failed and do not feed the codec. Emit decompression time,
+  decoded bytes and successful-frame decoder_kernel/backend/compression_policy.
+  Both ends must be matching test builds/configurations; there is no negotiation.
+
+common/codec_test/vr444/shaders/constant_decode.comp and test_gpu_decoder.cpp:
+  coop128dc retains VR444 grammar and dispatch layout; direct-fill only canonical
+  DC-only tiles with the uniform whole-workgroup predicate. Other tiles retain
+  cooperative inverse decoding. Build/package decode-coop128dc.spv. The host
+  CLI kernel set remains unchanged; headset decoder selection is independent.
+
+client/scenes/stream_tracking.cpp and common/codec_test/gaze_timing.h:
+  Dedicated test opt-in chains XrEyeGazeSampleTimeEXT into the existing gaze locate
+  and records local OpenXR times/validity. It does not enable the feature or grant
+  permission itself; live.py --gaze-timing requests the feature separately. Keep
+  the 100-ms/6000-row bounds and cleanup reset. Returned time is pose-expression
+  time, not physical eye-camera acquisition. No gaze vectors/images are logged.
+
+integration/live.py, gaze_metrics.py and suite.py:
+  Forward --compression none|lz4, --decoder-kernel coop128dc and --gaze-timing.
+  Verify observed decoder selection on every successful decode, strict admission
+  metadata/byte counts, coherent nonflat stereo captures, and usable gaze timing
+  when requested. Missing evidence fails; no black/unworn run becomes qualified
+  solely because frames, flags or compressed packets are structurally valid.
+  Use fresh worn runs for final APK qualification and record its actual hash.
+  Byte savings are encoded-payload accounting, not IP throughput or optical time.
+
+Historical qualification-porting checklist. The initial functional integration is now
+implemented; see README.txt for actual coverage and remaining qualification hooks.
+
+WiVRn host/client integration checklist and concrete hook locations
+==================================================================
+Inspected local WiVRn-Pro source (read-only, 2026-10-08):
+  /home/blux/kwin/spatial-anchoring/wivrn-pro-keepalive/source
+These locations are guidance for a later patch, not a claim it is already applied.
+
+common/wivrn_packets.h, feedback:
+  frame_index/stream_index, encode_begin/end, send_begin/end,
+  received_first_packet/received_last_packet, sent_to_decoder,
+  received_from_decoder, blitted, displayed and times_displayed.
+Preserve stream-to-eye mapping and generation IDs across reconnect/resize.
+
+server/encoder/video_encoder.cpp:
+  present_image() and encode() wrapper: record producer readiness, encode begin,
+  encoded output completion and frame identity. Existing host timestamps are
+  converted with clock.to_headset(); avoid converting them twice in the suite.
+  SendData(): first/last shard send accounting. Existing fallback assigning
+  encode_end=send_end must be labelled as a fallback, never actual encoder time.
+  Add per-frame bytes/settings/warp identity at this boundary. The standard
+  Vulkan Video encoder is unrelated to this custom compute-codec prototype.
+
+client/decoder/android/decoder.cpp:
+  push_data()/frame_completed(), on_media_input_available(),
+  on_media_output_available(), on_image_available(), create_sampler(),
+  error/format callbacks. Confirm actual source path/function names on rebasing.
+  HEVC carrier needs full-range luma access across panel seams and correct
+  stride/crop/orientation; a stock RGB-converted decoder surface may destroy
+  packed data. Verify AHardwareBuffer sampling/import or explicit raw luma path.
+  Vulkan custom decode needs its own negotiated payload and GPU synchronization,
+  not registration as an ordinary HEVC/VP9 MediaCodec bitstream.
+
+client/scenes/stream.cpp:
+  latest_frames/common_frame(), current_blit_handles, feedback.displayed set to
+  predictedDisplayTime, and accumulate_metrics(). Instrument stereo selection,
+  applied warp ID, presentation submit, repeats/drops and display prediction.
+  feedback.displayed is a prediction, not a camera/photodiode measurement.
+
+trace_sink.hpp:
+  One Sink per producing thread and run. emit() uses a fixed-capacity SPSC ring;
+  no disk I/O, locks, allocation or blocking on the critical path. A background
+  writer serializes event rows. Queue overflow increments a counter; records are
+  not silently overwritten. Call close() after stopping the producer, check disk
+  error, aggregate lost counts into telemetry_dropped. Do not share one sink
+  across producer threads. A sink writes event rows only; the adapter prefixes run
+  metadata and merges per-thread/per-device logs afterward, preserving clocks.
+  No per-event sorting or wallclock synchronization is needed before ingestion.
+  Frame-drop reason in this primitive is generic: retain detailed reason codes in
+  the adapter evidence. Optical events belong to the external instrument adapter.
+
+Native self-test:
+  c++ -std=c++17 -Wall -Wextra -Werror -pthread trace_sink_test.cpp -o trace-test
+  ./trace-test /tmp/native-events.jsonl
+Android cross-build:
+  $NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++ \
+      -std=c++17 -Wall -Wextra -Werror -pthread trace_sink_test.cpp -o trace-test-arm64
+These are standalone instrumentation checks, not Android APK builds.
+
+Before deployment
+=================
+1. Pin WiVRn host/client revisions, packet protocol version, APK package/version,
+   driver/media stack, codec bundle hashes, test plan and corpus hashes.
+2. Implement dedicated test session and adapter; never use production autostart.
+3. Negotiate implementation/capabilities, per-frame warp metadata and fallback.
+   Existing Vulkan v2 files do not serialize frame warp metadata themselves.
+4. Implement gaze-to-actual-WiVRn warp footprints; do not apply the standalone
+   prototype spatial warp a second time to already foveated input.
+5. Preallocate bounded resources, make GPU encode/decode persistent and asynchronous,
+   compact data on GPU and replace repeated CPU budget searches. Set maximum
+   queued work in frames/bytes; expose budget misses and late-frame drops.
+6. Validate each codec and each full-range/channel/stride path on A770 and QPro.
+   Treat XR2+ Gen 1 and Quest firmware as measured capabilities, not Gen 2 specs.
+7. Verify clock sync and trace overhead with telemetry enabled/disabled. Run the
+   smoke plan before the full plan, then soak and calibrated optical capture.
+8. Review evidence and subjective headset quality before choosing production
+   defaults or creating a Meta release. The suite does not perform publication.

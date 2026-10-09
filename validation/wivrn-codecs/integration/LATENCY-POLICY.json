@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "priority": "mission_critical",
+  "policy_id": "quest-pro-small-scene-latency-v1",
+  "promotion_blocking": true,
+  "threshold_status": "provisional_engineering_targets",
+  "basis": "Native 0.12 comparison: complete stereo earliest-receive to successful submission, not pooled eye or photon latency.",
+  "profile": {
+    "geometry": [576, 640],
+    "requested_display_hz": 90,
+    "requested_new_content_fps": 90,
+    "fps_divider": 1,
+    "custom_frame_stride": 1,
+    "transport": "TCP over ADB reverse"
+  },
+  "warmup_seconds": 2,
+  "minimum_measured_seconds": 10,
+  "minimum_unique_pairs": 180,
+  "minimum_repeated_candidate_runs": 2,
+  "limits": {
+    "stereo_receive_to_submit_ms_p50_max": 17,
+    "stereo_receive_to_submit_ms_p95_max": 21,
+    "stereo_receive_to_submit_ms_p99_max": 25,
+    "unique_stereo_submission_hz_min": 88
+  },
+  "non_negotiable": [
+    "No mixed frame IDs or warp metadata between eyes",
+    "No correctness, malformed-input, memory-bound or quality gate may be relaxed to meet latency",
+    "No stale or simulated measurements may be promoted as current hardware results",
+    "Faster isolated stages are not proof of end-to-end improvement",
+    "Both repeats must pass; selecting the faster run is forbidden",
+    "Physical motion-to-photon and representative visual/thermal qualification remain separate requirements"
+  ]
+}

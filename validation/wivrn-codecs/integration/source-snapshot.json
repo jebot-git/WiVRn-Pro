@@ -1,0 +1,7 @@
+{
+  "upstream": "/home/blux/kwin/spatial-anchoring/wivrn-pro-keepalive/source",
+  "isolated_source": "/home/blux/spatial-bridge/.worktrees/wivrn-codec-tests",
+  "commit": "84fad67091f36a0343e090388ad8708b258420f3",
+  "working_tree_patch_sha256": "7567f1add1a892edad300045889c65445debd2def0dba13cfb8ac792a15a50a7",
+  "preserved_untracked_files": 36
+}

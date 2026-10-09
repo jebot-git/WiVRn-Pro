@@ -1,0 +1,137 @@
+Physical motion-to-photon test — suite 0.2.0
+===========================================
+Direction is physical headset movement -> corresponding light emitted by the
+Quest display. This includes the physical motion reference and optical display
+response; software event timestamps alone are insufficient.
+
+Both HEVC carrier and Vulkan VR444 have tests at 50, 100 and 150 Mbit/s,
+90 Hz and the configured 75% dynamic foveation setting. There are two separately
+labelled response paths per rate/codec, giving 12 optical cases:
+
+  scene-update: motion causes a new host-rendered, uniquely identified scene
+  response to pass through encode, network, decode and presentation. Use a
+  luminance-coded patch changed by the host on the defined tracking threshold.
+  Verify the stimulus/frame association. Local reprojection cannot create this
+  new content; this measures the streamed response through the complete path.
+
+  reprojected-view: use a tracked world-locked edge and the normal runtime
+  reprojection path. Measure its physical on-screen response to headset motion.
+  This is useful for perceived view response, but cannot stand in for the full
+  streamed scene-update latency. Keep its results separate.
+
+Test rig and acquisition contract
+=================================
+Use a controlled, repeatable headset motion fixture with an independently read
+position/rotation sensor, plus a photodiode or calibrated high-speed-camera ROI
+observing the display through its lens. Acquire both physical channels against
+one instrument clock. A motor command or software pose timestamp does not prove
+that physical motion occurred. A predicted display timestamp does not prove that
+light was emitted. Mechanical motion control and capture drivers are supplied
+by the later deployment adapter; this release contains no motor-control code.
+
+Acquire left/right eyes at top, centre and bottom scanout positions. The default
+schedule has ten trials in each of these six strata: 60 trials in a 120-second
+steady window, with 5 seconds pipeline warmup before it. Each two-second slot
+captures one scheduled trial, preserving the plan's IDs, order and offsets.
+Use suitable fixed sensors/ROIs or an automated fixture; manual setup overhead
+is additional to plan duration. Preserve a pre-trigger baseline and sustained
+post-trigger response. Failed/missing trials remain in the denominator.
+
+Record gaze validity and actual warp for every associated streamed frame. Make
+the patch/edge visible at the requested eye/scanout position under that warp.
+Record tracking prediction, reprojection/timewarp mode, display refresh, panel
+brightness, motion amplitude/direction/speed, gaze pattern and compositor load.
+Keep these constant across codec comparisons and save them in the rig evidence.
+Use a test fixture; this procedure does not instruct a person to make rapid
+repeated movements while wearing a headset.
+
+Calibrate sensor offsets/gains and polarity using recorded baseline and step
+levels; save the measured angular/luminance units as well as normalized values.
+Both normalized channels rise from 0 to 1. Predeclare motion and light thresholds
+(default 0.5) before acquisition. Results are latency between these operational
+threshold crossings; do not relabel a 50%-step crossing as infinitesimal onset.
+Save the unnormalized sensor recording and normalization method for review.
+
+Measure relative channel delay and a conservative calibration error bound with
+a common reference, before/after the run. Calibration is valid only for its
+stated instrument-clock interval. Positive light_minus_motion_delay_ns means
+extra delay in the light acquisition channel; the analyzer subtracts it. Do not
+subtract the actual headset/display response, scanout or network delay.
+
+Analysis uses sustained crossings (three consecutive above-threshold samples),
+bounded by adjacent samples, without invented interpolation precision. A first
+noise spike, absent baseline, missing response, invalid clock sequence or a gap
+over 1 ms makes that trial inconclusive. Default maximum interval half-width is
+2 ms including calibrated channel error. Insufficient sampling precision must
+be reported as inconclusive instead of rounded into an apparently precise result.
+
+Run and analyze
+================
+  python3 suite.py plan --tier optical --out optical-plan.json
+  python3 suite.py run --adapter /path/to/real-adapter \
+      --plan optical-plan.json --out /path/to/new-optical-run
+
+The optical plan is also included in the full tier. It adds no hardware action
+to local-smoke; local checks use explicit simulation provenance.
+
+Standalone analysis:
+  python3 suite.py analyze-optical capture.json --calibration calibration.json \
+      --config optical-config.json --out optical-report.json
+optical-config.json is the exact case.optical object from the selected plan.
+
+Results report per-eye/scanout p50/p95/p99, conservative p95 upper bound, trial
+count, uncertainty and every invalid/missing trial. Default acceptance requires
+all strata to have >=10 valid trials and p95 upper bound <=50 ms, with no failed
+trials. This is a PROVISIONAL engineering ceiling, not a validated comfort limit.
+Change OPTICAL in plans.py and regenerate/version the plan to change the target
+or sampling schedule. Ten trials per stratum is screening coverage: p99 is flagged
+as low-sample below 1000; collect additional predeclared trials before treating
+tail estimates as stable. Do not average away a slow eye or scanout position.
+
+Capture schema 1 (JSON)
+=======================
+Required top-level fields:
+  schema=1, run_id, case_id, implementation, provenance (hardware or simulation),
+  response_path (scene-update or reprojected-view), instrument_clock,
+  calibration_id, measurement_start_ns, measurement_end_ns,
+  scheduled_trials (exact case.optical.trial_schedule), trials.
+The measurement window must equal the planned 120 seconds in instrument time.
+Sample timestamps must be inside their predeclared two-second trial slots.
+
+Each scheduled trial has trial_id, eye (0/1), position (top/centre/bottom),
+offset_ns relative to measurement_start_ns. Each captured trial repeats its
+trial_id/eye/position and adds status="captured", response_verified=true,
+and samples:[{t_ns:integer, motion:normalized-value, light:normalized-value},...].
+response_verified means the specific physical stimulus caused the measured
+response, backed by the target/frame identification evidence. A black-box
+luminance flicker or unrelated refresh is not enough. Store missing captures
+with status="failed", reason; never delete scheduled trials.
+
+Calibration schema 1 (JSON)
+===========================
+Required fields: schema=1, calibration_id, provenance, common_clock=true,
+physical_motion_sensor=true, physical_light_sensor=true, instrument,
+motion_sensor, light_sensor, normalization, method, raw_evidence_sha256,
+light_minus_motion_delay_ns (signed), uncertainty_ns (nonnegative),
+valid_from_ns and valid_until_ns (monotonic instrument nanoseconds).
+Descriptive fields must identify real instruments and how calibration was derived.
+Raw calibration evidence is a separate hashed artifact. Simulation examples
+in tests/test_optical.py are never accepted as hardware certification.
+
+WiVRn adapter additions
+========================
+probe must return optical_rig:{ready:true,physical_motion_and_light:true,
+calibration_sha256:"..."}, plus each implementation's optical_response_paths.
+Do not report ready until the actual calibrated rig and target are available.
+
+Optical run responses add these {path,sha256} descriptors:
+  optical_capture, optical_calibration, optical_calibration_raw.
+The raw calibration artifact hash must equal calibration.raw_evidence_sha256.
+All descriptors are validated inside the run folder. Preserve raw unnormalized
+captures and association evidence in the additional run hashes manifest.
+The runner writes optical-report.json and embeds it in report.json. An absent,
+invalid, simulated, incomplete or over-target optical result prevents acceptance.
+Legacy optical_motion/optical_photon trace events remain optional diagnostics;
+they cannot replace this instrument-sample test or qualify an optical case alone.
+
+Hardware measurements remain pending the real A770/Quest WiVRn adapter and rig.

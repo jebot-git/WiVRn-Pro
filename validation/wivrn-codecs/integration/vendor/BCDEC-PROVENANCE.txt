@@ -1,0 +1,15 @@
+bcdec.h v0.985, unmodified upstream source.
+Author: Sergii "iOrange" Kudlai; copyright 2022 Sergii Kudlai.
+Upstream: https://github.com/iOrange/bcdec
+Commit: 80859ed3b7afb1c527a2a99d70c61457bea72d0c
+Exact source:
+https://raw.githubusercontent.com/iOrange/bcdec/80859ed3b7afb1c527a2a99d70c61457bea72d0c/bcdec.h
+SHA256: 134520764d96f70a27db814173616c89ad85db95fbd3328417c7a8c77e7ca189
+Retrieved and byte-compared with the initial fixture-check header on 2026-10-08.
+
+Upstream offers MIT or Unlicense. This test dependency uses the MIT option.
+The complete original copyright, permission, and warranty text is retained at
+the end of bcdec.h, along with upstream's alternative license text.
+
+Used only as an independent CPU reference for generated BC7 mode-6 fixtures.
+It is not part of WiVRn's production code or the Android benchmark executable.

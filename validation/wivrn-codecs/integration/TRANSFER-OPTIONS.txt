@@ -1,0 +1,81 @@
+Non-video transfer investigation — Quest Pro + Intel Arc A770, 2026-10-08
+======================================================================
+Scope and interpretation
+The custom VR444 tile transform is already a nonstandard image transport. It
+still encodes pixels, but has no H.264/HEVC/AV1 stream, reference-picture decoder,
+or MediaCodec dependency. Completely avoiding pixel transfer requires local
+rendering of scene state, geometry, or a reusable layer, which changes the app
+contract. Root does not remove that distinction.
+
+Implemented test paths
+* raw-rgba: lossless RGBA bytes, envelope CRC, frame/eye/warp binding, GPU upload
+  and the real WiVRn defoveation/OpenXR presentation path. This is the baseline
+  for separating transport/presentation faults from compression faults.
+* vulkan-vr444: independent custom tiles and Vulkan compute decode, the same
+  frame/eye/warp binding and presentation path. Current correctness integration
+  creates cold GPU contexts and copies via CPU; it is not a latency-optimized
+  persistent GPU implementation. Q=1 can be lossless; Q=8 is the initial profile.
+* hevc-carrier remains the comparison, with three RGB planes in full-range luma.
+
+New device evidence: compressed textures
+texture_probe.cpp queries VkPhysicalDeviceFeatures, format properties, and
+vkGetPhysicalDeviceImageFormatProperties for sampled + transfer-destination
+optimal images. The actual Quest advertises ASTC 4x4/6x6/8x8 sRGB, ETC2 RGB sRGB,
+and BC7 sRGB, with dimensions up to 16384. The actual A770 advertises ETC2 and
+BC7; it does not advertise ASTC. See quest-options-nonroot-01/texture-formats.json
+and host-texture-formats.json. This is capability evidence only: compressed
+block upload, sampling correctness and encoding throughput remain untested.
+Do not attribute these features to Singularity without a stock/rooted A/B test.
+
+Proposed next experiments, in useful implementation order
+1. GPU texture blocks (BC7 first for a format shared by both devices; ASTC as a
+   Quest-specific alternative). Encode blocks on host, send independently indexed
+   blocks, upload directly into sampled compressed images, defoveate as usual.
+   No video decoder. A770 ASTC sampling absence does not prevent it from computing
+   ASTC bitstreams, but complicates the host reference path. Benchmark GPU block
+   encoders before committing; full quality BC7/ASTC encoding may exceed frame
+   budgets. Validate sRGB, edge blocks, texture seams and fine chromatic text.
+2. Changed-tile transfer on top of raw or VR444. Stable desktops/layers may resend
+   very little. Needs acknowledged base generations, tile validity maps, bounded
+   history, atomic stereo commits, keyframes/resync and loss/reordering tests.
+   Head motion, animated scenes and changing foveation can invalidate most tiles.
+   Never compare different warp layouts as though they shared an unchanged base.
+3. Locally composited layers. Send a desktop/window texture only when damaged;
+   transfer pose/layer transforms separately and let the Quest render at display
+   cadence. Promising for spatial desktops; needs layer/damage support on both
+   ends and cannot reconstruct arbitrary flattened OpenXR projections.
+4. Depth + motion-vector reprojection. Reduce full image updates and render new
+   views locally using depth/velocity. XR_FB_space_warp specifies per-eye depth
+   and motion-vector swapchains. App/renderer must supply correct vectors and
+   depth; holes, disocclusion, transparency, stale content and vergence need tests.
+   The test APK enumerated XR_FB_space_warp version 2 on this Quest (see the
+   vr444-01 live log). No depth/motion composition submission was tested; advertised
+   support alone does not prove operational behavior or quality.
+5. Scene-state/asset streaming. Send meshes/materials/assets once and transforms,
+   animation and simulation deltas subsequently; render natively on Quest. Lowest
+   steady-state bandwidth potential and local head-motion response, but requires
+   application/engine integration and enough Quest GPU/memory capacity. It is not
+   a transparent replacement for an arbitrary PC VR game's final framebuffer.
+6. Remote graphics command replay is a research alternative, not a drop-in test:
+   device features, shader portability, synchronization and resource lifetime
+   differ between A770 and Adreno. A portable scene/layer protocol is a more
+   manageable first experiment than forwarding arbitrary Vulkan command streams.
+
+Bandwidth floor at 576x640 PER EYE, two eyes, 90 new frames/s
+These are computed payload rates, not measured throughput; no packet headers,
+retransmission, tile metadata or loss recovery included. Sparse correctness
+smokes currently encode every twelfth host frame; divide these values by 12
+only if host cadence is actually 90 Hz.
+* RGB24:             1,592.5248 Mbit/s
+* RGBA32:            2,123.3664 Mbit/s
+* BC7 / ASTC4x4:       530.8416 Mbit/s (8 bits/pixel)
+* ASTC6x6:             236.66688 Mbit/s (rounded-up block counts)
+* ASTC8x8:             132.7104 Mbit/s (2 bits/pixel)
+* ETC2 RGB:            265.4208 Mbit/s (4 bits/pixel)
+Lossless delta rates depend on the scene; no compression ratio is claimed.
+
+Sources (primary)
+https://registry.khronos.org/vulkan/specs/latest/man/html/VkPhysicalDeviceFeatures.html
+https://registry.khronos.org/vulkan/specs/latest/man/html/vkGetPhysicalDeviceImageFormatProperties.html
+https://github.com/KhronosGroup/DataFormat/blob/main/astc.txt
+https://registry.khronos.org/OpenXR/specs/1.1/man/html/XrCompositionLayerSpaceWarpInfoFB.html

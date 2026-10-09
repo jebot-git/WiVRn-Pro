@@ -1,0 +1,49 @@
+Custom codec development
+========================
+Branch: feature/custom-codec
+
+This branch preserves the codec experiments and WiVRn test integration separately
+from main and archive/spatial-bridge. It inherits the standalone spatial bridge
+checkout; its existing README describes that bridge, not the codec tests.
+
+Source locations
+  prototypes/vr444/                 Reference codec, Vulkan shaders, transport,
+                                    foveation and latency experiments.
+  validation/wivrn-codecs/          Suite, hardware probes and evidence validators.
+  validation/wivrn-codecs/integration/source-overlay/
+                                    Exact current WiVRn test integration files.
+  validation/wivrn-codecs/integration/integration.patch
+                                    Codec delta against the recorded baseline.
+
+The overlay is intentional: the native WiVRn test checkout is a separate local
+worktree at .worktrees/wivrn-codec-tests. Its changes are preserved here through
+the hash-checked overlay, not by staging unrelated native development. The base
+revision, inherited working-tree patch and preserved-untracked-file count are
+recorded in integration/source-snapshot.json. The overlay expects that original
+working baseline, not a clean upstream checkout. apply_overlay.py verifies every
+baseline and overlay file before applying. Existing build.sh requires configured
+isolated native/Android dependency caches; this is not a clean-room build recipe.
+The seven small SPIR-V assets are included because the overlay hashes bind them.
+
+Current status
+  Latency is mission critical. The CPU-NEON path improves on the earlier custom
+  GPU path, but has not passed the repeated latency promotion gate. Selection
+  traces identify newer complete pairs retained while the selector chooses the
+  closest predicted target; they do not prove newer scene content or a speedup.
+  See docs/codec/latency-traces-0.14.1.txt for the latest findings and limits.
+  Native H.264/HEVC remain references. No optical motion-to-photon qualification
+  or complete 930-run qualification is claimed.
+
+Offline checks (from this repository root)
+  python3 -m unittest discover -s validation/wivrn-codecs/tests
+  python3 -m unittest discover -s prototypes/vr444 -p 'test_*.py'
+
+Data and binaries
+  validation/results/ and testing-builds/ are local ignored evidence/artifact
+  directories. Raw captures, APKs, host binaries and frozen bundles are not
+  uploaded in this branch. Historical receipts can contain machine-specific
+  paths; they describe the original runs rather than portable configuration.
+  Frozen local archives and their hash receipts remain unchanged.
+
+Live execution uses the dedicated org.meumeu.wivrn.codectest app. Read the
+integration README and latency policy before deploying or interpreting a run.

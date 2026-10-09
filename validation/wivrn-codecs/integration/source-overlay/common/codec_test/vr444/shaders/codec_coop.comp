@@ -1,0 +1,117 @@
+// SPDX-License-Identifier: MIT
+#version 450
+// Portable baseline: integer arithmetic, no subgroup, FP16 or video extensions.
+// One workgroup per tile. 6144 bytes shared, no subgroup requirements.
+#ifndef WORKGROUP
+#define WORKGROUP 64
+#endif
+layout(local_size_x=WORKGROUP) in;
+layout(set=0,binding=0,std430) readonly buffer Input { uint rgba[]; };
+layout(set=0,binding=1,std430) coherent buffer Stream { uint slots[]; };
+layout(set=0,binding=2,std430) buffer Lengths { uint lengths[]; };
+layout(set=0,binding=3,std430) writeonly buffer Output { uint result[]; };
+layout(set=0,binding=4,std430) readonly buffer Quantizers { uint tile_q[]; };
+layout(push_constant) uniform Params { uint width,height,q,count; } pc;
+const uint STRIDE=320;
+shared int v[768];
+shared int scratch[768];
+uint tile,bitpos;
+int half_floor(int x) { return x>=0 ? x/2 : -((-x+1)/2); }
+uint zigzag(int x) { return x>=0 ? uint(x*2) : uint(-2*x-1); }
+int unzigzag(uint x) { return (x&1)!=0 ? -int((x+1)/2) : int(x/2); }
+// Same LSB-first wire format, word accesses instead of one SSBO access per bit.
+void put_bits(uint value,uint n) {
+    uint word=bitpos/32,shift=bitpos%32;
+    value &= (1u<<n)-1;
+    slots[tile*STRIDE+word] |= value<<shift;
+    if(shift+n>32)slots[tile*STRIDE+word+1] |= value>>(32-shift);
+    bitpos+=n;
+}
+uint get_bits(uint n) {
+    uint word=bitpos/32,shift=bitpos%32,limit=min(lengths[tile],STRIDE);
+    uint value=word<limit?slots[tile*STRIDE+word]>>shift:0;
+    if(shift+n>32 && word+1<limit)value |= slots[tile*STRIDE+word+1]<<(32-shift);
+    bitpos+=n;
+    return value&((1u<<n)-1);
+}
+void transform_all(bool inverse) {
+    uint lane=gl_LocalInvocationID.x;
+    for(int n=inverse?2:16; inverse?n<=16:n>=2; n=inverse?n*2:n/2) {
+        for(int axis=0;axis<2;axis++) {
+            bool col=inverse ? axis==0 : axis==1;
+            uint pairs=uint(n*n/2);
+            for(uint job=lane;job<3*pairs;job+=WORKGROUP) {
+                int c=int(job/pairs),line=int(job%pairs)/ (n/2),i=int(job%pairs)%(n/2);
+                if(!inverse) {
+                    int p=c*256+(col?2*i*16+line:line*16+2*i);
+                    int b=v[p+(col?16:1)],d=v[p]-b;
+                    int outp=c*256+(col?i*16+line:line*16+i);
+                    scratch[outp]=b+half_floor(d);scratch[outp+(col?n*8:n/2)]=d;
+                } else {
+                    int p=c*256+(col?i*16+line:line*16+i);
+                    int d=v[p+(col?n*8:n/2)],b=v[p]-half_floor(d);
+                    int outp=c*256+(col?2*i*16+line:line*16+2*i);
+                    scratch[outp]=b+d;scratch[outp+(col?16:1)]=b;
+                }
+            }
+            barrier();
+            for(uint job=lane;job<uint(3*n*n);job+=WORKGROUP) {
+                int c=int(job)/ (n*n),i=int(job)%(n*n),p=c*256+(i/n)*16+i%n;
+                v[p]=scratch[p];
+            }
+            barrier();
+        }
+    }
+}
+void main() {
+    tile=gl_WorkGroupID.x;if(tile>=pc.count)return;bitpos=0;
+    uint lane=gl_LocalInvocationID.x,nx=(pc.width+15)/16,bx=(tile%nx)*16,by=(tile/nx)*16;
+#ifdef ENCODE
+    for(uint i=lane;i<STRIDE;i+=WORKGROUP)slots[tile*STRIDE+i]=0;
+    // Lane 0 later reads/modifies words cleared by other lanes. barrier() alone
+    // covers shared arrays, not the storage-buffer writes above.
+    memoryBarrierBuffer();barrier();
+    for(uint i=lane;i<256;i+=WORKGROUP) {
+        uint x=i%16,y=i/16,p=rgba[min(by+y,pc.height-1)*pc.width+min(bx+x,pc.width-1)];
+        int r=int(p&255),g=int((p>>8)&255),b=int((p>>16)&255),co=r-b,t=b+half_floor(co),cg=g-t;
+        v[i]=t+half_floor(cg);v[256+i]=co;v[512+i]=cg;
+    }
+    barrier();transform_all(false);
+    if(lane==0) {
+    for(uint c=0;c<3;c++) {
+        put_bits(zigzag(v[c*256]),11);
+        for(uint i=1;i<256;i++){int a=v[c*256+i];v[c*256+i]=(a<0?-1:1)*((abs(a)+int(tile_q[tile])/2)/int(tile_q[tile]));}
+        for(uint base=1;base<256;base+=16) {
+            uint end=min(base+16,256),mx=0,n=0,mask=0,nonzero=0;bool same=true;
+            for(uint i=base;i<end;i++){int a=v[c*256+i];mx=max(mx,zigzag(a));same=same && a==v[c*256+base];if(a!=0){mask|=1u<<(i-base);nonzero++;}}
+            for(uint z=mx;z!=0;z>>=1)n++;
+            put_bits(n!=0?1:0,1);
+            if(n!=0){
+                uint mode=same?0:((16+nonzero*n<(end-base)*n)?2:1);put_bits(n,4);put_bits(mode,2);
+                if(mode==0)put_bits(zigzag(v[c*256+base]),n);
+                else {if(mode==2)put_bits(mask,16);for(uint i=base;i<end;i++)if(mode==1 || v[c*256+i]!=0)put_bits(zigzag(v[c*256+i]),n);}
+            }
+        }
+    }
+    lengths[tile]=(bitpos+31)/32;
+    }
+#else
+    if(lane==0) {
+    for(uint i=0;i<768;i++)v[i]=0;
+    for(uint c=0;c<3;c++) {
+        v[c*256]=unzigzag(get_bits(11));
+        for(uint base=1;base<256;base+=16)if(get_bits(1)!=0){
+            uint n=get_bits(4),mode=get_bits(2),repeated=mode==0?get_bits(n):0,mask=mode==2?get_bits(16):0xffff;
+            for(uint i=base;i<min(base+16,256);i++){uint a=mode==0?repeated:(((mask&(1u<<(i-base)))!=0)?get_bits(n):0);v[c*256+i]=unzigzag(a)*int(tile_q[tile]);}
+        }
+
+    }
+    }
+    barrier();transform_all(true);
+    for(uint i=lane;i<256;i+=WORKGROUP) {
+        uint x=i%16,y=i/16;if(bx+x>=pc.width || by+y>=pc.height)continue;
+        int t=v[i]-half_floor(v[512+i]),g=v[512+i]+t,b=t-half_floor(v[256+i]),r=b+v[256+i];
+        result[(by+y)*pc.width+bx+x]=uint(clamp(r,0,255))|(uint(clamp(g,0,255))<<8)|(uint(clamp(b,0,255))<<16)|0xff000000;
+    }
+#endif
+}

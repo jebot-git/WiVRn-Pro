@@ -1,0 +1,214 @@
+VR444 development update — dynamic foveation / hardware profile — 2026-10-08
+=========================================================================
+
+Disposition
+-----------
+HEVC carrier 0.1.0 is frozen under ../../testing-builds/hevc-carrier-0.1.0/.
+Its manifest, SHA256SUMS and archive identify the testing payload. It includes
+the evaluator, regression tests, sample HEVC files and measured software results.
+It is an offline testing build, not a WiVRn-integrated host or Quest APK.
+No live configuration or Meta channel was changed.
+
+The independent custom codec is now a v2 research implementation with dynamic
+spatial foveation, per-tile quantizers, protected-region rate allocation and
+cooperative Vulkan transforms. The baseline kernel remains selectable for
+equivalence testing. PyroWave remains the higher-quality transform/coding base
+to compare next; this implementation does not claim its bitstream or performance.
+
+Hardware specification and what can actually be known
+----------------------------------------------------
+The following is the relevant public hardware profile plus a runtime capability
+inventory. It is not a claim to possess a complete confidential silicon manual.
+Qualcomm explicitly places additional XR2+ Gen 1 resources behind verified-company
+access. Unpublished clocks, GPU lane counts, cache sizes and bandwidth are left
+unknown; Snapdragon 865, XR2 Gen 2 and XR2+ Gen 2 values are not substituted.
+https://www.qualcomm.com/xr-vr-ar/products/vr-mr-series/snapdragon-xr2-plus-gen-1-platform
+
+Arc A770 public product facts:
+  architecture                 Xe-HPG / Alchemist, TSMC N6
+  render slices / Xe cores     8 / 32
+  vector / XMX engines         512 / 512
+  ray-tracing units            32 (irrelevant to this transform)
+  graphics clock / board power 2100 MHz / 225 W product rating
+  PCI ID / interface           0x56A0 / up to PCIe4 x16
+  VRAM                         8 or 16 GB GDDR6, 256-bit
+  memory bandwidth             512 GB/s (8 GB); 560 GB/s (16 GB)
+  media engines                2; H264/HEVC/AV1 hardware encode/decode
+  advertised APIs              Vulkan1.3, OpenCL3.0, DX12 Ultimate
+The board variant and actual driver capabilities must be read on this host.
+https://www.intel.com/content/www/us/en/products/sku/229151/intel-arc-a770-graphics-16gb/specifications.html
+https://www.intel.com/content/www/us/en/ark/products/series/227960/intel-arc-dedicated-graphics-family.html
+
+Xe-HPG architecture: up to 192 KiB L1 or 128 KiB shared local memory per Xe core,
+with dynamic partitioning; A770 has a 16 MiB last-level cache. Intel recommends
+testing modest workgroups, including 8x8, instead of maximizing size blindly.
+Our 64/128-lane candidates use 6144 bytes shared memory per tile, avoid mandatory
+subgroup widths, FP16 and integer extensions, and reduce private-array pressure.
+Published SLM capacity is not the Vulkan per-workgroup limit: the probe checks
+the latter. XMX peak TOPS is not relevant to the integer Haar/bit-packing kernel.
+https://www.intel.com/content/www/us/en/developer/articles/technical/introduction-to-the-xe-hpg-architecture.html
+https://www.intel.com/content/www/us/en/developer/articles/guide/arc-a-series-gaming-api-developer-optimization.html
+https://www.intel.com/content/www/us/en/docs/oneapi/optimization-guide-gpu/2023-2/intel-xe-gpu-architecture.html
+
+Snapdragon XR2+ Gen 1 / Quest Pro public facts:
+  platform                     XR2+ Gen 1, not either Gen 2 platform
+  headset RAM / storage        12 GB / 256 GB
+  tracking                     eye tracking, face tracking, head/hand tracking
+  platform video claim         8K 360-degree video at 60fps
+  Qualcomm relative claims     50% higher sustained power; 30% improved thermals
+The last two are platform/vendor claims, not available decoder time or spare
+shader performance. The app shares resources with tracking and the compositor.
+Use 90Hz for this experiment; enumerate the runtime's supported refresh rates.
+https://about.fb.com/ja/news/2022/10/meta-quest-pro-price-release-date/
+https://www.qualcomm.com/news/releases/2022/10/qualcomm-powers-the-next-generation-of-mixed-and-virtual-reality
+https://www.qualcomm.com/snapdragon/news/all-treats--no-tricks--new-devices-and-vr-experiences
+
+Fields still requiring device observation or restricted vendor documentation:
+  exact Adreno driver/API/extension set, subgroup operations and size control;
+  shader FP16/int16/8-bit storage support, shared/register limits and occupancy;
+  actual GPU/CPU frequency policy, sustained thermal limits, memory bandwidth;
+  AHardwareBuffer formats/usage and synchronization, image plane-view support;
+  MediaCodec profile/level/size/rate/concurrency and low-latency capability;
+  actual OpenXR per-eye FOV, eye gaze timing/confidence and display interval;
+  usable Wi-Fi goodput/jitter under simultaneous streaming and tracking.
+Do not infer native hardware 444 support from an 8K decoder throughput claim.
+
+vr444-probe is built for Linux and Android. It emits JSON containing device and
+driver IDs, memory heaps/types, relevant limits, timestamp queues, subgroup
+features, float16/int16/int8/storage features, timeline semaphores, format feature
+masks and every advertised device extension. Heaps are API-visible allocations,
+not necessarily dedicated VRAM or the entire physical RAM. collect-quest.sh also
+records Android build and optional read-only GPU frequency observations. It does
+not elevate access; unreadable fields remain unavailable. This probe does NOT
+enumerate MediaCodec or OpenXR capabilities; those require the client adapter.
+
+Dynamic foveated streaming prerequisite
+--------------------------------------
+prepare_foveated() now binds these stages together for each eye/frame:
+  1. Validate gaze confidence >=0.6 and sample age at predicted display <=50ms.
+  2. Estimate velocity from two valid samples 1–50ms apart; cap at 720deg/s.
+     Predict at most 25ms and 5 degrees. These are experimental policy values,
+     not Quest tracking specifications or perceptual guarantees.
+  3. Warp RGB spatially toward predicted gaze with a separable density map.
+     The benchmark reduces 2304x2560 to 576x640, i.e. 75% reduction per axis.
+     An 8-degree region receives 8x sample density along each axis. This is an
+     experimental warp, not a reproduction of WiVRn's existing nonlinear warp.
+  4. Derive angular footprints through that exact warp. Allocate quantizers by
+     visual angle, never by a naive circle in already-warped texture coordinates.
+  5. Protect tiles intersecting a 6-degree core +2-degree guard along the entire
+     current-to-predicted gaze bounding segment. Blend quality over 12 degrees,
+     then reduce peripheral quality first when allocating a byte budget.
+  6. On invalid/stale/future/low-confidence gaze, use uniform spatial sampling
+     and uniform q16. Retain the small encoded dimensions: this fallback cannot
+     preserve full-resolution detail over the whole FOV. It avoids a false fovea.
+  7. Encode, carrying actual tile quantizers in v2. If the byte budget cannot be
+     met without degrading protected tiles, return fits=false. The candidate
+     must not be sent; keep/reproject a prior coherent frame or renegotiate.
+
+These operations take explicit gaze input; there is no attached live eye tracker
+in this sandbox. Gaze sample and predicted-display timestamps must first be
+converted into the SAME monotonic clock domain; raw host/headset clocks cannot
+be subtracted. Production must transform each gaze ray into the correct eye's
+view space, use actual OpenXR FOVs, and supply the inverse WiVRn warp through the
+footprint API. Do not apply this spatial warp on top of an already-foveated image.
+The OpenXR gaze structure specifies validity, pose and confidence; it does not
+justify assuming a fixed gaze sampling rate or an application-independent delay.
+https://registry.khronos.org/OpenXR/specs/1.1/man/html/XrEyeGazeFB.html
+
+The displayed frame MUST use its original spatial-warp metadata, not the latest
+gaze, while late head-pose reprojection remains separate. foveated_sample.glsl
+provides the inverse sampling coordinates for a future fused defoveation/output
+pass. It is an integration helper, not a shader connected to the renderer yet.
+The profile records required frame/eye/pose/gaze/deadline/warp metadata. Codec v2
+serializes quantizers only; the existing frame transport/client adapter must
+carry that other metadata atomically for stereo. No socket or OpenXR integration
+is claimed by this update. The CPU warp uses bilinear sampling; a production
+peripheral minification filter must handle aliasing and temporal stability.
+
+Codec/GPU changes
+-----------------
+Uniform frames retain v1 wire format. V2 uses the same 24-byte frame header with
+version=2; every tile record is uint16 length-in-words, uint16 q, then coefficient
+words. Bounds, quantizers, versions and truncation are checked before use.
+The decoder no longer depends on a single global q for foveated frames.
+
+codec_coop.comp processes one tile per workgroup: load pixels cooperatively,
+perform all three component transforms in shared memory, synchronize explicitly,
+then pack/unpack coefficients and reconstruct pixels. Entropy work is still
+serial within a tile; that is the next clear kernel bottleneck. Baseline and
+both cooperative variants encode/decode identical bytes/pixels for the same map.
+Device gates check shared-memory size, workgroup size, storage-buffer descriptor
+count (five required), buffer range and dispatch dimensions. No iHD or QSV is used
+for this custom compute path; those remain relevant to the frozen HEVC carrier.
+
+The reference byte allocator may re-encode up to 21 times and therefore is NOT a
+real-time rate controller. It establishes a correctness/quality bound. Production
+needs per-tile rate/distortion estimates or bitplane truncation with a bounded
+number of passes, persistent device resources, compaction and asynchronous region
+delivery. Do not deploy the reference search into the live 90Hz loop.
+
+Measured synthetic results
+--------------------------
+See ../../evidence/vr444-dfr-20261008/foveation.csv.
+Three horizontal gaze positions: -25, 0, +25 degrees; 90-degree synthetic FOV;
+two identical eyes, 90Hz, full RGB444, 576x640 encoded from 2304x2560 per eye.
+Alpha, audio, FEC, encryption and link-layer overhead are excluded; modeled
+application framing and IPv4/UDP headers are included in the byte cap.
+The protected region covers 450–488 of 1440 warped tiles, demonstrating how
+spatial foveation concentrates pixels near gaze. Real headset FOV/warp differs.
+
+Protected quality target     Foveal RGB PSNR       Feasible tested stream caps
+q4                          46.91–47.44 dB        150 Mb/s all gazes; 100 center only
+q8                          40.23–40.81 dB        150 all; 100 center/right only
+q16                         35.80–36.28 dB        100 and 150 all gazes
+50 Mb/s failed every tested protected-quality setting; the encoder reports
+infeasibility rather than silently destroying foveal detail or exceeding its cap.
+Candidate bitrate in a fits=0 row is NOT a transmitted/accepted bitrate.
+Reported protected PSNR compares decoded versus uncompressed WARPED pixels; it
+does not measure spatial-warp loss or perceived quality after lens distortion.
+Whole-image PSNR is much lower; peripheral quality and temporal stability still
+need headset evaluation. This is one synthetic stress scene, not a VR corpus.
+
+Software Vulkan functional benchmark, same quantizer-map input across variants:
+  baseline: encode ~461.7ms, decode ~251.6ms
+  coop64:   encode ~108.4ms, decode ~104.8ms
+  coop128:  encode ~102.5ms, decode ~97.3ms
+These are single cold dispatches on llvmpipe CPU software Vulkan. They establish
+functional execution and a local improvement only. They cannot rank kernels on
+A770 vs XR2+, establish real GPU throughput, or predict motion-to-photon latency.
+No /dev/dri is exposed; no Quest run occurred. Target hardware figures remain
+unmeasured. All pipeline and optical-latency caveats from README.txt still apply.
+
+Evaluation commands
+-------------------
+  cmake --build build
+  ctest --test-dir build --output-on-failure
+  build/vr444 --foveation-test
+  build/vr444 --foveation-bench
+  build/vr444-probe > device.json
+  VR444_KERNEL=coop64 build/vr444 --gpu-foveation build
+  VR444_KERNEL=coop128 build/vr444 --gpu-foveation build
+VR444_DEVICE selects an enumerated GPU. Check printed identity and JSON; do not
+accidentally compare the Intel iGPU or software ICD against the A770.
+
+Rebuild build-android using the NDK29 configuration in README.txt, then copy
+vr444, vr444-probe and ALL six .spv files to /data/local/tmp/vr444 on a connected
+Quest. Mark the executables executable and run:
+  adb shell /data/local/tmp/vr444/vr444 --foveation-test
+  adb shell 'VR444_KERNEL=coop64 /data/local/tmp/vr444/vr444 --gpu-test /data/local/tmp/vr444'
+  bash collect-quest.sh quest-inventory
+This performs a developer-shell evaluation, not a Meta release.
+
+Next optimization priorities
+----------------------------
+1. Capture matching A770/QPro runtime probes and sustained traces with the game,
+   tracking and compositor active. Measure p50/p95/p99 and deadline misses.
+2. Replace serial per-tile entropy and fixed scratch readback with parallel
+   coding/compaction; use device-local images, persistent resources and fences
+   that do not stall unrelated compositor work.
+3. Compare this Haar baseline against PyroWave CDF9/7 at equal protected-region
+   quality and total wire bytes. The current 50 Mb/s floor motivates a better
+   transform/coder, not a claim that the product requirement has been achieved.
+4. Integrate real gaze/warp metadata, region scheduling and coherent stereo
+   presentation. Benchmark colour text, motion, saccades, blink/dropout, UI edges,
+   packet loss and eye confidence transitions, then measure actual photons.

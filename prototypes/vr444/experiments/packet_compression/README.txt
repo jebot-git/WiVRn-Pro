@@ -1,0 +1,1 @@
+Offline stateless compression prototype. See validation/results/codec-optimization-prep-0.7.0/packet-compression/README.txt for protocol, benchmark, bounds and reproduction commands. Not integrated or deployed.

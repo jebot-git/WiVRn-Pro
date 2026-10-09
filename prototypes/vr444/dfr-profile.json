@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "status": "research prototype; not installed WiVRn configuration",
+  "targets": ["Intel Arc A770", "Quest Pro Snapdragon XR2+ Gen 1"],
+  "fps": 90,
+  "example_source_eye": [2304, 2560],
+  "example_encoded_eye": [576, 640],
+  "example_fov_degrees": [-45, 45, -45, 45],
+  "fov_source": "Synthetic benchmark only. Production must use per-eye OpenXR FOV and exact inverse WiVRn warp.",
+  "gaze": {"confidence_min": 0.6, "stale_ms": 50, "prediction_max_ms": 25, "velocity_max_deg_s": 720, "prediction_max_deg": 5},
+  "quality": {"core_radius_deg": 6, "guard_deg": 2, "transition_width_deg": 12, "core_q": 4, "transition_q": 32, "peripheral_q": 128, "fallback_uniform_q": 16},
+  "spatial_warp": {"model": "separable piecewise density; experimental, not WiVRn warp", "radius_deg": 8, "density": 8},
+  "rate_control": {"mode": "offline reference search", "protected_tiles_may_degrade": false, "infeasible_frame": "reject; do not send candidate bytes"},
+  "gpu": {"candidates": ["baseline", "coop64", "coop128"], "shared_bytes": 6144, "storage_buffer_bindings": 5, "mandatory_subgroup_operations": []},
+  "wire": {"codec_version": 2, "tile_q_bits": 16, "external_metadata_required": ["session_id", "frame_id", "eye", "gaze_sample_time", "display_deadline", "pose", "per_eye_fov", "spatial_warp_bounds", "spatial_warp_density"]}
+}

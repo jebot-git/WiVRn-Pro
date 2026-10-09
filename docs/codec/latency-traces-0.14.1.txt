@@ -1,0 +1,81 @@
+Latency selection probes 0.14.1 — diagnostic evidence, not release qualification
+
+All three predeclared 30-second launches completed. Actual post-warmup evidence
+windows are about 21 seconds each. Collection, coherent stereo identity,
+candidate-trace validation and both independent audits pass. All runs stopped;
+test configuration was restored, the test app is stopped, port 9767 is removed,
+and both production services remain active. Production source diff is unchanged.
+
+Configuration
+Quest Pro 230YC01D8W000E, wireless ADB 192.168.1.108:5555, dedicated codec-test app.
+576x640 per eye, 90 Hz offered, fps divider 1, early selection. Two custom VR444
+CPU-NEON Q8/LZ4 repeats and one native HEVC 20 Mbps reference. APK and source are
+the frozen 0.14.0 build; build-receipt.json binds ten source/binary paths. Candidate
+logging is enabled and explicitly disqualifies these runs from promotion.
+
+Observed selection evidence
+                         CPU repeat A       CPU repeat B       HEVC reference
+All trace records        2053               2065               2049
+Unique pairs after 2s    1884               1900               1891
+Newer complete available 1716 (91.1%)       1271 (66.9%)       116 (6.1%)
+Selected ready age p50   17.327 ms          12.272 ms          6.946 ms
+Selected target minus
+ runtime target p50      -0.389 ms          -0.381 ms          -0.357 ms
+Newest target minus
+ runtime target p50      +10.749 ms         +10.716 ms         -0.353 ms
+xrWaitFrame duration p50 8.639 ms           8.629 ms           8.570 ms
+Wait return to select p50 0.339 ms          0.341 ms           0.356 ms
+
+The readiness age uses latest-eye readiness to selection end. All selection
+statistics above use first unique submissions after the two-second warmup.
+The closest-target policy was independently replayed and matches every record;
+there are no recorded fallback or repeated selections. All 6167 records report
+projection submission. The CPU path frequently retains a newer complete pair,
+but chooses an older one because its source target is closer to the runtime
+prediction. CPU newest-minus-selected targets are typically about 11.1 ms.
+This is actual availability at the selection instant, not hindsight from frames
+that arrived later. It does not establish an 11.1 ms achievable latency saving.
+
+Latency remains mission critical
+Custom repeat A: receive-to-submit p50/p95/p99 = 21.134/27.296/29.891 ms,
+89.260 unique stereo submissions/s; fails all three latency limits.
+Custom repeat B: 16.372/21.500/23.691 ms, 88.847 submissions/s; fails p95.
+Limits remain 17/21/25 ms and at least 88 Hz. Measurement is earliest packet
+receipt across the stereo pair to the observation after successful xrEndFrame,
+headset-local clock. It excludes host processing and earlier transfer, and is
+not motion-to-photon. Trace I/O occurs after the submit observation and can
+perturb subsequent scheduling; it cannot be subtracted to manufacture a result.
+Trace write medians are about 0.12–0.13 ms. These diagnostics do not supersede
+the untraced 0.13.1 comparison or demonstrate an optimization speedup.
+
+Interpretation and next implementation work
+1. Instrument application-frame generation and compositor latch mapping before
+   using encoded frame IDs as scene freshness. The host can reuse a projection
+   layer in multiple encoded frames; source display targets are predictions.
+2. Prepare a test-only bounded latest-complete selection option, preserving
+   frame/warp identity, alpha requirements, fences and ownership. Record both
+   closest-target and alternative decisions, future-target distance and actual
+   app-generation mapping. Keep the production/default choice unchanged.
+3. Compare untraced baseline/alternative repeats only after correctness checks;
+   assess pose alignment, stereo stability, missed deadlines, tail latency and
+   representative moving content. A newer encoded frame alone is insufficient.
+4. Keep direct-to-mapped-staging decode experimental: prior 0.14.0 standalone
+   median savings were about 0.23–0.25 ms, with tail regressions. It has not been
+   integrated into or measured by these live runs.
+
+Limits
+One HEVC reference is not a repeated native comparison. This round contains no
+new H.264 run. Native surface pixel quality is not measured here; custom sampled
+CPU output correctness is not final compositor/display quality. No optical rig,
+representative VR corpus, source-input timestamp or synchronization uncertainty
+bound is available. The full 930-run suite is not qualified. Release readiness
+and promotion eligibility remain false. No root/presence/clock overrides used.
+
+Evidence
+progress.json and each run's summary.json, manifest, raw capture and provenance;
+trace-audit.{json,txt}: independent schema, selector, clock and identity review;
+freshness-audit.{json,txt}: source/build hashes and target/freshness review;
+cleanup-audit.json; immutable build-receipt.json and predeclared live-plan.json.
+Dependency: latency-research-0.14.0.tar.gz
+SHA256 b25fbec207f70bd36fb8aebf5869623c84e808b4f3a8ee1fbd88e76dfe6468b6
+That bundle pins the unchanged APK, source overlay and earlier host dependencies.

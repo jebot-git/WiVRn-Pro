@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: MIT
+#version 450
+layout(local_size_x=8, local_size_y=8) in;
+layout(set=0,binding=0) uniform sampler2D source_image;
+layout(set=0,binding=1,std430) writeonly buffer Output { vec4 pixels[]; };
+layout(push_constant) uniform Params { uint width,height; float offset; uint manual_srgb; } pc;
+vec4 linearize(vec4 source) {
+    // Explicit transfer on shader float values, independently implemented from
+    // the CPU's precomputed std::pow reference. Alpha remains linear.
+    vec3 low=source.rgb/12.92;
+    vec3 high=pow((source.rgb+vec3(0.055))/1.055,vec3(2.4));
+    return vec4(mix(high,low,lessThanEqual(source.rgb,vec3(0.04045))),source.a);
+}
+void main() {
+    uvec2 xy=gl_GlobalInvocationID.xy;
+    if(xy.x>=pc.width || xy.y>=pc.height)return;
+    if(pc.manual_srgb!=0) {
+        ivec2 p=ivec2(xy),edge=ivec2(pc.width-1,pc.height-1);
+        vec4 c00=linearize(texelFetch(source_image,p,0));
+        if(pc.offset==0.0) {
+            pixels[xy.y*pc.width+xy.x]=c00;
+        } else {
+            vec4 c10=linearize(texelFetch(source_image,min(p+ivec2(1,0),edge),0));
+            vec4 c01=linearize(texelFetch(source_image,min(p+ivec2(0,1),edge),0));
+            vec4 c11=linearize(texelFetch(source_image,min(p+ivec2(1,1),edge),0));
+            pixels[xy.y*pc.width+xy.x]=mix(mix(c00,c10,pc.offset),mix(c01,c11,pc.offset),pc.offset);
+        }
+        return;
+    }
+    vec2 uv=(vec2(xy)+vec2(0.5+pc.offset))/vec2(pc.width,pc.height);
+    pixels[xy.y*pc.width+xy.x]=textureLod(source_image,uv,0.0);
+}

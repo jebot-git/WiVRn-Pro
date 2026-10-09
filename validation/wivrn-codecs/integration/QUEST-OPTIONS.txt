@@ -1,0 +1,52 @@
+Quest Pro / Singularity investigation (non-root), 2026-10-08
+===========================================================
+The connected Quest has Singularity 1.0.7.4 installed, but this session runs as
+ADB shell uid 2000, with no su executable and SELinux Enforcing. The user asked
+us to continue without root. No root, frequency, fan, thermal, firewall, property,
+proximity or security settings were changed by this investigation.
+
+Measured/read-only options usable now
+* GPU frequency/utilization, CPU frequency and available thermal/battery state
+  are readable through sysfs/dumpsys. GPU active min/max were both 490 MHz while
+  the available list included 305, 400, 441.6, 490, 525 and 587 MHz. Snapshot state
+  is not proof of sustainable clock, throttling or a root-enabled feature.
+* Perfetto, atrace and simpleperf exist. Perfetto --query lists linux.ftrace and
+  Meta tracking/runtime producers. No gpu.counters or gpu.renderstages producer
+  appeared in that snapshot. Direct tracefs available_events was denied. Capture
+  access/data quality still need per-source verification; a listed tool/category
+  does not prove access to every hardware event.
+* MediaCodec vendor parameter enumeration works without root. The Qualcomm C2
+  HEVC decoder advertises 51 vendor parameter names including picture-order,
+  linear-pixel-format, output-render-frame-rate and crop/bit-depth metadata.
+  These are candidates for controlled A/B experiments, not verified tuning knobs:
+  parameter direction, legal values and actual behavior need verification. Neither
+  hardware HEVC decoder advertises standard low-latency support; the enumerated
+  vendor names also contain no explicit low-latency switch. No parameters changed.
+* Vulkan queries confirm ASTC, ETC2 and BC7 compressed-texture sampling/upload
+  support on this headset. See TRANSFER-OPTIONS.txt for alternatives to video.
+* Existing Vulkan compute and hardware HEVC standalone tests already establish
+  usable execution paths; root is unnecessary for those or this test APK.
+
+Potential options if root becomes available in a separate authorized session
+Singularity's own project documents CPU/GPU configuration, manual fan control,
+charge limiting, Frida server, build-type spoofing and proximity control. Useful
+controlled experiments could fix supported clocks for repeatability, compare
+thermal steady states, or trace buffer/codec/runtime boundaries. Establish the
+stock baseline, record each changed value, use bounded runs and restore original
+values. Do not disable thermal protection. Runtime private hooks are firmware-
+specific and can affect the very timing under test. Root cannot create absent
+silicon video/texture capabilities or eliminate transfer bandwidth requirements.
+
+No root-only action was exercised, so this report does not claim that the observed
+firmware is rootable, or that Singularity causes the capabilities measured here.
+
+Evidence
+../../results/quest-options-nonroot-01/inventory.json
+../../results/quest-options-nonroot-01/vendor-parameters.json
+../../results/quest-options-nonroot-01/perfetto-query.txt
+../../results/quest-options-nonroot-01/texture-formats.json
+Sources
+https://github.com/Lumince/singularity
+https://developer.android.com/reference/android/media/MediaCodec#getSupportedVendorParameters()
+https://perfetto.dev/docs/data-sources/gpu
+https://perfetto.dev/docs/getting-started/cpu-profiling

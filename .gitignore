@@ -7,3 +7,8 @@ __pycache__/
 *.log
 *.keystore
 .worktrees/
+
+# Local codec captures, sealed bundles, and generated Java tooling.
+/validation/results/
+/testing-builds/
+/validation/wivrn-codecs/integration/java-build/
