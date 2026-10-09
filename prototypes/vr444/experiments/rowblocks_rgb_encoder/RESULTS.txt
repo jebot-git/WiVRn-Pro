@@ -1,0 +1,56 @@
+Frozen packed-RGB host observation, 2026-10-09
+=============================================
+
+26 profiles x12 arms x31 measured repetitions after3 warmups:9672 stereo
+invocations exact in30.060212 seconds.12 real capture pairs and14 explicitly
+duplicated-eye synthetic profiles. Both other teams explicitly idle before
+launch; input, source and native/Android binary hashes unchanged. No socket,
+GPU, headset or production operation. Host i7-12700/clang22.1.8/Linux7.2.9;
+no affinity, frequency or thermal controls, ordinary desktop services uncontrolled.
+
+Matched same-batch comparison, arithmetic means of four captured pair p50s, ms.
+Original=published fused RGBA band reconstruction+RGB pack, four server workers.
+Packed=direct RGB band reconstruction, four server workers. All RRB clients use
+the same four-worker implementation. Totals are paired sample quantiles, not
+the sum of marginal quantiles.
+
+RRB32                           Q1          Q8-a        Q8-b
+Original server wall          0.289604    0.456293    0.415389
+Packed server wall            0.306458    0.459383    0.412400
+Original server process CPU   0.852170    1.400694    1.230037
+Packed server process CPU     0.918350    1.462162    1.275489
+Original server+client        0.605117    0.919975    0.815655
+Packed server+client          0.623885    0.914384    0.825816
+
+Only5/12 captured server p50s and4/12 server p95s improve with packed RRB32.
+Complete server+client improves4/12 p50s and6/12 p95s. Packed RRB128 is similarly
+mixed:4/12 server p50,3/12 server p95,4/12 total p50 and5/12 total p95 improve.
+Its mean total p50 is0.657525 /1.015965 /0.940963ms, versus the original fused
+RGBA arm0.643815 /1.011399 /0.938694. No consistent latency benefit appears.
+
+Packed serial RRB32 mean server wall is0.791848 /1.335356 /1.121752ms;
+two-worker0.491897 /0.774572 /0.696248. The four-worker case does not establish
+a lower aggregate CPU cost: all three groups increase process CPU in the table.
+Avoiding an intermediate representation alone does not prove an optimized path.
+Scalar three-byte stores are a possible remaining cost, not an isolated cause
+established by this experiment.
+
+Packed RRB32 four-worker retained algorithm-owned vector capacities range
+711,760..846,308 bytes for captured pairs. This excludes source/oracle storage,
+allocator overhead, thread stacks and transient peaks. The representation removes
+the redundant encoder RGB buffer and uses RGB rather than RGBA band scratch;
+that structural storage reduction is not a process-RSS or latency guarantee.
+
+Canonical RRB bytes and the prior wire tradeoffs are unchanged. Corpus totals
+across four pairs per group:
+group       VR444       RRF-up       RRB32       RRB128
+Q1          98,239       55,655      66,332       58,298
+Q8-a       182,910      233,898     245,567      236,627
+Q8-b       135,653      184,585     194,380      186,904
+
+This preserves exact previously decoded pixels, including existing Q8 loss, and
+does not benchmark an original framebuffer encoder. The31-sample host observation
+does not establish rare-tail confidence or target-device behavior. No measured
+GPU/network values are added and no sub15 or headset result follows. Keep the
+published fused RGBA implementation as the stronger CPU candidate until another
+matched experiment demonstrates an improvement.
