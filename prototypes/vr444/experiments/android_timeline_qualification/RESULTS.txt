@@ -1,0 +1,52 @@
+Quest timeline semaphore and synchronization2 runtime compatibility
+=================================================================
+
+Both actual Android probe paths passed on Adreno 650. This upgrades queried
+feature support to execution compatibility for the existing private queue
+buffer-lifetime prototype. It is not a native renderer or speedup result.
+
+path                 offered decoded consumed verified pressure unacquired reuse
+vkQueueSubmit             512      80       51       51      432         29    77
+vkQueueSubmit2KHR         512      79       56       56      433         23    76
+
+All pairs are accounted: offered=decoded+pressure; decoded=consumed+unacquired;
+consumed=verified; reuse=decoded−3. The counter differences follow artificial
+burst scheduling and asynchronous completion, and do not rank performance.
+Every consumed pair retains distinct frame/eye identity in 4096-byte buffers
+through its observed consumer retirement. Three private slots, dropped offers,
+discarded unacquired completions and multiple reuse generations are exercised.
+
+Select research/sub15-20261009/vulkan-extensions at immutable implementation/
+receipt 00939ca2c504a525e69c173221e1afb67b5be6bc for further native lifetime design.
+Timeline and timeline+sync2 can be used on this device by this prototype. Before
+native integration, preserve actual frame/image owners, queue synchronization,
+generation identity and retirement/cancellation rules. No source-image, decoder,
+compositor, OpenXR, optical or end-to-end latency property was tested here.
+
+Root alone ran the existing binary; this branch adds a read-only replay auditor.
+The single Android executable is SHA256
+76a2e8d56cb7cb90c798f9375515962bee0a0acd3336acf45a97ea52bcd5647e,
+historically bound at the above commit in vulkan_extensions/qualification-20261009.json,
+binaries[3]. Every recorded repository-source binding is verified from Git.
+No build was repeated. No shaders or corpora are required by the probe.
+
+Root's unchanged bounded Android runner invoked:
+  timeline-probe --device 0
+  timeline-probe --device 0 --sync2
+Each has a 30-second external device KILL limit and 45-second host limit. The
+prototype's internal 15-second loop and 1 ms waits do not themselves bound teardown
+vkDeviceWaitIdle; keep the external timeout for driver failures.
+
+Both processes returned zero with empty stderr; upload/local binary hashes,
+serial/firmware, exact commands, receipt/log bytes and directory cleanup are
+bound in runtime-20261009.json. Raw headset_used:false is a historical portable
+label; the Android runner provides actual-device provenance without editing raw
+output. Directory absence is observed; process absence is not independently
+re-queried by this auditor. This receipt does not qualify throughput or latency.
+
+Replay (no device/network operations):
+  python3 prototypes/vr444/experiments/android_timeline_qualification/audit.py \
+    timeline-plan.json timeline-device --out audit.json
+Use --binary for the retained exact executable if its original path is absent.
+Run test_audit.py through unittest discovery for synthetic malformed-counter and
+scope cases. Missing/partial/failed commands or accounting/hash errors fail closed.
