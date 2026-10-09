@@ -62,6 +62,9 @@ All subtraction stays in the host monotonic namespace. No host time is
 subtracted from a client timestamp. The population includes startup and all
 selected IDs across acquisition, not only the latency evaluator's warm first
 submissions. Join rows preserve source and prediction sequence IDs for audit.
+The standalone file join consumes left IDs and is not itself stereo admission:
+the comparison runner's outer output evaluator separately validates coherent
+left/right/warp identity. Its diagnostic pass cannot replace that validation.
 
 Interpretation
 These are observed estimator values and host phases, not measured optical
@@ -79,6 +82,14 @@ ambiguity, unaccepted predictions, clock-domain rejection, translated phases,
 missing selected IDs, invalid footers, launch-option validation, inherited
 environment scrubbing, missing-overlay failure before any device command, and
 file-only final evaluation. No device commands are executed by this receipt.
+
+Independent review
+The transport team reviewed the committed capture code at 47a5677 read-only:
+no blocker in exact frame/target identity, host-local subtraction, pre-device
+opt-in validation, trace artifact rejection, promotion isolation or final
+footer evaluation after cleanup. Its one contract-clarity suggestion was to
+make the outer stereo-validation dependency explicit, as done above. This
+review is an additional code inspection, not new runtime evidence.
 
 Reproduce from this worktree with a new output file:
   python3 prototypes/vr444/experiments/pacer_timing/validate_capture.py \
