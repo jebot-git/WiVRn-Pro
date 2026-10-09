@@ -80,6 +80,22 @@ class Audit(unittest.TestCase):
             path=Path(temp);rows=fixture(path);rows[0]['space']='LOCAL';save(path,rows)
             with self.assertRaises(ValueError):audit.application(path)
 
+    def test_explicit_clock_conversion_and_legacy_not_relabelled(self):
+        changes=[lambda r:r[0].update(converted_clock='XR_TIME'),lambda r:r[0].update(time_conversion_extension='inferred'),
+            lambda r:r[-2].update(predicted_display_time_monotonic_ns=True),
+            lambda r:r[-2]['predicted_display_time_timespec'].update(tv_nsec=10**9),
+            lambda r:r[-2]['predicted_display_time_timespec'].update(tv_sec=-1),
+            lambda r:r[-2].update(predicted_display_time_monotonic_ns=1000000003),
+            lambda r:r[0].update(schema=2)]
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp);rows=fixture(path);rows[0].update(schema=3,space='LOCAL',source_reference_space='LOCAL',locate_and_layer_use_same_space=True,
+                time_conversion_extension='XR_KHR_convert_timespec_time',time_conversion_function='xrConvertTimeToTimespecTimeKHR',converted_clock='CLOCK_MONOTONIC')
+            rows[-2].update(source_reference_space='LOCAL',predicted_display_time_timespec=dict(tv_sec=1,tv_nsec=2),predicted_display_time_monotonic_ns=1000000002)
+            save(path,rows);self.assertEqual(audit.application(path)['time_conversion'],'XR_KHR_convert_timespec_time/CLOCK_MONOTONIC')
+            for mutate in changes:
+                bad=copy.deepcopy(rows);mutate(bad);save(path,bad)
+                with self.assertRaises(ValueError):audit.application(path)
+
     def test_metadata_mutations(self):
         changes = [lambda r:r[0].update(source_generation='client_decode'), lambda r:r[0].update(latency_comparable=True),
             lambda r:r[0].update(format=37), lambda r:r[-1].update(submitted=2), lambda r:r[-1].update(complete=1),

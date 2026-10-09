@@ -18,6 +18,11 @@ int main() {
             auto args=base;args.insert(args.end(),{"--source-reference-space",bad});bool fail=false;try{check(args);}catch(const std::exception&){fail=true;}require(fail,"invalid space admitted");++rejected;
         }
         auto duplicate=base;duplicate.insert(duplicate.end(),{"--source-reference-space","LOCAL","--source-reference-space","VIEW"});bool fail=false;try{check(duplicate);}catch(const std::exception&){fail=true;}require(fail,"duplicate space admitted");++rejected;
+        require(monotonic_ns(timespec{1,2})==1000000002LL,"timespec conversion");++passed;
+        require(monotonic_ns(timespec{9223372036LL,854775807})==INT64_MAX,"timespec exact upper bound");++passed;
+        for(const auto ts:std::array<timespec,6>{{{-1,0},{0,-1},{0,1000000000L},{0,0},{9223372036LL,854775808},{9223372037LL,0}}}) {
+            bool bad=false;try{monotonic_ns(ts);}catch(const std::exception&){bad=true;}require(bad,"invalid timespec admitted");++rejected;
+        }
         std::cout<<json({{"passed",passed},{"rejected",rejected},{"openxr_exercised",false},{"gpu_exercised",false}}).dump()<<'\n';return 0;
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }
