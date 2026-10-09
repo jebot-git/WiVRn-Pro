@@ -85,11 +85,11 @@
   },
   "client/scenes/stream.cpp": {
     "before_sha256": "27250cf4d1dd6549f62f6a25b3aa33833cb6238cdc1ff1339a69bb07ef740584",
-    "after_sha256": "b2c4e323ce796ce523195fbc23b937beca017b15525a81a85b736e8d1b7d6c26"
+    "after_sha256": "8075bbd7d853284295584535dd43244d600ec2065733df2039ac88c72f5e10f1"
   },
   "client/scenes/stream.h": {
     "before_sha256": "d04badaf6c9f403076a6f5051c7e0fad0748cc64a13c30796ad2db025cb14d25",
-    "after_sha256": "759a58cd1ded05f6050222c1c2d72e6d18e45f1f2033dc2de65668e69b428b31"
+    "after_sha256": "3a611f266d65106265402b8c594d8e72de3f845bd2456e44ac6b5ea09f09feee"
   },
   "client/scenes/stream_defoveator.cpp": {
     "before_sha256": "11be925cd47b7cadbf07b8f21253f3b95135a9df9623c93abef51ba7aa0b8b82",
@@ -166,6 +166,10 @@
   "common/codec_test/stereo_admission.h": {
     "before_sha256": null,
     "after_sha256": "0bcb44f97ae6e68d18e8b5d070c31521d0fd8f38b33fdd9b84e6677eceb60192"
+  },
+  "common/codec_test/stereo_publication.h": {
+    "before_sha256": null,
+    "after_sha256": "669a93c54a8f8a7c282be05871153d03daa041eaae57e685e59d1c2edc76fa30"
   },
   "common/codec_test/vr444/codec.cpp": {
     "before_sha256": null,
