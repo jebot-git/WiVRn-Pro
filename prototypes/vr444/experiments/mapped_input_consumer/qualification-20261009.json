@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "experiment": "mapped-input-consumer",
+  "headset_used": false,
+  "promotion_blocked": true,
+  "performance_qualification": false,
+  "qualification_pass": true,
+  "source_sha256": {
+    "prototypes/vr444/experiments/direct_image_gpu/gpu_oracle.hpp": "ae715d75f80abc3d76dd9ba1c73b8d78228a60c2c2e316ff38eda3792b6cfd8e",
+    "prototypes/vr444/experiments/direct_image_gpu/host_copy.hpp": "b45c592543bdb386bccc4173d8b6d732d93a5ebf8287504cd10756285779afe5",
+    "prototypes/vr444/experiments/direct_image_gpu/sample.comp": "b146b902a79640cdd887061a9475217aa156a763ee04bbfa521e20be2f32938c",
+    "prototypes/vr444/experiments/mapped_input_consumer/audit.py": "587813ef24dc77adc125728589ae600c8c7acbcf6e38d659e9eee93e1fdfcc85",
+    "prototypes/vr444/experiments/mapped_input_consumer/consumer.hpp": "e4126a5d6d5ff2f711a962964113ded9e06904f82cce06a191db2170f522a968",
+    "prototypes/vr444/experiments/mapped_input_consumer/measure.py": "2eb715291d93b8b3e2d4992e68bdfd378eeecda6c2660479205754c46bc9e014",
+    "prototypes/vr444/experiments/mapped_input_consumer/probe.cpp": "aae029abdbc9881802b634fc7589ca67dc6e052911cc4f5e4b4ff723cff4e2b0",
+    "prototypes/vr444/experiments/mapped_input_decode/audit.py": "b7c1d62761449020d0a72fb6acd9deaa766a85a8b270546fce6f242e660eae85",
+    "prototypes/vr444/experiments/mapped_input_decode/engine.hpp": "6de9c84e89d4845411724e8c249d451441fa1c2f7b058c10512a9e039a0811b2",
+    "prototypes/vr444/experiments/mapped_input_decode/pair.hpp": "8c12e512d8a382261e751b1def7a9bc54707f4750ef310698396a3c94626bed4",
+    "prototypes/vr444/experiments/mapped_input_decode/pipeline.hpp": "2c9c012e9466854c4d4bce890444606d15dd55dee6d122e32365692a687b1c53",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.c": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539",
+    "prototypes/vr444/experiments/native_lz4/vendor/lz4.h": "26b82efc53d1570f3b54eef02e9c4764c1ad374ff03cac04e2ced5ea4d4c552f",
+    "prototypes/vr444/experiments/native_lz4/wpc.hpp": "15b9f0b9f868b309d4bb87bd94cf8d3971f46e9badc3ed303eac8f6ab9bfadc0",
+    "prototypes/vr444/experiments/rgb_rowblocks/rowblocks.hpp": "311f1e8f0880e401f61823d0461dfa60931db7abbc7b6b707f1ed45f9773d6e5",
+    "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
+    "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
+    "prototypes/vr444/experiments/rowblocks_gpu/decode.comp": "562364be82fcf3c6bd352d3478aff749bc6ad4703c8cd7d48a5cc720a19ef918",
+    "prototypes/vr444/experiments/rowblocks_gpu/fixtures.hpp": "aa184e09104059e1904e26661ba625630ebf32afbb3bfcccba4171cd703e6117",
+    "prototypes/vr444/experiments/rowblocks_image_timing/fixtures.hpp": "05b8603b392ea512fa33b328191586237647444ef337c6e15facdd4edf258bbf",
+    "prototypes/vr444/experiments/rowblocks_image_timing/pipeline.hpp": "0fffdf46c5f5bc28387c4674afea99696b5fa42df4d65192717983ed826259ae",
+    "prototypes/vr444/experiments/rowfilter_gpu/decode.comp": "2a019063b41a630d4f447e62e8bd9af91c6aacad76142003c701bf5a5db9c9b6",
+    "prototypes/vr444/experiments/rowfilter_gpu/fixtures.hpp": "2869b89c5d69606ffe3dd9462f67c4ae1b2b3b6009806e3744ec02a5d8f38263",
+    "prototypes/vr444/experiments/rowfilter_image_timing/audit.py": "c03d855953f972114081d7d0f5e6896dd1f65fec610af5f384fba6cee10d32ad",
+    "prototypes/vr444/experiments/rowfilter_image_timing/pipeline.hpp": "95f786d1cf937d93a7327c1efd0883a2a6f32c084241bbf638866f9f0b70d373",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.cpp": "c13801d104cebbd6e842238c8335bd70639e51cb4fa4820249ef82555ea76dff",
+    "validation/wivrn-codecs/integration/source-overlay/common/codec_test/vr444/codec.hpp": "5b0f429e25a6d830a487271156f7d5377b8ac0824c1cacda7328e6e58a94c706",
+    "prototypes/vr444/experiments/mapped_input_consumer/build.sh": "52a4151904083b02eae650dfeb14c59a11459764d1c7ce91aff16218affba9c9",
+    "prototypes/vr444/experiments/mapped_input_consumer/test_audit.py": "ec026b7af6672d498ecbedd6794673a415cf0fcf5480130c71eb5f81c7c7869b"
+  },
+  "runs": [
+    {
+      "label": "arc-qualification",
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "profiles": 170,
+      "arms": 9,
+      "warmups": 1,
+      "repetitions": 1,
+      "valid_invocations": 3060,
+      "right_eye_omission_controls": 1530,
+      "raw_sha256": "645ea240326d65f1a7782504190406ff825381d7199e301aa2b1adf1ea3e5f40",
+      "audit_sha256": "b5ea8bb0b1b0bbf9c4a2f99627cb88614655defdbf8ac0e973ea9ee3d85adf62",
+      "stderr_empty": true
+    },
+    {
+      "label": "uhd-qualification",
+      "device": [
+        "Intel(R) UHD Graphics 770 (ADL-S GT1)",
+        1,
+        109060195
+      ],
+      "profiles": 170,
+      "arms": 9,
+      "warmups": 1,
+      "repetitions": 1,
+      "valid_invocations": 3060,
+      "right_eye_omission_controls": 1530,
+      "raw_sha256": "9d96d36fe84d6f746640472eaa711ddb0af4cf93772e64981a38d4512f9d8d37",
+      "audit_sha256": "a04d7da9097a6b8b42f9f122cf4af352fdf4b5f6e8bedec3268f974977057aa4",
+      "stderr_empty": true
+    },
+    {
+      "label": "asan-paired",
+      "device": [
+        "Intel(R) Arc(tm) A770 Graphics (DG2)",
+        2,
+        109060195
+      ],
+      "profiles": 26,
+      "arms": 9,
+      "warmups": 3,
+      "repetitions": 1,
+      "valid_invocations": 936,
+      "right_eye_omission_controls": 234,
+      "raw_sha256": "9aa4635349244a68736dd4ea8292f5d51c7eb2b2360fe0e7f959a06c4f4dbb46",
+      "audit_sha256": "c7775c0a0e92ecbf2a0a3156f82a49c6e2040012c0564ae82482864596e59ce9",
+      "stderr_empty": true
+    }
+  ],
+  "python_tests": 4,
+  "negative_audit_mutations": 25,
+  "builds": {
+    "host": true,
+    "android_compile_only": true,
+    "asan_ubsan": true,
+    "spirv_val_vulkan11_modules": 8
+  },
+  "binaries": {
+    "mapped-consumer-host": "ef7d72ca23cfe1c15f2291d4e5c35fc2e854f21583a154a362d04e0f6f2ac099",
+    "mapped-consumer-android": "d62f5723c4ee13969f5749e6bc9b15ad38c1cbdd8175f0ab831ab4e09963bb2d",
+    "mapped-consumer-asan": "626fc50545fb99b216456e675bf263bb9960deac9818631216399440a488a8e4"
+  },
+  "shader_sha256": {
+    "base/rrb/shaders/buffer.spv": "b408089ce94765a38c30f2e98f2f6881c209646da10353ceef30ea22ead867ca",
+    "base/rrb/shaders/unorm.spv": "2ec428dab6a4dc25188ee57b42464c511b5c2d99fcfd563916ac188c60c3b087",
+    "base/rrb/shaders/uint.spv": "076230140137e8b10b6a6f085b028b021f9d419b742906cefdfd41cd7d3ef416",
+    "base/rrb/shaders/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95",
+    "base/rrf/shaders-4/buffer.spv": "1ef691b6e9291826cadfabe86ddb99725fa6787b5e4e9b7d97d88cb410ee95c0",
+    "base/rrf/shaders-4/unorm.spv": "f963502ec2f189a50dcdcbad1f1abe92f28f301e8155eb3ecc77a1febf5c54e6",
+    "base/rrf/shaders-4/uint.spv": "f42443cf8ba2ce3cabd16a061d8c8a0f2252cc209d95309397683ba030ac700b",
+    "base/rrf/shaders-4/sample.spv": "dd5654a355a08fb1ab5e98e435402ee802ec2cdbb2e775358c237c2420156a95"
+  },
+  "manifests": {
+    "prototypes/vr444/experiments/rgb_rowfilter/results/corpus-hashes.json": "b5f6f5c5b8758d70b394bd33b5885c4e45c57007b4bd86e59c563f8974be127f",
+    "prototypes/vr444/experiments/rgb_rowblocks/results/corpus-hashes.json": "c732fffe2a24894c487b11e5552098cd9531d6c29e5f52a63ae2865445af99b4"
+  },
+  "independent_review": "Compositor team read-only review found no blocker in readiness/query retirement, host visibility, snapshot-before-oracle, omission control or joint clock.",
+  "orchestration_note": "One early audit invocation rejected incomplete JSON while native output was still being written. Only completed zero-exit native outputs and their final audits are bound here; no validation gate was relaxed.",
+  "limitations": [
+    "Correctness runs overlapped other research work and each other; their clocks are not comparative evidence.",
+    "ASan leak detection disabled under ptrace; address and undefined-behavior checks emitted no diagnostics.",
+    "Consumer is a private nearest-sampled SRGB compute pass into host-visible floats, not the native compositor.",
+    "Engine readiness still counts image poison and two submissions; joint path counts three."
+  ]
+}
