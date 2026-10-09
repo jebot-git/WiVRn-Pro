@@ -96,7 +96,10 @@ def wait_for_quiet_file(path):
 
 
 def evaluate(traces, presented, source_rows, solvers, quiet_file=None, phases=phase.PHASES,
-             publication_advance_ns=8_000_000, warmup_ns=2_000_000_000, cadence_floor_hz=88):
+             publication_advance_ns=8_000_000, warmup_ns=2_000_000_000, cadence_floor_hz=88,
+             ready_at_receipt=False):
+    if type(ready_at_receipt) is not bool or ready_at_receipt and publication_advance_ns!=0:
+        raise ValueError('receipt-floor mode requires an exact flag and zero unused advance')
     phase.grid(phases,(publication_advance_ns,))
     if type(cadence_floor_hz) is not int or not 0 < cadence_floor_hz <= 1000:
         raise ValueError('bounded positive cadence required')
@@ -117,7 +120,7 @@ def evaluate(traces, presented, source_rows, solvers, quiet_file=None, phases=ph
                 if distinct else cardinality.warm_population(known,traces,presented,cutoff,'observed_submission_prefix'))
             for shift in phases:
                 original = [dict(frame=f['frame'],target=f['target'],receipt=f['receipt'],
-                    ready=max(max(e['receive_xr_ns'],e['ready_xr_ns']-publication_advance_ns) for e in f['pair'] if e['present']),
+                    ready=max(e['receive_xr_ns'] if ready_at_receipt else max(e['receive_xr_ns'],e['ready_xr_ns']-publication_advance_ns) for e in f['pair'] if e['present']),
                     **(dict(generation=f['generation']) if distinct else {})) for f in admitted]
                 deadlines = []
                 for d in warm:
@@ -148,7 +151,8 @@ def evaluate(traces, presented, source_rows, solvers, quiet_file=None, phases=ph
                     return entry
                 result=minimum_p95(query,minimum_count)
                 result.update(model=name, distinct_source_generations=distinct,target_periods=periods,
-                    sampling_shift_ns=shift,hypothetical_publication_advance_ns=publication_advance_ns,
+                    sampling_shift_ns=shift,hypothetical_publication_advance_ns=None if ready_at_receipt else publication_advance_ns,
+                    hypothetical_publication_mode='receipt_floor' if ready_at_receipt else 'bounded_advance',
                     population_sha256=population_hash,warm_start=contract,target_admission=transform)
                 if result['feasible']:
                     choices=result['certificate']
@@ -174,7 +178,8 @@ def evaluate(traces, presented, source_rows, solvers, quiet_file=None, phases=ph
         if (a['model'],a['sampling_shift_ns']) not in keep:
             a.pop('certificate',None)
     return dict(schema=1,status='pass',analysis_kind='exact_quantile_at_sufficient_cadence_count',
-        phase_grid_ns=list(phases),publication_advance_ns=publication_advance_ns,scenario_count=len(alternatives),
+        phase_grid_ns=list(phases),publication_advance_ns=None if ready_at_receipt else publication_advance_ns,
+        hypothetical_publication_mode='receipt_floor' if ready_at_receipt else 'bounded_advance',scenario_count=len(alternatives),
         warm_observed_deadlines=len(warm),full_window_minimum_count=minimum_count,maximum_skips=budget,
         observed_deadline_span_ns=span,cadence_floor_reference_hz=cadence_floor_hz,
         observed_trace_validation=verified,source_validation={k:v for k,v in joined.items() if k!='system_to_app_frames'},

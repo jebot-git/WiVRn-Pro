@@ -1,0 +1,77 @@
+Zero receive-to-publication delay: exact finite-phase diagnostic
+==============================================================
+
+All 100 exact minimum-p95 results are identical to the earlier 8 ms publication
+advance results: 25 phases times four target/source constraints. This holds
+even though the largest known per-eye receive-to-ready interval is 18.298439 ms.
+The 4,188 participating-eye records are from 2,094 distinct known complete pairs.
+
+Best tested phase / exact nearest-rank p95 at 1,875 choices:
+  encoded identity, one-horizon target cap       0 ms       19.241095 ms
+  encoded identity, unrestricted future target  4 ms       14.874793 ms
+  distinct source sets, two-horizon target cap  5.5 ms      15.936408 ms
+  distinct source sets, unrestricted target     5.5 ms      15.936408 ms
+
+This is an optimistic supply/selection bound, not a executable decoder or a
+measurement of removable latency. Each participating eye is hypothetically
+ready at its own original receipt timestamp, including alpha when present.
+Pair readiness remains the maximum of those receipts. Age remains submit minus
+the original minimum left/right receipt, so stereo arrival skew is not erased.
+Any readiness improvement that cannot precede each eye's receipt has a subset
+of these eligible edges at the same phase and target/source constraints.
+
+The existing bounded-advance default and its 15 ms configuration bound remain
+unchanged. quantile_bound.evaluate adds an explicit ready_at_receipt mode with
+an exact bool control and zero unused numeric advance. Result fields label that
+mode and use null numeric advance; they do not pretend every eye had the same
+18.3 ms reduction. The wrapper verifies all per-eye timestamps before invoking
+the unchanged exact encoded/source solvers and independent path audits.
+
+What this does and does not establish
+------------------------------------
+For the stated finite grid and full-window sufficient 88 Hz count, removing all
+recorded receive-to-publication intervals cannot improve these p95 optima beyond
+the prior 8 ms model. It does not imply that decode work has no practical value:
+actual ownership, finite buffers and runnable scheduling are still relaxed;
+earlier source generation/transport receipts are held fixed; clock prediction
+and future-target quality are not simulated; and between-grid phases remain
+outside this branch's result. Application identities are not simulation/input
+epochs. The actual headset run remains failed and has not been retried.
+
+The minimum count is 1,875 over the original 21.284347901 second warm span.
+Deleting worst-age choices from a larger allowed count down to this count
+preserves order/admission and cannot worsen nearest-rank p95. This count is
+sufficient for cadence over the full span; fewer choices with shorter endpoints
+are not covered. The alternative permits unlimited known-frame retention and
+earlier use of later-observed metadata. It does not invent unseen frame supply.
+
+Validation and receipts
+-----------------------
+The full 310-test Python suite passes, including 1,024 randomized per-eye floor
+domination cases, alpha/stereo bounds and exact mode/timestamp rejection. Both
+preserved C++ solvers retain their earlier exhaustive sanitizer qualification;
+every intermediate quantile query is independently audited. The new comparison
+receipt binds both the earlier 8 ms result and this receipt-floor result and
+checks all 100 exact optima. All 300 original acquisition files, every loaded
+analysis helper, both solver binaries and build receipts match before/after.
+The immutable failed summary and production/native behavior are unchanged.
+
+Reproduce from repo root using a fresh --out:
+python3 prototypes/vr444/experiments/selection_policy/validate_receipt_floor.py \
+  --encoded-solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+  --encoded-build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+  --source-solver /tmp/sub15-novelty-validated-20261009/novelty-probe \
+  --source-build-receipt prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json \
+  --out /tmp/receipt-floor-validation.json
+python3 prototypes/vr444/experiments/selection_policy/receipt_floor.py \
+  /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+  --encoded-solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+  --encoded-build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+  --source-solver /tmp/sub15-novelty-validated-20261009/novelty-probe \
+  --source-build-receipt prototypes/vr444/experiments/selection_policy/source-novelty-validation-20261009.json \
+  --out /tmp/receipt-floor.json
+
+QUANTILE-BOUND.txt explains exact integer p95 bisection and cardinality proof.
+The earlier quantile-bound-20261009.png curves are also numerically identical
+under this receipt-floor model, as established by the separate comparison.
+No headset operations, measured speedup or promotion eligibility is claimed.
