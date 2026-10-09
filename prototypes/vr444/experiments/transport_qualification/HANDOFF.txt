@@ -79,8 +79,9 @@ c4dc09128e45fc5bda71fa0588e40d2077678b9b. The measured first-consumer branch is
 these unchanged codec bytes, but the gain versus staged input removes both a
 copy and workspace clear/resize work. It does not isolate copy cost alone.
 A fixed private staging-buffer control would be a separate attribution test.
-The existing joint private packet-to-image/consumer result remains its own
-measurement, including private poison/readiness/consumer submissions.
+The existing joint measurement begins with complete encoded stereo buffers and
+ends after the first image consumer. It includes private poison/readiness/consumer
+submissions and excludes socket delivery and reassembly.
 
 The compositor suite is separately pinned at
 fe9dae00c4c8c89dad45502f2908b6c901800737. Its frozen source/target/readiness models,
