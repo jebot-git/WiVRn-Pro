@@ -185,7 +185,7 @@
   },
   "common/codec_test/submitted_capture.h": {
     "before_sha256": null,
-    "after_sha256": "272ac6020f77cdc2b47881996fe4e3618fc5a231168bfc43fffd3b440b455de7"
+    "after_sha256": "4692215595884cc932629b1c52898ff491e7a2f662fdb88e16b1763695b9dd72"
   },
   "common/codec_test/vr444/codec.cpp": {
     "before_sha256": null,

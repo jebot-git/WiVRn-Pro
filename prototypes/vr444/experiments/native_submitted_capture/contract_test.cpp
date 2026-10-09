@@ -21,14 +21,15 @@ int main() {
         reject([&]{(void)parse(bad);});
     reject([&]{(void)parse(std::string(1025,' '));});
     for(uint32_t pairs=1;pairs<=8;++pairs) for(uint32_t stride:{1u,90u,900u}) {
-        Budget budget{Config{true,pairs,stride}};assert(budget.take(7));
+        Budget budget{Config{true,pairs,stride}};const uint64_t base=7*stride;assert(budget.take(base));
         for(uint32_t i=1;i<pairs;++i) {
-            assert(!budget.take(7+(i-1)*stride));assert(!budget.take(0));
-            if(stride>1)assert(!budget.take(7+i*stride-1));
-            assert(budget.take(7+i*stride));
+            assert(!budget.take(base+(i-1)*stride));assert(!budget.take(0));
+            if(stride>1)assert(!budget.take(base+i*stride-1));
+            assert(budget.take(base+i*stride));
         }
         assert(!budget.take(UINT64_MAX));assert(budget.attempts==pairs);
     }
+    Budget aligned{Config{true,2,90}};assert(!aligned.take(1));assert(!aligned.take(89));assert(aligned.attempts==0);assert(aligned.take(90));assert(!aligned.take(179));assert(!aligned.take(181));assert(aligned.attempts==1);assert(aligned.take(270));assert(!aligned.take(360));
     Budget end{Config{true,8,1}};assert(end.take(UINT64_MAX));assert(!end.take(0));assert(!end.take(UINT64_MAX));
     Budget off{Config{false,1,1}};assert(!off.take(1));
     assert(bytes(4096,1024)==16*1024*1024);assert(bytes(2048,2048)==16*1024*1024);assert(bytes(1,1)==4);
@@ -43,5 +44,5 @@ int main() {
     exclusive_write(dir/"config",R"({"enabled":true,"max_pairs":8,"frame_stride":900})");assert(load(dir/"config").max_pairs==8);
     exclusive_write(dir/"too-big",std::string(1025,' '));reject([&]{(void)load(dir/"too-big");});
     std::filesystem::remove_all(dir);
-    std::cout<<"PASS submitted capture contract: "<<rejected<<" rejections; 24 budgets; bounds; no-overwrite evidence\n";
+    std::cout<<"PASS submitted capture contract: "<<rejected<<" rejections; 24 budgets; absolute frame alignment; bounds; no-overwrite evidence\n";
 }
