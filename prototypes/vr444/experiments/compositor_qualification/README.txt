@@ -137,3 +137,12 @@ All source, tests and research artifacts are committed on isolated branches.
 The catalog is descriptive evidence, not authentication of code or receipts.
 Its generator uses explicit milestone IDs; changing the catalog is a new
 reviewable change, never automatic acceptance of a floating branch head.
+
+Final committed-input binding and cross-team handoff:
+fresh-handoff-inputs-20261009.json independently binds all 341 unchanged fresh
+suite input files to immutable handoff commit fe9dae00c4c8c89dad45502f2908b6c901800737.
+It identifies exactly three output/integrity receipts replaced after execution
+and two subsequently added cross-team reference documents. Later notes/receipt
+additions do not silently become freshly executed sources. CROSS-TEAM-HANDOFF.txt
+and cross-team-pointers-20261009.json pin the separate GPU/transport results and
+supplementary mutation campaign; no merged source tree or summed timing is claimed.

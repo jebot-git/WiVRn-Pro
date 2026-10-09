@@ -99,5 +99,30 @@
   "cross_team_source_integration": false,
   "combined_performance_claim": false,
   "headset_operations": false,
-  "promotion_eligible": false
+  "promotion_eligible": false,
+  "supplementary_qualifications": [
+    {
+      "id": "packet-window-campaign",
+      "branch": "research/sub15-20261009/packet-window-campaign",
+      "commit": "abfc9dd5e0947f89c688345bc248ef09bd6fdebd",
+      "checked_at_utc": "2026-10-09T11:14:11.976872+00:00",
+      "remote_head_verified": true,
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/packet_window_campaign/README.txt",
+          "sha256": "b813ad489b2cccf87341ce1f58b0eb41ffe30cef18f844a1f06bf3c100d0a01b"
+        },
+        {
+          "path": "prototypes/vr444/experiments/packet_window_campaign/RESULTS.txt",
+          "sha256": "35dc2872f2d7b8cac3d83cca4acda8f86854eb288bd65a4f1f2e6f35617020f0"
+        },
+        {
+          "path": "prototypes/vr444/experiments/packet_window_campaign/qualification.json",
+          "sha256": "1860810154541ca007a0cd23a0a7d4774c50989d5cb81b35d7e1386fb097bfe6"
+        }
+      ],
+      "new_wire_approach": false
+    }
+  ],
+  "remote_verification_scope": "Each recorded remote check is historical at its stated time; later notes-only branch advances do not alter the pinned artifact bytes."
 }

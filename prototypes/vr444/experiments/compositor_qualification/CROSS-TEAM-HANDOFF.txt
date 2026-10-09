@@ -57,6 +57,23 @@ but its declared length-two erased-fragment comparison recovers only 38/432
 versus VXP's 301/432. These are matched logical erasures with parity retained,
 not physical wire bursts, network timing or authentication.
 
+Supplementary transport qualification (same VWG protocol, no new algorithm):
+  branch research/sub15-20261009/packet-window-campaign
+  commit abfc9dd5e0947f89c688345bc248ef09bd6fdebd
+  prototypes/vr444/experiments/packet_window_campaign/README.txt
+This covers 432 exhaustive publication-order cases, 24 clean/repair controls,
+and 4,800 seeded mutation schedules over all 20 mutators x 3 K values x 4
+small raw-RRF shapes x 20 schedules. Every published pair matched saved
+canonical bytes/frame/warp; expiry/config replays and retained-payload checks
+passed. The initial correlated parameter schedule was corrected after review.
+It is finite logical byte-flow coverage, not authentication, a native pixel
+oracle, maximum-size corpus coverage, wireless probability or timing evidence.
+The sealed 23-approach transport handoff remains independently pinned.
+
+Remote-head checks are time-stamped historical checks. Later notes-only heads
+can point back to these same immutable qualified implementation/receipt blobs;
+there is no need to recursively advance cross-team documents to chase each other.
+
 Integration sequence for a future explicitly resumed device phase:
 1. Integration owner selects exact branches and regenerates integration.patch
    and overlay-manifest. The original pacer-trace milestone requires the later
