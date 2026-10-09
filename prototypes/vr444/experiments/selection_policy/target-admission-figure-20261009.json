@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "figure_sources_sha256": {
+    "prototypes/vr444/experiments/selection_policy/plot_target_admission.py": "20628dd2d3c412d14441957dadc3243198502d9a6bcd2eb25a38ebc5af306bfe",
+    "prototypes/vr444/experiments/selection_policy/target-admission-20261009.json": "d95e829d80897f383f3c5bc5716903bb4c20440b19d9b5182c003ce3da2d0ab8",
+    "prototypes/vr444/experiments/selection_policy/target-admission-20261009.png": "436d05aa57a86b47ff87b24db03ab29ae6b962ef0c4d6a4cd4282b7c6c8e04ae"
+  },
+  "visual_review": "Rendered PNG inspected: labels, legend and model limitations readable; no overlaps with title or footer.",
+  "scope": "Visualization only; solver/control validation is separately recorded."
+}

@@ -1,0 +1,114 @@
+Original runtime target admission in the exact phase/count frontier
+=================================================================
+
+Status: host-only offline evidence. No native selector change, no headset work,
+no performance promotion, and no latency gate evaluated. The original run05
+summary remains failed and immutable. This branch builds on b2076cb.
+
+Finding
+-------
+The one-horizon future-target limit removes all four conditional sub-15ms cells
+from the previous finite grid. The best one-horizon cell has 1,670 fresh encoded
+choices out of 1,875; nearest-rank p95 strictly below 15ms requires 1,782. A
+two-horizon limit restores the same four qualifying cells as the unbounded model.
+Thus the previously found conditional result depends on farther-future pose
+admission within this finite model. This is not an impossibility claim for other
+phases, schedules, supply, or runtime behavior.
+
+Best fresh counts at 1,875 choices, after selecting the best tested phase:
+
+  Hypothetical publication advance     0ms   1ms   2ms   4ms   8ms
+  Target <= original runtime target    180   180   180   180   180
+  Original target + one horizon       1519  1603  1661  1670  1670
+  Original target + two horizons      1600  1709  1774  1791  1791
+  No ceiling                          1600  1709  1774  1791  1791
+
+The one-horizon best phase is +5ms without publication advance and +4ms for the
+other four advance values. Its +4ms/4ms certificate has p50/p95/p99 receive age
+11.157918/21.919481/41.385941ms and encoded cadence 88.087856Hz. These are ages
+of the maximum-fresh-count certificate, not independently minimized quantiles.
+It still uses 215 frames before their first recorded observation and contains
+only 1,868 distinct source application-frame sets; it is not executable evidence.
+
+Two-horizon and unbounded best summaries/qualifying certificates coincide, but
+their entire frontiers are not claimed identical. Every one of the 3,250
+unbounded count optima and path hashes DOES exactly reproduce the prior sealed
+phase-frontier result. All 13,000 count states in 500 new cells were audited.
+No count above 1,875 qualifies in the tested cells, even under the relaxed cap.
+
+Admission definition and exact reduction
+---------------------------------------
+The four declared caps are None, 0, 1 and 2. Finite cap k is
+
+  ceiling[i] = original_predicted_target[i] + k * horizon[i]
+  horizon[i] = min(original_period[i], original_target[i]-original_prior[i])
+
+with horizon zero if the period or prior target is zero. This reproduces only
+the bounded-newest target admission calculation. The closest-target trace
+records max_ahead_xr_ns=0, so that field cannot be used as the alternate policy's
+horizon. The original period, target and prior values have already passed the
+strict candidate trace validator, including skipped-frame semantics. A zero cap
+is a diagnostic target-at-or-before-runtime restriction, not the legacy closest
+selector. Two horizons are an explicit relaxation.
+
+For nondecreasing ceilings and strictly increasing selection timestamps, find
+the first deadline j with frame.target <= ceiling[j]. If none exists, the frame
+has no admissible edge. Otherwise pass the unchanged exact C++ solver
+
+  effective_ready = max(hypothetical_publication_ready, selection[j]).
+
+This is an exact edge equivalence: at every deadline i, effective_ready <=
+selection[i] iff original readiness holds and target <= ceiling[i]. Receipt
+timestamps and freshness scores are unchanged. The synthetic floor is NOT a
+measured publication timestamp. Nonmonotonic ceilings are rejected rather than
+sorted, approximated, or silently weakened. All integer domains and strict
+source/deadline orders are checked.
+
+The Python auditor rebuilds the transform, applies the original independent
+cardinality certificate audit, and then directly checks every chosen original
+publication-ready timestamp and target against that deadline's original ceiling.
+Only the 1,900 warm deadlines are modeled; the actual pre-warm submitted prefix
+is preserved. All 25 phases, five publication advances, and counts 1,900 through
+1,875 are retained from the preceding model. Sampling shifts leave the original
+runtime targets/horizons fixed. No runtime feedback or later upper admission
+deadline is inferred.
+
+Verification and evidence
+-------------------------
+target-admission-validation-20261009.json records all 290 passing Python tests,
+including 1,024 random all-edge equivalence populations, inclusive-boundary and
+never-admissible cases, malformed types/orders/ceilings, overflow, the closest
+trace's zero horizon, and dishonest target/readiness certificates. The unchanged
+cardinality C++ binary/auditor are checked against their preserved exhaustive
+ASan/UBSan build receipt (1,024 small populations over all skip budgets).
+
+Independent read-only transport-team review found no blocker in the monotone
+reduction, unchanged receipt score, direct original constraints, or fixed-target
+counterfactual interpretation. No performance measurements were run for this
+model. The original 300-file manifest, all three input traces, exact binary/build
+receipt, imported source dependencies, and previous reference are bound and
+rechecked around analysis. target-admission-20261009.json contains these hashes,
+all frontiers, and selected full certificates. The input acquisition was never
+modified. Raw scene/input age and optical presentation remain unmeasured.
+
+Reproduce from this worktree (existing validated exact solver shown):
+
+  python3 prototypes/vr444/experiments/selection_policy/validate_target_admission.py \
+    --build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+    --solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+    --out /tmp/target-validation-new.json
+
+  python3 prototypes/vr444/experiments/selection_policy/target_admission.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --solver /tmp/sub15-cardinality-validated-v2-20261009/cardinality-probe \
+    --build-receipt prototypes/vr444/experiments/selection_policy/cardinality-validation-20261009.json \
+    --reference prototypes/vr444/experiments/selection_policy/phase-frontier-20261009.json \
+    --out /tmp/target-admission-new.json
+
+  python3 prototypes/vr444/experiments/selection_policy/plot_target_admission.py \
+    prototypes/vr444/experiments/selection_policy/target-admission-20261009.json \
+    /tmp/target-admission-new.png
+
+The solver build can be recreated using validate_cardinality.py and its original
+CARDINALITY.txt instructions; a new binary requires its own matching receipt.
+Figure metadata separately binds the final plot source, sealed data and image.
