@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "diagnostic_only": true,
+  "original_run": "/home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced",
+  "original_run_status": "fail",
+  "original_candidate_trace": {
+    "status": "fail",
+    "records": 2066,
+    "promotion_eligible": false,
+    "scope": "Observed candidate availability and target choice only; no measured alternate-policy speedup or source-content age",
+    "errors": [
+      "previous runtime target differs from prior trace",
+      "previous selection snapshot does not match prior trace",
+      "trace joins do not preserve the full presentation prefix"
+    ],
+    "selected_differs_from_newest_complete": 0,
+    "higher_frame_id_available": 0,
+    "fallback_records": 0,
+    "repeated_records": 0,
+    "distributions": {
+      "wait_frame_ms": {
+        "count": 3,
+        "p50": 0.031614,
+        "p95": 0.101927,
+        "p99": 0.101927,
+        "min": 0.03151,
+        "max": 0.101927
+      },
+      "wait_return_to_selection_ms": {
+        "count": 3,
+        "p50": 0.309375,
+        "p95": 0.816302,
+        "p99": 0.816302,
+        "min": 0.296355,
+        "max": 0.816302
+      },
+      "render_entry_to_selection_ms": {
+        "count": 3,
+        "p50": 0.308802,
+        "p95": 0.813698,
+        "p99": 0.813698,
+        "min": 0.295677,
+        "max": 0.813698
+      },
+      "selected_target_minus_runtime_target_ms": {
+        "count": 3,
+        "p50": -59.98727,
+        "p95": -59.96213,
+        "p99": -59.96213,
+        "min": -82.077418,
+        "max": -59.96213
+      },
+      "newest_target_minus_selected_target_ms": {
+        "count": 3,
+        "p50": 0.0,
+        "p95": 0.0,
+        "p99": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "trace_write_ms": {
+        "count": 3,
+        "p50": 0.097761,
+        "p95": 0.130104,
+        "p99": 0.130104,
+        "min": 0.086198,
+        "max": 0.130104
+      }
+    },
+    "warning": "Higher frame ID or target is not proof of a newer application scene or physical display time"
+  },
+  "original_hashes_manifest_sha256": "38502bec943be9ad1c778a4775327dd4dbb0a32940b3fcc7946607a26b031371",
+  "original_summary_sha256": "2b206db570603e8d54c04bd4f650ac187d903e05e79af073036a8a95adf6eb28",
+  "original_manifest_files_verified": 300,
+  "analyzer_sha256": {
+    "prototypes/vr444/experiments/selection_policy/reanalyze_trace.py": "cd0b22f7c4f3be735672a98b435c40cf07754fec0173d3d3f0d016f07114c8ac",
+    "validation/wivrn-codecs/integration/candidate_trace.py": "2e6d838c6d67d33c28c40d1599a2296f5ace25605bf0d21752af87aa01851ef6",
+    "validation/wivrn-codecs/integration/selection_replay.py": "bb3edc6e9041b325ea579f76e92d40fb63cf2acc800e8173d06f615a6325332b"
+  },
+  "reanalysis": {
+    "status": "pass",
+    "records": 2066,
+    "promotion_eligible": false,
+    "scope": "Observed candidate availability and target choice only; no measured alternate-policy speedup or source-content age",
+    "errors": [],
+    "selected_differs_from_newest_complete": 1692,
+    "higher_frame_id_available": 1692,
+    "fallback_records": 0,
+    "repeated_records": 0,
+    "unrecorded_render_target_gaps": 25,
+    "render_attempt_coverage": "not_recorded",
+    "skipped_render_count": null,
+    "skipped_render_reasons": null,
+    "continuity_scope": "Successful projection submissions only; schema 1/2 does not record every render attempt. Target gaps establish only compatibility with intervening renders, not their count or outcome.",
+    "distributions": {
+      "wait_frame_ms": {
+        "count": 2066,
+        "p50": 8.588855,
+        "p95": 9.179063,
+        "p99": 9.940001,
+        "min": 0.03151,
+        "max": 19.570419
+      },
+      "wait_return_to_selection_ms": {
+        "count": 2066,
+        "p50": 0.321094,
+        "p95": 0.693646,
+        "p99": 0.83224,
+        "min": 0.246927,
+        "max": 1.270365
+      },
+      "render_entry_to_selection_ms": {
+        "count": 2066,
+        "p50": 0.319219,
+        "p95": 0.691667,
+        "p99": 0.829636,
+        "min": 0.245417,
+        "max": 1.269115
+      },
+      "selected_target_minus_runtime_target_ms": {
+        "count": 2066,
+        "p50": -0.379517,
+        "p95": -0.2122,
+        "p99": 0.55496,
+        "min": -82.077418,
+        "max": 10.865735
+      },
+      "newest_target_minus_selected_target_ms": {
+        "count": 2066,
+        "p50": 11.132583,
+        "p95": 22.266962,
+        "p99": 22.351875,
+        "min": 0.0,
+        "max": 22.436764
+      },
+      "trace_write_ms": {
+        "count": 2066,
+        "p50": 0.170104,
+        "p95": 0.217344,
+        "p99": 0.256927,
+        "min": 0.086198,
+        "max": 0.615208
+      },
+      "prior_submission_to_previous_render_target_ms": {
+        "count": 2065,
+        "p50": 0.0,
+        "p95": 0.0,
+        "p99": 11.13632,
+        "min": 0.0,
+        "max": 22.275269
+      }
+    },
+    "warning": "Higher frame ID or target is not proof of a newer application scene or physical display time"
+  },
+  "original_result_overwritten": false,
+  "qualification_changed": false,
+  "promotion_eligible": false,
+  "release_ready": false,
+  "scope": "Historical diagnostic interpretation only. No new headset acquisition, binary validation, latency promotion, skipped-render outcome proof or optical claim."
+}

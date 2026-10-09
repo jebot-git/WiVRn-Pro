@@ -1,0 +1,79 @@
+Submitted-frame trace continuity repair, 2026-10-09
+=================================================
+
+Observed failure
+The preserved 05-closest-traced acquisition contains 2,066 selection rows and
+2,066 presentation rows. Every selection timestamp joins in exact order; every
+adjacent previous-selection snapshot equals the preceding selected snapshot.
+The original summary is fail and remains unchanged. All 300 original manifest
+hashes verify. This investigation performs no ADB, install or headset operation.
+
+The first rejected row was sequence 4. Its runtime target is 22.252985 ms after
+sequence 3, but its previous-render target is 11.114348 ms after sequence 3.
+There are 25 such gaps in the acquisition. stream::render updates last_display_time
+at every entry, before empty-frame exits; candidate rows are emitted only after
+successful rendered projection submission. The fields therefore describe two
+different sequences. A runtime-target equality check was incorrectly treating
+successive submitted records as successive render attempts. Because the analyzer
+advanced its previous_record only on success, this first rejection also produced
+cascading previous-selection and full-prefix error messages.
+
+Historical schema 2 repair
+For a subsequent submitted record, require:
+  previous submitted target <= current previous-render target < current target
+The previous-selection snapshot must still match the last verified submitted
+selection exactly. No unobserved handle/metadata change is accepted. Preserve
+all record counts, ordered joins, clock/fence order, immutable frame metadata,
+stereo/alpha coherence, requested policy binding and independent selector replay.
+The actual period bound is still recomputed using the recorded previous-render
+target, never the previous submission target. First-row prior target must be
+zero or a nonnegative target strictly before the current target.
+
+This proves compatibility with intervening render iterations only. It cannot
+establish their count, reason, successful empty xrEndFrame outcome or terminal
+tail. Do not divide target gaps by display period to invent skipped frames.
+The result explicitly says render_attempt_coverage=not_recorded; skipped count
+and reasons remain null. Diagnostic-only status and promotion exclusion remain.
+
+Reanalysis is a separate artifact
+  python3 -B prototypes/vr444/experiments/selection_policy/reanalyze_trace.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --out NEW_OUTSIDE_ORIGINAL_RUN.json
+
+The tool verifies every original manifest entry, refuses external/symlink escape
+paths, requires clean original cleanup and requested candidate instrumentation,
+and binds original summary/manifest plus current analyzer/replay source hashes.
+It refuses output inside the original run and existing output files, and checks
+required input hashes again after analysis. It does not rewrite or reclassify
+the original summary, binary receipt, qualification or hardware acquisition.
+
+trace-gap-reanalysis-20261009.json records a passing submitted-frame diagnostic
+reinterpretation, with original_run_status=fail and qualification_changed=false.
+All 2,066 records independently replay. A higher complete frame ID was available
+in 1,692 records (81.90%); this is neither a measured speedup nor proof of newer
+application content. Future-target and application-source joins are still needed.
+The recorded receive-to-submit target miss is unchanged by this repair.
+
+Validation
+  python3 -B -m unittest discover -s validation/wivrn-codecs/tests
+189 tests passed, including new regression cases for intervening render targets,
+prior/current target bounds, snapshot changes, wrong joins/counters, forged future
+bounds, malformed clocks, preservation of failed original reports and output
+containment. Existing cap/drop, full-prefix, fallback and metadata tests remain.
+
+Next contract
+A new telemetry schema should explicitly count render attempts and record their
+outcomes, with previous successful submission identity separately linked. Failed
+end-frame calls must not become benign skips. Explicit startup and terminal-tail
+coverage is needed before claiming a complete render-attempt history. This
+historical repair deliberately does not manufacture those missing observations.
+
+Primary references (consulted 2026-10-09)
+OpenXR specification, frame synchronization and XrFrameState:
+  https://registry.khronos.org/OpenXR/specs/1.1-khr/html/xrspec.html#frame-synchronization
+Khronos OpenXR Guide, frame submission:
+  https://github.com/KhronosGroup/OpenXR-Guide/blob/main/chapters/frame_submission.md
+The frame loop continues when layers are omitted; predicted runtime targets are
+not a count of successfully submitted application projections.
+Local implementation: source-overlay/client/scenes/stream.cpp, render entry,
+empty-frame returns, repeated-frame discard branch and candidate trace emission.
