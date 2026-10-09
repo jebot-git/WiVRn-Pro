@@ -23,6 +23,19 @@ class Record(unittest.TestCase):
         self.assertEqual(record.quantiles(list(range(1,21)))['p95'],19)
         for bad in ([],[float('nan')],[float('inf')],[-1]):
             with self.assertRaises(ValueError):record.quantiles(bad)
+    def test_application_space_cannot_be_relabelled(self):
+        for space in ('VIEW','LOCAL'):
+            plan=dict(schema=2,source_reference_space=space)
+            execution=dict(source_application_space=space,latency_eligible=False)
+            prov=dict(scene_reference_space=space.title());app=dict(source_reference_space=space)
+            self.assertEqual(record.quality_space(plan,execution,prov,app),space)
+            for bad in ('VIEW','LOCAL','Stage',None):
+                if bad==space:continue
+                with self.assertRaises(ValueError):record.quality_space(plan,dict(execution,source_application_space=bad),prov,app)
+                with self.assertRaises(ValueError):record.quality_space(plan,execution,prov,dict(app,source_reference_space=bad))
+        self.assertEqual(record.quality_space(dict(schema=1),dict(source_application_space='VIEW',latency_eligible=False),dict(scene_reference_space='View'),dict(source_reference_space='VIEW')),'VIEW')
+        with self.assertRaises(ValueError):record.quality_space(dict(schema=1,source_reference_space='LOCAL'),dict(source_application_space='LOCAL',latency_eligible=False),dict(scene_reference_space='Local'),dict(source_reference_space='LOCAL'))
+
     def test_strict_json_identity(self):
         for data in ('{"frame":1,"frame":2}','{"duration":NaN}'):
             with self.assertRaises(ValueError):record.json_bytes(data)

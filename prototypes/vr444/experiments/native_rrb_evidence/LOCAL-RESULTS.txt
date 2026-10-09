@@ -1,0 +1,54 @@
+Actual LOCAL Q1 chroma-grid follow-up (2026-10-09)
+
+The explicit LOCAL source-space run passes independent byte/provenance audits.
+The user confirmed during the live window that the colored grid was visible,
+then reported no visible artifacts or unstable pixels. This is one fixture's
+human observation. Historical VIEW black feedback remains a failed separate
+observation; no old capture is relabeled. The schema2 plan, actual executable
+SHA9fbf9dcd427f1962294c7e204246144e0a5e69508285853b9581c04b544a822b,
+execution argv, native scene_reference_space=Local and audited source header/
+frames all agree. Actual physical visibility is not inferred from saved bytes.
+
+Native source and payload report q1-local-chroma-grid.json:
+  4,047 complete encoded and decoded stereo pairs;3,977 presentations.
+  Maximum stereo envelope35,168bytes, below unchanged262,144byte cap.
+  All90 captured payload eyes replay exactly to independent post-host-foveation
+  Q1 source; all90 client captures match it. All failure/drop counters zero.
+  Shared both-eye CPU decode p50/p95/p99=1.05495/1.80453/2.20099ms. Each timing
+  is counted once per pair; this quality workload is not latency comparable.
+  App4,115 attempts,4,037 projection submissions and6 exact retained native
+  swapchain readbacks. Full1800×1980 original app bytes remain independent of
+  codec and client pixels; source upload uses actual LOCAL-space projection.
+
+Submitted replay report submitted-local-replay-1.json:
+  Capture1/frame180/warp13655782464642892461, both69,612-pixel central10 masks
+  have zero RGB code error against independent actual-device replay. Full RGB
+  and alpha arrays are also identical. All native/run/build/source-job/plan/
+  shader/collector/physical-serial joins and actual file hashes pass. Other
+  submitted capture pairs have not been replay-compared by this receipt.
+
+Spatial limit remains: actual encoded input576×640, central1:1 runs250×274;
+19,892 of46,998 central10-intersecting encoded cells span multiple original
+source pixels. All six machine-readable mapping diagnostics retain actual
+integer vectors, input FOVs and mask hashes. Original source rect/flip/filter
+sampling is not inferred from matching reconstructed dimensions. Larger
+quality-only codec geometry is a separate candidate being prepared by the team.
+
+Full quality/latency goal remains false. Post-host-foveation exactness and a
+reconstructed-geometry submitted replay do not prove original-app foveal
+preservation, all required fixture families/repeats, or optical exactness.
+The LOCAL visible pass supports the diagnosed space-contract repair; it does
+not erase original VIEW failures or promote this profile as a latency result.
+
+Run:
+/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/results/dual-goal-20261009/native-quality-local/rrb4-q1-chroma-grid
+Manifest SHA604f3b145dd6e7e6f8ee1f74d4142a24d82921a8ce63caba86c722ecffd99c0d
+Native receipt/oracle pins match the historical report in RESULTS.txt.
+Replay inputs are the root-owned quality-local-submitted-audit,
+quality-local-reference-job-1, quality-local-replay-audit-1 and
+quality-local-replay-bundle-1 artifacts under the same results prefix.
+
+The five recorder tests include legacy VIEW non-relabeling and exact dynamic
+space joins. Ten submitted-comparison tests remain passing. Original reports
+cpu-q8.json/q1-chroma-grid.json are frozen at their own source pins/commit7626eee1;
+this follow-up does not claim their source hashes match the newer space adapter.
