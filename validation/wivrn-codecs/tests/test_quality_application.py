@@ -44,6 +44,29 @@ class QualityApplication(unittest.TestCase):
             self.assertEqual((args.out/'quality-application-plan.json').read_bytes(),cached['plan_bytes'])
             self.assertFalse((args.out/'app-source').exists())
 
+    def test_explicit_space_is_in_plan_snapshot_and_command(self):
+        for space in ('LOCAL','VIEW'):
+            with tempfile.TemporaryDirectory() as temp:
+                root=Path(temp);args,plan=self.fixture(root)
+                plan.update(schema=2,source_reference_space=space);plan['application']=qa.argv(plan,plan['executable'])
+                args.quality_application_plan.write_text(json.dumps(plan));args.quality_application_plan_sha256=qa.digest(args.quality_application_plan.read_bytes())
+                cached=qa.preflight(args);runtime=root/'runtime';runtime.mkdir();record,command=qa.configure(cached,runtime,args.out)
+                self.assertEqual(record['source_application_space'],space);self.assertEqual(record['source_reference_space'],space)
+                self.assertEqual(command[command.index('--source-reference-space')+1],space)
+
+    def test_rehashed_space_cannot_disagree_with_argv_or_relabel_legacy(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);args,legacy=self.fixture(root)
+            local=copy.deepcopy(legacy);local.update(schema=2,source_reference_space='LOCAL');local['application']=qa.argv(local,local['executable'])
+            bad=[]
+            p=copy.deepcopy(local);p['source_reference_space']='VIEW';bad.append(p)
+            p=copy.deepcopy(local);p['source_reference_space']='STAGE';bad.append(p)
+            p=copy.deepcopy(local);del p['source_reference_space'];bad.append(p)
+            p=copy.deepcopy(legacy);p['source_reference_space']='LOCAL';bad.append(p)
+            for plan in bad:
+                args.quality_application_plan.write_text(json.dumps(plan));args.quality_application_plan_sha256=qa.digest(args.quality_application_plan.read_bytes())
+                with self.assertRaises(ValueError):qa.preflight(args)
+
     def test_native_scope_negative_matrix(self):
         changes={'mode':'custom-vr444','rrb_source':'vr444','q':8,'compression':'lz4','source_trace':False,'quality_capture':False,
                  'decoder_backend':'resident','cpu_output':'mapped-direct','rrb_workers':3,'rrb_output':'other','seconds':24}

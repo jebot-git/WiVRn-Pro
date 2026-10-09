@@ -19,12 +19,12 @@ def main():
     if not a.output.is_absolute() or a.output.exists():raise ValueError('new absolute output directory required')
     compiler=shutil.which(os.environ.get('CXX','c++'))
     if not compiler:raise ValueError('CXX executable unavailable')
-    a.output.mkdir();sources={name:sha(HERE/name) for name in ('app.cpp','pattern.hpp','test_transfer.cpp','build.py','build.sh')}
+    a.output.mkdir();sources={name:sha(HERE/name) for name in ('app.cpp','pattern.hpp','test_transfer.cpp','test_space.cpp','build.py','build.sh')}
     flags=shlex.split(subprocess.check_output(['pkg-config','--cflags','--libs','openxr','vulkan','openssl'],text=True))
     base=[compiler,'-std=c++20','-O1' if a.sanitize else '-O2','-g','-Wall','-Wextra','-Werror','-Wno-missing-field-initializers']
     if a.sanitize:base+=['-fsanitize=address,undefined','-fno-omit-frame-pointer']
     commands=[]
-    for source,output in [('app.cpp','quality-stimuli'),('test_transfer.cpp','test-transfer')]:
+    for source,output in [('app.cpp','quality-stimuli'),('test_transfer.cpp','test-transfer'),('test_space.cpp','test-space')]:
         argv=base+[str(HERE/source),'-o',str(a.output/output)]+flags;start=time.monotonic()
         with (a.output/(output+'.build.stdout')).open('wb') as stdout,(a.output/(output+'.build.stderr')).open('wb') as stderr:
             r=subprocess.run(argv,stdout=stdout,stderr=stderr,timeout=180)
@@ -34,7 +34,7 @@ def main():
     receipt=dict(schema=1,source_directory=str(HERE),source_sha256=sources,compiler=str(Path(compiler).resolve()),
         compiler_sha256=sha(Path(compiler)),compiler_version=subprocess.check_output([compiler,'--version'],text=True),
         pkg_config_versions=subprocess.check_output(['pkg-config','--modversion','openxr','vulkan','openssl'],text=True).splitlines(),
-        commands=commands,sanitizers=a.sanitize,binary_sha256={name:sha(a.output/name) for name in ('quality-stimuli','test-transfer')},
+        commands=commands,sanitizers=a.sanitize,binary_sha256={name:sha(a.output/name) for name in ('quality-stimuli','test-transfer','test-space')},
         log_sha256={f.name:sha(f) for f in sorted(a.output.glob('*.build.*'))},
         openxr_exercised=False,gpu_exercised=False,headset_exercised=False,
         scope='Local exact source/command/binary binding; no compiler/runtime reproducibility claim')

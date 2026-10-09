@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "binary_path": "/tmp/sub15-quality-local-space/quality-stimuli",
+  "binary_sha256": "9fbf9dcd427f1962294c7e204246144e0a5e69508285853b9581c04b544a822b",
+  "source_sha256": {
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/app.cpp": "90e257125d0ce386af8addd55121e031a54341671c7b7703c1fb7e71628c79a8",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/audit.py": "b0002c71801a2d43014be27f897de2eb4c5cc7f309cb047323d7baa98ffca7e2",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/plan.py": "bb3d3011e26cd205129c798932cad43f354e4b09f25eaaf8de368fc6d6224924",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/build.py": "608c6aad82ce4ec10365ec3cbef3e593c5b20f6858076fbf07e5982e7b198dd5",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/build.sh": "11c2486183b4aabcad0d2cefd7a5bf91f009001f529f039e27eed2289eed35ab",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/pattern.hpp": "19b5bf7a118e5231ff28bb28b2c3796524858d70bcf6a644cbaf27fbfb3c6d58",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/test_space.cpp": "bfc897aedc1d3677845aca3ca92d63fea8ec952b5edc682396d35ea763c6cf78",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/test_transfer.cpp": "c0e13448c1945870a7e8ec29ffbe539961f4020d5f33d6ab91ab76290a10db45",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/test_audit.py": "9931f4d1f39393b44a47cedfe45c92eb34c3db4564669d2226c0a44f65896310",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/validation/wivrn-codecs/integration/quality_application.py": "98932f2395a10d7f166ef7af8bb92621983349dabf8d2427b106b53d336dbe22",
+    "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/validation/wivrn-codecs/tests/test_quality_application.py": "4e755589f9417ccf4a2a3f6c219ac0ddb7bc4f570050ab4be1be3bbb3e524a2e"
+  },
+  "commands": [
+    {
+      "argv": [
+        "./test-space"
+      ],
+      "cwd": "/tmp/sub15-quality-local-space",
+      "extra_environment": {},
+      "exit_code": 0,
+      "stdout": "local-space-evidence/test-0.stdout",
+      "stderr": "local-space-evidence/test-0.stderr"
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_audit.py"
+      ],
+      "cwd": "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli",
+      "extra_environment": {
+        "QUALITY_STIMULI_BINARY": "/tmp/sub15-quality-local-space/quality-stimuli"
+      },
+      "exit_code": 0,
+      "stdout": "local-space-evidence/test-1.stdout",
+      "stderr": "local-space-evidence/test-1.stderr"
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_quality_application.py"
+      ],
+      "cwd": "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli",
+      "extra_environment": {},
+      "exit_code": 0,
+      "stdout": "local-space-evidence/test-2.stdout",
+      "stderr": "local-space-evidence/test-2.stderr"
+    }
+  ],
+  "build_receipt_sha256": "edf3de1e76ce343ba6fe4d13004a01a781b3b808f7342ddcf11f44ec8708cfac",
+  "artifact_sha256": {
+    "local-space-evidence/test-0.stdout": "22a398acdd220e3a06932ac242904988d1d1ec2d53f556e75ecce555c68a75c9",
+    "local-space-evidence/test-0.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-space-evidence/test-1.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-space-evidence/test-1.stderr": "c840a1fee16ea216499a98f12bf9a81267f3c04b2e427845a708dfc0af709c95",
+    "local-space-evidence/test-2.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-space-evidence/test-2.stderr": "637ad693971420b70a01476cd5d51065ecc3c7af270c41cfe91899ec8c2db4bd",
+    "local-space-evidence/build-receipt.json": "edf3de1e76ce343ba6fe4d13004a01a781b3b808f7342ddcf11f44ec8708cfac"
+  },
+  "transfer_function_unchanged_from": "3ca9a0adf24fbd0165217ea4eabc2dbfb945aa99",
+  "transfer_function_sha256": "a817078d00c7ab0402046af2dad9603e04204d980d81421336d94f5f8d90dc4e",
+  "new_space_enum_cases": 3,
+  "invalid_space_rejections": 6,
+  "python_tests": 18,
+  "host_build": true,
+  "openxr_exercised": false,
+  "gpu_exercised": false,
+  "headset_exercised": false,
+  "physical_visibility_verified": false,
+  "full_goal_qualified": false,
+  "scope": "Explicit common LOCAL/VIEW source space; no runtime/GPU execution. Historical transfer tests remain separate."
+}

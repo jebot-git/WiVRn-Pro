@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "source_directory": "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli",
+  "source_sha256": {
+    "app.cpp": "90e257125d0ce386af8addd55121e031a54341671c7b7703c1fb7e71628c79a8",
+    "pattern.hpp": "19b5bf7a118e5231ff28bb28b2c3796524858d70bcf6a644cbaf27fbfb3c6d58",
+    "test_transfer.cpp": "c0e13448c1945870a7e8ec29ffbe539961f4020d5f33d6ab91ab76290a10db45",
+    "test_space.cpp": "bfc897aedc1d3677845aca3ca92d63fea8ec952b5edc682396d35ea763c6cf78",
+    "build.py": "608c6aad82ce4ec10365ec3cbef3e593c5b20f6858076fbf07e5982e7b198dd5",
+    "build.sh": "11c2486183b4aabcad0d2cefd7a5bf91f009001f529f039e27eed2289eed35ab"
+  },
+  "compiler": "/usr/bin/c++",
+  "compiler_sha256": "579d25c2d1e45abeed0c63a517b5c52f6d09ea811a787bf7a7c677a7fd0726f6",
+  "compiler_version": "c++ (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)\nCopyright (C) 2026 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "pkg_config_versions": [
+    "1.1",
+    "1.4.341",
+    "3.5.9"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/c++",
+        "-std=c++20",
+        "-O2",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-missing-field-initializers",
+        "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/app.cpp",
+        "-o",
+        "/tmp/sub15-quality-local-space/quality-stimuli",
+        "-lopenxr_loader",
+        "-lvulkan",
+        "-lssl",
+        "-lcrypto"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 5.175561721029226
+    },
+    {
+      "argv": [
+        "/usr/bin/c++",
+        "-std=c++20",
+        "-O2",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-missing-field-initializers",
+        "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/test_transfer.cpp",
+        "-o",
+        "/tmp/sub15-quality-local-space/test-transfer",
+        "-lopenxr_loader",
+        "-lvulkan",
+        "-lssl",
+        "-lcrypto"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 5.576301838038489
+    },
+    {
+      "argv": [
+        "/usr/bin/c++",
+        "-std=c++20",
+        "-O2",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-missing-field-initializers",
+        "/home/blux/spatial-bridge/.worktrees/sub15-quality-stimuli/prototypes/vr444/experiments/quality_stimuli/test_space.cpp",
+        "-o",
+        "/tmp/sub15-quality-local-space/test-space",
+        "-lopenxr_loader",
+        "-lvulkan",
+        "-lssl",
+        "-lcrypto"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 5.376759232021868
+    }
+  ],
+  "sanitizers": false,
+  "binary_sha256": {
+    "quality-stimuli": "9fbf9dcd427f1962294c7e204246144e0a5e69508285853b9581c04b544a822b",
+    "test-transfer": "38c2aa7f402a5a8ab08b68cd58ca7e80b1760838bf8ef53ef165ab68f33f4be7",
+    "test-space": "ba6190aeefd70363447a79d7e8e1b71206d5e0dfc6c0f19a0762912d31a921f9"
+  },
+  "log_sha256": {
+    "quality-stimuli.build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "quality-stimuli.build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test-space.build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test-space.build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test-transfer.build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "test-transfer.build.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "openxr_exercised": false,
+  "gpu_exercised": false,
+  "headset_exercised": false,
+  "scope": "Local exact source/command/binary binding; no compiler/runtime reproducibility claim"
+}

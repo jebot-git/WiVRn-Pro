@@ -1,0 +1,35 @@
+Explicit application reference space (2026-10-09)
+
+New schema-2 plans default to --source-reference-space LOCAL. One actual
+XrSpace is used for both xrLocateViews and XrCompositionLayerProjection.space;
+returned poses and FOVs are copied without synthesis. The runtime can therefore
+convert LOCAL poses through its native compositor route. The previous VIEW
+fixture exposed a fast-path mismatch: server eye-local poses reached a client
+world-space projection. This is a candidate repair pending actual visibility.
+
+Schema-1 plans/captures remain VIEW; the helper/auditor reject relabeling them as
+LOCAL. Schema-2 records pin canonical source_reference_space in the plan,
+explicit argv, header, each frame, application audit and execution provenance.
+source_application_space is the same canonical value for the root harness.
+Root must derive its scene_reference_space from that value (its case convention
+is separate); do not infer it solely from quality_application=true.
+
+Build /tmp/sub15-quality-local-space/quality-stimuli
+SHA256 9fbf9dcd427f1962294c7e204246144e0a5e69508285853b9581c04b544a822b
+
+Plan CLI unchanged except optional --source-reference-space LOCAL|VIEW (default
+LOCAL). Native profile remains explicit quality-only Q1 RRB, no outer wrapping,
+source trace and quality capture; app deadline still precedes native cleanup
+by at least five seconds. Schema-1 historical argv remains supported exactly.
+
+Validation: 18 Python tests pass, including independent fixture bytes and
+space/argv/header/frame mutation rejection. A compiled CPU-only admission test
+passes three legacy/explicit enum cases and rejects six invalid/duplicate
+space requests. All three host executables compile. transfer() is byte-identical
+to 3ca9a0ad; no new GPU/XR/headset execution was performed. Full build/log/source
+bindings are in local-space-qualification.json and local-space-evidence/.
+
+The user reported a black physical view during prior tests. Exact application,
+codec and submitted/replay buffers cannot override that failed visible
+assessment. This change alone establishes no visible, full-quality or latency
+success; the original post-foveation/reference and projection scope limits stay.

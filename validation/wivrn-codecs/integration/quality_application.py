@@ -42,15 +42,20 @@ def bounded(value, low, high):
     require(type(value) is int and low<=value<=high,'bounded exact integer required')
     return value
 
+def source_space(plan):
+    return plan['source_reference_space'] if plan['schema']==2 else 'VIEW'
+
 def argv(plan, executable):
     return ['/usr/bin/timeout','-k','2',str(plan['seconds_limit']+10),'/usr/bin/stdbuf','-oL','-eL',str(executable),
             '--pattern',plan['pattern'],'--width',str(plan['width']),'--height',str(plan['height']),
+            *(['--source-reference-space',source_space(plan)] if plan['schema']==2 else []),
             '--frames',str(plan['frame_limit']),'--seconds',str(plan['seconds_limit']),
             '--output',plan['capture_directory']]
 
 def contract(plan):
-    require(type(plan) is dict and set(plan)==FIELDS,'unknown or missing plan fields')
-    require(type(plan['schema']) is int and plan['schema']==1,'plan schema')
+    require(type(plan) is dict and type(plan.get('schema')) is int and plan['schema'] in (1,2),'plan schema')
+    require(set(plan)==(FIELDS|{'source_reference_space'} if plan['schema']==2 else FIELDS),'unknown or missing plan fields')
+    require(source_space(plan) in ('VIEW','LOCAL'),'canonical reference space')
     require(plan['profile']=='application-quality-stimuli' and plan['latency_comparable'] is False
             and plan['source_generation']=='direct_encoded_srgb_byte_upload'
             and plan['source_stage']=='application_swapchain_before_compositor'
@@ -117,7 +122,7 @@ def configure(cached, runtime, output):
     with (output/'quality-application-plan.json').open('xb') as target:target.write(cached['plan_bytes'])
     command=argv(plan,executable)
     record=dict(schema=1,profile=plan['profile'],latency_eligible=False,latency_comparable=False,
-        source_application_space='VIEW',source_generation=plan['source_generation'],source_stage=plan['source_stage'],
+        source_application_space=source_space(plan),source_reference_space=source_space(plan),source_generation=plan['source_generation'],source_stage=plan['source_stage'],
         pattern=plan['pattern'],width=plan['width'],height=plan['height'],frame_limit=plan['frame_limit'],seconds_limit=plan['seconds_limit'],
         capture_directory=plan['capture_directory'],plan_path=cached['plan_path'],plan_sha256=cached['plan_sha256'],original_plan_sha256=cached['plan_sha256'],
         archived_plan='quality-application-plan.json',original_executable=plan['original_executable'],
