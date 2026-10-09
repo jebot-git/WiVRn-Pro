@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "python": {
+    "argv": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "validation/wivrn-codecs/tests",
+      "-p",
+      "test_submitted*.py",
+      "-v"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "test_bgra_permutation_retains_exact_values_and_hashes (test_submitted_capture.CaptureAudit.test_bgra_permutation_retains_exact_values_and_hashes) ... ok\ntest_bound_buffers_and_no_overwrite_output (test_submitted_capture.CaptureAudit.test_bound_buffers_and_no_overwrite_output) ... ok\ntest_complete_bound_capture_and_explicit_nonqualification (test_submitted_capture.CaptureAudit.test_complete_bound_capture_and_explicit_nonqualification) ... ok\ntest_config_bool_and_cleanup_failure (test_submitted_capture.CaptureAudit.test_config_bool_and_cleanup_failure) ... ok\ntest_duplicate_json_and_extra_unbound_artifact (test_submitted_capture.CaptureAudit.test_duplicate_json_and_extra_unbound_artifact) ... ok\ntest_hash_drift_and_pinned_receipt (test_submitted_capture.CaptureAudit.test_hash_drift_and_pinned_receipt) ... ok\ntest_missing_final_marker_and_partial_pair_reject (test_submitted_capture.CaptureAudit.test_missing_final_marker_and_partial_pair_reject) ... ok\ntest_presentation_exact_join_and_typed_ids (test_submitted_capture.CaptureAudit.test_presentation_exact_join_and_typed_ids) ... ok\ntest_semantic_mutations_reject_even_after_rehash (test_submitted_capture.CaptureAudit.test_semantic_mutations_reject_even_after_rehash) ... ok\ntest_source_shader_and_literal_bindings (test_submitted_capture.CaptureAudit.test_source_shader_and_literal_bindings) ... ok\ntest_symlink_artifacts_reject (test_submitted_capture.CaptureAudit.test_symlink_artifacts_reject) ... ok\ntest_host_event_misjoin_and_duplicate (test_submitted_reference_job.ReferenceJob.test_host_event_misjoin_and_duplicate) ... ok\ntest_layout_and_independent_source_bytes (test_submitted_reference_job.ReferenceJob.test_layout_and_independent_source_bytes) ... ok\ntest_no_fallback_to_decoded_reference (test_submitted_reference_job.ReferenceJob.test_no_fallback_to_decoded_reference) ... ok\ntest_replay_specific_scope_rejections (test_submitted_reference_job.ReferenceJob.test_replay_specific_scope_rejections) ... ok\ntest_same_cached_capture_bytes_are_used (test_submitted_reference_job.ReferenceJob.test_same_cached_capture_bytes_are_used) ... ok\ntest_source_alpha_and_size (test_submitted_reference_job.ReferenceJob.test_source_alpha_and_size) ... ok\ntest_source_envelope_identity_crc_and_geometry (test_submitted_reference_job.ReferenceJob.test_source_envelope_identity_crc_and_geometry) ... ok\ntest_typed_capture_id_and_source_helper_hash (test_submitted_reference_job.ReferenceJob.test_typed_capture_id_and_source_helper_hash) ... ok\n\n----------------------------------------------------------------------\nRan 19 tests in 0.298s\n\nOK\n"
+  },
+  "native_parser": {
+    "binary": "/tmp/sub15-submitted-replay-final/replay",
+    "sha256": "4da2253de4680f6c18d00c618f9e471c6006ec278873ecc667f01d1bdcd7c449",
+    "cases": [
+      {
+        "argv": [
+          "/tmp/sub15-submitted-replay-final/replay",
+          "/tmp/sub15-reference-job-parser/43-valid.rlp",
+          "--cpu-only"
+        ],
+        "exit": 0,
+        "stdout": "{\"job_valid\":true,\"eyes\":2,\"gpu_used\":false}\n",
+        "stderr": "",
+        "expected_exit": 0,
+        "job_sha256": "9749934a70220ae09a8e46debe07b7b0c9d612f109cb91db628cdbdd93d553e8",
+        "job_bytes": 440
+      },
+      {
+        "argv": [
+          "/tmp/sub15-submitted-replay-final/replay",
+          "/tmp/sub15-reference-job-parser/43-truncated.rlp",
+          "--cpu-only"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "submitted-image-replay: short image\n",
+        "expected_exit": 1,
+        "job_sha256": "0092b3ef46d82469b340d86c48029cba3370b219116d7494fd373a9f543db544",
+        "job_bytes": 439
+      },
+      {
+        "argv": [
+          "/tmp/sub15-submitted-replay-final/replay",
+          "/tmp/sub15-reference-job-parser/43-trailing.rlp",
+          "--cpu-only"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "submitted-image-replay: trailing replay bytes\n",
+        "expected_exit": 1,
+        "job_sha256": "463c0be2f0efb6989b4a49d00af0bead9c51f3cc9e71227cd14a90861d252ac7",
+        "job_bytes": 441
+      },
+      {
+        "argv": [
+          "/tmp/sub15-submitted-replay-final/replay",
+          "/tmp/sub15-reference-job-parser/50-valid.rlp",
+          "--cpu-only"
+        ],
+        "exit": 0,
+        "stdout": "{\"job_valid\":true,\"eyes\":2,\"gpu_used\":false}\n",
+        "stderr": "",
+        "expected_exit": 0,
+        "job_sha256": "abd9f048966f6432c7c66fd86b34243ebb92d041826f3e1f5b3fbae200870382",
+        "job_bytes": 440
+      },
+      {
+        "argv": [
+          "/tmp/sub15-submitted-replay-final/replay",
+          "/tmp/sub15-reference-job-parser/50-truncated.rlp",
+          "--cpu-only"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "submitted-image-replay: short image\n",
+        "expected_exit": 1,
+        "job_sha256": "6edc821ec35eaf07ddcd5dde9d53b60601028d6f561e4cdbbeee3f7b13a39a3a",
+        "job_bytes": 439
+      },
+      {
+        "argv": [
+          "/tmp/sub15-submitted-replay-final/replay",
+          "/tmp/sub15-reference-job-parser/50-trailing.rlp",
+          "--cpu-only"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "submitted-image-replay: trailing replay bytes\n",
+        "expected_exit": 1,
+        "job_sha256": "cdc7f01afaef1eb1cf10e7caccd57f59a275044468d09d7da3e61261a6fa377e",
+        "job_bytes": 441
+      }
+    ]
+  },
+  "sources_sha256": {
+    "validation/wivrn-codecs/integration/submitted_capture.py": "5f0b744cd46e81b48aace942db3cb9460f47ec166cc445c59a5586613912cd97",
+    "validation/wivrn-codecs/integration/submitted_reference_job.py": "bf2d242bad3c8c79cee69098b7a52622433a03886e08309d5e50f126b09f14ca",
+    "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
+    "validation/wivrn-codecs/tests/test_submitted_capture.py": "486772ba37c1835a130fd220a9d3c0e809090a50dc6bd2dc69de7c10a26cf39f",
+    "validation/wivrn-codecs/tests/test_submitted_reference_job.py": "9222184d93c36c292773e935cc48ab2729a632ec8f09ff8cc779d04c764d99d4"
+  },
+  "synthetic_fixtures_only": true,
+  "gpu_executed": false,
+  "device_executed": false,
+  "quality_pass": false,
+  "independent_gpu_team_read_only_review": "No blocker in initial RLP1 scope; exact build receipt and renderer shader pins remain required by downstream planner."
+}
