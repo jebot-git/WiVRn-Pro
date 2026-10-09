@@ -13,7 +13,8 @@ inline void need(bool b){if(!b)throw std::runtime_error("invalid RRF1 frame");}
 inline size_t pixels(uint32_t width,uint32_t height){need(width&&height&&width<=4096&&height<=4096&&uint64_t(width)*height<=max_pixels);return size_t(width)*height;}
 struct Workspace {Bytes rgb,filtered,compressed,alternate,wire;};
 inline bool alias(View input,const Bytes&buffer){
-    if(input.empty()||!buffer.capacity())return false;auto a=reinterpret_cast<uintptr_t>(input.data()),b=reinterpret_cast<uintptr_t>(buffer.data());
+    if(input.empty()||!buffer.capacity())return false;
+    auto a=reinterpret_cast<uintptr_t>(input.data()),b=reinterpret_cast<uintptr_t>(buffer.data());
     return a<=b?b-a<input.size():a-b<buffer.capacity();
 }
 inline bool alias(View input,const Workspace&w){return alias(input,w.rgb)||alias(input,w.filtered)||alias(input,w.compressed)||alias(input,w.alternate)||alias(input,w.wire);}

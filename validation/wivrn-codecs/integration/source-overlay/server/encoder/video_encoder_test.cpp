@@ -4,6 +4,7 @@
 #include "utils/wivrn_vk_bundle.h"
 #include "vk/allocation.h"
 #include "codec_test/wire.h"
+#include "codec_test/rrb/native.h"
 #include "codec_test/metadata.h"
 #include "codec_test/compression/frame_compression.h"
 #include "codec_test/vr444/vulkan_runner.hpp"
@@ -35,6 +36,12 @@ class test_encoder final : public video_encoder {
     std::string shaders;
     std::filesystem::path evidence;
     unsigned quantizer=8;
+    uint64_t encoded_test_frame=0;
+    std::string payload_mode;
+    rowblocks::Workspace exact_workspace;
+    rowbands::Workspace band_workspace;
+    std::unique_ptr<rowworkers::Pool> band_pool;
+    bool rrb_source_exact=false;
     unsigned frame_stride=12;
     bool compression_enabled=false;
     codec_test::compression::Workspace compression_workspace;
@@ -45,12 +52,19 @@ public:
         video_encoder(v,eye,v.queue.family_index,s,std::make_unique<intra_idr>(),true),vk(v),
         kind(std::string_view(std::getenv("WIVRN_CODEC_TEST"))=="hevc-carrier"?codec_test::Kind::hevc_carrier:(std::string_view(std::getenv("WIVRN_CODEC_TEST"))=="raw-rgba"?codec_test::Kind::raw_rgba:codec_test::Kind::vr444)),
         pool(v.device,{.flags=vk::CommandPoolCreateFlagBits::eResetCommandBuffer,.queueFamilyIndex=v.queue.family_index}) {
+        payload_mode=std::getenv("WIVRN_CODEC_TEST");
+        if(payload_mode=="rrb32-q1"||payload_mode=="rrb32-vr444"){
+            kind=codec_test::Kind::rrb32;rrb_source_exact=payload_mode=="rrb32-q1";
+            if(rrb_source_exact)quantizer=1;
+            else band_pool=std::make_unique<rowworkers::Pool>(4);
+        }
         if(const char* p=std::getenv("WIVRN_CODEC_TEST_SHADERS")) shaders=p;
         if(const char* p=std::getenv("WIVRN_CODEC_TEST_EVIDENCE")){evidence=p;std::filesystem::create_directories(evidence);}
         if(!evidence.empty()) events.open(evidence/("encode-"+std::to_string(eye)+".jsonl"));
         if(const char* p=std::getenv("WIVRN_CODEC_TEST_Q"))quantizer=std::stoul(p);
         if(const char* p=std::getenv("WIVRN_CODEC_TEST_FRAME_STRIDE"))frame_stride=std::stoul(p);
         if(frame_stride<1||frame_stride>90)throw std::runtime_error("invalid frame stride");
+        if(rrb_source_exact&&quantizer!=1)throw std::runtime_error("rrb32-q1 requires Q1 exact source RGB");
         if(quantizer<1||quantizer>1024)throw std::runtime_error("invalid test quantizer");
         if(const char* p=std::getenv("WIVRN_CODEC_TEST_COMPRESSION")){
             if(std::string_view(p)!="none" && std::string_view(p)!="lz4")throw std::runtime_error("invalid test compression");
@@ -64,7 +78,7 @@ public:
             slots[i].buffer.map();slots[i].cmd=std::move(commands[i]);
             slots[i].fence=vk::raii::Fence(v.device,{.flags=vk::FenceCreateFlagBits::eSignaled});
         }
-        if(kind==codec_test::Kind::vr444 && eye<2) {
+        if((kind==codec_test::Kind::vr444 || (kind==codec_test::Kind::rrb32&&!rrb_source_exact)) && eye<2) {
             gpu=std::make_unique<vr444::GpuSession>(s.width,s.height,shaders,
                 std::getenv("VR444_KERNEL")?std::getenv("VR444_KERNEL"):"baseline");
         }
@@ -89,6 +103,10 @@ public:
         }
     }
     ~test_encoder() override { drain_sender(); for(auto& s:slots) (void)vk.device.waitForFences(*s.fence,true,1'000'000'000); av_frame_free(&frame);avcodec_free_context(&codec);av_buffer_unref(&qsv);av_buffer_unref(&va); }
+    bool test_pair_capped() const override{return kind==codec_test::Kind::rrb32;}
+    void test_pair_rejected(size_t n) override{
+        events<<"{\"type\":\"rrb_pair_rejected\",\"eye\":"<<unsigned(stream_idx)<<",\"frame\":"<<encoded_test_frame<<",\"staged_pair_bytes\":"<<n<<",\"pair_cap\":262144}\n";events.flush();
+    }
 private:
     void present_image(vk::Image image,vk::SemaphoreSubmitInfo wait,uint8_t slot,uint64_t) override {
         auto& s=slots[slot];if(vk.device.waitForFences(*s.fence,true,1'000'000'000)!=vk::Result::eSuccess)throw std::runtime_error("test readback fence timeout");
@@ -104,16 +122,26 @@ private:
         vk.queue.queue.submit2(vk::SubmitInfo2{.waitSemaphoreInfoCount=1,.pWaitSemaphoreInfos=&wait,.commandBufferInfoCount=1,.pCommandBufferInfos=&command},*s.fence);
     }
     std::optional<data> encode(uint8_t slot,uint64_t index) override {
+        encoded_test_frame=index;
         if(index%frame_stride!=0)return {};
         if(stream_idx>1)throw std::runtime_error("codec test requires opaque projection, no alpha stream");
         auto& s=slots[slot];if(vk.device.waitForFences(*s.fence,true,1'000'000'000)!=vk::Result::eSuccess)throw std::runtime_error("test readback timeout");
         auto began=std::chrono::steady_clock::now();
         std::vector<uint32_t> rgb(size_t(extent.width)*extent.height);std::memcpy(rgb.data(),s.buffer.data<uint8_t>(),rgb.size()*4);
         std::vector<uint8_t> bytes;double encode_gpu_ms=0;
-        if(kind==codec_test::Kind::vr444){
+        if(kind==codec_test::Kind::rrb32&&rrb_source_exact){
+            auto wire=rowblocks::encode(rgb,extent.width,extent.height,32,rowfilter::Policy::adaptive,exact_workspace,true);
+            bytes.assign(wire.begin(),wire.end());
+            if(!evidence.empty()&&index%90==0)
+                std::ofstream(evidence/(std::to_string(index)+"-"+std::to_string(stream_idx)+".reference.rgba"),std::ios::binary).write(reinterpret_cast<const char*>(rgb.data()),rgb.size()*4);
+        }else if(kind==codec_test::Kind::vr444||kind==codec_test::Kind::rrb32){
             auto result=gpu->encode(rgb,quantizer);encode_gpu_ms=result.encode_ms;
             if(result.software)throw std::runtime_error("software Vulkan forbidden in hardware integration");
             bytes=vr444::pack(result.frame);
+            if(kind==codec_test::Kind::rrb32){
+                auto wire=codec_test::rrb::transcode_eye(bytes,band_workspace,*band_pool);
+                bytes.assign(wire.begin(),wire.end());
+            }
             if(!evidence.empty() && index%90==0){
                 auto reference=vr444::decode(result.frame);
                 std::ofstream(evidence/(std::to_string(index)+"-"+std::to_string(stream_idx)+".reference.rgba"),std::ios::binary).write(reinterpret_cast<const char*>(reference.data()),reference.size()*4);
@@ -146,6 +174,11 @@ private:
             std::ofstream(evidence/(std::to_string(index)+"-"+std::to_string(stream_idx)+".envelope"),std::ios::binary).write(reinterpret_cast<const char*>(output->data()),output->size());
         events << "{\"frame\":" << index << ",\"eye\":" << unsigned(stream_idx)
             << ",\"warp\":" << codec_test::warp_hash(frame_view_info()) << ",\"payload_bytes\":" << output->size()
+            << ",\"effective_codec\":\"" << (kind==codec_test::Kind::rrb32?"rrb32":kind==codec_test::Kind::vr444?"vr444":kind==codec_test::Kind::raw_rgba?"raw-rgba":"hevc-carrier")
+            << "\",\"source_contract\":\"" << (rrb_source_exact?"post_foveation_rgb_exact":kind==codec_test::Kind::rrb32?"decoded_vr444_rgb_exact":"legacy")
+            << "\",\"rrb_block_rows\":" << (kind==codec_test::Kind::rrb32?32:0)
+            << ",\"stereo_envelope_cap\":" << (test_pair_capped()?262144:0)
+            << ",\"quantizer\":" << quantizer
             << ",\"encode_gpu_ms\":" << encode_gpu_ms
             << ",\"compression_requested\":" << (compression_enabled?"true":"false")
             << ",\"compression_attempted\":" << (selected.attempted?"true":"false")

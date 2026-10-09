@@ -3,13 +3,13 @@
     "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
     "path": "prototypes/vr444/experiments/rgb_rowfilter/rowfilter.hpp",
     "original_sha256": "414e2341766243d7ffa04e324e68e2a6d8908703705119ecbb079344edeeb4a2",
-    "changes": "include paths only"
+    "changes": "include paths and misleading-indentation line break only"
   },
   "simd.hpp": {
     "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",
     "path": "prototypes/vr444/experiments/rgb_rowfilter/simd.hpp",
     "original_sha256": "2bbf1f8ef24f2b18506004dec957330803328958fa700e45f30f645fb7bd9a29",
-    "changes": "include paths only"
+    "changes": "include paths and misleading-indentation line break only"
   },
   "rowblocks.hpp": {
     "commit": "a55dff163e3defa5d5be2e600b8d9a7829a8f7a1",

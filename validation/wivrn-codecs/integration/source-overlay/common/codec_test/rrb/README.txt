@@ -2,7 +2,7 @@ Native custom-test RRB32 adapter
 ==============================
 
 Imported exact RGB row codecs and persistent workers derive from the pinned
-files in import-provenance.json. Those files have only include-path changes;
+files in import-provenance.json. Those files have include-path changes and two warning-only line breaks;
 native.h is the new integration adapter. No wire format was changed. Band-view
 source direct.cpp is compiled once alongside the existing exact VR444 decoder.
 All code is opt-in to the dedicated WIVRN_CODEC_TESTS build.

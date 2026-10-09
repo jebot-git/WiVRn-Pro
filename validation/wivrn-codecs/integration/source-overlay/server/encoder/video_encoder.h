@@ -154,6 +154,11 @@ public:
 	bool drain_sender();
 	bool ready_for_present();
 	void commit_encoded(bool keep);
+#ifdef WIVRN_CODEC_TESTS
+    size_t staged_output_bytes() const { return staged_output ? staged_output->span.size() : 0; }
+    virtual bool test_pair_capped() const { return false; }
+    virtual void test_pair_rejected(size_t) {}
+#endif
 
 	// bitrate_bps is the bitrate for the whole stream
 	// the encoder bitrate will be scaled accordingly
