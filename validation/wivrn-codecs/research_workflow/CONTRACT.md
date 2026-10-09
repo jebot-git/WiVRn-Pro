@@ -20,6 +20,12 @@ Compare only compatible dataset/configuration, quality contract, hardware/load, 
 
 `q8_exact` means byte-for-byte reproduction of the established Q8 reference pixels; `lossless` means exact original input reconstruction. `new_lossy` explicitly changes reconstruction and requires a stated quality reference. Exact offline comparisons report `exact_mismatched_samples` (zero only when measured). New lossy reports name a nonnegative finite metric such as MSE. Preserve raw quality receipts; metric names alone do not establish perceptual equivalence.
 
+## Declared eye-tracking research capability
+
+For rooted Quest Pro research, treat left/right eye tracking as independently usable signals: one separately controlled foveating region per eye, with optional causal per-eye gaze/movement prediction toward a common presentation target. This is the user-declared assumption `quest-pro-decoupled-eye-tracking-v1`, not a verified device API or performance claim.
+
+Follow [the eye-tracking declaration](EYE-TRACKING-RESEARCH.md) and [machine-readable assumptions](research-assumptions.json). Preserve per-eye timestamps, clock domains, calibration, validity/confidence, prediction horizon/uncertainty and fallback metadata in the hashed configuration/data index. Keep coherent stereo/source/warp identity, explicit quality arms and distinct simulated/replayed/device evidence. The strict v1 manifest schema remains unchanged.
+
 ## Real-byte adapter boundary
 
 Each candidate must implement file-based encode(input bytes, metadata) -> actual bitstream bytes and decode(bitstream bytes, declared configuration/model) -> reconstructed bytes. The decoder runs as a separate process and receives no private encoder tensors, original pixels, or unrecorded state. The bitstream or declared model/configuration must supply all reconstruction dependencies. Encoding estimates, latent element counts, and in-memory object sizes are not serialized sizes.

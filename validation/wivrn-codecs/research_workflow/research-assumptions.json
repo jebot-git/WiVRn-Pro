@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "assumption_id": "quest-pro-decoupled-eye-tracking-v1",
+  "declared_at_utc": "2026-10-09T08:42:26Z",
+  "provenance": "user_declared_research_assumption",
+  "device": "Rooted Meta Quest Pro",
+  "status": "assumed_for_research",
+  "hardware_validation": "not_performed",
+  "declaration": "Treat left and right eye-tracking signals as independently available to research adapters, enabling one independently controlled foveating region per eye and independent per-eye gaze/movement prediction.",
+  "interpretation": {
+    "decoupled": "Independent observation and control; eye movements need not be statistically independent.",
+    "foveation": "Two separately positioned/parameterized foveating regions across the stereo pair; no requirement to share gaze center, radius or uncertainty margin.",
+    "prediction": "Estimate current gaze and optionally predict each eye toward a common intended presentation target; horizons derive from each eye's own sample timestamp.",
+    "stereo": "Preserve coherent stereo/source/warp identity and common presentation target. Independent gaze does not authorize mixing eye frames."
+  },
+  "unverified": [
+    "Rooted-device API access and data path",
+    "Actual per-eye sample rate, latency and timestamp semantics",
+    "Calibration, confidence semantics and tracking quality",
+    "Target-device performance and displayed quality"
+  ],
+  "record_per_eye": [
+    "eye_id",
+    "sample_timestamp",
+    "sample_clock_domain",
+    "gaze_origin_and_direction",
+    "coordinate_frame",
+    "calibration_and_projection_id",
+    "validity",
+    "confidence_if_available",
+    "raw_or_predicted",
+    "prediction_target_time",
+    "prediction_horizon",
+    "prediction_model_or_algorithm_id",
+    "prediction_uncertainty",
+    "applied_region_center_and_extent",
+    "fallback_reason"
+  ],
+  "experiment_arms": [
+    "shared_gaze_baseline",
+    "independent_current_gaze",
+    "independent_predicted_gaze"
+  ],
+  "evaluation": [
+    "actual_bitstream_and_wire_bytes",
+    "server_and_headset_stage_costs",
+    "complete_stereo_cadence",
+    "source_and_gaze_age_with_clock_basis",
+    "per_eye_angular_prediction_error",
+    "per_eye_foveal_miss_rate",
+    "fallback_rate",
+    "per_eye_and_stereo_quality"
+  ],
+  "fallback_policy": "Specify bounded sample age and uncertainty limits. Widen regions or disable foveation for stale/invalid samples, blinks or excessive uncertainty; record each eye's fallback while preserving coherent stereo.",
+  "evidence_policy": "Label synthetic/replayed gaze separately from device capture; an API/capture receipt is required before this assumed capability becomes a verified hardware observation.",
+  "manifest_binding": "Reference this assumption ID and file hash in the hashed experiment configuration and gaze-data index. Do not add undeclared top-level fields to the strict v1 run manifest."
+}

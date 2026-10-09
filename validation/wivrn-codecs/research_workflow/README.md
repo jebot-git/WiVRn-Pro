@@ -4,6 +4,10 @@ This workbench accepts new WiVRn-Pro codec, GPU, transport and compositor resear
 
 Read [CODEC-DEVELOPMENT.txt](../../../CODEC-DEVELOPMENT.txt), [the experiment contract](CONTRACT.md), and the existing integration latency policy before interpreting results. The research overlay expects its recorded working baseline; these standalone tools do not apply it or build native/Android peers.
 
+## Declared research capability
+
+The user has declared rooted Quest Pro eye tracking decoupled for research: **independent left/right foveating regions and per-eye gaze/movement prediction are in scope**. Treat this as an assumed capability pending a device API/capture receipt. See [EYE-TRACKING-RESEARCH.md](EYE-TRACKING-RESEARCH.md) and [research-assumptions.json](research-assumptions.json). Rolling reviews should consider these hypotheses while retaining coherent stereo, explicit quality comparisons and measured latency/cadence gates.
+
 ## Research window
 
 The user described 270 minutes remaining at 2026-10-09 07:02:40 UTC. The reconciliation checkpoint is **2026-10-09 13:32:40 Europe/Prague (11:32:40 UTC)**. See [window.json](window.json). This checkpoint organizes evidence; it does not terminate other agents or promote a branch.
