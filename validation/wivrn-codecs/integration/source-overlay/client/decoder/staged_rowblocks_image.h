@@ -39,6 +39,8 @@ public:
     static constexpr VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     // Consumers MUST retain a copy through completion of every submitted read,
     // including on exceptions/reset. The application device must outlive it.
+    // All consumers use the SAME VkQueue used by Pending::submit. Same family
+    // alone is not this contract; cross-queue synchronization is not provided.
     // Readback may temporarily transition layout only with exclusive consumer
     // ownership, and must restore `layout` before normal sampling.
 };
@@ -51,8 +53,9 @@ public:
     Pending& operator=(Pending&&) = delete;
     Pending(const Pending&) = delete;
     ~Pending();
-    // Only this call requires the application's queue lock. Queue must belong
-    // to the configured family. No queue submission/wait occurs in prepare().
+    // Only this call requires the application's queue lock. Queue must be the
+    // consumer's same application queue in the configured family. No queue
+    // submission/wait occurs in prepare().
     void submit(VkQueue);
     // Wait outside the queue lock. Actual owned producer fence gates exposure.
     // Timeout throws without releasing GPU-owned resources or allowing reuse.

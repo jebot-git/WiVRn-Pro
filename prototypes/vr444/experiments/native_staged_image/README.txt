@@ -41,8 +41,10 @@ Native adapter contract
 Lease owns slot, buffers, image/views and shared pipeline independently of Pool
 or decoder lifetime. The application VkDevice must outlive all leases. Pool is
 single-producer; consumer threads may retain/release published Lease copies.
-Same queue family only; no queue-family ownership transfer or asynchronous
-cross-queue contract is implied. No timeline/sync2 feature is assumed enabled.
+All consumers must use the SAME VkQueue as the producer, in the configured
+family. Sharing a family alone is not sufficient for this contract. No queue
+ownership transfer or cross-queue synchronization is provided. No timeline/
+sync2 feature is assumed enabled.
 Those private-ring compatibility experiments remain a later native feature
 enablement/lifetime stage, not a prerequisite or claimed optimization here.
 
