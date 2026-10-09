@@ -13,6 +13,21 @@ def sha(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def verify_build(plan):
+    receipt = json.loads(Path(plan['build_receipt']).read_text())
+    if sha(plan['build_receipt']) != plan['build_receipt_sha256']:
+        raise RuntimeError('build receipt changed')
+    mismatches = [name for name, digest in receipt['sha256'].items()
+                  if sha(Path(plan['source']) / name) != digest]
+    external = receipt.get('external_artifacts_sha256', {})
+    if type(external) is not dict or any(not Path(name).is_absolute() for name in external):
+        raise RuntimeError('invalid external build artifact inventory')
+    mismatches += [name for name, digest in external.items() if sha(name) != digest]
+    if mismatches:
+        raise RuntimeError('build drift: ' + ', '.join(mismatches))
+    return len(receipt['sha256']) + len(external)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('plan', type=Path)
@@ -67,14 +82,7 @@ def main():
         return {str(p.relative_to(root)): sha(p) for p in sorted(paths)}
 
     def check_build():
-        receipt = json.loads(Path(plan['build_receipt']).read_text())
-        if sha(plan['build_receipt']) != plan['build_receipt_sha256']:
-            raise RuntimeError('build receipt changed')
-        mismatches = [name for name, digest in receipt['sha256'].items()
-                      if sha(Path(plan['source']) / name) != digest]
-        if mismatches:
-            raise RuntimeError('build drift: ' + ', '.join(mismatches))
-        return len(receipt['sha256'])
+        return verify_build(plan)
 
     try:
         if sha(plan['harness']) != plan['harness_sha256']:

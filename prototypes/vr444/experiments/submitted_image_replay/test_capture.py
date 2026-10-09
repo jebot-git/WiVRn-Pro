@@ -148,12 +148,13 @@ class ReplayCapture(unittest.TestCase):
                 if mode==9:c['runner_sha256']='0'*64
                 put(root/'campaign.json',c);bridge['campaign']['sha256']=sha((root/'campaign.json').read_bytes())
                 with self.assertRaises(ValueError):capture.campaign_identity(adapter,serial,target,bridge)
-    def test_campaign_bridge_accepts_exact_v2_runner(self):
-        with tempfile.TemporaryDirectory()as t:
-            root=Path(t)/'campaign';adapter,serial,target,bridge,c=bridge_fixture(root)
-            c['runner_sha256']=capture.CAMPAIGN_RUNNER_V2_SHA
-            put(root/'campaign.json',c);bridge['campaign']['sha256']=sha((root/'campaign.json').read_bytes())
-            self.assertEqual(len(capture.campaign_identity(adapter,serial,target,bridge)),7)
+    def test_campaign_bridge_accepts_exact_reviewed_runners(self):
+        for runner in (capture.CAMPAIGN_RUNNER_V2_SHA,capture.CAMPAIGN_RUNNER_V3_SHA):
+            with self.subTest(runner=runner),tempfile.TemporaryDirectory()as t:
+                root=Path(t)/'campaign';adapter,serial,target,bridge,c=bridge_fixture(root)
+                c['runner_sha256']=runner
+                put(root/'campaign.json',c);bridge['campaign']['sha256']=sha((root/'campaign.json').read_bytes())
+                self.assertEqual(len(capture.campaign_identity(adapter,serial,target,bridge)),7)
     def test_full_output_audit_preserves_legacy_and_physical_identities(self):
         with tempfile.TemporaryDirectory()as t:
             root=Path(t);directory,plan,r=self.fixture(root);adapter_path=root/'adapter.json';adapter=json.loads(adapter_path.read_bytes())

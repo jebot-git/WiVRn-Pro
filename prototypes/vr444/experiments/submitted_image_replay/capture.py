@@ -10,7 +10,10 @@ CAMPAIGN_RUNNER_SHA='b2cf6a837b482ebe676290f8199589a2ef94263049afac462ea60525da4
 # hashing and gzip/60s previous-capture backup. Identity and cleanup joins are
 # unchanged. Keep the exact historical digest for immutable earlier captures.
 CAMPAIGN_RUNNER_V2_SHA='7071ec7f1bd7f99e7b4e4bafeb3387f02db53e0d30b9b2ea3b34662fbe9525ca'
-CAMPAIGN_RUNNERS=(CAMPAIGN_RUNNER_SHA,CAMPAIGN_RUNNER_V2_SHA)
+# V3 additionally verifies external build/source artifacts before and after the
+# campaign. Its device commands, identity bridge and cleanup remain unchanged.
+CAMPAIGN_RUNNER_V3_SHA='8d01f078fff54fde00349bd32a8719bbb60ad17e9bb18ba3268bf3b509718e6b'
+CAMPAIGN_RUNNERS=(CAMPAIGN_RUNNER_SHA,CAMPAIGN_RUNNER_V2_SHA,CAMPAIGN_RUNNER_V3_SHA)
 EXP='prototypes/vr444/experiments/submitted_image_replay/'
 MAX_IMAGE=16*1024*1024
 
