@@ -65,3 +65,8 @@ The structured result and validation receipt are source-age-bound-20261009.json
 and source-age-bound-validation-20261009.json. No runtime code, transport,
 policy limit or native integration artifact is changed. No device operation,
 performance measurement or production qualification is performed.
+
+source-age-bound-20261009.png visualizes the four inclusive intervals and
+strict threshold. Its separate figure receipt binds the final plot script,
+analysis JSON and visually checked PNG; no timing or optimizer is rerun for
+this presentation-only artifact.

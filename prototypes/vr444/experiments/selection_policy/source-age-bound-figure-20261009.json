@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "kind": "figure_render_review",
+  "sha256": {
+    "prototypes/vr444/experiments/selection_policy/source-age-bound-20261009.json": "b47258c97f87c63b097ceb491c55b87545fb58474d7bcb42fa92c315756d2671",
+    "prototypes/vr444/experiments/selection_policy/plot_source_age_bound.py": "2f8b33e1848525f7911fceac23ef3ca2ae8bd75228e8ec0b9e2aced15dbffb94",
+    "prototypes/vr444/experiments/selection_policy/source-age-bound-20261009.png": "5e0083bc7d5b91916a2c485e722f6b92f5ddcbc610b2af4725e13e6107ae3368"
+  },
+  "inspection": "Visually inspected final PNG after moving the rightmost interval label left; every model, interval endpoint, threshold, axis and scope footer is legible.",
+  "source_optimum_reoptimized": false,
+  "new_headset_or_latency_claim": false
+}
