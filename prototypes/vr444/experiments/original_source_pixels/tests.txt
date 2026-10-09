@@ -1,0 +1,13 @@
+test_128_tilings_against_scalar_footprint_reference (qualified_original_source_test.OriginalSource.test_128_tilings_against_scalar_footprint_reference) ... ok
+test_either_output_and_alpha_separate (qualified_original_source_test.OriginalSource.test_either_output_and_alpha_separate) ... ok
+test_exact_both_formats_and_asymmetric_flip_union (qualified_original_source_test.OriginalSource.test_exact_both_formats_and_asymmetric_flip_union) ... ok
+test_identity_geometry_and_color_mutations (qualified_original_source_test.OriginalSource.test_identity_geometry_and_color_mutations) ... ok
+test_missing_pixels_changed_reference_and_mask_rejected (qualified_original_source_test.OriginalSource.test_missing_pixels_changed_reference_and_mask_rejected) ... ok
+test_nonunit_footprints_remain_usable_negative_reference (qualified_original_source_test.OriginalSource.test_nonunit_footprints_remain_usable_negative_reference) ... ok
+test_shared_wrong_replay_and_native_cannot_pass (qualified_original_source_test.OriginalSource.test_shared_wrong_replay_and_native_cannot_pass) ... ok
+test_source_halo_error_blocks_finite_success (qualified_original_source_test.OriginalSource.test_source_halo_error_blocks_finite_success) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.166s
+
+OK

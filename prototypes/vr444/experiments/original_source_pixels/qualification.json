@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "scope": "Pure offline scalar geometry/reference tests; no GPU, headset, native application or live quality claim",
+  "utc": "2026-10-09T16:33:18.381201+00:00",
+  "test_command": "python3 -m unittest discover -s validation/wivrn-codecs/tests -p test_original_source_pixels.py",
+  "python": "3.14.7",
+  "numpy": "2.4.6",
+  "test_groups": 8,
+  "independent_scalar_tilings": 128,
+  "asymmetric_flip_and_output_format_combinations": 8,
+  "source_sha256": {
+    "validation/wivrn-codecs/tests/test_original_source_pixels.py": "6576458296bc51ad99a7a46a3f0fd9fd6ff2ad1db771febc01d2571e2e49d769",
+    "validation/wivrn-codecs/integration/original_source_pixels.py": "da4dc457f99ca3ca56042b7b1834be4ec7f5c92c89b4a8fc392ebc8a64001de7",
+    "validation/wivrn-codecs/integration/source_mapping.py": "ca7a542b328d3a546fa12fcf39e78c2869240515f5c057e3fb97fbd68912c785",
+    "validation/wivrn-codecs/integration/submitted_capture.py": "5f0b744cd46e81b48aace942db3cb9460f47ec166cc445c59a5586613912cd97",
+    "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
+    "validation/wivrn-codecs/integration/submitted_reference_job.py": "bf2d242bad3c8c79cee69098b7a52622433a03886e08309d5e50f126b09f14ca",
+    "validation/wivrn-codecs/integration/quality_application.py": "98932f2395a10d7f166ef7af8bb92621983349dabf8d2427b106b53d336dbe22",
+    "prototypes/vr444/experiments/quality_stimuli/audit.py": "d8fcd4920529c78c5d37fe0ddf2db34e3a1a38225fda4575db0ef1c853d8b78e",
+    "prototypes/vr444/experiments/compositor_freshness/analyze.py": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10",
+    "validation/wivrn-codecs/tests/test_source_mapping.py": "55ff64a5f52fa80adc1ab2b1a425c0b017951d1fcd5bc7e7bc80dfc4cfcc6755",
+    "validation/wivrn-codecs/integration/source_mapping_control.py": "52a4da25a69f372f9f313ebafeeca6365b8b8dac4539a090f9a971d38c400818",
+    "validation/wivrn-codecs/tests/test_submitted_capture.py": "486772ba37c1835a130fd220a9d3c0e809090a50dc6bd2dc69de7c10a26cf39f"
+  },
+  "source_unchanged": true,
+  "log_sha256": "dab8e7d766c4fa261076a0b54f09396528209f6e5c39ba1ae1140f24b33c714e",
+  "full_goal_qualified": false
+}
