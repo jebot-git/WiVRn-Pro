@@ -55,6 +55,7 @@ private:
 	uint64_t codec_test_tail_epoch = 0, codec_test_tail_compute_epoch = 0;
 	int64_t codec_test_tail_boundary = -1, codec_test_tail_newest = -1;
 	uint64_t codec_test_tail_batch = 0;
+	int64_t codec_test_tail_copy_begin_ns = 0, codec_test_tail_copy_end_ns = 0;
 #endif
 	mutable std::mutex mutex;
 	int64_t frame_duration_ns;

@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "sanitizer": "address,undefined",
+  "commands": [
+    {
+      "argv": [
+        "clang++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-ffast-math",
+        "-DWIVRN_CODEC_TESTS=1",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-pthread",
+        "-I",
+        "/tmp/pacer-rolling-worker-5w4zgwfd",
+        "-I",
+        "/home/blux/spatial-bridge/.worktrees/sub15-pacer-rolling/validation/wivrn-codecs/integration/source-overlay/server/compositor",
+        "/home/blux/spatial-bridge/.worktrees/sub15-pacer-rolling/validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.cpp",
+        "/home/blux/spatial-bridge/.worktrees/sub15-pacer-rolling/prototypes/vr444/experiments/pacer_rolling_snapshot/native_feedback_test.cpp",
+        "-o",
+        "/tmp/pacer-rolling-worker-5w4zgwfd/test"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/pacer-rolling-worker-5w4zgwfd/test",
+        "/tmp/pacer-rolling-worker-5w4zgwfd/capture"
+      ],
+      "exit_code": 0,
+      "stdout": "actual rolling feedback checks=33636808 snapshots=67 seeded_frames=6601\n",
+      "stderr": ""
+    }
+  ],
+  "source_sha256": {
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/check_worker.py": "d282c80345815c3d7d18b90d9498de22296ea6030bc9e5000fa15a2f5af8542a",
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/native_feedback_test.cpp": "83a7da92200d361c14ce90218a0706c894a0ee690284a8b49b12f4ad79497938",
+    "prototypes/vr444/experiments/pacer_recent_tail/worker_check.py": "81afb07a3573325cda97a5577b3a18f241aa182c2671de4c2a0ffde0008cbfce",
+    "prototypes/vr444/experiments/pacer_recent_tail/analyze.py": "cc610580a4daa5178abd5d56a3e2bd086f8989e1564228c8b44976b7858e62b4",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.cpp": "527df38c14026dd6c825eaac49b4240b834dbc90f8881ac9e5a5fa4031f23326",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.h": "1fa32e30e20dc806f6802453159cae924a86a200a47b56d26780d77df7fdeb3a",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_tail.h": "98afd954274b0eeaa2eb74e731e63911b8e69e94c37efa577a0b1712ef5d2b5b",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_trace.h": "93f1e8b963ba4bdbf7bdcaa674a6fcbee3e1eb4dea3bb7001cba7f9ff802e638"
+  },
+  "tail_audit": {
+    "schema": 1,
+    "status": "pass",
+    "updates": 67,
+    "window_frames": 900,
+    "counts": {
+      "recent": 64,
+      "fallback": 3,
+      "slew": 0
+    },
+    "feedback_bank": "rolling",
+    "raw_feedback_quantiles_recomputed": false,
+    "clock_conversion_verified": false,
+    "latency_qualified": false,
+    "promotion_eligible": false,
+    "scope": "Bound source-produced summary arithmetic and coverage only; no raw feedback population, estimator optimality, latency or photon qualification.",
+    "snapshot_accounting": {
+      "empty_snapshots": 0,
+      "produced_snapshots": 68,
+      "coalesced_snapshots": 1,
+      "unconsumed_snapshots": 0,
+      "last_consumed_batch": 68,
+      "consumed_snapshots": 67
+    },
+    "copy_duration_host_ns": {
+      "min": 0,
+      "max": 0
+    },
+    "copy_end_to_apply_host_ns": {
+      "min": 0,
+      "max": 0
+    },
+    "issued_frontier_minus_newest_feedback_frames": {
+      "min": 0,
+      "max": 0
+    },
+    "eye_pair_completeness_verified": false,
+    "all_generated_snapshots_consumed": false,
+    "feedback_loss_measured": false
+  },
+  "actual_native_feedback_and_worker": true,
+  "external_runtime_api_stubs": true,
+  "device_used": false,
+  "performance_measured": false
+}

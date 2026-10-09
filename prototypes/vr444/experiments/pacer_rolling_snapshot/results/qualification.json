@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "base_commit": "516ea2af4adc43119c43af6d572fe23043edd45b",
+  "source_sha256": {
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/native_feedback_test.cpp": "83a7da92200d361c14ce90218a0706c894a0ee690284a8b49b12f4ad79497938",
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/check_worker.py": "d282c80345815c3d7d18b90d9498de22296ea6030bc9e5000fa15a2f5af8542a",
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/negative_swap.py": "fce6336c68a84b3cbc09bd202c1fbe42e5c84840f8a87aad2c94c2bbfab328e0",
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/README.txt": "77fcd7caabc77e9534d99dc96d64b336424d401c0521e9e57a3b353a4fc1015c",
+    "prototypes/vr444/experiments/pacer_recent_tail/analyze.py": "cc610580a4daa5178abd5d56a3e2bd086f8989e1564228c8b44976b7858e62b4",
+    "prototypes/vr444/experiments/pacer_recent_tail/test.cpp": "f5a77104f1695a292cee82cfc4bd2ceebab3913f17f12442d0862c1d2b1a1937",
+    "prototypes/vr444/experiments/pacer_recent_tail/test_analyze.py": "347c239e00176a6df142df3cb4a81f62590b22b1d17043be32ba0d734b71f3a3",
+    "prototypes/vr444/experiments/pacer_recent_tail/worker_check.py": "81afb07a3573325cda97a5577b3a18f241aa182c2671de4c2a0ffde0008cbfce",
+    "prototypes/vr444/experiments/pacer_recent_tail/native_worker_test.cpp": "01498af053acf6cab4f8b7097b2cac647dfef8525c736231f11d42a931b375b8",
+    "validation/wivrn-codecs/integration/pacer_tail.py": "76eb47440f54596aa013ddfc5061c4da975c955dc9e9f3784932e1e1eae5a2df",
+    "validation/wivrn-codecs/tests/test_pacer_tail.py": "fcf8fc3a438152125da81b1a83bebe7bc342796108dbeb052dcc2f4d9f53fa17",
+    "validation/wivrn-codecs/tests/test_pacer_source_join.py": "d5a57bf3516efd7db9e08f08524b57ad75a6b72f3fb152bb39483a314ce0f95b",
+    "validation/wivrn-codecs/tests/test_pacer_trace.py": "df85ac9476ea8c1118c1bb4d2bec97c3d22b39cb619d4b01f99472530afaf4e2",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.cpp": "527df38c14026dd6c825eaac49b4240b834dbc90f8881ac9e5a5fa4031f23326",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.h": "1fa32e30e20dc806f6802453159cae924a86a200a47b56d26780d77df7fdeb3a",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_tail.h": "98afd954274b0eeaa2eb74e731e63911b8e69e94c37efa577a0b1712ef5d2b5b",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_trace.h": "93f1e8b963ba4bdbf7bdcaa674a6fcbee3e1eb4dea3bb7001cba7f9ff802e638"
+  },
+  "subsidiary_receipts": {
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/results/legacy-worker-asan.json": {
+      "sha256": "380d6839c868d19995c45b2fa5a22f55d0ed8ccf4229459771f5391c6ccd26b7",
+      "bytes": 2204
+    },
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/results/legacy-worker-tsan.json": {
+      "sha256": "a4b2546527df5fc8e70e2d85bc3a0280e9d888a38544d8d0de15a9dcd0f74829",
+      "bytes": 2182
+    },
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/results/rolling-worker-asan.json": {
+      "sha256": "a2de6403367c51fbee4026c107ec7a1f7ddc3ae2698c87260586e1b92a981e54",
+      "bytes": 3739
+    },
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/results/rolling-worker-tsan.json": {
+      "sha256": "7875e5c849d12cb9b57c7da47b4cc23b24ffbc0e0176ec5572794df6c379998f",
+      "bytes": 3717
+    },
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/results/native-tu-syntax.json": {
+      "sha256": "f194ae6f2b3a750fce1766b0a5668999bfcbd5da67b9438b3e0e16c47cb3c455",
+      "bytes": 10785
+    },
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/results/negative-swap.json": {
+      "sha256": "3bb4fc8fe2bc5c193e5b49bd9e6d754b5d3c1a087fa87fb70ba6fe3c80230935",
+      "bytes": 2475
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "prototypes/vr444/experiments/pacer_recent_tail",
+        "-p",
+        "test_analyze.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_coalescing_empty_reset_and_terminal_pending_are_not_hidden (test_analyze.RollingTailAudit.test_coalescing_empty_reset_and_terminal_pending_are_not_hidden) ... ok\ntest_forged_mode_clock_counts_and_complete_eye_claim_reject (test_analyze.RollingTailAudit.test_forged_mode_clock_counts_and_complete_eye_claim_reject) ... ok\ntest_mode_and_accounting_are_explicit (test_analyze.RollingTailAudit.test_mode_and_accounting_are_explicit) ... ok\ntest_complete_trace_and_typed_header (test_analyze.TailAudit.test_complete_trace_and_typed_header) ... ok\ntest_epoch_reset_retains_budget_but_clears_watermark (test_analyze.TailAudit.test_epoch_reset_retains_budget_but_clears_watermark) ... ok\ntest_rehashed_semantics_reject (test_analyze.TailAudit.test_rehashed_semantics_reject) ... ok\ntest_subset_tail_can_exceed_legacy_tail (test_analyze.TailAudit.test_subset_tail_can_exceed_legacy_tail) ... ok\ntest_supported_slew_and_sparse_fallback (test_analyze.TailAudit.test_supported_slew_and_sparse_fallback) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.002s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_pacer*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_duplicate_instance_match_is_ambiguous_and_unaccepted_predictions_are_allowed (test_pacer_source_join.PacerSourceJoinTests.test_duplicate_instance_match_is_ambiguous_and_unaccepted_predictions_are_allowed) ... ok\ntest_exact_output_target_join_preserves_phase_values (test_pacer_source_join.PacerSourceJoinTests.test_exact_output_target_join_preserves_phase_values) ... ok\ntest_matching_id_with_wrong_target_or_preceding_prediction_fails (test_pacer_source_join.PacerSourceJoinTests.test_matching_id_with_wrong_target_or_preceding_prediction_fails) ... ok\ntest_missing_selected_frame_false_footer_or_domain_fails (test_pacer_source_join.PacerSourceJoinTests.test_missing_selected_frame_false_footer_or_domain_fails) ... ok\ntest_same_host_clock_translation_preserves_durations (test_pacer_source_join.PacerSourceJoinTests.test_same_host_clock_translation_preserves_durations) ... ok\ntest_bound_single_trace_read_and_optional_manifest_replay (test_pacer_tail.PacerTail.test_bound_single_trace_read_and_optional_manifest_replay) ... ok\ntest_exact_source_preflight_and_configuration_has_no_reads_or_writes (test_pacer_tail.PacerTail.test_exact_source_preflight_and_configuration_has_no_reads_or_writes) ... ok\ntest_json_and_hash_drift_fail_closed (test_pacer_tail.PacerTail.test_json_and_hash_drift_fail_closed) ... ok\ntest_off_rejects_unexpected_and_broken_symlink (test_pacer_tail.PacerTail.test_off_rejects_unexpected_and_broken_symlink) ... ok\ntest_provenance_window_source_and_diagnostic_controls_must_match (test_pacer_tail.PacerTail.test_provenance_window_source_and_diagnostic_controls_must_match) ... ok\ntest_repaired_hash_does_not_bypass_semantic_or_window_checks (test_pacer_tail.PacerTail.test_repaired_hash_does_not_bypass_semantic_or_window_checks) ... ok\ntest_strict_default_and_enabled_control_admission (test_pacer_tail.PacerTail.test_strict_default_and_enabled_control_admission) ... ok\ntest_actual_sidecar_mode_must_match_recorded_activation (test_pacer_tail.RollingHarness.test_actual_sidecar_mode_must_match_recorded_activation) ... ok\ntest_explicit_bank_admission_and_environment (test_pacer_tail.RollingHarness.test_explicit_bank_admission_and_environment) ... ok\ntest_all_outputs_and_native_constants_are_replayed (test_pacer_trace.PacerTraceTests.test_all_outputs_and_native_constants_are_replayed) ... ok\ntest_feedback_phase_changes_do_not_require_prior_target_equality (test_pacer_trace.PacerTraceTests.test_feedback_phase_changes_do_not_require_prior_target_equality) ... ok\ntest_instances_keep_independent_identity_and_first_prediction (test_pacer_trace.PacerTraceTests.test_instances_keep_independent_identity_and_first_prediction) ... ok\ntest_missing_tail_overflow_and_drops_fail (test_pacer_trace.PacerTraceTests.test_missing_tail_overflow_and_drops_fail) ... ok\ntest_schema_and_field_types_are_exact (test_pacer_trace.PacerTraceTests.test_schema_and_field_types_are_exact) ... ok\ntest_valid_and_floor_residual_is_not_declared_failure (test_pacer_trace.PacerTraceTests.test_valid_and_floor_residual_is_not_declared_failure) ... ok\n\n----------------------------------------------------------------------\nRan 20 tests in 0.100s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "clang++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-ffast-math",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-I",
+        "validation/wivrn-codecs/integration/source-overlay/server/compositor",
+        "prototypes/vr444/experiments/pacer_recent_tail/test.cpp",
+        "-o",
+        "/tmp/sub15-pacer-rolling-checks/helper-asan"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/sub15-pacer-rolling-checks/helper-asan"
+      ],
+      "exit_code": 0,
+      "stdout": "pacer recent tail checks=4141 randomized=2000\n",
+      "stderr": ""
+    }
+  ],
+  "helper_binary_sha256": "b4658d348d7827f04fe16b8f1c12cf762bc87e4ccfd048cd34209b2fabc9b5c4",
+  "python_test_methods": 28,
+  "actual_native_translation_unit_syntax": true,
+  "actual_feedback_and_worker_with_external_api_stubs": true,
+  "source_unchanged": true,
+  "peer_review": {
+    "reviewer": "transport_compression",
+    "scope": [
+      "native lock ownership and reset/stop lifetime",
+      "rolling telemetry accounting and requested/provenance/header activation"
+    ],
+    "outcome": "no material blocker"
+  },
+  "overlay_union_reconciled": false,
+  "union_reconciliation_owner": "root current native union, old95-file patch/manifest intentionally unchanged",
+  "native_build": false,
+  "headset_test": false,
+  "graphics_test": false,
+  "network_test": false,
+  "performance_measured": false,
+  "latency_qualified": false,
+  "quality_qualified": false,
+  "promotion_eligible": false
+}

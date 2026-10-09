@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "semantic_negative_control": "old alternating swap cannot satisfy cumulative rolling ring contract",
+  "modified_native_source_sha256": "aa43ad9a6e16bd07a393ca15f6a239e4bbabc0692d4577dc938f8bd240b50d23",
+  "source_sha256": {
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/negative_swap.py": "fce6336c68a84b3cbc09bd202c1fbe42e5c84840f8a87aad2c94c2bbfab328e0",
+    "prototypes/vr444/experiments/pacer_rolling_snapshot/native_feedback_test.cpp": "83a7da92200d361c14ce90218a0706c894a0ee690284a8b49b12f4ad79497938",
+    "prototypes/vr444/experiments/pacer_recent_tail/worker_check.py": "81afb07a3573325cda97a5577b3a18f241aa182c2671de4c2a0ffde0008cbfce",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.cpp": "527df38c14026dd6c825eaac49b4240b834dbc90f8881ac9e5a5fa4031f23326",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.h": "1fa32e30e20dc806f6802453159cae924a86a200a47b56d26780d77df7fdeb3a",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_trace.h": "93f1e8b963ba4bdbf7bdcaa674a6fcbee3e1eb4dea3bb7001cba7f9ff802e638",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_tail.h": "98afd954274b0eeaa2eb74e731e63911b8e69e94c37efa577a0b1712ef5d2b5b"
+  },
+  "commands": [
+    {
+      "argv": [
+        "clang++",
+        "-std=c++23",
+        "-O1",
+        "-g",
+        "-ffast-math",
+        "-DWIVRN_CODEC_TESTS=1",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-pthread",
+        "-I",
+        "/tmp/pacer-rolling-negative-sb3p4qpf",
+        "-I",
+        "/home/blux/spatial-bridge/.worktrees/sub15-pacer-rolling/validation/wivrn-codecs/integration/source-overlay/server/compositor",
+        "/tmp/pacer-rolling-negative-sb3p4qpf/pacer.cpp",
+        "/home/blux/spatial-bridge/.worktrees/sub15-pacer-rolling/prototypes/vr444/experiments/pacer_rolling_snapshot/native_feedback_test.cpp",
+        "-o",
+        "/tmp/pacer-rolling-negative-sb3p4qpf/test"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/tmp/pacer-rolling-negative-sb3p4qpf/test",
+        "/tmp/pacer-rolling-negative-sb3p4qpf/capture"
+      ],
+      "exit_code": -6,
+      "stdout": "",
+      "stderr": "40: same(p.frame_times[i],reference[i])\n"
+    }
+  ],
+  "original_native_source_unchanged": true,
+  "device_used": false
+}

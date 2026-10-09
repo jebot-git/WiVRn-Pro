@@ -45,7 +45,8 @@ pacer::pacer(uint64_t frame_duration) :
         // error must not unwind a jthread blocked on the compute condition.
         codec_test_pacer_id(codec_test::pacer_trace().enabled() ? codec_test::next_pacer_trace_id() : 0),
         codec_test_tail_trace(std::getenv("WIVRN_CODEC_TEST_PACER_WINDOW_FRAMES"),
-                              std::getenv("WIVRN_CODEC_TEST_PACER_TAIL_TRACE"), codec_test_pacer_id != 0),
+                              std::getenv("WIVRN_CODEC_TEST_PACER_TAIL_TRACE"), codec_test_pacer_id != 0,
+                              std::getenv("WIVRN_CODEC_TEST_PACER_BANK_MODE")),
 #endif
         frame_duration_ns(frame_duration),
         client_margin_ms{
@@ -67,7 +68,7 @@ pacer::pacer(uint64_t frame_duration) :
 #ifdef WIVRN_CODEC_TESTS
                 std::vector<frame_time> recent_bank;
                 uint64_t recent_epoch = 0, recent_batch = 0;
-                int64_t recent_boundary = -1;
+                int64_t recent_boundary = -1, copy_begin = 0, copy_end = 0;
 #endif
                 {
                     std::unique_lock lock(compute_mutex);
@@ -84,6 +85,7 @@ pacer::pacer(uint64_t frame_duration) :
                         consumed_batch = recent_batch = codec_test_tail_batch;
                         recent_epoch = codec_test_tail_compute_epoch;
                         recent_boundary = codec_test_tail_boundary;
+                        copy_begin = codec_test_tail_copy_begin_ns;copy_end = codec_test_tail_copy_end_ns;
                     }
 #endif
                     for (const auto & time: frame_times_compute)
@@ -92,6 +94,10 @@ pacer::pacer(uint64_t frame_duration) :
                             samples.push_back(time.decoded - time.present);
                     }
                 }
+#ifdef WIVRN_CODEC_TESTS
+                if (codec_test_tail_trace.rolling)
+                    codec_test_tail_trace.consume_snapshot(recent_batch,samples.empty());
+#endif
                 if (samples.empty()) continue;
                 auto it = samples.begin() + (samples.size() * 995) / 1000;
                 std::ranges::nth_element(samples, it);
@@ -102,7 +108,8 @@ pacer::pacer(uint64_t frame_duration) :
                     const auto decision = codec_test::pacer_tail::choose(recent_bank,
                         codec_test_tail_trace.window, recent_boundary, ns, safe_present_to_decoded_ns, codec_test_tail_newest);
                     const bool stale = recent_epoch != codec_test_tail_epoch;
-                    codec_test_tail_trace.append({codec_test_pacer_id,recent_epoch,recent_batch,stale,decision});
+                    codec_test_tail_trace.append({codec_test_pacer_id,recent_epoch,recent_batch,stale,decision,
+                        copy_begin,copy_end,codec_test_tail_trace.rolling ? os_monotonic_get_ns() : 0});
                     if (!stale && decision.valid) {
                         safe_present_to_decoded_ns = decision.applied;
                         codec_test_tail_newest = decision.newest;
@@ -226,11 +233,24 @@ void pacer::on_feedback(const wivrn::from_headset::feedback & feedback, const cl
 		if (feedback.frame_index % 100 == 0)
 		{
 			std::unique_lock lock(compute_mutex);
-			std::swap(frame_times, frame_times_compute);
+#ifdef WIVRN_CODEC_TESTS
+            if (codec_test_tail_trace.rolling) {
+                // Keep one cumulative latest-observed-per-frame ring. Feedback
+                // for the other eye can still arrive later; this is not a
+                // complete-pair claim. The worker sees only this locked copy.
+                codec_test_tail_copy_begin_ns = os_monotonic_get_ns();
+                std::copy(frame_times.begin(),frame_times.end(),frame_times_compute.begin());
+                codec_test_tail_copy_end_ns = os_monotonic_get_ns();
+            } else
+#endif
+            {
+                std::swap(frame_times, frame_times_compute);
+            }
 #ifdef WIVRN_CODEC_TESTS
             if (codec_test_tail_trace.window) {
                 codec_test_tail_compute_epoch = codec_test_tail_epoch;
                 ++codec_test_tail_batch;
+                if (codec_test_tail_trace.rolling) codec_test_tail_trace.produce_snapshot(codec_test_tail_batch);
                 codec_test_tail_boundary = frame_id - 1;
             }
 #endif
@@ -304,6 +324,10 @@ void pacer::reset()
         codec_test_tail_compute_epoch = codec_test_tail_epoch;
         codec_test_tail_boundary = frame_id - 1;
         std::ranges::fill(frame_times_compute, frame_time{});
+        if (codec_test_tail_trace.rolling) {
+            codec_test_tail_copy_begin_ns = codec_test_tail_copy_end_ns = os_monotonic_get_ns();
+            codec_test_tail_trace.produce_snapshot(codec_test_tail_batch);
+        }
     }
 #endif
 }
