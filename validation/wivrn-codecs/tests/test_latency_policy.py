@@ -143,6 +143,27 @@ class CandidateEvidenceTests(unittest.TestCase):
                 self.mutate(d,'provenance.json',alter)
                 self.assertIn('missing or mismatched helper source provenance',module.inspect_run(d,self.receipt)['errors'])
 
+    def test_publication_traces_and_config_cannot_masquerade_as_untraced(self):
+        for mode in ('flag', 'summary', 'file', 'row', 'config'):
+            d = self.make_run('publication_' + mode)
+            if mode == 'flag':
+                self.mutate(d, 'provenance.json', lambda p: p.update(publication_trace=True))
+            elif mode == 'summary':
+                self.mutate(d, 'summary.json', lambda p: p.update(publication_trace={'status': 'pass'}))
+            elif mode == 'file':
+                (d/'client/codec-test/publication-trace.jsonl').write_text('{}\n')
+                self.seal(d)
+            elif mode == 'row':
+                path = d/'client/codec-test-present.jsonl'
+                rows = [json.loads(line) for line in path.read_text().splitlines()]
+                rows[0]['publication_trace_enabled'] = False
+                path.write_text(''.join(json.dumps(row)+'\n' for row in rows))
+                self.seal(d)
+            else:
+                self.mutate(d, 'client-config-readback.json', lambda p: p.update({'codec-test-publication-trace.txt': '1\n'}))
+            expected = 'publication trace readback is not disabled' if mode == 'config' else 'publication tracing cannot masquerade as an untraced candidate'
+            self.assertIn(expected, module.inspect_run(d, self.receipt)['errors'])
+
     def test_trace_cannot_be_hidden_by_false_provenance_flag(self):
         for key, value in (('candidate_trace_records', 1), ('render_attempts', {})):
             d = self.make_run('hidden_trace_' + key)
