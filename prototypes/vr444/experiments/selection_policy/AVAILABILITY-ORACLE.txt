@@ -1,0 +1,97 @@
+OPTIMISTIC AVAILABILITY COUNT ORACLE -- 2026-10-09
+
+Question
+How many distinct complete frames could any clairvoyant selection sequence
+advance through at the original observed submission deadlines, if ownership,
+waiting and prior-selection constraints were generously relaxed? How many of
+those first selections could have a conditional receipt age strictly below
+15 ms? This asks for a ceiling within frozen recorded data, not a new runtime
+algorithm or a causal performance prediction.
+
+Model
+Each warm observed row offers coherent complete pairs from its actual history
+and retained snapshot. A pair must already be ready at the actual selection
+snapshot. Its age is original successful submission time minus earliest eye
+packet receipt, entirely in the headset-local clock. All offered pairs require
+unambiguous host source identity joins; host timestamps are never subtracted.
+Frames must keep identical metadata across snapshots.
+
+Each oracle path picks at most one new encoded frame per observed row. Encoded
+frame IDs strictly increase and source targets cannot regress. New choices
+must meet a future target limit of 0, 1/2 or 1 times the recorded runtime bound.
+The path may wait arbitrarily and has no ownership costs; it can start from any
+warm available pair. This relaxes actual closest-target/retained/successor and
+queue dependencies. A path may borrow the original algorithm's retained pair.
+Thus the oracle is optimistic even relative to the frozen snapshots. Holding
+that path is not a claim that a decoder would publish the same later history.
+
+Two separate lexicographic objectives are solved:
+  unique_first: maximize new encoded selections, then count under 15 ms;
+  under_threshold_first: maximize count under 15 ms, then new selections.
+Their maxima need not be jointly achievable. A third analysis binary searches
+all observed ages, using the exact count solver at each threshold, to minimize
+the nearest-rank p95 among maximum-cardinality paths. Other path quantiles are
+descriptive and are not claimed to be optimized. Source application identities are
+reported separately because a new encoded ID need not mean a new application
+frame or newly sampled input. Count per observed deadline is not the promotion
+policy's first-to-last unique-frame frequency, so no latency gate is evaluated.
+
+The sparse two-dimensional Fenwick solver finds a maximum weighted chain over
+strictly smaller frame IDs and nondecreasing target times. All candidates at
+one observed deadline are queried before any is inserted, preventing two
+choices at a single deadline. Deterministic earliest-node tie breaks produce
+reproducible path certificates as [trace sequence, encoded frame ID] pairs.
+
+No live improvement is ruled out by this bound. Changes to decode readiness,
+transport arrival, pacing, frame ownership or the successful submission times
+could change the available data. Conversely, a favorable oracle path does not
+prove that any implementable policy can attain it.
+
+Validation
+The independent test oracle exhaustively checks all subsets of 256 small,
+randomized candidate graphs for both objectives. Another 64 exhaustive graphs
+check exact p50/p95/p100 optimization at maximum cardinality. Explicit adversarial cases
+cover same-deadline double choice, repeated encoded IDs, regressing target
+phase, exact 15 ms exclusion, conflicting objectives, missing source joins,
+late readiness, shifted host clocks, invalid integer types, invalid horizons,
+and missing warm samples. Raw run05 evidence remains immutable; any output
+keeps original_run_status=fail and all promotion/measurement flags false.
+
+Reproduce (offline only; output must be new and outside the acquisition)
+  python3 -m unittest discover -s validation/wivrn-codecs/tests
+  python3 prototypes/vr444/experiments/selection_policy/availability_oracle.py \
+    /home/blux/spatial-bridge/validation/results/cpu-sub15-live-20261009T051345Z/05-closest-traced \
+    --out /tmp/availability-oracle-new.json
+
+Recorded run05 result
+availability-oracle-20261009.json verifies all 300 original manifest files and
+contains reproducible path certificates for 1,900 warm observed deadlines over
+21.284347901 seconds. The original acquisition status stays fail.
+
+future target limit      0 periods     1/2 period      1 period
+any available age<15ms          180            184         1544 deadlines
+max distinct firsts           1900           1900         1900
+  best age<15ms count           179            184          184
+max age<15ms firsts             180            184         1534
+  path's distinct firsts      1899           1900         1730
+minimum p95 at 1900 firsts 27.500888      26.927659    26.927659 ms
+
+The last row is an exact nearest-rank quantile optimum in this relaxed model,
+independently checked against exhaustive small graphs. With all 1,900 observed
+deadlines carrying distinct first selections, the full-period oracle cannot
+lower p95 below the observed control's 26.927659 ms. Allowing the oracle to
+sacrifice cadence finds many more under-15 ms selections, consistent with the
+ready-successor/horizon experiments' cadence tradeoff.
+
+The full-period count ceiling of 1,534 under-15 first selections also means
+that a 95th-percentile-under-15 path cannot contain more than 1,614 distinct
+firsts in this fixed warm window (floor(1534*100/95)). This is a necessary count
+bound only, not a live frequency or promotion-gate result. It does not account
+for how an alternative path's first/last endpoints would shift the policy's
+measured frequency denominator, and it does not prove that 1,614 is attainable.
+
+225 Python tests pass in oracle-validation-20261009.json. No headset activity,
+native build, original-evidence write, or performance measurement was used.
+The strongest next evidence need is altered arrival/readiness/pacing, not an
+assumption that a different choice among the same frozen handles can preserve
+all current first-frame deadlines and produce a sub-15 ms p95.
