@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "g++",
+    "-std=c++20",
+    "-O2",
+    "-I/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common",
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/wivrn-codecs/integration/rrb_reference.cpp",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/build/codec-server/common/libwivrn-test-codec.a",
+    "-pthread",
+    "-o",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/build/codec-server/rrb-reference"
+  ],
+  "returncode": 0,
+  "elapsed_s": 0.5867611480061896,
+  "source_sha256": {
+    "/home/blux/spatial-bridge/.worktrees/sub15-dual-goal/validation/wivrn-codecs/integration/rrb_reference.cpp": "fc07580f0869030cdc894b860f24abed55f4bb5749bca21fbf250dd618956afe",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/build/codec-server/common/libwivrn-test-codec.a": "38ada5914fcad6fe8490fd3576af30034997e6e2f4dd048a2e4b5e6d5767f6e5",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/band_encoder.hpp": "b31405afb1f9a5c58880cde589993cf9e3e74e2e286d1f9ea901b9c6914cabb5",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/direct_rgb.hpp": "c1b78a5e96522a1aa9225e210112407b96ac9d67198e5c9b6429b50e99d33556",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/encode_rgb.hpp": "e6c0ee4672883d58d28232ea9db2b2f90116b88613f3744e1d02f3a95253ac09",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/encoder_base.hpp": "4cb6722c87ff3c0f6e085f183eaccbb08f3fb55fc0a87028fa7ca03dae5a9a72",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/rowblocks.hpp": "e6a1c2c9e21f2145168cae1a805ae47e2a5bfd6a8c04396ecec7631eb55a236d",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/rowfilter.hpp": "03db15be3fc88e91d697bd7818fb1dc653456837e6f3dfe5c7f06af494ab9439",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/simd.hpp": "941cdd3dbd09db0fc708b3d4b55b3d608cfc6462a6f12d29173f079c4c1c3703",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/workers.hpp": "45aa59251617793c914ea14613bb79e0803811ba98d3faee19ddb435611368d1",
+    "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-build/common/codec_test/rrb/wpc.hpp": "6a5e96c8bae24f9fa39947ec014f2a86c68b43dc3e6c1885df316ae52ff85763"
+  },
+  "changed_inputs": [],
+  "binary_sha256": "c12050116d960d256fc59d3db248c5b1ac6196a99112be4e9d43093bc4bfc8d4"
+}

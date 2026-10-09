@@ -79,7 +79,7 @@ class NativeComparisonGates(unittest.TestCase):
         self.assertIn(name, compare.CONFIG_FILES)
         self.assertTrue(json.loads(compare.quality_settings(args)[name])['enabled'])
         for changes in (dict(quality_capture=1), dict(quality_max_pairs=True), dict(quality_max_pairs=9),
-                        dict(quality_frame_stride=0), dict(quality_frame_stride=901), dict(mode='native-hevc')):
+                        dict(quality_frame_stride=0), dict(quality_frame_stride=91), dict(quality_frame_stride=901), dict(mode='native-hevc')):
             with self.assertRaises(ValueError): compare.quality_settings(Namespace(**(vars(args) | changes)))
         with tempfile.TemporaryDirectory() as folder:
             with self.assertRaisesRegex(ValueError, 'capture source'):

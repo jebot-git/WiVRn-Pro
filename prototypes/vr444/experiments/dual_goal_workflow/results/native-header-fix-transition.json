@@ -1,0 +1,6 @@
+{
+  "path": "client/decoder/staged_rowblocks_image.cpp",
+  "before_sha256": "fc09d9443333d00d55aff4ff0e7a25d0ad4bf621691618b466e299a67e413cb7",
+  "after_sha256": "f1eb2e56e99e525fb9b2670d0b6a0593c18e2c4794bd340b6664693edc47d033",
+  "reason": "Declare std::terminate directly through <exception> in actual Android TU"
+}

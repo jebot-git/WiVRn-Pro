@@ -1,0 +1,7 @@
+{
+  "scope": "Mirror retained isolated source tracked deletions absent from rsync overlay; only exact pristine84fad files innewownedtree removed. Retained source untouched.",
+  "removed": {
+    "client/java/BroadcastReceiver.java": "7f2ab674a5eb1d249191bb4b6ae8a2940d53da2ac472afda9c0478ade0577e74",
+    "client/java/MainActivity.java": "7467e6167c7e8283d1794312ab04bbedc368a5f87d0ddacf647958e352b04679"
+  }
+}

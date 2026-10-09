@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "staged_rowblocks_image.h"
+#include <exception>
 #include <array>
 #include <cstring>
 #include <limits>

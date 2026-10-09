@@ -113,6 +113,8 @@ def quality_settings(args):
         raise ValueError('invalid bounded quality capture configuration')
     if enabled and args.mode not in CUSTOM_MODES:
         raise ValueError('submitted quality capture currently requires a custom RGB path')
+    if enabled and stride % 90:
+        raise ValueError('quality capture stride must align with the 90-frame host reference cadence')
     if not enabled and (pairs != 6 or stride != 90):
         raise ValueError('quality capture limits require --quality-capture')
     return {'codec-test-quality-capture.json': json.dumps(
@@ -353,9 +355,11 @@ def run(args):
     server = source/'build/codec-server/server/wivrn-pro-server'
     manifest = source/'build/codec-server/openxr_wivrn-dev.json'
     apk = source/'build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk'
-    for path in (server, manifest, apk):
+    reference_binary = source/'build/codec-server/rrb-reference'
+    for path in (server, manifest, apk) + ((reference_binary,) if args.mode == 'custom-rrb32' else ()):
         if not path.is_file():
             raise ValueError('existing build artifact missing: '+str(path))
+    reference_sha256 = sha(reference_binary) if args.mode == 'custom-rrb32' else None
     output.mkdir(parents=True, exist_ok=False)
     for folder in ('host', 'client', 'config-before'):
         (output/folder).mkdir()
@@ -428,6 +432,8 @@ def run(args):
             'rrb_source': getattr(args, 'rrb_source', 'vr444') if args.mode == 'custom-rrb32' else None,
             'rrb_workers': getattr(args, 'rrb_workers', 4) if args.mode == 'custom-rrb32' else None,
             'rrb_output': getattr(args, 'rrb_output', 'cpu') if args.mode == 'custom-rrb32' else None,
+            'rrb_reference_binary_sha256': reference_sha256,
+            'rrb_reference_source_sha256': sha(Path(__file__).with_name('rrb_reference.cpp')) if args.mode == 'custom-rrb32' else None,
             'selection_phase': args.selection_phase, 'candidate_trace': args.candidate_trace,
             'cpu_output': args.cpu_output, 'selection_policy': args.selection_policy,
             'source_trace': args.source_trace, 'pacer_trace': getattr(args, 'pacer_trace', False),
@@ -437,6 +443,7 @@ def run(args):
             'quality_frame_stride': getattr(args, 'quality_frame_stride', 90),
             'scene_reference_space': 'Local',
             'application_source_sha256': sha(source/'client/application.cpp'),
+            'host_application_sha256': sha(Path('/usr/bin/hello_xr')),
             'application_header_sha256': sha(source/'client/application.h'),
             'direct_decoder_source_sha256': sha(source/'common/codec_test/vr444/direct.cpp'),
             'client_decoder_source_sha256': sha(source/'client/decoder/test_decoder.cpp'),
@@ -613,6 +620,17 @@ def run(args):
             if args.mode == 'custom-rrb32':
                 location = 'actual GPU image readback' if getattr(args, 'rrb_output', 'cpu') == 'staged-gpu' else 'shared pair CPU output'
                 custom['decode_output_reference_scope'] = f'RRB32 {location}, compared with explicit host codec reference; source equality separately scored; not final rendered/displayed pixels'
+                audit_path = Path(__file__).with_name('rrb_payload_audit.py')
+                spec = importlib.util.spec_from_file_location('codec_rrb_payload_audit', audit_path)
+                audit_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(audit_module)
+                try:
+                    custom['rrb_payload_audit'] = audit_module.audit(
+                        output, reference_binary, reference_sha256, getattr(args, 'rrb_source', 'vr444'))
+                except Exception as exc:
+                    custom['rrb_payload_audit'] = {'status': 'fail', 'errors': [str(exc)]}
+                    custom['status'] = 'fail'
+                custom['rrb_payload_audit_source_sha256'] = sha(audit_path)
             elif args.decoder_backend == 'cpu-neon':
                 location = 'mapped staging snapshot after upload completion' if args.cpu_output == 'mapped-direct' else 'cached CPU output before upload'
                 custom['decode_output_reference_scope'] = f'CPU NEON RGBA from {location}, compared byte-for-byte with host reference; not a texture readback or displayed pixel check'
@@ -731,7 +749,7 @@ def run(args):
     if result['publication_trace']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
         result['promotion_status'] = 'blocked'
-    if args.source_trace or getattr(args, 'pacer_trace', False) or getattr(args, 'publication_trace', False) or getattr(args, 'quality_capture', False) or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
+    if args.mode == 'custom-rrb32' or args.source_trace or getattr(args, 'pacer_trace', False) or getattr(args, 'publication_trace', False) or getattr(args, 'quality_capture', False) or args.cpu_output == 'mapped-direct' or args.selection_policy != 'closest-target':
         result['promotion_status'] = 'blocked_experimental_path'
         result['release_ready'] = False
     # Preserve matching log lines for review without treating a support probe or
