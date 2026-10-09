@@ -113,3 +113,19 @@ not a new device result. Negative controls cover grammar, source/build/headset
 splices, uploaded shader mismatch, malformed outputs, missing/reordered/failed
 commands, host timeout, software GPU identity, symlinks, source/binary controls,
 changed snapshots and an overwrite/restore capture race.
+
+Legacy native captures recorded the ADB endpoint in headset_serial_recorded.
+That value is retained literally and is never relabeled a physical serial.
+For those captures preparation additionally requires all four arguments:
+  --native-campaign NATIVE_CAMPAIGN/campaign.json --native-campaign-sha256 SHA
+  --native-plan NATIVE_PLAN.json --native-plan-sha256 SHA
+The bridge verifies the fixed historical campaign runner, exact successful run
+argv, endpoint, build/harness pins, capture/adapter run manifest, and the original
+successful getprop ro.serialno command's hashed stdout/stderr. The pinned plan's
+expected physical serial must match both that result and the planned replay
+serial. The original native campaign must have completed with its recorded
+cleanup checks satisfied. All bridge receipts, serial logs, selected manifest,
+provenance and summary remain additional bound controls in the replay plan and
+are checked again by the output auditor. The result exposes the physical serial
+and original recorded endpoint separately. This permits immutable old captures
+to be reused without weakening actual headset verification or rerunning them.

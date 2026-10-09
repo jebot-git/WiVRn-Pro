@@ -12,6 +12,19 @@ def sha(raw):return hashlib.sha256(raw).hexdigest()
 def controls():
     shaders,_=capture.renderer(NATIVE,NATIVE_SHA)
     return dict(build_receipt_sha256=NATIVE_SHA,candidate_capture_audit=dict(headset_serial_recorded='SYNTHETIC_ONLY'),renderer_shaders={name:dict(sha256=sha(code),literal_equivalence_recomputed=True,actual_bytes=len(code))for name,code in shaders.items()})
+def bridge_fixture(root):
+    root.mkdir();(root/'preflight').mkdir();run=root/'native';run.mkdir();target='192.0.2.1:5555';serial='SYNTHETIC_ONLY';harness='1'*64
+    provenance=dict(headset_serial=target,harness_sha256=harness);put(run/'provenance.json',provenance);put(run/'summary.json',dict(status='pass'))
+    hashes={name:sha((run/name).read_bytes())for name in('provenance.json','summary.json')};put(run/'hashes.json',hashes)
+    source={'validation/wivrn-codecs/integration/native_compare.py':harness}
+    argv=['python3','native_compare.py','--out','{fresh_output_root}/native','--serial',target]
+    plan=dict(adb_target_last_observed=target,expected_physical_serial=serial,build_receipt_sha256=NATIVE_SHA,harness_sha256=harness,runs=[dict(name='native',argv=argv)])
+    put(root/'plan.json',plan);stdout=(serial+'\n').encode();(root/'preflight/serial.stdout').write_bytes(stdout);(root/'preflight/serial.stderr').write_bytes(b'')
+    campaign=dict(status='complete',headset_used=True,runner_sha256=capture.CAMPAIGN_RUNNER_SHA,plan_sha256=sha((root/'plan.json').read_bytes()),analysis_sources_unchanged=True,analysis_source_sha256_before=source,analysis_source_sha256_after=source,final_config_matches_initial=True,own_reverse_absent=True,dedicated_app_stopped=True,production_package_unchanged=True,final_check_errors=[],commands=[dict(label='serial',argv=['adb','-s',target,'shell','getprop','ro.serialno'],returncode=0,stdout_sha256=sha(stdout),stderr_sha256=sha(b''))],runs=[dict(name='native',argv=[v.replace('{fresh_output_root}',str(root))for v in argv],returncode=0,evidence_status='pass',summary_sha256=hashes['summary.json'])])
+    put(root/'campaign.json',campaign)
+    bridge={kind:dict(path=str(root/(kind+'.json')),sha256=sha((root/(kind+'.json')).read_bytes()))for kind in('plan','campaign')}
+    manifest=sha((run/'hashes.json').read_bytes());adapter=dict(build_receipt_sha256=NATIVE_SHA,run_hashes_sha256=manifest,run_inputs={name:dict(sha256=value,bytes=len((run/name).read_bytes()))for name,value in hashes.items()},candidate_capture_audit=dict(headset_serial_recorded=target,run_hashes_sha256=manifest))
+    return adapter,serial,target,bridge,campaign
 class ReplayCapture(unittest.TestCase):
     def plan(self,root):
         raw,_=job([1],[1]);(root/'source.rlp').write_bytes(raw)
@@ -112,6 +125,37 @@ class ReplayCapture(unittest.TestCase):
             adapter['candidate_capture_audit']['headset_serial_recorded']='OTHER_HEADSET';put(adapter_path,adapter);changed=sha(adapter_path.read_bytes())
             p['replay']['source_adapter_sha256']=changed;p['replay']['control_sha256'][str(adapter_path)]=changed;put(plan,p);r['plan_sha256']=sha(plan.read_bytes());put(directory/'receipt.json',r)
             with self.assertRaisesRegex(ValueError,'headset identity splice'):self.invoke(root,directory,plan)
+    def test_legacy_endpoint_requires_physical_campaign_bridge(self):
+        with tempfile.TemporaryDirectory()as t:
+            adapter,serial,target,bridge,_=bridge_fixture(Path(t)/'campaign')
+            with self.assertRaises(ValueError):capture.campaign_identity(adapter,serial,target,None)
+            bindings=capture.campaign_identity(adapter,serial,target,bridge)
+            self.assertEqual(len(bindings),7);self.assertEqual(adapter['candidate_capture_audit']['headset_serial_recorded'],target)
+    def test_campaign_bridge_rejects_rebound_wrong_evidence(self):
+        for mode in range(9):
+            with self.subTest(mode=mode),tempfile.TemporaryDirectory()as t:
+                root=Path(t)/'campaign';adapter,serial,target,bridge,c=bridge_fixture(root)
+                if mode==0:c['commands'][0]['argv'][2]='192.0.2.2:5555'
+                if mode==1:c['commands'][0]['returncode']=1
+                if mode==2:c['commands'][0]['host_timeout']=True
+                if mode==3:c['commands'].append(copy.deepcopy(c['commands'][0]))
+                if mode==4:c['runs'][0]['argv'][-1]='192.0.2.2:5555'
+                if mode==5:adapter['run_hashes_sha256']='0'*64
+                if mode==6:adapter['run_inputs']['provenance.json']['sha256']='0'*64
+                if mode==7:
+                    raw=b'OTHER_HEADSET\n';(root/'preflight/serial.stdout').write_bytes(raw);c['commands'][0]['stdout_sha256']=sha(raw)
+                if mode==8:c['final_config_matches_initial']=False
+                put(root/'campaign.json',c);bridge['campaign']['sha256']=sha((root/'campaign.json').read_bytes())
+                with self.assertRaises(ValueError):capture.campaign_identity(adapter,serial,target,bridge)
+    def test_full_output_audit_preserves_legacy_and_physical_identities(self):
+        with tempfile.TemporaryDirectory()as t:
+            root=Path(t);directory,plan,r=self.fixture(root);adapter_path=root/'adapter.json';adapter=json.loads(adapter_path.read_bytes())
+            fields,serial,target,bridge,_=bridge_fixture(root/'campaign');adapter.update(fields);put(adapter_path,adapter);p=json.loads(plan.read_bytes())
+            p['replay']['source_adapter_sha256']=sha(adapter_path.read_bytes());p['replay']['control_sha256'][str(adapter_path)]=sha(adapter_path.read_bytes())
+            p['replay']['native_identity_bridge']=bridge;p['replay']['control_sha256'].update(capture.campaign_identity(adapter,serial,target,bridge));put(plan,p)
+            r['plan_sha256']=sha(plan.read_bytes());put(directory/'receipt.json',r);result=self.invoke(root,directory,plan)
+            self.assertEqual(result['headset_physical_serial'],serial);self.assertEqual(result['native_recorded_identity'],target)
+            self.assertEqual(result['native_identity_method'],'pinned_campaign_serial_bridge')
     def test_replace_restore_raw_capture_uses_hashed_snapshot(self):
         with tempfile.TemporaryDirectory()as t:
             root=Path(t);directory,plan,r=self.fixture(root);target=directory/'right-bytes.stdout';before=target.read_bytes();original=capture.read;replaced=False
