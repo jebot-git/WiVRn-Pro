@@ -583,6 +583,28 @@ void foveation::update_ubo(
 	std::memcpy(gpu_buffer.data<ubo_data>(), &ubo, sizeof(ubo));
 }
 
+#ifdef WIVRN_CODEC_TESTS
+void foveation::test_source_mapping(codec_test::source_mapping::Record& out)
+{
+    using namespace codec_test::source_mapping;
+    std::lock_guard lock(mutex);
+    out.width=foveated_size.width;out.height=foveated_size.height;
+    if(!out.width||!out.height||out.width>max_axis||out.height>max_axis||uint64_t(out.width)*out.height>4194304)
+        throw std::runtime_error("source mapping encoded geometry exceeds bounds");
+    const auto actual=gpu_buffer.data<ubo_data>();
+    for(size_t eye=0;eye<2;++eye){
+        auto& e=out.eyes[eye];
+        if(params[eye].x.empty()||params[eye].y.empty()||params[eye].x.size()>max_params||params[eye].y.size()>max_params)
+            throw std::runtime_error("source mapping parameter population exceeds bounds");
+        e.x_params_count=params[eye].x.size();e.y_params_count=params[eye].y.size();
+        std::copy(params[eye].x.begin(),params[eye].x.end(),e.x_params.begin());
+        std::copy(params[eye].y.begin(),params[eye].y.end(),e.y_params.begin());
+        std::copy_n(actual->x+eye*RENDER_FOVEATION_BUFFER_DIMENSIONS,out.width+1,e.x_edges.begin());
+        std::copy_n(actual->y+eye*RENDER_FOVEATION_BUFFER_DIMENSIONS,out.height+1,e.y_edges.begin());
+    }
+}
+#endif
+
 std::array<to_headset::foveation_parameter, 2> foveation::foveate(
         vk::raii::Device & device,
         vk::raii::CommandBuffer & cmd,

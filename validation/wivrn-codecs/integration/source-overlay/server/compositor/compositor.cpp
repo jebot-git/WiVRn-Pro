@@ -26,6 +26,13 @@
 #include "utils/performance.h"
 #include "wivrn_ipc.h"
 #include <cmath>
+#ifdef WIVRN_CODEC_TESTS
+#include "codec_test/source_mapping.h"
+#include "vk/vk_format.h"
+#include "codec_test/metadata.h"
+#include <optional>
+#include <bit>
+#endif
 
 // Monado includes
 #include "driver/xrt_cast.h"
@@ -35,7 +42,7 @@
 #include "util/u_debug.h"
 #include "util/u_handles.h"
 #include "util/u_time.h"
-#include "vk/vk_helpers.h"
+#include "vk/vk_format.h"
 
 #include "driver/wivrn_session.h"
 #include "encoder/video_encoder.h"
@@ -320,6 +327,10 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 		return XRT_SUCCESS;
 	}
 
+#ifdef WIVRN_CODEC_TESTS
+    codec_test::source_mapping::Completion source_mapping_completion(codec_test::source_mapping::trace());
+#endif
+
 #ifdef XRT_FEATURE_RENDERDOC
 	if (auto r = renderdoc())
 		r->StartFrameCapture(NULL, NULL);
@@ -381,6 +392,14 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	cmd.resetQueryPool(*query_pool, 0, 3);
 	cmd.writeTimestamp(vk::PipelineStageFlagBits::eTopOfPipe, *query_pool, 0);
 
+#ifdef WIVRN_CODEC_TESTS
+    std::optional<codec_test::source_mapping::Record> source_mapping_record;
+    if(codec_test::source_mapping::trace().sample(frame.rendering.id)) {
+        source_mapping_record.emplace();auto& r=*source_mapping_record;
+        r.compositor=reinterpret_cast<uintptr_t>(this);r.frame=frame.rendering.id;
+        r.layer_count=layer_accum.layer_count;
+    }
+#endif
 	bool flip_y = false;
 	std::array<vk::ImageView, 2> src;
 	std::array<xrt_rect, 2> src_rect;
@@ -394,6 +413,13 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	     layer_accum.layers[0].data.type == XRT_LAYER_PROJECTION_DEPTH))
 	{
 		const auto & layer = layer_accum.layers[0];
+#ifdef WIVRN_CODEC_TESTS
+        if(source_mapping_record){auto& r=*source_mapping_record;r.direct_projection=true;
+            r.layer_type=layer.data.type;r.layer_flags=layer.data.flags;r.flip_y=layer.data.flip_y;
+            r.view_space=(layer.data.flags&XRT_LAYER_COMPOSITION_VIEW_SPACE_BIT)!=0;
+            r.layer_target_ns=layer.data.timestamp;
+        }
+#endif
 		for (int view = 0; view < 2; ++view)
 		{
 			const auto & data = (layer.data.type == XRT_LAYER_PROJECTION ? layer.data.proj.v : layer.data.depth.v)[view];
@@ -406,6 +432,27 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 			flip_y = layer.data.flip_y;
 			view_info.pose[view] = xrt_cast(data.pose);
 			view_info.fov[view] = xrt_cast(data.fov);
+#ifdef WIVRN_CODEC_TESTS
+            if(source_mapping_record){
+                auto& e=source_mapping_record->eyes[view];
+                const auto* chain=reinterpret_cast<const struct comp_swapchain*>(comp_layer_get_swapchain(&layer,view));
+                const auto& ci=chain->vkic.info;
+                e.swapchain=reinterpret_cast<uintptr_t>(chain);
+                e.image=(uint64_t)(VkImage)chain->vkic.images[data.sub.image_index].handle;
+                e.image_view=(uint64_t)(VkImageView)src[view];
+                e.image_index=data.sub.image_index;e.array_index=data.sub.array_index;
+                e.source_width=ci.width;e.source_height=ci.height;e.source_create_flags=ci.create;e.source_format=ci.format;
+                e.source_array_size=ci.array_size;e.source_face_count=ci.face_count;e.source_sample_count=ci.sample_count;
+                e.source_mip_count=ci.mip_count;e.source_image_count=chain->vkic.image_count;
+                // Mirrors pinned comp_swapchain view creation. Vulkan has no
+                // image-view format query; this is a source-bound derivation.
+                e.view_format=(ci.create&XRT_SWAPCHAIN_CREATE_SAMPLE_AS_SRGB)
+                    ?vk_format_convert_unorm_to_srgb((VkFormat)ci.format):(VkFormat)ci.format;
+                e.rect={data.sub.rect.offset.w,data.sub.rect.offset.h,data.sub.rect.extent.w,data.sub.rect.extent.h};
+                e.fov_bits_lrud={std::bit_cast<uint32_t>(data.fov.angle_left),std::bit_cast<uint32_t>(data.fov.angle_right),
+                    std::bit_cast<uint32_t>(data.fov.angle_up),std::bit_cast<uint32_t>(data.fov.angle_down)};
+            }
+#endif
 		}
 	}
 	else
@@ -485,6 +532,12 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	        src_rect,
 	        src_fov,
 	        view_info.alpha);
+#ifdef WIVRN_CODEC_TESTS
+    if(source_mapping_record){
+        foveation.test_source_mapping(*source_mapping_record);
+        source_mapping_record->warp=codec_test::warp_hash(view_info);
+    }
+#endif
 
 	for (auto & encoder: encoders)
 	{
@@ -547,6 +600,10 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 		});
 	}
 
+#ifdef WIVRN_CODEC_TESTS
+    if(source_mapping_record){source_mapping_record->semaphore_value=sem_info.value;
+        source_mapping_record->submit_return_host_ns=os_monotonic_get_ns();}
+#endif
 	pacer.mark_timing_point(COMP_TARGET_TIMING_POINT_SUBMIT_END, frame.rendering.id, os_monotonic_get_ns());
 	auto info = pacer.present_to_info(frame.rendering.desired_present_time_ns);
 
@@ -576,17 +633,26 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 
 	comp_frame_clear_locked(&frame.rendering);
 
-	if (vk.device.waitSemaphores(vk::SemaphoreWaitInfo{
+	const auto compositor_completion = vk.device.waitSemaphores(vk::SemaphoreWaitInfo{
 	                                     .semaphoreCount = 1,
 	                                     .pSemaphores = &*sem,
 	                                     .pValues = &sem_info.value,
 	                             },
-	                             U_TIME_1S_IN_NS) == vk::Result::eTimeout)
+	                             U_TIME_1S_IN_NS);
+	if (compositor_completion == vk::Result::eTimeout)
 	{
 		U_LOG_IFL_W(log_level, "compositor timeout");
+
 	}
 	else
 	{
+#ifdef WIVRN_CODEC_TESTS
+        if(compositor_completion==vk::Result::eSuccess){
+            if(source_mapping_record){source_mapping_record->complete_host_ns=os_monotonic_get_ns();
+                codec_test::source_mapping::trace().append(*source_mapping_record);}
+            source_mapping_completion.complete();
+        }
+#endif
 		auto [res, ts] = query_pool.getResults<uint64_t>(
 		        0,
 		        3,
@@ -830,6 +896,7 @@ compositor::compositor(wivrn_session & session) :
 {
 #ifdef WIVRN_CODEC_TESTS
 	(void)codec_test::source_trace();
+    (void)codec_test::source_mapping::trace();
 #endif
 	comp_base * c_base = this;
 	// Ensure we can safely cast pointers
@@ -907,6 +974,7 @@ compositor::~compositor()
 	encoder_thread.join();
 #ifdef WIVRN_CODEC_TESTS
 	codec_test::source_trace().flush();
+    codec_test::source_mapping::trace().flush();
 #endif
 	comp_base * c_base = this;
 	comp_swapchain_shared_garbage_collect(&cscs);
