@@ -73,3 +73,43 @@ Full central10-degree quality requires source/geometry/chroma provenance and the
 root's conservative cone comparator. Even exact submitted-image agreement does
 not prove original application equality or displayed photons; source-to-host and
 visible-artifact stages remain independent gates.
+
+Bounded actual-headset collection (root executes the unchanged runner only):
+  python3 capture.py prepare --job-receipt JOB_ADAPTER/audit.json \
+    --job-receipt-sha256 SHA --native-receipt NATIVE_BUILD_RECEIPT \
+    --native-receipt-sha256 SHA --bundle /tmp/FRESH_REPLAY_BUNDLE \
+    --adb-target TARGET --serial SERIAL
+  python3 ../headset_review_smoke/run.py /tmp/FRESH_REPLAY_BUNDLE/plan.json \
+    --out /tmp/FRESH_DEVICE_CAPTURE
+  python3 capture.py audit /tmp/FRESH_DEVICE_CAPTURE \
+    --plan /tmp/FRESH_REPLAY_BUNDLE/plan.json \
+    --runner ../headset_review_smoke/run.py --output /tmp/FRESH_REPLAY_AUDIT
+
+capture.py itself never invokes ADB or GPU commands. Preparation runs only the
+already-qualified host --cpu-only parser on an immutable snapshot. It requires
+the source adapter's build receipt, exact native shader bytes and headset serial
+to agree, independently checks selected optimized/nonoptimized binary SPIR-V
+against its actual embedded ASCII initializer, and snapshots four upload files.
+The standalone Android executable/source qualification stays pinned at508c290b;
+this is not a fresh Android build or a native-application ownership test.
+
+The fixed acquisition is one stereo render plus one right-eye omission render,
+each under a60-second device watchdog and75-second host command bound. It also
+runs the device's CPU parser and collects exact two-eye hashes/raw bytes. Raw
+files use base64 transport because the unchanged runner decodes stdout as UTF-8.
+All ten planned commands, four uploads,26 total acquisition commands and53 raw
+capture/receipt files are mandatory. The audit joins exact argv, bounds, returns,
+deployed digest/path pairs, hardware identity and verified owned-directory
+cleanup. It parses the captured hashed byte buffers and rechecks the complete
+capture inventory, not a second unbound view of each result. A normal right-eye
+image must differ from its actual-device0x5a omission sentinel, while the left
+hash must remain identical. The two retained outputs keep their actual RGBA/BGRA
+ordering. Device output and native submitted-capture comparison are separate
+gates; the collection receipt always leaves quality_qualified=false.
+
+test_capture.py uses simulated acquisition logs and the pinned local binaries,
+native build receipt and shader files. Its pass is a fresh planner/auditor test,
+not a new device result. Negative controls cover grammar, source/build/headset
+splices, uploaded shader mismatch, malformed outputs, missing/reordered/failed
+commands, host timeout, software GPU identity, symlinks, source/binary controls,
+changed snapshots and an overwrite/restore capture race.
