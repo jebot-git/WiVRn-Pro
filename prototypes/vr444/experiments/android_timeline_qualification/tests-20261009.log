@@ -1,0 +1,11 @@
+test_both_paths (test_audit.Tests.test_both_paths) ... ok
+test_complete_accounting (test_audit.Tests.test_complete_accounting) ... ok
+test_counter_types_and_bounds (test_audit.Tests.test_counter_types_and_bounds) ... ok
+test_exact_scope (test_audit.Tests.test_exact_scope) ... ok
+test_missing_counters (test_audit.Tests.test_missing_counters) ... ok
+test_unexercised_model_rejected (test_audit.Tests.test_unexercised_model_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.001s
+
+OK

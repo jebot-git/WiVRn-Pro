@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "pass": true,
+  "test_count": 6,
+  "device_execution_by_this_tool": false,
+  "source_sha256": {
+    "prototypes/vr444/experiments/android_timeline_qualification/audit.py": "7ea3eca6d471217ca970c5f4364de241ce0b919d7a332a95242e5515c4272f49",
+    "prototypes/vr444/experiments/android_timeline_qualification/test_audit.py": "7455764a049912ece0c2b6b8727e72abb92056cd33f3ebf311c386f76ce8d46b"
+  },
+  "log_sha256": "19cfdf8eca5051cbed57929c493bf834d0ec2fadc038a27a64e315981c6b0e63",
+  "runtime_analysis_sha256": "63917ef6e7f29c6ca849e56f0a48f0c6504cae8efc32410e5b285aa97671574a"
+}
