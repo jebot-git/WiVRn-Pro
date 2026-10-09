@@ -79,6 +79,10 @@ and maximum4MP high-entropy raw fallback. Four independent Python-authored golde
 wires use manual LZ4 tokens and zlib CRCs, covering raw odd dimensions, compressed
 plain/up blocks, mixed modes and predictor reset into a different final-row color.
 Android ARM64 API29 executables cross-compile; no device/runtime test occurred.
+Independent compositor-team code review found no bounds or partial-output blocker
+in canonical table parsing, block geometry or pre-output validation. Its contract
+nit was addressed by clarifying that alias precondition rejection preserves prior
+workspace state; malformed nonaliasing reconstruction clears residuals.
 
 Matched host comparison
 38 inputs =24 captured eyes (12 stereo pairs) +14 synthetic eyes. Every output is

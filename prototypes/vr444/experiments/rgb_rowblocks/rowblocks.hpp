@@ -60,7 +60,8 @@ inline Index inspect(View wire){
     need(cursor==wire.size());return index;
 }
 // All CRC/grammar checks and all decompressions complete before the residual
-// buffer becomes eligible for a downstream consumer. Failure clears it.
+// buffer becomes eligible for a downstream consumer. Malformed nonaliasing input
+// clears it. The alias precondition is checked before changing workspace state.
 inline Index unpack_rgb(View wire,Workspace&w){
     need(!alias(wire,w));w.rgb.clear();
     try{auto index=inspect(wire);w.rgb.resize(size_t(index.width)*index.height*3);
