@@ -1,0 +1,19 @@
+Finite campaign result, 2026-10-09
+=================================
+
+Passed 432 exhaustive publication-order cases, 24 clean/repair controls and
+4800 seeded two-frame mutation schedules. All 240 mutator/K/shape cells ran
+exactly 20 schedules. The order cases published 216 exact pairs and withheld
+216 as required; the clean and one-source-loss controls published both frames.
+
+The seeded phase published 4948 exact canonical stereo pairs; 563 trials
+withheld both frames. The remaining trials published one or two strictly
+advancing expected frames. No changed eye bytes, wrong warp/frame, expired
+publication or old-configuration publication occurred. All retained-state
+checks passed. The largest observed post-receive retained payload was 51422
+bytes, excluding transient allocations, metadata and published pairs.
+
+This result measures correctness for declared finite synthetic schedules, not
+delivery probability or network/codec/GPU latency. Protocol sources matched
+the pinned corrected VWG commit before execution and all four campaign/protocol
+source hashes remained unchanged. No source-format change or promotion follows.
