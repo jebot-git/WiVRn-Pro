@@ -1,7 +1,8 @@
 Private submitted-image replay renderer
 ======================================
 This is a bounded Vulkan graphics reference for the research quality path. It
-has no OpenXR, networking, device discovery or installed-application interfaces.
+has no OpenXR, networking, ADB or installed-application interfaces. It enumerates
+local Vulkan physical devices solely to select the explicit GPU index.
 It uploads independently acquired, opaque, pre-codec post-host-foveation RGBA
 source pixels and uses the native reprojection shaders to render two private
 SRGB array layers. Readback produces the actual output channel codes. A separate
