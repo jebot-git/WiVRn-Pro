@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "files_verified": 95,
+  "changed": {
+    "client/scenes/stream.cpp": {
+      "before_sha256": "2fc9c413807d3bbab85c6e73ce38380e03198b3477ac3f686083da32d25e6645",
+      "after_sha256": "76f0c9ce72f9b12fceb8f0e138a2d8f8b15e13d0438035d7b07b570f2e30da4f"
+    },
+    "common/codec_test/quality_geometry.h": {
+      "before_sha256": null,
+      "after_sha256": "b0b410bbfaa095ea7fc1e25e1517666d8633e759b51105d278ea57ed383f8b10"
+    },
+    "server/encoder/encoder_settings.cpp": {
+      "before_sha256": "c3f5c472905cd56ff2cf53fa68a19bd30363fe061254257d5f58a2e86fbf2271",
+      "after_sha256": "7934ed8f6e0c925f2aa72b3966f5c69aeb2220348c5227080e8c0406ad10f322"
+    }
+  }
+}

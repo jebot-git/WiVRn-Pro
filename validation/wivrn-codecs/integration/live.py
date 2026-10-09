@@ -270,6 +270,10 @@ def capture_geometry(output, mode, path, encoded):
             and provenance.get('geometry') is None):
         raise ValueError('invalid larger Q1 quality geometry profile')
     payload_path = path.with_suffix('.envelope')
+    expected = {0.4: [768, 864], 0.5: [960, 1056], 0.6: [1152, 1280]}[provenance['stream_scale']]
+    token = 'q1-'+str(expected[0])+'x'+str(expected[1])
+    if provenance.get('quality_geometry_requested') != expected or provenance.get('quality_geometry_token') != token:
+        raise ValueError('explicit native quality geometry binding missing')
     with payload_path.open('rb') as source:
         raw = source.read(262145)
     if not 48 < len(raw) <= 262144:
@@ -284,8 +288,8 @@ def capture_geometry(output, mode, path, encoded):
             and size == len(raw)-48 and zlib.crc32(raw[48:]) == crc
             and 2 <= width <= 4096 and 2 <= height <= 4096 and width*height <= 4194304):
         raise ValueError('invalid bound Q1 capture geometry or identity')
-    if width <= 576 or height <= 640:
-        raise ValueError('requested larger quality geometry did not take effect')
+    if [width, height] != expected:
+        raise ValueError('requested exact quality geometry did not take effect')
     return width, height
 
 

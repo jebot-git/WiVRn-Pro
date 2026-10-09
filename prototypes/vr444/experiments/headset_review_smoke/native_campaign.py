@@ -60,6 +60,8 @@ def main():
         root = Path(plan['harness']).parents[3]
         paths = list((root / 'validation/wivrn-codecs').rglob('*.py'))
         paths.append(root / 'prototypes/vr444/experiments/compositor_freshness/analyze.py')
+        paths.append(root / 'prototypes/vr444/experiments/pacer_recent_tail/analyze.py')
+        paths.append(root / 'prototypes/vr444/experiments/quality_stimuli/audit.py')
         return {str(p.relative_to(root)): sha(p) for p in sorted(paths)}
 
     def check_build():

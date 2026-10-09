@@ -1626,7 +1626,7 @@ index 69a90b1..d3d823d 100644
  	virtual void render(const XrFrameState &) = 0;
  	virtual void on_xr_event(const xr::event &);
 diff --git a/client/scenes/stream.cpp b/client/scenes/stream.cpp
-index 509b924..8985e37 100644
+index 509b924..6069ad2 100644
 --- a/client/scenes/stream.cpp
 +++ b/client/scenes/stream.cpp
 @@ -1,3 +1,9 @@
@@ -1639,18 +1639,21 @@ index 509b924..8985e37 100644
  /*
   * WiVRn VR streaming
   * Copyright (C) 2022  Guillaume Meunier <guillaume.meunier@centraliens.net>
-@@ -34,6 +40,10 @@
+@@ -34,6 +40,13 @@
  #include "audio/audio.h"
  #include "boost/pfr/core.hpp"
  #include "decoder/shard_accumulator.h"
 +#ifdef WIVRN_CODEC_TESTS
 +#include "decoder/test_decoder.h"
 +#include "stream_quality_capture.h"
++#include "codec_test/quality_geometry.h"
++#include <filesystem>
++#include <fstream>
 +#endif
  #include "inplace_vector.hpp"
  #include "spdlog/spdlog.h"
  #include "utils/named_thread.h"
-@@ -173,6 +183,17 @@ static const std::array supported_depth_formats{
+@@ -173,6 +186,17 @@ static const std::array supported_depth_formats{
          vk::Format::eX8D24UnormPack32,
  };
  
@@ -1668,7 +1671,7 @@ index 509b924..8985e37 100644
  scenes::stream::stream(std::string server_name, scene & parent_scene) :
          scene_impl<stream>(supported_color_formats, supported_depth_formats, parent_scene),
          apps{*this, std::move(server_name)}
-@@ -180,6 +201,58 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
+@@ -180,6 +204,58 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
  	auto views = system.view_configuration_views(viewconfig);
  	width = views[0].recommendedImageRectWidth;
  	height = views[0].recommendedImageRectHeight;
@@ -1727,18 +1730,42 @@ index 509b924..8985e37 100644
  }
  
  static from_headset::visibility_mask_changed::masks get_visibility_mask(xr::instance & inst, xr::session & session, int view)
-@@ -249,6 +322,10 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
+@@ -249,6 +325,34 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
  			auto scale = config.get_stream_scale();
  			info.stream_eye_width = info.render_eye_width * scale;
  			info.stream_eye_height = info.render_eye_height * scale;
 +#ifdef WIVRN_CODEC_TESTS
-+            info.stream_eye_width = 576;
-+            info.stream_eye_height = 640;
++            // The scale setting alone must never change the latency profile.
++            // Read the small explicit override before advertising any geometry.
++            auto read_choice = [](const std::filesystem::path& path) -> std::optional<std::string> {
++                std::error_code error;
++                const auto status=std::filesystem::symlink_status(path,error);
++                if (status.type()==std::filesystem::file_type::not_found &&
++                    (!error || error==std::errc::no_such_file_or_directory)) return std::nullopt;
++                if (error || !std::filesystem::is_regular_file(status))
++                    throw std::runtime_error("codec quality geometry configuration must be a regular file");
++                std::ifstream file(path,std::ios::binary);
++                if (!file) throw std::runtime_error("cannot read codec quality geometry configuration");
++                char bytes[65];file.read(bytes,sizeof(bytes));const auto count=file.gcount();
++                if (file.bad() || count>64) throw std::runtime_error("codec quality geometry configuration exceeds bound");
++                std::string value(bytes,size_t(count));
++                if (!value.empty() && value.back()=='\n') value.pop_back();
++                if (!value.empty() && value.back()=='\r') value.pop_back();
++                return value;
++            };
++            const auto token=read_choice(application::get_config_path()/"codec-test-quality-geometry.txt");
++            const auto payload=token && *token!="off"
++                ? read_choice(application::get_config_path()/"codec-test-payload.txt") : std::nullopt;
++            const auto profile=codec_test::quality_geometry::client(
++                token ? std::optional<std::string_view>(*token) : std::nullopt,
++                self->test_quality_capture->enabled(),payload ? std::string_view(*payload) : std::string_view{});
++            info.stream_eye_width = profile.width;
++            info.stream_eye_height = profile.height;
 +#endif
  		}
  
  		if (self->instance.has_extension(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME))
-@@ -352,6 +429,14 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
+@@ -352,6 +456,14 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
  	self->network_session->send_control(from_headset::session_state_changed{
  	        .state = application::get_session_state(),
  	});
@@ -1753,7 +1780,7 @@ index 509b924..8985e37 100644
  	self->network_session->send_control(from_headset::stream_tab_changed{
  	        .tab = self->gui_status,
  	});
-@@ -610,14 +695,55 @@ void scenes::stream::on_unfocused()
+@@ -610,14 +722,55 @@ void scenes::stream::on_unfocused()
  
  scenes::stream::~stream()
  {
@@ -1815,7 +1842,7 @@ index 509b924..8985e37 100644
  
  void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_ptr<shard_accumulator::blit_handle> handle)
  {
-@@ -628,13 +754,26 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+@@ -628,13 +781,26 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
  	{
  		std::shared_lock lock(decoder_mutex);
  		std::unique_lock frame_lock(frames_mutex);
@@ -1842,7 +1869,7 @@ index 509b924..8985e37 100644
  		}
  
  		if (state_ != state::streaming and not(decoders[0].empty() or decoders[1].empty()))
-@@ -650,6 +789,46 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+@@ -650,6 +816,46 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
  	}
  }
  
@@ -1889,7 +1916,7 @@ index 509b924..8985e37 100644
  bool scenes::stream::accumulator_images::empty() const
  {
  	for (const auto & frame: latest_frames)
-@@ -660,11 +839,57 @@ bool scenes::stream::accumulator_images::empty() const
+@@ -660,11 +866,57 @@ bool scenes::stream::accumulator_images::empty() const
  	return true;
  }
  
@@ -1948,7 +1975,7 @@ index 509b924..8985e37 100644
  	inplace_vector<shard_accumulator::blit_handle *, decoder_count> common_frames;
  	const bool alpha = decoders[0].latest_frames[0] and decoders[0].latest_frames[0]->view_info.alpha;
  	for (size_t i = 0; i < view_count + alpha; ++i)
-@@ -742,14 +967,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
+@@ -742,14 +994,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
  		}
  	}
  	return result;
@@ -1971,7 +1998,7 @@ index 509b924..8985e37 100644
  }
  
  void scenes::stream::update_gui_position(xr::spaces controller, float predicted_display_period)
-@@ -838,6 +1071,25 @@ bool scenes::stream::is_gui_interactable() const
+@@ -838,6 +1098,25 @@ bool scenes::stream::is_gui_interactable() const
  
  void scenes::stream::render(const XrFrameState & frame_state)
  {
@@ -1997,7 +2024,7 @@ index 509b924..8985e37 100644
  	if (state_ == state::shutdown)
  		application::pop_scene();
  
-@@ -882,6 +1134,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -882,6 +1161,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		// TODO: stop/restart video stream
  		session.begin_frame();
  		session.end_frame(frame_state.predictedDisplayTime, {});
@@ -2010,7 +2037,7 @@ index 509b924..8985e37 100644
  		return;
  	}
  
-@@ -894,14 +1152,55 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -894,14 +1179,55 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		});
  
  		next_gui_status = stream_tab::hidden;
@@ -2067,7 +2094,7 @@ index 509b924..8985e37 100644
  
  	gpu_timestamps timestamps;
  	if (query_pool_filled)
-@@ -940,7 +1239,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -940,7 +1266,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
  
  	// Search for frame with desired display time on all decoders
  	// If no such frame exists, use the latest frame for each decoder
@@ -2079,7 +2106,7 @@ index 509b924..8985e37 100644
  	std::array<XrPosef, view_count> pose{};
  	std::array<XrFovf, view_count> fov{};
  	std::array<wivrn::to_headset::foveation_parameter, view_count> foveation;
-@@ -997,6 +1300,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -997,6 +1327,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			                .extent = blit_handle->extent,
  			        },
  			        .layout_rgb = blit_handle->current_layout,
@@ -2087,7 +2114,7 @@ index 509b924..8985e37 100644
  			};
  		}
  		else
-@@ -1076,7 +1380,17 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1076,7 +1407,17 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		assert(swapchain);
  		// defoveate the image, apply scale/bias
  		int image_index = swapchain.acquire();
@@ -2106,7 +2133,7 @@ index 509b924..8985e37 100644
  
  		switch (gui_status)
  		{
-@@ -1107,7 +1421,22 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1107,7 +1448,22 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		                      {bias, bias, bias, 0.},
  		                      image_index, cutout_masks);
  
@@ -2130,7 +2157,7 @@ index 509b924..8985e37 100644
  
  		command_buffer.end();
  		vk::SubmitInfo submit_info;
-@@ -1135,13 +1464,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1135,13 +1491,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		submit_info.pNext = &sem_info;
  
  		device.resetFences(*fence);
@@ -2151,7 +2178,7 @@ index 509b924..8985e37 100644
  		if (output_alpha || room_capture)
  			session.enable_passthrough(system);
  		else
-@@ -1175,9 +1509,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1175,9 +1536,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			        application::space(xr::spaces::world),
  			        layer_view);
  
@@ -2173,7 +2200,7 @@ index 509b924..8985e37 100644
  
  		accumulate_metrics(frame_state.predictedDisplayTime, current_blit_handles, timestamps);
  
-@@ -1186,6 +1529,94 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1186,6 +1556,94 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		try
  		{
  			render_end();
@@ -2268,7 +2295,7 @@ index 509b924..8985e37 100644
  		}
  		catch (std::system_error & e)
  		{
-@@ -1195,6 +1626,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1195,6 +1653,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
  				throw;
  		}
  	}
@@ -2282,7 +2309,7 @@ index 509b924..8985e37 100644
  
  	// Network operations may be blocking, do them once everything was submitted
  	{
-@@ -1287,12 +1725,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1287,12 +1752,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  		current_blit_handles.fill(nullptr);
  		retired.swap(decoders);
  		video_stream_description.reset();
@@ -2305,7 +2332,7 @@ index 509b924..8985e37 100644
  		for (const auto & [stream_index, item]: utils::enumerate(replacement))
  			item.decoder = std::make_unique<shard_accumulator>(device, physical_device, instance, queue_family_index, description, shared_from_this(), stream_index);
  	}
-@@ -1306,6 +1754,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1306,6 +1781,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  	{
  		std::unique_lock lock(decoder_mutex);
  		decoders.swap(replacement);
@@ -2315,7 +2342,7 @@ index 509b924..8985e37 100644
  		video_stream_description = description;
  		if (defoveator)
  			defoveator->reset_pipelines();
-@@ -1321,7 +1772,16 @@ void scenes::stream::setup_reprojection_swapchain(uint32_t swapchain_width, uint
+@@ -1321,7 +1799,16 @@ void scenes::stream::setup_reprojection_swapchain(uint32_t swapchain_width, uint
  
  	auto views = system.view_configuration_views(viewconfig);
  
@@ -7279,6 +7306,52 @@ index 0000000..6a294b4
 +    }
 +};
 +} // namespace wivrn::codec_test::publication_ledger
+diff --git a/common/codec_test/quality_geometry.h b/common/codec_test/quality_geometry.h
+new file mode 100644
+index 0000000..435b728
+--- /dev/null
++++ b/common/codec_test/quality_geometry.h
+@@ -0,0 +1,40 @@
++// SPDX-License-Identifier: MIT
++#pragma once
++#include <cstdint>
++#include <optional>
++#include <stdexcept>
++#include <string_view>
++
++namespace wivrn::codec_test::quality_geometry {
++// Explicit quality-only profiles, not scaling or arbitrary dimensions. Missing
++// configuration and "off" retain the existing diagnostic/latency geometry.
++struct Profile {
++    uint16_t width=576, height=640;
++    bool quality=false;
++    friend constexpr bool operator==(Profile,Profile)=default;
++};
++inline Profile parse(std::optional<std::string_view> value) {
++    if (!value || *value=="off") return {};
++    if (*value=="q1-768x864") return {768,864,true};
++    if (*value=="q1-960x1056") return {960,1056,true};
++    if (*value=="q1-1152x1280") return {1152,1280,true};
++    throw std::runtime_error("quality geometry requires off or an exact supported q1-WxH token");
++}
++inline Profile client(std::optional<std::string_view> value,bool submitted_capture,std::string_view payload) {
++    auto profile=parse(value);
++    if (profile.quality && (!submitted_capture || payload!="rrb32"))
++        throw std::runtime_error("larger quality geometry requires RRB32 and submitted-image capture");
++    return profile;
++}
++inline Profile server(std::optional<std::string_view> value,std::string_view mode,std::string_view q,
++                      std::string_view compression,std::string_view capture,std::string_view source_trace,
++                      uint32_t peer_width,uint32_t peer_height) {
++    auto profile=parse(value);
++    if (profile.quality && (mode!="rrb32-q1" || q!="1" || compression!="none" || capture!="1" ||
++                            source_trace.empty() || source_trace.front()!='/'))
++        throw std::runtime_error("larger quality geometry requires explicit exact-Q1, capture and source-trace profile");
++    if (peer_width!=profile.width || peer_height!=profile.height)
++        throw std::runtime_error("codec test peer geometry does not match explicit host quality profile");
++    return profile;
++}
++} // namespace wivrn::codec_test::quality_geometry
 diff --git a/common/codec_test/rrb/README.txt b/common/codec_test/rrb/README.txt
 new file mode 100644
 index 0000000..bea3388
@@ -11225,28 +11298,41 @@ index a8d6875..bacfe27 100644
  	// entire stereo batch; error reporting/recovery is serialized afterwards.
  	for (auto & encoder: encoders)
 diff --git a/server/encoder/encoder_settings.cpp b/server/encoder/encoder_settings.cpp
-index 4cc7088..f84e6f1 100644
+index 4cc7088..fcbad07 100644
 --- a/server/encoder/encoder_settings.cpp
 +++ b/server/encoder/encoder_settings.cpp
-@@ -18,6 +18,7 @@
+@@ -18,6 +18,10 @@
   * along with this program.  If not, see <https://www.gnu.org/licenses/>.
   */
  #include "encoder_settings.h"
 +#include "codec_test/metadata.h"
++#ifdef WIVRN_CODEC_TESTS
++#include "codec_test/quality_geometry.h"
++#endif
  #include "rate_control.h"
  
  #include "driver/configuration.h"
-@@ -226,6 +227,18 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle,
+@@ -226,6 +230,28 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle,
  	const auto & info = session.get_info();
  	const auto settings = *session.get_settings();
  
 +#ifdef WIVRN_CODEC_TESTS
++    auto test_env=[](const char* name) -> std::string_view {
++        const auto value=std::getenv(name);return value ? std::string_view(value) : std::string_view{};
++    };
++    const auto quality_value=std::getenv("WIVRN_CODEC_TEST_QUALITY_GEOMETRY");
++    const auto quality_token=quality_value ? std::optional<std::string_view>(quality_value) : std::nullopt;
++    if (codec_test::quality_geometry::parse(quality_token).quality && !codec_test::enabled())
++        throw std::runtime_error("quality geometry requires codec-test activation");
 +    if(codec_test::enabled()) {
 +        if(!std::ranges::contains(info.supported_codecs, raw)) throw std::runtime_error("headset is not a codec-test build");
-+        if(info.stream_eye_width != 576 || info.stream_eye_height != 640) throw std::runtime_error("codec test requires 576x640 eye geometry");
++        const auto geometry=codec_test::quality_geometry::server(quality_token,
++            test_env("WIVRN_CODEC_TEST"),test_env("WIVRN_CODEC_TEST_Q"),test_env("WIVRN_CODEC_TEST_COMPRESSION"),
++            test_env("WIVRN_CODEC_TEST_QUALITY_CAPTURE"),test_env("WIVRN_CODEC_SOURCE_TRACE"),
++            info.stream_eye_width,info.stream_eye_height);
 +        uint64_t bitrate=100000000;
 +        if(const char* p=std::getenv("WIVRN_CODEC_TEST_BITRATE")) bitrate=std::stoull(p);
-+        for(unsigned i=0;i<3;++i) res[i] = encoder_settings{.width=576,.height=uint16_t(i==2?320:640),.codec=raw,
++        for(unsigned i=0;i<3;++i) res[i] = encoder_settings{.width=geometry.width,.height=uint16_t(i==2?geometry.height/2:geometry.height),.codec=raw,
 +            .fps=session.default_fps(),.encoder_name="codec-test",.bitrate=bitrate/2,.bitrate_multiplier=.5,
 +            .options={},.bit_depth=8,.device=config.encoders[i].device};
 +        return res;

@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "prior_commit": "b6c59ec24a71dfaf3421290db15cfef03f8a3da9",
+  "prior_manifest_sha256": "e58890187d616e5b6441c4a5fe81070b53d842d760354b61ec4b237260016923",
+  "baseline_subset": "/tmp/sub15-pacer-before93",
+  "native_baseline": "/home/blux/spatial-bridge/.worktrees/wivrn-codec-tests",
+  "added_baseline_sha256": {
+    "common/codec_test/quality_geometry.h": null
+  },
+  "files": 95,
+  "patch_sha256": "04e62690d560f964611ddb12fb9c14571733664bdf94766180145eb43c11e972",
+  "manifest_sha256": "4625576837a9b7a7a182edee4b4cf485fb0d519950d3dc0051c40b4b2840a011",
+  "native_baseline_modified": false,
+  "parity_verification_required": true
+}

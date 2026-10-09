@@ -28,7 +28,7 @@ CONFIG_FILES = ('client.json', 'codec-test-kernel.txt', 'codec-test-backend.txt'
                 'codec-test-selection.txt', 'codec-test-candidate-trace.txt',
                 'codec-test-cpu-output.txt', 'codec-test-selection-policy.txt', 'codec-test-publication-trace.txt',
                 'codec-test-payload.txt', 'codec-test-rrb-workers.txt', 'codec-test-rrb-output.txt',
-                'codec-test-quality-capture.json')
+                'codec-test-quality-capture.json', 'codec-test-quality-geometry.txt')
 
 
 def save(path, value):
@@ -46,6 +46,13 @@ def command(argv, **kwargs):
 
 def read_rows(path):
     return [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()] if Path(path).exists() else []
+
+
+def pacer_tail_adapter():
+    spec = importlib.util.spec_from_file_location('codec_pacer_tail_adapter', Path(__file__).with_name('pacer_tail.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def rrb_settings(args):
@@ -100,6 +107,7 @@ def experimental_settings(args):
     if selection == 'bounded-newest' and not getattr(args, 'candidate_trace', False):
         raise ValueError('bounded-newest currently requires diagnostic candidate tracing')
     publication_trace_helpers(args)
+    pacer_tail_adapter().validate(args)
     quality_stream_scale(args)
     return rrb_settings(args) | quality_settings(args) | {'codec-test-cpu-output.txt': output, 'codec-test-selection-policy.txt': selection,
             'codec-test-publication-trace.txt': '1' if getattr(args, 'publication_trace', False) else '0'}
@@ -120,6 +128,26 @@ def quality_stream_scale(args):
     return float(scale)
 
 
+def quality_geometry_profile(args):
+    scale = quality_stream_scale(args)
+    return {0.3: ('off', None), 0.4: ('q1-768x864', [768, 864]),
+            0.5: ('q1-960x1056', [960, 1056]), 0.6: ('q1-1152x1280', [1152, 1280])}[scale]
+
+
+def quality_geometry_helpers(args, source=None):
+    token, geometry = quality_geometry_profile(args)
+    if geometry is None:
+        return ()
+    names = ('common/codec_test/quality_geometry.h', 'client/scenes/stream.cpp',
+             'server/encoder/encoder_settings.cpp')
+    overlay = Path(__file__).with_name('source-overlay')
+    if source is not None:
+        for name in names:
+            if not (Path(source)/name).is_file() or sha(Path(source)/name) != sha(overlay/name):
+                raise ValueError('explicit quality geometry source is absent or changed: '+name)
+    return names
+
+
 def quality_settings(args):
     enabled = getattr(args, 'quality_capture', False)
     pairs = getattr(args, 'quality_max_pairs', 6)
@@ -134,7 +162,8 @@ def quality_settings(args):
     if not enabled and (pairs != 6 or stride != 90):
         raise ValueError('quality capture limits require --quality-capture')
     return {'codec-test-quality-capture.json': json.dumps(
-        dict(enabled=enabled, max_pairs=pairs, frame_stride=stride), separators=(',', ':'))}
+        dict(enabled=enabled, max_pairs=pairs, frame_stride=stride), separators=(',', ':')),
+        'codec-test-quality-geometry.txt': quality_geometry_profile(args)[0]}
 
 
 def quality_source_helpers(args, source=None):
@@ -314,6 +343,10 @@ def build_configuration(args, runtime, source, output):
         env['WIVRN_CODEC_SOURCE_TRACE'] = str(output/'host/source-trace.jsonl')
     if getattr(args, 'pacer_trace', False):
         env['WIVRN_CODEC_PACER_TRACE'] = str(output/'host/pacer-trace.jsonl')
+    env.update(pacer_tail_adapter().configure(args, output))
+    if quality_geometry_profile(args)[1] is not None:
+        env['WIVRN_CODEC_TEST_QUALITY_GEOMETRY'] = quality_geometry_profile(args)[0]
+        env['WIVRN_CODEC_TEST_QUALITY_CAPTURE'] = '1'
     if custom:
         env.update({'WIVRN_CODEC_TEST': ('rrb32-'+getattr(args, 'rrb_source', 'vr444')) if args.mode == 'custom-rrb32' else 'vulkan-vr444', 'WIVRN_CODEC_TEST_Q': str(args.q),
                     'WIVRN_CODEC_TEST_FRAME_STRIDE': '1', 'VR444_KERNEL': 'baseline',
@@ -373,6 +406,8 @@ def run(args):
     publication_helpers = publication_trace_helpers(args, source)
     rrb_helpers = rrb_source_helpers(args, source)
     quality_helpers = quality_source_helpers(args, source)
+    geometry_helpers = quality_geometry_helpers(args, source)
+    tail_helpers = pacer_tail_adapter().validate(args, source)
     quality_application_module = quality_cached = None
     if getattr(args, 'quality_application_plan', None) is not None or getattr(args, 'quality_application_plan_sha256', None) is not None:
         quality_application_path = Path(__file__).with_name('quality_application.py')
@@ -447,7 +482,7 @@ def run(args):
                    'client/decoder/android/android_decoder.cpp', 'client/scenes/stream.cpp',
                    'server/compositor/foveation.cpp', 'server/compositor/compositor.cpp',
                    'server/driver/app_pacer.cpp', 'server/driver/codec_source_trace.h',
-                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers + rrb_helpers + quality_helpers
+                   'common/codec_test/selection_policy.h', 'common/codec_test/selection_trace.h') + pacer_helpers + publication_helpers + rrb_helpers + quality_helpers + geometry_helpers + tail_helpers
         save(output/'provenance.json', {
             'schema': 1, 'mode': args.mode, 'source': str(source), 'server_sha256': sha(server),
             'installed_apk_sha256': apk_hash, 'runtime_manifest_sha256': sha(manifest),
@@ -461,6 +496,8 @@ def run(args):
             'duration_s': args.seconds,
             'geometry': None if getattr(args, 'quality_stream_scale', None) is not None else [576, 640],
             'quality_geometry_profile': getattr(args, 'quality_stream_scale', None) is not None,
+            'quality_geometry_token': quality_geometry_profile(args)[0],
+            'quality_geometry_requested': quality_geometry_profile(args)[1],
             'stream_scale': quality_stream_scale(args),
             'geometry_source': 'bound per-eye WCT1 envelope' if getattr(args, 'quality_stream_scale', None) is not None else 'fixed latency profile',
             'requested_display_hz': 90, 'fps_divider': args.fps_divider,
@@ -479,6 +516,8 @@ def run(args):
             'selection_phase': args.selection_phase, 'candidate_trace': args.candidate_trace,
             'cpu_output': args.cpu_output, 'selection_policy': args.selection_policy,
             'source_trace': args.source_trace, 'pacer_trace': getattr(args, 'pacer_trace', False),
+            'pacer_window_frames': getattr(args, 'pacer_window_frames', 0),
+            'pacer_tail_adapter_sha256': sha(Path(__file__).with_name('pacer_tail.py')),
             'publication_trace': getattr(args, 'publication_trace', False),
             'quality_capture': getattr(args, 'quality_capture', False),
             'quality_max_pairs': getattr(args, 'quality_max_pairs', 6),
@@ -819,6 +858,10 @@ def run(args):
     if result['pacer_trace']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
         result['promotion_status'] = 'blocked'
+    result['pacer_tail'] = pacer_tail_adapter().evaluate(output, getattr(args, 'pacer_window_frames', 0))
+    if result['pacer_tail']['status'] not in ('pass', 'off'):
+        result['status'] = 'fail'
+        result['promotion_status'] = 'blocked'
     result['publication_trace'] = evaluate_publication_trace(output, getattr(args, 'publication_trace', False))
     if result['publication_trace']['status'] not in ('pass', 'off'):
         result['status'] = 'fail'
@@ -865,6 +908,8 @@ def main():
     parser.add_argument('--source-trace', action='store_true', help='Bounded host app/compositor mapping trace; diagnostic only')
     parser.add_argument('--pacer-trace', action='store_true',
                         help='Host pacer budget diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
+    parser.add_argument('--pacer-window-frames', type=int, default=0,
+                        help='Opt-in recent feedback window, 360..1800; 0 preserves original pacing')
     parser.add_argument('--publication-trace', action='store_true',
                         help='Client publication/eviction prefix diagnostics; requires custom CPU NEON plus --candidate-trace and --source-trace')
     parser.add_argument('--quality-capture', action='store_true', help='Bounded submitted swapchain readback; diagnostic, not latency eligible')
