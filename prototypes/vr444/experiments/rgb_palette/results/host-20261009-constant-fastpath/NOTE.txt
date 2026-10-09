@@ -1,0 +1,23 @@
+Same-format constant-tile fast path, 2026-10-09
+
+Constant tiles now bypass palette/RLE candidate allocation/scans in the encoder,
+and fill output rows directly in the decoder. Sanitizer coverage is unchanged and
+passes. All 38 case/profile wire sizes exactly match the initial benchmark.
+
+31 repetitions, three warmups; CPU measurement window coordinated with the other
+teams. Per-case medians were averaged within each group; no pooled p95 claim.
+
+Q8 paired-a server/client milliseconds per eye:
+  baseline VR444+LZ4: 0.094 / 0.415
+  RPT1:               0.905 / 0.188
+  RPT1+LZ4:           1.068 / 0.294
+Q8 paired-b server/client milliseconds per eye:
+  baseline VR444+LZ4: 0.081 / 0.350
+  RPT1:               0.789 / 0.160
+  RPT1+LZ4:           0.916 / 0.243
+
+The optimized RPT1+LZ4 path still adds 0.836..0.973ms host server preprocessing
+per eye while saving 0.107..0.121ms host client decode. This remains an offline
+tradeoff, not a promoted or end-to-end latency improvement. Original results are
+retained in sibling host-20261009. Neither run pins CPU clocks or controls thermal
+state. Repeated improvements do not establish an Android speedup.

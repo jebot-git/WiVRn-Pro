@@ -204,7 +204,7 @@
   "source_hashes": [
     {
       "path": "prototypes/vr444/experiments/rgb_palette/README.txt",
-      "sha256": "ba930e19b51af0c1bbd0252703815d02e24a3759bf5f54bd7d0be2944b66e4c0"
+      "sha256": "15af0f4da58a0aafcc91b4bb3d047083c47bb282a4ad3065b04758af74bd9040"
     },
     {
       "path": "prototypes/vr444/experiments/rgb_palette/bench.cpp",

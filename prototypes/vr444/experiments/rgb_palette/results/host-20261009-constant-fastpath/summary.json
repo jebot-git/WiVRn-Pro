@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "domain": "offline host only",
+  "cases": 38,
+  "aggregation": "byte-weighted wire sizes; arithmetic mean of per-case p50 timings, not pooled p50/p95",
+  "limitations": [
+    "single host, no CPU affinity/thermal control",
+    "no headset/network/upload/compositor measurement",
+    "captures are a small prior scene, not representative games",
+    "Q8 preserves already-quantized decoded bytes"
+  ],
+  "groups": {
+    "lossless": {
+      "cases": 8,
+      "profiles": {
+        "vr444_lz4": {
+          "total_wire_bytes": 98239,
+          "wire_ratio_to_vr444_lz4": 1.0,
+          "mean_case_p50_post_vr444_server_ms": 0.06755325,
+          "mean_case_p50_client_decode_ms": 0.23703825,
+          "mean_case_p50_post_vr444_combined_ms": 0.307113,
+          "cases_with_lower_client_p50_than_baseline": 0
+        },
+        "rpt1": {
+          "total_wire_bytes": 119146,
+          "wire_ratio_to_vr444_lz4": 1.212817720050082,
+          "mean_case_p50_post_vr444_server_ms": 0.521598375,
+          "mean_case_p50_client_decode_ms": 0.09514225,
+          "mean_case_p50_post_vr444_combined_ms": 0.622550125,
+          "cases_with_lower_client_p50_than_baseline": 8
+        },
+        "rpt1_lz4": {
+          "total_wire_bytes": 23992,
+          "wire_ratio_to_vr444_lz4": 0.24422072700251427,
+          "mean_case_p50_post_vr444_server_ms": 0.549730625,
+          "mean_case_p50_client_decode_ms": 0.126733,
+          "mean_case_p50_post_vr444_combined_ms": 0.689013,
+          "cases_with_lower_client_p50_than_baseline": 8
+        }
+      }
+    },
+    "paired-a": {
+      "cases": 8,
+      "profiles": {
+        "vr444_lz4": {
+          "total_wire_bytes": 182910,
+          "wire_ratio_to_vr444_lz4": 1.0,
+          "mean_case_p50_post_vr444_server_ms": 0.094266125,
+          "mean_case_p50_client_decode_ms": 0.41450575,
+          "mean_case_p50_post_vr444_combined_ms": 0.52289475,
+          "cases_with_lower_client_p50_than_baseline": 0
+        },
+        "rpt1": {
+          "total_wire_bytes": 390278,
+          "wire_ratio_to_vr444_lz4": 2.1337160352085727,
+          "mean_case_p50_post_vr444_server_ms": 0.905404625,
+          "mean_case_p50_client_decode_ms": 0.18760037499999999,
+          "mean_case_p50_post_vr444_combined_ms": 1.1001315,
+          "cases_with_lower_client_p50_than_baseline": 8
+        },
+        "rpt1_lz4": {
+          "total_wire_bytes": 176415,
+          "wire_ratio_to_vr444_lz4": 0.9644907331474496,
+          "mean_case_p50_post_vr444_server_ms": 1.0677295,
+          "mean_case_p50_client_decode_ms": 0.293667,
+          "mean_case_p50_post_vr444_combined_ms": 1.37380425,
+          "cases_with_lower_client_p50_than_baseline": 8
+        }
+      }
+    },
+    "paired-b": {
+      "cases": 8,
+      "profiles": {
+        "vr444_lz4": {
+          "total_wire_bytes": 135653,
+          "wire_ratio_to_vr444_lz4": 1.0,
+          "mean_case_p50_post_vr444_server_ms": 0.080553,
+          "mean_case_p50_client_decode_ms": 0.35046675,
+          "mean_case_p50_post_vr444_combined_ms": 0.443820875,
+          "cases_with_lower_client_p50_than_baseline": 0
+        },
+        "rpt1": {
+          "total_wire_bytes": 314865,
+          "wire_ratio_to_vr444_lz4": 2.321106057366958,
+          "mean_case_p50_post_vr444_server_ms": 0.788971375,
+          "mean_case_p50_client_decode_ms": 0.160065625,
+          "mean_case_p50_post_vr444_combined_ms": 0.956066875,
+          "cases_with_lower_client_p50_than_baseline": 8
+        },
+        "rpt1_lz4": {
+          "total_wire_bytes": 131858,
+          "wire_ratio_to_vr444_lz4": 0.9720242088269334,
+          "mean_case_p50_post_vr444_server_ms": 0.9165365,
+          "mean_case_p50_client_decode_ms": 0.243061375,
+          "mean_case_p50_post_vr444_combined_ms": 1.165813125,
+          "cases_with_lower_client_p50_than_baseline": 8
+        }
+      }
+    },
+    "synthetic": {
+      "cases": 14,
+      "profiles": {
+        "vr444_lz4": {
+          "total_wire_bytes": 2965876,
+          "wire_ratio_to_vr444_lz4": 1.0,
+          "mean_case_p50_post_vr444_server_ms": 0.6333998571428572,
+          "mean_case_p50_client_decode_ms": 1.776561642857143,
+          "mean_case_p50_post_vr444_combined_ms": 2.412963642857143,
+          "cases_with_lower_client_p50_than_baseline": 0
+        },
+        "rpt1": {
+          "total_wire_bytes": 4203837,
+          "wire_ratio_to_vr444_lz4": 1.4174014692455112,
+          "mean_case_p50_post_vr444_server_ms": 3.2215633571428572,
+          "mean_case_p50_client_decode_ms": 0.8185237857142857,
+          "mean_case_p50_post_vr444_combined_ms": 4.043536428571429,
+          "cases_with_lower_client_p50_than_baseline": 13
+        },
+        "rpt1_lz4": {
+          "total_wire_bytes": 3123556,
+          "wire_ratio_to_vr444_lz4": 1.0531647310946244,
+          "mean_case_p50_post_vr444_server_ms": 3.9554032142857145,
+          "mean_case_p50_client_decode_ms": 1.1175074285714286,
+          "mean_case_p50_post_vr444_combined_ms": 5.079177,
+          "cases_with_lower_client_p50_than_baseline": 12
+        }
+      }
+    }
+  }
+}
