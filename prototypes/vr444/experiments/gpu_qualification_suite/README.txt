@@ -120,3 +120,10 @@ Thus the captured improvements are not a universal tail guarantee. The separate
 README, complete numeric receipt and plotted captured paired tails preserve the
 measurement boundaries and every input, with server/network/native rendering
 excluded. RRB32 wire growth versus global RRF remains +19.18% Q1 and +5.13% Q8.
+
+HANDOFF.txt ranks the candidates and records the concrete native adapter contracts
+that remain. The aggregate receipt includes several historical revision scopes;
+verify its top-level fresh source map against the suite commit and each historical
+entry against that entry's pinned commit. Flattening historical and fresh hashes
+into one revision correctly fails conflict checks. All 219 fresh code bindings
+were independently checked against committed tree c4dc0912 after publication.

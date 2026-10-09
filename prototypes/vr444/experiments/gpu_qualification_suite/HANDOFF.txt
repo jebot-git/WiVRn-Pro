@@ -1,0 +1,107 @@
+GPU stage handoff — 2026-10-09
+==============================
+
+The immutable 14-approach index is catalog.json. The fresh expanded suite is
+qualification-final-20261009.json. It passed all 28 declared stages, 80 Python
+tests, 838 CPU cases with two reuse rounds and 8,382 rejection checks, 13,176
+valid GPU invocations, and 3,294 poisoned missing-right-eye controls. Both build
+paths compile Android without running it and validate their eight SPIR-V modules.
+Readiness and first-consumer execution on Arc A770 and UHD 770 is fresh; earlier
+alternative implementations retain their separately pinned historical evidence.
+All work remains offline and opt-in. Native integration and headset validation
+have not occurred, and no end-to-end sub-15 ms result is claimed.
+
+Candidate ordering from the available evidence
+----------------------------------------------
+1. RRB32 direct mapped decode through the actual first stereo consumer is the
+   strongest measured private client candidate. Its captured median paired p50
+   reduction versus matching staged input is 0.285--0.398 ms across both host
+   devices/allocation labels. Every captured p50 and p95 improves in those RRB
+   comparisons. This still includes private poison and three submissions, and
+   small synthetic geometries retain tail regressions. The complete measured
+   branch is research/sub15-20261009/mapped-input-consumer at
+   068dd29df03e44ab0668d9607d2896650c4b91f9. Its README/receipt/figure include every
+   paired difference, memory type and unchanged-source/input proof.
+2. RRF direct mapped decode preserves the global row predictor and lower RRF
+   wire size. It helps Arc, but versus the same-batch CPU image-copy reference
+   UHD's captured median paired p50 difference is only -0.004555 ms; Arc RRF
+   retains five p95 regressions across two repeated staged/direct comparisons.
+   Keep it as an explicit native comparison arm, not a universal preference.
+3. Direct image output for VR444 and palette expansion remain independently
+   qualified shader options. They can preserve exact decoded bytes without the
+   same RRF/RRB preprocessing, but this suite does not establish that they win
+   the complete packet-to-consumer path on the headset.
+4. Host image copy has actual host upload-plus-consumer evidence and strict
+   feature/format/layout gates. The earlier preserved Adreno capture does not
+   advertise that extension; it is not a portable default. A current host query
+   does not qualify any headset. Timeline/synchronization2 prototypes qualify
+   bounded stereo ownership and real buffer retirement, not latency savings.
+5. GPU palette encoding from CPU input was slower than the matching CPU encoder
+   in its whole measured prototype. Mapped/compact output variants and their
+   negative results remain available. Encoding from an already-GPU-resident
+   source would be a different input contract and is not measured here.
+
+Native adapter work that remains concrete
+----------------------------------------
+The private Engine is an executable reference, not a drop-in live decoder.
+The inherited source-overlay/client/decoder/test_decoder.cpp currently owns
+per-eye jobs, private free image slots, queue serialization and frame metadata;
+the scene retains published handles. The new adapter must reconcile those actual
+owners with the following already-tested contracts:
+
+- Admit a complete immutable stereo wire pair and bind its frame/source/target
+  identity before constructing mapped_input::Pair. The codec does not supply
+  transport frame identity. RRF/RRB require an explicit negotiated payload kind;
+  their bytes cannot be interpreted as the existing VR444 compact grammar.
+- Query/enable the exact storage and sampled image formats/views and required
+  memory properties on the application's actual device. Preserve the queried
+  image usages and SRGB sample interpretation. An unavailable required arm is
+  unsupported, not an automatic fallback that contaminates the comparison.
+- Acquire a private reusable slot whose previous upload and all renderer reads
+  have retired. Pair validates both complete CRC/grammars, dimensions, capacities,
+  every wire-to-destination alias and cross-eye destination alias before writes.
+  Keep both immutable wire owners and mapped destinations alive synchronously.
+- Permit partial private writes on an exceptional decoder result only while the
+  pair remains unpublished. Pair.complete() stays false; no metadata/readiness
+  submission follows. The next admitted pair must overwrite all output and tail
+  padding. Preserve the prior complete displayed pair throughout failure.
+- Translate private submit/fence/query operations to the application's serialized
+  queue and real image layout tracking. The private benchmark waits on owned
+  fences; it does not establish safe command-pool/query reuse across native eye
+  threads. Borrowed application devices must not acquire private-device teardown
+  behavior. Renderer retirement is distinct from decode completion or xrEndFrame.
+- Keep publication atomic at the stereo identity boundary. The three-slot timeline
+  model has one recording owner and one consumer submission per acquired pair;
+  native retained handles and multiple renderer uses need their actual ownership
+  accounting. Increasing buffered work is not assumed to reduce stale-frame age.
+- Retain malformed-second-eye, late decoder failure, poisoned old outputs, exact
+  decoded byte/color checks and a real first-consumer omission control in the
+  adapter. Compare native CPU and GPU arms with the same packet/source identities,
+  capture cadence and complete measured boundary. Record server/transport wire
+  costs and scheduling separately; independent p50 or p95 values cannot be added.
+
+Independent team evidence
+-------------------------
+Transport/compression published its 23-approach catalog on
+research/sub15-20261009/transport-qualification-final at
+50086f07ef9db98299620db7dd696d97f951a1ba. Its server-worker and packet-window
+experiments preserve the RRF/RRB bytes used here. That catalog includes current
+and negative alternatives, external historical binaries, and explicit old
+receipt/source differences. It is a separate qualification scope.
+
+The compositor team's pinned receipt/target/source-identity analyses and native
+telemetry changes are a separate scope. Its exact known-receipt result at
+3069202 does not turn a private GPU saving into a live latency guarantee: fixed
+known supplies and relaxed ownership are conditional assumptions. Integrate its
+final acquisition diagnostics before interpreting any eventual native trial.
+
+Receipt scope
+-------------
+The suite's top-level source_sha256 map contains 219 current code bindings. They
+were checked against committed tree c4dc09128e45fc5bda71fa0588e40d2077678b9b after
+publication. Each entry under historical_archive instead belongs to its own
+catalog-pinned historical commit. Flattening the aggregate into one revision was
+correctly rejected for conflicting old/new source hashes; the fresh map and each
+historical entry must be checked in their separate revision scopes. No conflict
+rule was weakened. The full local execution manifest also records point-in-time
+notes/artifacts; this handoff and final receipts are written after execution.
