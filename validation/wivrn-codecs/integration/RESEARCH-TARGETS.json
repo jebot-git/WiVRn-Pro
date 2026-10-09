@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "target_id": "selected-candidates-dual-research-v1",
+  "selection_operator": "OR",
+  "scope": "Further research only; existing production and release policies remain unchanged",
+  "latency": {
+    "policy": "LATENCY-POLICY.json",
+    "strict_p95_upper_bound_ms": 15,
+    "minimum_repeated_runs": 2,
+    "metric": "First complete stereo successful submission minus earliest eye receipt, headset-local clock",
+    "optical": false
+  },
+  "quality": {
+    "channel_sampling": "RGB444",
+    "color_codes": "RGB8",
+    "protected_radius_degrees": 10,
+    "gaze_mode": "fixed-center",
+    "protected_max_absolute_code_error": 0,
+    "required_stages": ["decoded-source", "submitted-uncompressed-reference"],
+    "minimum_distinct_stereo_frames_per_stage": 3,
+    "minimum_repeated_runs": 2,
+    "required_fixture_families": ["chroma-grid", "rgb-ramp", "fine-detail"],
+    "human_visible_artifact_assessment": "reported separately; never inferred from a decoder capture",
+    "optical_display_equality": false
+  },
+  "common": {
+    "same_candidate_and_build_identity_per_route": true,
+    "complete_stereo_required": true,
+    "immutable_read_bytes_required": true,
+    "component_only_evidence_qualifies_full_target": false,
+    "production_promotion": false
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "scope": "Pure exact-RGB comparator and research OR combination; no acquisition, native route or display proof.",
+  "tests_passed": 9,
+  "test_log_sha256": "bb6d68d98036325740b6f45e25862cc9dbfb254ff5d8ac600f262c3c918a488f",
+  "peer_review": "GPU team read-only review; no material blocker. Added projection descriptors and exact read ledger after review.",
+  "sources": {
+    "validation/wivrn-codecs/integration/research_quality.py": "29c0084a3ac455b6af490a955180530b5e800891fd83c0bf53012d6813566281",
+    "validation/wivrn-codecs/integration/RESEARCH-TARGETS.json": "da6e71175a0e3a7466b5f7bc3031ea0a959b108c5cbff6861da73648a96d7394",
+    "validation/wivrn-codecs/tests/test_research_quality.py": "92c29cc49b7a8cbe7b4ee45da221c4115189fcefe15e3c846059958b778212c6"
+  },
+  "full_goal_qualified": false
+}

@@ -1,0 +1,84 @@
+Selected-candidate team workflow — 2026-10-09
+============================================
+
+The user authorized continued implementation, commits/pushes, and live headset
+tests. Either target can qualify a candidate for further research. This does
+not promote a candidate to production or change an existing release gate.
+
+Targets
+-------
+L: complete stereo earliest receipt to successful submission, p95 strictly
+below15ms, using the existing90Hz profile, freshness, correctness and repeated
+run requirements. Optical latency remains separate. Report measured costs
+outside that clock; do not sum separately measured stage quantiles.
+
+Q: full-resolution RGB channels (4:4:4), with exact source RGB in the central
+10-degree-radius protected region. Start with fixed central gaze; add tracked
+gaze only after timing/mapping coverage exists. Record decoder, sampled-image,
+and final app-submitted swapchain comparisons separately. A decoder snapshot
+cannot establish displayed pixel equality. Final rendering must be compared
+with an uncompressed reference under identical geometry, sampling and color
+transforms. Human-visible artifacts and physical display remain separate
+observations; no PSNR threshold is a substitute for the requested exactness.
+
+L and Q are evaluated independently. A failed or unmeasured Q result does not
+erase a valid L research result, and a failed L result does not erase valid Q
+evidence. Shared correctness/provenance failures still prevent qualification.
+Component passes advance integration but must not be relabeled as either full
+goal. Existing production-promotion restrictions stay intact.
+
+Team and source ownership
+-------------------------
+Root: integration branch, quality/OR qualification, artifact ledger, build
+receipts, exclusive device control, paired live design and final selection.
+Compositor team: stream/pacer/publication/attempt tracing, atomic stereo
+publication, overlay/patch reconciliation and native diagnostic harness.
+Codec team: explicit RRB32 payload, band-view host conversion, persistent
+four-worker stereo decoding (two-worker control), Q1 exact source mode,
+negotiation/admission/bounds, encoder and decoder implementations.
+GPU team: separate borrowed-device staged RRB image helper, shader and private
+generation/image ownership; CPU upload control, sampled-image/color oracle.
+Timeline/sync2 features require actual native device enablement before use.
+
+All teams use isolated worktrees based on the completed live-selection commit
+8e4d7a862591b3a5d2d9fc888da967fde0cb9165. The original dirty working tree and
+previous native binaries/captures remain intact. Shared-file changes require
+direct team coordination; root resolves integration after reviewed commits.
+
+Executable stages
+-----------------
+1. Interface: declare owned files, native boundary, payload/color/identity and
+   memory contracts; record a concrete implementation and validation plan.
+2. Implement: opt-in code with current controls and bounded resource lifetime.
+   Commit/push each coherent approach; preserve superseded negative evidence.
+3. Offline qualify: meaningful malformed-input/identity/lifetime/color tests,
+   exact reference checks, sanitizer/build checks appropriate to the code.
+4. Independent review: a different team inspects correctness, cancellation,
+   interpretation, evidence binding and missing right-eye/failure handling.
+5. Integrate/build: root combines reviewed commits, verifies overlay versus
+   patch, builds dedicated APK/server, pins all effective source/shader/binary
+   bytes and records which source actually made the installed package.
+6. Live acquire: root alone uses230YC01D8W000E; one experiment at a time. Use
+   bounded watchdogs, explicit configurations, baseline brackets/interleaving,
+   warmup/focus/cadence checks and complete stereo identities. Archive all
+   outcomes and verify owned app/process/port/config cleanup.
+7. Replay/decide: independently recheck raw, hash-bound evidence; report both
+   goals, scope, wire/CPU/GPU costs and rejected runs. Further-research selection
+   is OR(L,Q), never a hidden requirement that both pass. No production merge
+   follows from research qualification.
+
+Initial integration order
+-------------------------
+A. Publication/pacer diagnostics with existing VR444 cached/mapped controls.
+B. Atomic pair publication and explicit RRB32 Q1 / VR444-transcoded payloads.
+C. Fixed-center quality fixtures/capture through the native sampled-image and
+   final-swapchain boundaries; larger geometry is a separate profile from the
+   preliminary576x640 latency target.
+D. Staged GPU image helper after CPU payload/ownership contracts are stable.
+
+TCP remains the baseline. Slow LZ4-to-mapped-RGB paths, bounded-newest promotion,
+unsupported host image copy, and unqualified neural adapters remain on hold.
+
+Progress is recorded in team.json and immutable milestone receipts. The actual
+agent coordinator owns task dispatch and reviewer handoff; this document does
+not pretend that a repository file launches agents or unattended device work.

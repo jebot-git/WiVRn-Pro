@@ -1,0 +1,14 @@
+test_bound_actual_bytes_and_identity (test_research_quality.Quality.test_bound_actual_bytes_and_identity) ... ok
+test_either_goal_is_enough_for_research (test_research_quality.Quality.test_either_goal_is_enough_for_research) ... ok
+test_exact_all_channels (test_research_quality.Quality.test_exact_all_channels) ... ok
+test_footprint_not_pixel_center (test_research_quality.Quality.test_footprint_not_pixel_center) ... ok
+test_invalid_mappings (test_research_quality.Quality.test_invalid_mappings) ... ok
+test_one_code_chroma_error_fails (test_research_quality.Quality.test_one_code_chroma_error_fails) ... ok
+test_path_and_nonfinite_rejection (test_research_quality.Quality.test_path_and_nonfinite_rejection) ... ok
+test_periphery_separate_from_protected (test_research_quality.Quality.test_periphery_separate_from_protected) ... ok
+test_subsampling_damage_fails (test_research_quality.Quality.test_subsampling_damage_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.004s
+
+OK

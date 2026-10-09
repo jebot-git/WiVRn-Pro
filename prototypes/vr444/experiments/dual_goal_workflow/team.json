@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "updated_utc": "2026-10-09T14:09:17.187259+00:00",
+  "base_commit": "8e4d7a862591b3a5d2d9fc888da967fde0cb9165",
+  "qualification_operator": "OR",
+  "central_foveal_radius_degrees": 10,
+  "gaze_mode": "fixed-center",
+  "teams": [
+    {
+      "agent": "root",
+      "role": "integration and qualification",
+      "branch": "research/sub15-20261009/dual-goal-integration",
+      "stage": "build setup and exact foveal comparator"
+    },
+    {
+      "agent": "identify_sub15",
+      "role": "compositor and publication",
+      "branch": "research/sub15-20261009/native-publication-integration",
+      "stage": "diagnostics pushed; atomic pair publication in progress"
+    },
+    {
+      "agent": "transport_compression",
+      "role": "codec and admission",
+      "branch": "research/sub15-20261009/native-rrb32-integration",
+      "stage": "checked components pushed; native callsites in progress"
+    },
+    {
+      "agent": "gpu_pipeline",
+      "role": "GPU images and independent review",
+      "branch": "research/sub15-20261009/native-staged-image-integration",
+      "stage": "host image helper checks passed; peer review in progress"
+    }
+  ],
+  "device_owner": "root",
+  "device_serial": "230YC01D8W000E",
+  "host_gpu_reservation": "released by gpu_pipeline after correctness checks",
+  "production_promotion": false,
+  "next_handoffs": [
+    "compositor atomic publication to codec pair coordinator",
+    "GPU helper peer review then decoder output adapter",
+    "root reconcile overlay and fresh dedicated native build",
+    "root interleaved latency plus fixed-center quality acquisitions"
+  ],
+  "known_quality_gap": "Existing native captures stop before sampled texture/final XR swapchain; no fullquality target pass yet."
+}
