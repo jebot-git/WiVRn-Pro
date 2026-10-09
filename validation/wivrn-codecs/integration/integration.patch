@@ -13,704 +13,6 @@ index 9ca8ca4..ac3a974 100644
  option(WIVRN_AUDIO_AB_STOCK "Use default upstream v26.9 audio handling (OFF enables experimental keep-alive)" ON)
  option(WIVRN_WERROR "Treat warnings as errors" OFF)
  option(WIVRN_OPTIMIZE_SHADERS "Run spirv-opt on compiled shaders" ON)
-diff --git a/assets/codec-test/decode-coop128.spv b/assets/codec-test/decode-coop128.spv
-new file mode 100644
-index 0000000000000000000000000000000000000000..a0c624d7db2581e54d3007ca56d2ab52b96d4487
-GIT binary patch
-literal 13172
-zcmZvi3$R~Rb;iH{+54OuNSY8Rg1ih+5eqtsfC{5P)dni^s1&KZiI!r=f+#3dDTb8y
-zLkSTYEexGf5orZeEFEPmZ-oRZPz$wCTdgfPVnu;eAnE+pSzqqvdhg7gefC;wugAC7
-zTKk;yKc(AoN@b#r^=ta~LGiaxohFjzYKU?1f$u%=^&kD%2VTGX9&bQkzDmd;vp`eo
-zB~?iuKK`UXhH-_YJ0{X58iKx1(%DkTvu3fX4w8g9*6pue2Zu&!#~c@{1g%T?LnZC7
-zfmdU`y|jUU+{^S;9iOsWq<+s^{m`s`$qfC>(Qki=X|ANL(;wnvzE$eK2f@aFVuA)4
-zn~oD2HlfXF)`BRsd7-~-kOQmtcP&;`N1{N|mbu>ZHa2LE?db01*fA$Id_w<MXXsy*
-z`d^v)J#Y0xv;JFV=x2_8VnYAJ-G~+XHd7btwpR&0IyP60Tv(KNGY1Fe{QbH*y+YD1
-zDYtFXJ;yKfc)oM$VU8Y>mVNMiw`M*3w>ImU@1M4}Rf#->wq52UdAmqehvZ(7w|nQD
-z97PuXVR_BmcHbvy--$vm`D(r7A#>K9kaTG1Wlk<4yM?MQ&ug$netE_Q9eL*DD)GW!
-zk=OQvnp-JqbK0-fxmU*T$KW%W=C5a7q;1HU$(W1K&_9`sc?2E%%)6w)pUP|On!iKR
-zZ0`+|u@;Qe(#hB_JpVKJ=?{7?os7BVc&SC=-A+T)4Y9WW_;K$<+DHmM>zIElY4E?D
-z*T#wQyA%4`G!BnOPn({<gwYnK><RXJvu?!3^VfCK`t{@fQ`6WWuc%e#_;FOyq2VWU
-z>b3Q2ImzCQdZ=CNp(dH5=kJmZ4L!`MOX~s0+wrG~=K=Ie>vz=<`9$5a7t{~`j^mL*
-zT0b?;(eu4QTDN}vdic!$ZNP_V`Ns#v8R7L$4APXOJ=I6u(uepXr`M_r+2>XC=;)7L
-zP>Gs-tQ+}^`>BuIzH>63HPrOmvfl5SDCo$rulMC%lQ)*RKk0v~K6=aQiDDgeY(K!>
-zO8TX0@YYNeH2mZG|I~$l%#pP}-<gc{*ZT9&L_xPdkEB2JG5hn+69xTj^|43)GEvaT
-z!E=-L*hE1m4=+gC<LNiNWl4KtqM#$^wf{Mb+z%!SI&wE84*xY#_>2GG@ZSv%@P0H=
-z(1@FBaCmYu?hE6ynhO878WcK^`T0b8Y9if~Hhwx$@X5XBRQ2QJ8*li?L&px+U`H?c
-zS@sw7zg;Ef;Aq^i1&=eJ^$lIjpG}>N_H}Xkip=4Iw6@`G-SAE#|C%^nm?-%4PvUqU
-z-3?ywpCg~rCfDAhb-9)v;ywCdr|^aI$NT%EhPI!EI9L9sQ=B!#O|CnKp6nF7dASEq
-zbz@)LNeUk4kN4mwox&b6?DN{JHS!(a)6lct7{Lx1_5+^d_}^~y0o~q%XF3I)c<l4f
-zyYU>uXZZH{7oCE4N9OKxoq|T(txaruzYZ7_a`+K>+D+Sju~V$27vGrq_EM*ygDbHX
-z8co(Vymg&|Mr>R=4jK|M(EE&A$J(O64gb)^I!65CKBX3gUVKI#o!H&9v5QP!6g1Xz
-zZA_=iuVT7UQPA<n{%u?obo?{UbIUZ&@Qw4lqTnq}oadMEJ_nrdO4@>=kb`%3(iRp4
-z-tdT*81R?T`*F}P%76j##9|*eFJn%#ANQutt%_m|=ZI;qDhfKWd^z`RQBly{i*{-7
-zgSUN=UX%VXx{h9(y11|VWS&XCSrl|)Ko2pn-hS@b*teeFC<=P3=ha0)KP&a_R1~yU
-zFZ#iTv+&?SA%iV^z)$zGN`6cfy?|cE9C>sNS!;~Oncf7R=)Y@_Hfnf>40%Qu>BMg2
-zIcMi}3O>DtJ~b!#t^xQ{oq`T7TpNQu%GeXzp7iF1=KR{LyuA19U8Z{vyteney(sh|
-zLtPxu>?^!|$j#g%M({ue-{84U_M4?n-T}U;-!<{hrY7Lq=XVta&%I}HQP7C5wTW%-
-z!4ZQ(4nN3C{BsVyrzqBv!|pu?6$RbB=ddPLcn22+jo7%hu0u11w)ecZDCppZf9PTz
-zBmU8QevjIsW{W}|onXAAv5U;%V3O;(Hl|0+g6aE<f=({jzaxu+-u9lO8l2%9=c9{)
-z=iYN{_8xF{?>Vk0<lwpYoPgay!6RP#%jo?$dKhKE0C{4ukAIMPijVFye}tW^75AA1
-zor3N@v#>b};ce0>Xkg8?YvW@@VWX{$(;J%OKVwF1oY~X{ytXzzRTO%WVc*Vg_6^=y
-zMLI9{jS*as!8dr`$FpbI$E9GC`du66G<yc$J})Z@o@?V=bQeW@txaruFOC@$a`*w3
-z_~*U2IM?z_<l4BTDCn+@<xQ;cE-eZgv2kr(pUD{7+PJ(Z=-`Hb=wcnCYvYQd(2LK=
-zqZ5q(vayTIilU&go@--z<t&)~c~Q{G1^c(MDCli%e7?aMzH$CSQSe+FS7&XIN3M-)
-zib4*aYvbCYz#AU%5(EA+dOwy7qYM}zPb~KFx~vVJ&0HHd;Nvhp_d3T{6@_e@<F_<4
-z$8qb79RG(V$Kka({*9v0iwyYR+u#rHwj$k=@h}n}GQ<bZ`|-_L_T%=VpyRi5{Eh~D
-z`1bkEqTo5l?=A`&@wGOwZA?EfDCF>i9LGOndVf)@<$l3AzPc#r&hdwuSmCWH3L3F-
-zZCwv0Ms1FNrzq&)hJWZ{9iwyn;iAxs&&Z<_jQ^vti_9ZML1R7F#`L?hVESlL(81LH
-zJysO-Hpl<9!5O}B{$5e=oa2vYj)Svv{E4EFgXbLoeo^2Jk9dgze;K_WCk>+v7$8q9
-z_VI_A<GgQhjz3uxYj|e!Gw;@&g6{smUDN;JZOi-3ydPu47i91So@?b9o)<DUKfnE=
-zp&5_oXVl8trdHs!wemty=tYKo9P(ue&uQ>p<bJ!3zA)k&GWZ71`?_wHedWaqbo_R$
-zOzQOW1AP13@#?Q?L#@=Rpb=kd6WiXK4-E=A`~X}0^WJP+6>I4^u9dk}L3gbzY+{8s
-zuPSK7#<g|LuVV~tt!z>iba2Bzbg_=nwX$hd=*4H`(Fw+j8oS7BRuweXb8SpFufO`7
-zwnbIY!PNe3SrzoQR$kfQ4Bt3!RTVtf$~JX;P6KDx%C=P@2hX+gs;a;n9`O<b{xW($
-zP98=XFhHJI?BkAg%w6`wc6O@cGX*sJ^O~v+bl23*RiPUmwp|;Hw*8SoVFQ1t5$edi
-zQ+QvK7?UUPT$?*(ZPHWOo7XnA32*04+BIvD5&OsxJ3QCs8>_;H_8fatLo@z+)|WrW
-zym@@(9q&-!wY9ldRp><q-`>^a4ZOXp^v>J|MtnmC-{3iq-Zo1f?L$tae%I!{P0j>A
-z-*@g;6+E9~@2CnI@wGOwZOl&{6ms|h=J@AaIG`%l@?Oxj`8!oXcWoZh#0u}-RY4;*
-zuC41m8ADr}2Ui6h-0%-wtYgGKo?{NJ3cdJ@JUYSn*v2k0zgrbF)^lx451R$k!>fW$
-zF4({KRRz7R%_AC|;Tz}QuL_=P;mE8_aCXfcRTXmZT${&K1>W$8ml*Ju(fjf7VUz&_
-z<cY;To{)LUez@jNtco@Krhrc8Jfn49Iw;m+hx(&F%=^Tk&;bt}uAMh#?J!#Ql0l&h
-z-Kz&__l9@jFuq%W_rY%D+3&aHdk6gXJIS{;?<C>#PQvdg_UaV+kl{VWn^K?OQ^4P?
-zQ_#VWYjR@WrYCS-@6$=Ym2oh7zkWOQ^RC4EwK(7J!85k|cM5#q`5EzmPC@rQ!hwxV
-zc<(0Gw8_YxAcLRq+=ou73Ow6BbZSF$uAMfc51rohA$V;cI-@G|A_E@Fni_$3W|hv#
-zoMXf{Wbh51Yvz-))XZ5`LC0_Rp+9Zv1HOGeyDE6@LrckFa({+RY&*9u8x(T*0k-((
-z{5e0@w)Y4ZR0Z9A=&~kOco$X$jo7%hu8R|+whvue6?AX|6LhhT5&!5zpQ#GH_>4R{
-z!T9RNE;6633L5LVHm1vG!E{Ac(81LHeXc6#Z6CU_!5O}BzN#vC&g+%ghrro+{rRep
-zgXcc<7hp3ec*IK#_{-@1xMCP(zyNt-v5(hgp0@W0e>KZJ!gW;}=&q^1t_t1o+S;H-
-zY<tb1uz^4H9O}rt6@x+tJo3afM(q;=HIH7;8NHUCg+64k(c1jnpt%2lhYfg+_i%n2
-zn2bHiaeTQd*04|R4L4Q=-M!)Oo7{l+H&t4dSTnj8+>*N5_sd_a3Occ%huBzepT5%A
-zx1O7-g5K)6xhm*>PyN-ZptX9@4@SJFUNtCWu!Rr!>3Tmle}kU+d(&~9g6DVa$9D=E
-zxsT2hx=}B5zw=&_@4Ug5cizmA!!OPi;$?KaoGF|!{yop<6K4Z!cvr_7M(;Q8#(DS0
-zdqVczvb--xmeKloSI&9B8HGN-cjp~BbAHcb4WrlaJ0QOc+9&^}$nSit;Wty(Fn(V(
-z_JzISI|leq<i0W*|82NG*7)1%!@cxiFRjYoL4Hsbe7@V@Tzo9~J{RFXSrv5ba*ds*
-z(hj5Tyn5iffl+=<FWuiuH>aJSR0SVDu=7CjZ3q6-RYAuN*S=4GCfB0d`~S=Io7m3F
-zoOq!s=-41{_#WZKs-WZZy7ZaR`?<?7{w9sRt9$7S{d9lrdd0ImI(#2ddc_)e#Boio
-zaUAe#ub>kL*RG|hT#G*E^_*To_cQ(6S!Cw*3cBN*-;aAnoTe@46>{({N<3cC(2Uzr
-zy}~Bn;c(XcAs^V~@0H+uOfN0z#~fqyx)1gW8{`SON)4XaE9lq(Uvv>OI=t?<UcqnI
-zozN@j_}s2zy>n?d?l1e%AMD_Z?S80N#DNSkd~`+(AMT}7(icW-AcJr4?AytSBi{(M
-zGRWGG-3Nsn>%bO$_T#i(;R`bEL8tfQ?{4roQ^D!uy@GC;Gg5{)EOTbBpnoOn<>`K0
-zN6r)D+9pPLKkcPwGA2gOYivE+kG%t%&W-1ZryswiAx?CG1v)JAv$RJ}wKB*Wi#-N~
-z9P7~8+Wl0ohyfY=y`=G%y!te@(k`R-;DRQvOuMKb`xSX*tS{~rvheT^{ltJ?uUnS6
-z#y3J<cP{+2(XL~?<Jyzo7W&ag?BJi*UzWLsjA_ezMZ93_J-wn=e0zpGXAg7azN8`c
-z<x23X<M(m&cI&#TSFC|=T`N-;JajP!U;L*(5jP_`=yCKd`WW9+A>%$rZ<_6lxHfe#
-zf&n^q%|6JQZ}-v-4X)Sq<9BiNT4VjiUO|WEUVDA7pu1OosUP)1r&r#Wdfji}V+T4h
-zaqYf%W3F|6-qb5-^nLfYuQfFLb!)GXrN4RY*L#I*>;E@;1-<P{xAltk@NDBBo3-Av
-z+k1s9Jnz|Exo7ZP(|7j@x@GRkx<`h6WsZ#Z5!~4a@1yq#d}iB6&R1|_v~QfdoWs6<
-z@Hx$SOKx!Xvxd=_aZdm?u6^G_a4*1`lk?t&(fP7n<_j_pb<(Nb^ci_tr{MdWfR7~K
-z`wst<PC>^Pu6_P}BG+=y<a6^+8k(^>t5bZ7hP=PC`*f$E^S#^ks_~4qv{TUONz0n&
-zYUt<itx?9twRNA@DZXFBE_=s!e&=`NH=W?>XQd0ek#74Jc8ayo!OglE!Hs9Wi_#xr
-zMjpG-FB{*Gxww;{fe+W{17qgUol~F9dtUa#d3SlIpgW!wo#MMrWW4UmTnEqVuIdzY
-zpF!(-1<hyB91fVgSAe&keCC@rzPl!G^9<@U|Ip_eoZ>spVfqY07wgbrnaMEPa~@iT
-z(Y<=nppau7I$OIdJ4NisIHqedCfCQcoq~p}@wqPF6}9+$G4X+CUDtOCy78GmC}_rK
-z%LX5K3kGS^jFZv$Y@Ya_&#`a8_cskb=mH;fSY~0`Gd`AKG(I~F3OUxHv$cCer-&OF
-z$8=N1WPEPs{W!JU;B#wJ5A+Pqi?4SII<;mTZ|g=n--w#_%}zn5PUmS(oP~Gfd%D+2
-zVGsQHUfAczot;9)@^?4#?B7iJdpd=T-%s4zDQMi+`TfMVI)z?%)_Y&0mzZbjy}wh)
-zSnujiLF3G@-Zk_E-d*BDV)G#H0y@Pv&wkGRr~F158(>2JhlXrh+tj$Rqpy;aJ`dc7
-T>8GsW8)kBZ@g+_47ESd3;`7i}
-
-literal 0
-HcmV?d00001
-
-diff --git a/assets/codec-test/decode-coop128dc.spv b/assets/codec-test/decode-coop128dc.spv
-new file mode 100644
-index 0000000000000000000000000000000000000000..c7c6d4cff0ea7ffcc8471df55f8b5ebcb1c4820a
-GIT binary patch
-literal 16032
-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
-
-literal 0
-HcmV?d00001
-
-diff --git a/assets/codec-test/decode-coop64.spv b/assets/codec-test/decode-coop64.spv
-new file mode 100644
-index 0000000000000000000000000000000000000000..4fb12944e61ce9fae3e4eb6145e8dd9d1c3b0c8f
-GIT binary patch
-literal 13172
-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
-TKV=QyFq0#UFKME;XrliIXN%9)
-
-literal 0
-HcmV?d00001
-
-diff --git a/assets/codec-test/decode.spv b/assets/codec-test/decode.spv
-new file mode 100644
-index 0000000000000000000000000000000000000000..06b98f93563009780669039b213f307247fa4eed
-GIT binary patch
-literal 12928
-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
-
-literal 0
-HcmV?d00001
-
-diff --git a/assets/codec-test/encode-coop128.spv b/assets/codec-test/encode-coop128.spv
-new file mode 100644
-index 0000000000000000000000000000000000000000..5d14abd60f5f992a1f267d437877731e5b879b48
-GIT binary patch
-literal 12648
-zcmZvi3D93vdB&f6?magUkia0ahs{!G6=7tvEH0Hrpe`V^BT7e&Rd4_W6cuQxMX4>0
-zXcanx-CSCPAW0yo6hti)Z9u_@h!P-(1yd0TC=iyf^Ly|6<U3)KnasK8d6)BU=RN1%
-z|JRpY=BV#9S1-_WqvGFYD(WO{q%p?BjymS3Jx)Jk!5(|>vnLFjs1H7P=4p<qq(Rcj
-zZ$I%A2xm#UypuN782DzA&Xs~6nZq>bjgnXnxx+Q+O`%cRGUj#de3!%zQy*AK`C}yQ
-zyp}e^e5YIk{n)UPq-~QQdzf#N`me+gX|4XlRRaTN&B?9_V@<FP8d)L$wsGk1L)NxE
-z(yi;;Z*r}zQr`2{H!#bu?$-5<Ill1^-`-Q!)qf&_(pvqVxB9`X|Gi~h{mjvi&*<N$
-zZ}nI0JEeOaePGtNf4{Ci=IAs1mHia^ttD-)68KK)BZly7p&@Ev$IKsd;>w(VFI0)T
-z_`~FzpSb5Q&b2(>J@t703Q5n+%*-%H?;)w%^COafd-YM5@XXJ8qfU3!prbR_)ad~^
-zrv~A*p5r9Fs+;)VmNe*FYS4#sPAJj$kz5lTeaxv@O2zulPCwy4Cuv@fz4KAA$7cDj
-zmO?-B(3d0M&C(xa-b>qQ&_lWZz|jB8%s)8xFkh7z^hfd;y{6CYrke43TXoYOvHd4?
-z)4uoo<g9VePk}$}L+_d0WWVFVo+TdhHOBtJ_x3+_E$XBVrJy6nd~ssXm*lhK#&|<V
-z-<plfx1(3h&R2Bwq}loZVnnB?5B4@Xs1NombJlq@aWL#)&c1Ee-LObAjoz10{AG5X
-zBg?c;9M1*t&&<qFm+X13%U)*Ax+f(L#=6Ye&+zW9KK9K8%^DAtDQD<ppIayUnK?T5
-zOB@WH%-PeeF9-C}4w7D?F>07SPQKYo{CAF5kJ8MX+4&R9XJ+SXM#cGI{-;N2P9y)!
-zIGqWO$+IIiO8crt@1SR8S?fua(Dj6Ry*7K+)9Pa%9nw#9##gJxep=W~=M?+wpzIA-
-zbP60EYUiq~Cu-9?S10~e)rjxXP9X=*+F#3lzeYpQuIUsQ_VN6bO4!F7UfXkRH}!zl
-zp8xC=xb3+<?V$(So^N&v{9M(@(YHDUMxB2=vF~&WoLc`xV*j0XLpv|An>z&#pJkV=
-zhwqk7fy0MCKj^0TGX7R`!j4@=h5h(=cPHJ}NsBUOcXSFmJ@a=ObbHeIN8F&p4^EtT
-zwvBhDJ;>VUyE+BVny=Ov{r9JxqDK=e=m)D0jQCm(yO5!FTR&KLrTVC4`oVn~qJPoD
-z=v(mKm$ot5=NG5X$nR66pEo`~*eU4r6MVkEo9Ol#`pQm$<1^3B)vA<j^YU<m*`MEb
-zirheR&HOHFhI7$1^8_|@oFP-qJW1{5{@pn9_f+=ZU8T?qk8|)0F~~ae+B2P^ez4Vg
-zOPOkso?yLwnff|<k%7lLhN937kMmf|)Jw@Dbo($C1?}eaVJ`QgqUf_{=NY(BQQ+T6
-zo=uX6v&wSwiUOxUTW-^$z%93V%5mme?uA8xw{lw)1&;rmX<O6NivqtgYyZf8!tsZG
-zacuS~>K@urz4V6cSB%zmbWcy8WY16iZ|)U1cN}UGUDOUb%=7wOk9$(f121)pol8aq
-zA9CnqU2+0#hqNCa+p<eh#0Z-GI=)xn_Um1ZU(nv#OMjmBF<RF<(l2z{<^{b1w_oVO
-zFLapagj~;lnTOGST|FxJkV7Zy+OOTq<QqKf74A5HP^Nni`<Q;g96s0QONwIuLbuEw
-zDFY1|=H%Tndlki5-^#o^WuPI$9RJA=Jp*4Et%F{Iy!(`U4?Sdkz3GCC7o%hGdy&7X
-zznnKn=M1yC`)seE6H9v2`AK(gf_^cvA12#)#@2t#br`+Qg(LT)iT|uY`tTqv&f34E
-zSJ1uA*-7_0&_CZRaALsoWhwi`lw}Xlhp5d<({6loU3{gVaMoZyb8oq<SK!#ZFl}bU
-zX6P4X-)6m|2I+`lw%0A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
-
-literal 0
-HcmV?d00001
-
-diff --git a/assets/codec-test/encode-coop64.spv b/assets/codec-test/encode-coop64.spv
-new file mode 100644
-index 0000000000000000000000000000000000000000..fd9f0ba17650faf4cf127b7a6fe1be831baf3bcd
-GIT binary patch
-literal 12648
-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
-
-literal 0
-HcmV?d00001
-
-diff --git a/assets/codec-test/encode.spv b/assets/codec-test/encode.spv
-new file mode 100644
-index 0000000000000000000000000000000000000000..a67c21ecb1fc4ec61e86b0972fa8840f6db273fb
-GIT binary patch
-literal 12280
-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
-
-literal 0
-HcmV?d00001
-
 diff --git a/build.gradle b/build.gradle
 index c35f022..9594f49 100644
 --- a/build.gradle
@@ -1682,7 +984,7 @@ index 0c209aa..3386c2d 100644
  	        .type = XR_TYPE_COMPOSITION_LAYER_SETTINGS_FB,
  	        .layerFlags = flags,
 diff --git a/client/scenes/stream.cpp b/client/scenes/stream.cpp
-index 509b924..246264f 100644
+index 509b924..306f149 100644
 --- a/client/scenes/stream.cpp
 +++ b/client/scenes/stream.cpp
 @@ -1,3 +1,8 @@
@@ -1704,7 +1006,25 @@ index 509b924..246264f 100644
  #include "inplace_vector.hpp"
  #include "spdlog/spdlog.h"
  #include "utils/named_thread.h"
-@@ -180,6 +188,39 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
+@@ -173,6 +181,17 @@ static const std::array supported_depth_formats{
+         vk::Format::eX8D24UnormPack32,
+ };
+ 
++#ifdef WIVRN_CODEC_TESTS
++static wivrn::codec_test::selection_trace::Frame codec_test_trace_frame(
++        const std::shared_ptr<wivrn::shard_accumulator::blit_handle>& handle)
++{
++    if (!handle) return {};
++    return {true, handle->feedback.frame_index, wivrn::codec_test::warp_hash(handle->view_info),
++            handle->view_info.display_time, handle->feedback.received_first_packet,
++            handle->feedback.received_from_decoder, handle->view_info.alpha};
++}
++#endif
++
+ scenes::stream::stream(std::string server_name, scene & parent_scene) :
+         scene_impl<stream>(supported_color_formats, supported_depth_formats, parent_scene),
+         apps{*this, std::move(server_name)}
+@@ -180,6 +199,57 @@ scenes::stream::stream(std::string server_name, scene & parent_scene) :
  	auto views = system.view_configuration_views(viewconfig);
  	width = views[0].recommendedImageRectWidth;
  	height = views[0].recommendedImageRectHeight;
@@ -1734,17 +1054,35 @@ index 509b924..246264f 100644
 +        test_candidate_trace.enabled = trace_mode == "1";
 +    }
 +    if (test_candidate_trace.enabled) {
++        test_render_attempts.enabled = true;
 +        const auto folder = application::get_config_path() / "codec-test";
 +        std::filesystem::create_directories(folder);
 +        test_candidate_trace_file.open(folder / "selection-trace.jsonl", std::ios::trunc);
 +        if (!test_candidate_trace_file)
 +            throw std::runtime_error("cannot open codec test candidate trace");
 +    }
++    std::ifstream publication_config(application::get_config_path() / "codec-test-publication-trace.txt");
++    if (publication_config.is_open()) {
++        std::string mode, trailing;
++        if (!(publication_config >> mode) || (mode != "0" && mode != "1") || (publication_config >> trailing))
++            throw std::runtime_error("invalid codec test publication trace mode");
++        if (mode == "1") {
++            if (!test_candidate_trace.enabled)
++                throw std::runtime_error("publication trace requires candidate trace");
++            const auto output = application::get_config_path() / "codec-test/publication-trace.jsonl";
++            if (std::filesystem::exists(output))
++                throw std::runtime_error("publication trace output already exists");
++            test_publication_ledger = std::make_unique<codec_test::publication_ledger::Ledger<>>();
++            test_publication_file.open(output, std::ios::out);
++            if (!test_publication_file)
++                throw std::runtime_error("cannot open codec test publication trace");
++        }
++    }
 +#endif
  }
  
  static from_headset::visibility_mask_changed::masks get_visibility_mask(xr::instance & inst, xr::session & session, int view)
-@@ -249,6 +290,10 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
+@@ -249,6 +319,10 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
  			auto scale = config.get_stream_scale();
  			info.stream_eye_width = info.render_eye_width * scale;
  			info.stream_eye_height = info.render_eye_height * scale;
@@ -1755,7 +1093,7 @@ index 509b924..246264f 100644
  		}
  
  		if (self->instance.has_extension(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME))
-@@ -352,6 +397,14 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
+@@ -352,6 +426,14 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
  	self->network_session->send_control(from_headset::session_state_changed{
  	        .state = application::get_session_state(),
  	});
@@ -1770,7 +1108,7 @@ index 509b924..246264f 100644
  	self->network_session->send_control(from_headset::stream_tab_changed{
  	        .tab = self->gui_status,
  	});
-@@ -634,7 +687,15 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
+@@ -634,7 +716,17 @@ void scenes::stream::push_blit_handle(shard_accumulator * decoder, std::shared_p
  			if (decoder != decoders[stream].decoder.get())
  				return;
  			handle->feedback.received_from_decoder = instance.now();
@@ -1780,13 +1118,15 @@ index 509b924..246264f 100644
 +            auto& history = decoders[stream].latest_frames;
 +            std::rotate(history.begin(), history.begin() + 1, history.end());
 +            std::swap(handle, history.back());
++            if (test_publication_ledger)
++                test_publication_ledger->publish(stream, codec_test_trace_frame(history.back()), codec_test_trace_frame(handle));
 +#else
  			std::swap(handle, decoders[stream].latest_frames[handle->feedback.frame_index % decoders[stream].latest_frames.size()]);
 +#endif
  		}
  
  		if (state_ != state::streaming and not(decoders[0].empty() or decoders[1].empty()))
-@@ -660,11 +721,61 @@ bool scenes::stream::accumulator_images::empty() const
+@@ -660,11 +752,57 @@ bool scenes::stream::accumulator_images::empty() const
  	return true;
  }
  
@@ -1804,22 +1144,18 @@ index 509b924..246264f 100644
 +    namespace selection_trace = codec_test::selection_trace;
 +    namespace selection_policy = codec_test::selection_policy;
 +    static_assert(decoder_count == selection_trace::decoder_count && image_buffer_size == selection_trace::history_slots);
-+    auto trace_frame = [](const auto& handle) -> selection_trace::Frame {
-+        if (!handle) return {};
-+        return {true, handle->feedback.frame_index, codec_test::warp_hash(handle->view_info),
-+                handle->view_info.display_time, handle->feedback.received_first_packet,
-+                handle->feedback.received_from_decoder, handle->view_info.alpha};
-+    };
 +    selection_policy::History history{};
 +    selection_policy::Pair previous{};
 +    for (size_t i = 0; i < decoder_count; ++i) {
-+        previous[i] = trace_frame(current_blit_handles[i]);
++        previous[i] = codec_test_trace_frame(current_blit_handles[i]);
 +        for (size_t slot = 0; slot < image_buffer_size; ++slot)
-+            history[i * image_buffer_size + slot] = trace_frame(decoders[i].latest_frames[slot]);
++            history[i * image_buffer_size + slot] = codec_test_trace_frame(decoders[i].latest_frames[slot]);
 +    }
 +    const auto decision = selection_policy::choose(history, previous, test_selection_policy,
 +                                                   display_time, period, previous_display_time);
 +    if (trace) {
++        if (test_publication_ledger)
++            test_publication_mark = test_publication_ledger->mark();
 +        trace->policy = test_selection_policy;
 +        trace->predicted_period = period;
 +        trace->previous_predicted_display = previous_display_time;
@@ -1849,7 +1185,7 @@ index 509b924..246264f 100644
  	inplace_vector<shard_accumulator::blit_handle *, decoder_count> common_frames;
  	const bool alpha = decoders[0].latest_frames[0] and decoders[0].latest_frames[0]->view_info.alpha;
  	for (size_t i = 0; i < view_count + alpha; ++i)
-@@ -742,14 +853,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
+@@ -742,14 +880,22 @@ std::array<std::shared_ptr<shard_accumulator::blit_handle>, 3> scenes::stream::c
  		}
  	}
  	return result;
@@ -1872,18 +1208,21 @@ index 509b924..246264f 100644
  }
  
  void scenes::stream::update_gui_position(xr::spaces controller, float predicted_display_period)
-@@ -838,6 +957,22 @@ bool scenes::stream::is_gui_interactable() const
+@@ -838,6 +984,25 @@ bool scenes::stream::is_gui_interactable() const
  
  void scenes::stream::render(const XrFrameState & frame_state)
  {
 +#ifdef WIVRN_CODEC_TESTS
 +    const XrTime test_render_entry = instance.now();
 +    const XrTime test_previous_predicted_display = last_display_time;
++    codec_test::selection_trace::AttemptGuard test_attempt_guard(
++        test_render_attempts, frame_state.predictedDisplayTime, test_previous_predicted_display);
 +    const XrDuration test_max_ahead = codec_test::selection_policy::period_bound(
 +        frame_state.predictedDisplayTime, frame_state.predictedDisplayPeriod, test_previous_predicted_display);
 +    codec_test::selection_trace::Record test_trace_record;
 +    const bool test_capture_candidates = test_candidate_trace.capture();
 +    if (test_capture_candidates) {
++        test_trace_record.schema = 3;
 +        auto [begin, end] = application::codec_test_wait_frame_times();
 +        test_trace_record.wait_begin = begin;
 +        test_trace_record.wait_end = end;
@@ -1895,7 +1234,20 @@ index 509b924..246264f 100644
  	if (state_ == state::shutdown)
  		application::pop_scene();
  
-@@ -897,11 +1032,40 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -882,6 +1047,12 @@ void scenes::stream::render(const XrFrameState & frame_state)
+ 		// TODO: stop/restart video stream
+ 		session.begin_frame();
+ 		session.end_frame(frame_state.predictedDisplayTime, {});
++#ifdef WIVRN_CODEC_TESTS
++        // Only count an empty outcome after xrEndFrame actually succeeded.
++        using Skip = codec_test::selection_trace::Skip;
++        test_render_attempts.skip(state_ == state::shutdown ? Skip::shutdown :
++                                  !frame_state.shouldRender ? Skip::should_not_render : Skip::decoders_unavailable);
++#endif
+ 		return;
+ 	}
+ 
+@@ -897,11 +1068,42 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		application::pop_scene();
  	}
  
@@ -1912,6 +1264,7 @@ index 509b924..246264f 100644
 +    if (!test_select_after_fence && !select_test_pair()) {
 +        session.begin_frame();
 +        session.end_frame(frame_state.predictedDisplayTime, {});
++        test_render_attempts.skip(codec_test::selection_trace::Skip::no_complete_pair);
 +        return;
 +    }
 +    const XrTime test_fence_begin = instance.now();
@@ -1925,6 +1278,7 @@ index 509b924..246264f 100644
 +    if (test_select_after_fence && !select_test_pair()) {
 +        session.begin_frame();
 +        session.end_frame(frame_state.predictedDisplayTime, {});
++        test_render_attempts.skip(codec_test::selection_trace::Skip::no_complete_pair);
 +        return;
 +    }
 +#endif
@@ -1936,7 +1290,7 @@ index 509b924..246264f 100644
  
  	gpu_timestamps timestamps;
  	if (query_pool_filled)
-@@ -940,7 +1104,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -940,7 +1142,11 @@ void scenes::stream::render(const XrFrameState & frame_state)
  
  	// Search for frame with desired display time on all decoders
  	// If no such frame exists, use the latest frame for each decoder
@@ -1948,7 +1302,7 @@ index 509b924..246264f 100644
  	std::array<XrPosef, view_count> pose{};
  	std::array<XrFovf, view_count> fov{};
  	std::array<wivrn::to_headset::foveation_parameter, view_count> foveation;
-@@ -997,6 +1165,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -997,6 +1203,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			                .extent = blit_handle->extent,
  			        },
  			        .layout_rgb = blit_handle->current_layout,
@@ -1956,7 +1310,7 @@ index 509b924..246264f 100644
  			};
  		}
  		else
-@@ -1175,9 +1344,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1175,9 +1382,18 @@ void scenes::stream::render(const XrFrameState & frame_state)
  			        application::space(xr::spaces::world),
  			        layer_view);
  
@@ -1978,12 +1332,13 @@ index 509b924..246264f 100644
  
  		accumulate_metrics(frame_state.predictedDisplayTime, current_blit_handles, timestamps);
  
-@@ -1186,6 +1364,75 @@ void scenes::stream::render(const XrFrameState & frame_state)
+@@ -1186,6 +1402,91 @@ void scenes::stream::render(const XrFrameState & frame_state)
  		try
  		{
  			render_end();
 +#ifdef WIVRN_CODEC_TESTS
 +            const XrTime test_end_frame_return = instance.now();
++            const auto test_attempt_snapshot = test_render_attempts.submit();
 +            // Inspect the actual stream projection layer after successful xrEndFrame.
 +            // A submitted hint is not proof of the runtime's selected filter.
 +            const auto actual_filter_flags = !room_capture && projection_layer_index
@@ -2030,7 +1385,11 @@ index 509b924..246264f 100644
 +                // Snapshot collection above is fixed-size and under frames_mutex;
 +                // serialization is here, after xrEndFrame, with that mutex released.
 +                if (test_candidate_trace.enabled) {
++                    test_present << ",\"render_attempts\":";
++                    codec_test::selection_trace::write_attempts(test_present, test_attempt_snapshot);
 +                    XrDuration trace_write_ns = 0;
++                    // No new checkpoint is claimed once candidate capture is capped.
++                    bool publication_write_ok = !test_publication_ledger;
 +                    if (test_candidate_trace.commit()) {
 +                        const XrTime trace_write_begin = instance.now();
 +                        test_trace_record.sequence = test_candidate_trace.records;
@@ -2038,6 +1397,10 @@ index 509b924..246264f 100644
 +                        test_trace_record.selection_end = test_select_end;
 +                        test_trace_record.end_frame_return = test_end_frame_return;
 +                        test_trace_record.projection_submitted = !room_capture && projection_layer_index;
++                        test_trace_record.attempts = test_attempt_snapshot;
++                        if (test_publication_ledger)
++                            publication_write_ok = test_publication_exporter.write(test_publication_file,
++                                *test_publication_ledger, test_publication_mark, test_trace_record.sequence, test_trace_record.history);
 +                        codec_test::selection_trace::write_json(test_candidate_trace_file, test_trace_record);
 +                        test_candidate_trace_file.flush();
 +                        trace_write_ns = instance.now() - trace_write_begin;
@@ -2046,6 +1409,13 @@ index 509b924..246264f 100644
 +                        << ",\"candidate_trace_dropped\":" << test_candidate_trace.dropped
 +                        << ",\"candidate_trace_write_ns\":" << trace_write_ns
 +                        << ",\"candidate_trace_write_ok\":" << (test_candidate_trace_file ? "true" : "false");
++                    if (test_publication_ledger)
++                        test_present << ",\"publication_trace_enabled\":true"
++                            << ",\"publication_trace_records\":" << test_publication_mark.records()
++                            << ",\"publication_trace_epoch\":" << test_publication_mark.generation()
++                            << ",\"publication_trace_dropped\":" << test_publication_mark.dropped()
++                            << ",\"publication_trace_valid\":" << (test_publication_mark.valid() ? "true" : "false")
++                            << ",\"publication_trace_write_ok\":" << (publication_write_ok && test_publication_file ? "true" : "false");
 +                }
 +                test_present << "}\n";
 +                test_present.flush();
@@ -2054,7 +1424,34 @@ index 509b924..246264f 100644
  		}
  		catch (std::system_error & e)
  		{
-@@ -1293,6 +1540,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1195,6 +1496,13 @@ void scenes::stream::render(const XrFrameState & frame_state)
+ 				throw;
+ 		}
+ 	}
++#ifdef WIVRN_CODEC_TESTS
++    else {
++        // The existing retained-pair path omits a projection submission; it is
++        // distinct from a successful empty xrEndFrame and from a failed call.
++        test_render_attempts.skip(codec_test::selection_trace::Skip::retained_pair);
++    }
++#endif
+ 
+ 	// Network operations may be blocking, do them once everything was submitted
+ 	{
+@@ -1287,12 +1595,22 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+ 		current_blit_handles.fill(nullptr);
+ 		retired.swap(decoders);
+ 		video_stream_description.reset();
++#ifdef WIVRN_CODEC_TESTS
++        if (test_publication_ledger) {
++            // Same ordering as publication/selection: decoder_mutex, then frames_mutex.
++            std::lock_guard frame_lock(frames_mutex);
++            test_publication_ledger->reset();
++        }
++#endif
+ 	}
+ 	for (auto & item: retired)
+ 		item = {};
  	decltype(decoders) replacement;
  	try
  	{
@@ -2064,7 +1461,7 @@ index 509b924..246264f 100644
  		for (const auto & [stream_index, item]: utils::enumerate(replacement))
  			item.decoder = std::make_unique<shard_accumulator>(device, physical_device, instance, queue_family_index, description, shared_from_this(), stream_index);
  	}
-@@ -1306,6 +1556,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
+@@ -1306,6 +1624,9 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
  	{
  		std::unique_lock lock(decoder_mutex);
  		decoders.swap(replacement);
@@ -2075,16 +1472,17 @@ index 509b924..246264f 100644
  		if (defoveator)
  			defoveator->reset_pipelines();
 diff --git a/client/scenes/stream.h b/client/scenes/stream.h
-index a7d95ff..5291b43 100644
+index a7d95ff..e014741 100644
 --- a/client/scenes/stream.h
 +++ b/client/scenes/stream.h
-@@ -39,6 +39,14 @@
+@@ -39,6 +39,15 @@
  #include <thread>
  #include <vulkan/vulkan_core.h>
  
 +#ifdef WIVRN_CODEC_TESTS
 +#include "codec_test/layer_filter.h"
 +#include "codec_test/selection_trace.h"
++#include "codec_test/publication_ledger.h"
 +#include "codec_test/selection_policy.h"
 +#include <fstream>
 +namespace wivrn { class test_stereo_state; }
@@ -2093,7 +1491,7 @@ index a7d95ff..5291b43 100644
  namespace scenes
  {
  class stream : public scene_impl<stream>, public std::enable_shared_from_this<stream>
-@@ -73,7 +81,12 @@ private:
+@@ -73,7 +82,12 @@ private:
  
  	// for frames inside accumulator images
  	std::mutex frames_mutex;
@@ -2107,7 +1505,7 @@ index a7d95ff..5291b43 100644
  
  	wivrn::spatial_source * spatial = nullptr; // Owned by application, not the stream.
  	std::unique_ptr<wivrn_session> network_session;
-@@ -94,6 +107,14 @@ private:
+@@ -94,6 +108,20 @@ private:
  	// Network-thread state: decoder recovery must not replay an old display rate.
  	bool initial_refresh_rate_applied = false;
  	std::optional<to_headset::video_stream_description> video_stream_description;
@@ -2117,12 +1515,18 @@ index a7d95ff..5291b43 100644
 +	bool test_select_after_fence = false;
 +	wivrn::codec_test::selection_trace::Policy test_selection_policy = wivrn::codec_test::selection_trace::Policy::closest_target;
 +	wivrn::codec_test::selection_trace::Budget test_candidate_trace;
++	wivrn::codec_test::selection_trace::AttemptLedger test_render_attempts;
 +	std::ofstream test_candidate_trace_file;
++	// Declared before decoders: their callbacks finish before this storage dies.
++	std::unique_ptr<wivrn::codec_test::publication_ledger::Ledger<>> test_publication_ledger;
++	wivrn::codec_test::publication_ledger::Ledger<>::Mark test_publication_mark;
++	wivrn::codec_test::publication_ledger::Exporter<> test_publication_exporter;
++	std::ofstream test_publication_file; // Render-thread owned; flushed by checkpoint.
 +#endif
  	std::array<accumulator_images, decoder_count> decoders; // Locked by decoder_mutex
  
  	std::optional<stream_defoveator> defoveator;
-@@ -257,6 +278,10 @@ public:
+@@ -257,6 +285,10 @@ public:
  	void operator()(to_headset::running_applications &&);
  	void operator()(audio_data &&);
  
@@ -6603,6 +6007,158 @@ index 0000000..191893d
 +    return h;
 +}
 +} // namespace
+diff --git a/common/codec_test/publication_ledger.h b/common/codec_test/publication_ledger.h
+new file mode 100644
+index 0000000..6a294b4
+--- /dev/null
++++ b/common/codec_test/publication_ledger.h
+@@ -0,0 +1,146 @@
++// SPDX-License-Identifier: MIT
++#pragma once
++#include "selection_trace.h"
++#include <memory>
++#include <stdexcept>
++
++namespace wivrn::codec_test::publication_ledger {
++using Frame = selection_trace::Frame;
++using History = std::array<Frame, selection_trace::decoder_count * selection_trace::history_slots>;
++inline constexpr std::size_t record_limit = 16384;
++
++inline bool equal(const Frame& a, const Frame& b) {
++    return a.present == b.present && a.frame == b.frame && a.warp == b.warp &&
++        a.view_display_time == b.view_display_time && a.receive == b.receive &&
++        a.ready == b.ready && a.alpha == b.alpha;
++}
++inline bool valid(const Frame& f) {
++    return f.present ? f.frame <= uint64_t(INT64_MAX) && f.view_display_time > 0 &&
++        f.receive > 0 && f.ready >= f.receive : equal(f, Frame{});
++}
++struct Event {
++    uint64_t epoch = 0;
++    bool reset = false;
++    std::size_t decoder = 0;
++    Frame added{}, evicted{};
++};
++static_assert(std::is_trivially_copyable_v<Event>);
++
++// Construct before callback workers start. Call reset(), publish() and mark()
++// only while holding the same external frames mutex. Records never change
++// after their complete assignment, and the count advances only afterward.
++// A mark captured under that mutex synchronizes all marked records with the
++// reader. The render thread may then read only that immutable prefix while
++// callback threads append later, distinct array elements.
++template<std::size_t Capacity = record_limit>
++class Ledger {
++    static_assert(Capacity > 0 && Capacity <= record_limit);
++    std::unique_ptr<std::array<Event, Capacity>> events = std::make_unique<std::array<Event, Capacity>>();
++    uint64_t count = 0, epoch = 0, lost = 0;
++    bool healthy = true;
++    void reject() noexcept {
++        healthy = false;
++        if (lost < uint64_t(INT64_MAX)) ++lost;
++    }
++    void append(const Event& event) noexcept {
++        if (count == Capacity) { reject(); return; }
++        (*events)[count] = event;
++        ++count;
++    }
++public:
++    class Mark {
++        const Ledger* owner = nullptr;
++        uint64_t count = 0, epoch = 0, lost = 0;
++        bool healthy = false;
++        friend class Ledger;
++    public:
++        uint64_t records() const noexcept { return count; }
++        uint64_t generation() const noexcept { return epoch; }
++        uint64_t dropped() const noexcept { return lost; }
++        bool valid() const noexcept { return healthy; }
++    };
++    static constexpr std::size_t capacity = Capacity;
++    Ledger() = default;
++    Ledger(const Ledger&) = delete;
++    Ledger& operator=(const Ledger&) = delete;
++    void reset() noexcept {
++        if (epoch == uint64_t(INT64_MAX)) { reject(); return; }
++        ++epoch;
++        append(Event{.epoch = epoch, .reset = true});
++    }
++    void publish(std::size_t decoder, const Frame& added, const Frame& evicted) noexcept {
++        if (!epoch || decoder >= selection_trace::decoder_count || !added.present || !valid(added) || !valid(evicted)) {
++            reject(); return;
++        }
++        append(Event{.epoch = epoch, .decoder = decoder, .added = added, .evicted = evicted});
++    }
++    Mark mark() const noexcept {
++        Mark result;
++        result.owner = this; result.count = count; result.epoch = epoch;
++        result.lost = lost; result.healthy = healthy;
++        return result;
++    }
++    bool owns(const Mark& mark) const noexcept { return mark.owner == this; }
++    const Event& at(const Mark& mark, uint64_t index) const {
++        // Do not inspect mutable count/epoch here: this is the unlocked reader.
++        if (mark.owner != this || index >= mark.count || index >= Capacity)
++            throw std::out_of_range("publication prefix access outside captured mark");
++        return (*events)[index];
++    }
++};
++
++// Render-thread owned. Flush each checkpoint before serializing the matching
++// candidate trace record. This exports a prefix without needing a destructor
++// or claiming a complete process tail; I/O remains outside frames_mutex.
++template<std::size_t Capacity = record_limit>
++class Exporter {
++    uint64_t written = 0, last_selection = 0;
++    bool started = false, healthy = true;
++    const Ledger<Capacity>* owner = nullptr;
++public:
++    bool write(std::ostream& out, const Ledger<Capacity>& ledger,
++               const typename Ledger<Capacity>::Mark& mark, uint64_t selection,
++               const History& history) {
++        if (!healthy || (owner && owner != &ledger) || !ledger.owns(mark) || !selection || selection != last_selection + 1 || mark.records() < written) {
++            healthy = false;
++            return false;
++        }
++        owner = &ledger;
++        // Any stream exception or failed prefix access leaves export sticky-failed.
++        // A partial prefix must never be retried as if nothing was written.
++        healthy = false;
++        if (!started) {
++            out << "{\"kind\":\"header\",\"schema\":1,\"capacity\":" << Capacity
++                << ",\"clock\":\"client_xr_ns\",\"coverage\":\"scene_start_through_last_selection_checkpoint\"}\n";
++            started = true;
++        }
++        for (; written < mark.records(); ++written) {
++            const auto& event = ledger.at(mark, written);
++            out << "{\"kind\":\"" << (event.reset ? "reset" : "publish") << "\",\"sequence\":" << written + 1
++                << ",\"epoch\":" << event.epoch;
++            if (!event.reset) {
++                out << ",\"decoder\":" << event.decoder << ",\"added\":{";
++                selection_trace::write_frame(out, event.added);
++                out << "},\"evicted\":{";
++                selection_trace::write_frame(out, event.evicted);
++                out << '}';
++            }
++            out << "}\n";
++        }
++        out << "{\"kind\":\"checkpoint\",\"selection_sequence\":" << selection
++            << ",\"prefix_records\":" << mark.records() << ",\"epoch\":" << mark.generation()
++            << ",\"dropped\":" << mark.dropped() << ",\"valid\":" << (mark.valid() ? "true" : "false")
++            << ",\"history\":[";
++        for (std::size_t i = 0; i < history.size(); ++i) {
++            if (i) out << ',';
++            out << "{\"decoder\":" << i / selection_trace::history_slots << ",\"slot\":" << i % selection_trace::history_slots << ',';
++            selection_trace::write_frame(out, history[i]); out << '}';
++        }
++        out << "]}\n";
++        out.flush();
++        last_selection = selection;
++        healthy = bool(out) && mark.valid();
++        return healthy;
++    }
++};
++} // namespace wivrn::codec_test::publication_ledger
 diff --git a/common/codec_test/selection_policy.h b/common/codec_test/selection_policy.h
 new file mode 100644
 index 0000000..e3d69d9
@@ -6759,15 +6315,16 @@ index 0000000..e3d69d9
 +} // namespace wivrn::codec_test::selection_policy
 diff --git a/common/codec_test/selection_trace.h b/common/codec_test/selection_trace.h
 new file mode 100644
-index 0000000..3b77a7d
+index 0000000..a21eac6
 --- /dev/null
 +++ b/common/codec_test/selection_trace.h
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,232 @@
 +// SPDX-License-Identifier: MIT
 +#pragma once
 +#include <array>
 +#include <cstddef>
 +#include <cstdint>
++#include <limits>
 +#include <ostream>
 +#include <type_traits>
 +
@@ -6785,7 +6342,81 @@ index 0000000..3b77a7d
 +};
 +enum class Policy { closest_target, bounded_newest };
 +enum class Reason { unavailable, closest_target, bounded_newest, no_complete_fallback, no_eligible_fallback };
++
++// Count render attempts separately from successful projection submissions.
++// Constant storage; render-thread owned. No allocation, clocks, locks, or I/O.
++enum class Skip : std::size_t { should_not_render, decoders_unavailable, shutdown, no_complete_pair, retained_pair, count };
++inline constexpr std::array<const char*, static_cast<std::size_t>(Skip::count)> skip_names{
++    "should_not_render", "decoders_unavailable", "shutdown", "no_complete_pair", "retained_pair"};
++inline bool increment_attempt_count(uint64_t& value) {
++    if (value >= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) return false;
++    ++value;
++    return true;
++}
++struct Attempts {
++    uint64_t render_attempt = 0, previous_submission_attempt = 0;
++    int64_t previous_submission_target = 0;
++    std::array<uint64_t, skip_names.size()> skipped{};
++    uint64_t aborted = 0;
++    bool valid = true;
++};
++class AttemptLedger {
++    Attempts interval;
++    int64_t previous_render_target = 0, current_target = 0;
++    bool active = false;
++    void increment(uint64_t& value) {
++        if (!increment_attempt_count(value)) interval.valid = false;
++    }
++public:
++    bool enabled = false;
++    void begin(int64_t target, int64_t prior_target) {
++        if (!enabled) return;
++        if (active) abort();
++        if (target <= 0 || prior_target != previous_render_target ||
++            (previous_render_target && target <= previous_render_target))
++            interval.valid = false;
++        increment(interval.render_attempt);
++        current_target = target;
++        previous_render_target = target;
++        active = true;
++    }
++    void skip(Skip reason) {
++        if (!enabled) return;
++        const auto index = static_cast<std::size_t>(reason);
++        if (!active || index >= interval.skipped.size()) { interval.valid = false; return; }
++        increment(interval.skipped[index]);
++        active = false;
++    }
++    void abort() {
++        if (!enabled || !active) return;
++        increment(interval.aborted);
++        interval.valid = false; // A caught failure is never a benign skipped frame.
++        active = false;
++    }
++    Attempts submit() {
++        if (!enabled) return {};
++        if (!active) interval.valid = false;
++        const auto snapshot = interval;
++        interval.previous_submission_attempt = interval.render_attempt;
++        interval.previous_submission_target = current_target;
++        interval.skipped.fill(0);
++        interval.aborted = 0;
++        active = false;
++        return snapshot;
++    }
++};
++// Any return/exception that did not explicitly finish an attempt poisons future
++// accounting. Failed xrEndFrame or partial rendering cannot masquerade as skips.
++struct AttemptGuard {
++    AttemptLedger& ledger;
++    AttemptGuard(AttemptLedger& value, int64_t target, int64_t prior) : ledger(value) { ledger.begin(target, prior); }
++    ~AttemptGuard() { ledger.abort(); }
++    AttemptGuard(const AttemptGuard&) = delete;
++    AttemptGuard& operator=(const AttemptGuard&) = delete;
++};
++
 +struct Record {
++    uint32_t schema = 2; // Offline policy fixtures remain schema 2; live opts in to 3.
 +    uint64_t sequence = 0;
 +    bool after_fence = false, alpha_required = false, repeat_previous = false;
 +    bool projection_submitted = false;
@@ -6800,6 +6431,7 @@ index 0000000..3b77a7d
 +    std::array<Frame, decoder_count> selected{}, closest{}, previous{};
 +    std::array<int, decoder_count> chosen_slots{-1, -1, -1};
 +    std::array<bool, history_slots> eligible_left_slots{};
++    Attempts attempts;
 +};
 +static_assert(std::is_trivially_copyable_v<Frame> && std::is_trivially_copyable_v<Record>);
 +
@@ -6851,9 +6483,22 @@ index 0000000..3b77a7d
 +            << ",\"alpha\":" << (frame.alpha ? "true" : "false");
 +}
 +
++inline void write_attempts(std::ostream& out, const Attempts& a) {
++    out << "{\"render_attempt\":" << a.render_attempt
++        << ",\"previous_submission_attempt\":" << a.previous_submission_attempt
++        << ",\"previous_submission_target_xr_ns\":" << a.previous_submission_target
++        << ",\"aborted\":" << a.aborted << ",\"valid\":" << (a.valid ? "true" : "false")
++        << ",\"skipped\":{";
++    for (std::size_t i = 0; i < a.skipped.size(); ++i) {
++        if (i) out << ',';
++        out << '\"' << skip_names[i] << "\":" << a.skipped[i];
++    }
++    out << "}}";
++}
++
 +// Invoke outside frames_mutex, only after successful xrEndFrame.
 +inline void write_json(std::ostream& out, const Record& r) {
-+    out << "{\"schema\":2,\"sequence\":" << r.sequence
++    out << "{\"schema\":" << r.schema << ",\"sequence\":" << r.sequence
 +        << ",\"selection_phase\":\"" << (r.after_fence ? "after-fence" : "early") << "\""
 +        << ",\"selection_policy\":\"" << policy_name(r.policy) << "\""
 +        << ",\"predicted_display_period_xr_ns\":" << r.predicted_period
@@ -6898,7 +6543,12 @@ index 0000000..3b77a7d
 +        if (i) out << ',';
 +        out << (r.eligible_left_slots[i] ? "true" : "false");
 +    }
-+    out << "]}\n";
++    out << ']';
++    if (r.schema == 3) {
++        out << ",\"render_attempts\":";
++        write_attempts(out, r.attempts);
++    }
++    out << "}\n";
 +}
 +}
 diff --git a/common/codec_test/stereo_admission.h b/common/codec_test/stereo_admission.h
@@ -8019,6 +7669,113 @@ index 6582667..f63cb65 100644
  
  	set_target_properties(wivrn-server PROPERTIES OUTPUT_NAME wivrn-pro-server)
      configure_file(dist/wivrn-pro.service.in wivrn-pro.service @ONLY)
+diff --git a/server/compositor/codec_pacer_trace.h b/server/compositor/codec_pacer_trace.h
+new file mode 100644
+index 0000000..625c9a2
+--- /dev/null
++++ b/server/compositor/codec_pacer_trace.h
+@@ -0,0 +1,101 @@
++// SPDX-License-Identifier: MIT
++#pragma once
++#ifdef WIVRN_CODEC_TESTS
++#include <algorithm>
++#include <atomic>
++#include <cstdint>
++#include <cstdio>
++#include <cstdlib>
++#include <memory>
++#include <stdexcept>
++#include <thread>
++
++namespace wivrn::codec_test
++{
++// Snapshot of actual predictor inputs and outputs under the existing pacer
++// mutex. This records no feedback-clock conversion or optical measurement.
++struct pacer_record
++{
++	uint64_t pacer_id = 0;
++	int64_t frame_id = -1, now_ns = 0, previous_client_render_ns = 0;
++	int64_t period_ns = 0, wake_to_present_ns = 0, safe_decode_ns = 0;
++	int64_t render_to_display_ns = 0, margin_ns = 0, slop_ns = 0;
++	int64_t client_render_ns = 0, desired_present_ns = 0, wake_up_ns = 0, display_ns = 0;
++};
++
++// Bounded append-only diagnostic buffer. Serialization occurs only at explicit
++// shutdown; a missing footer or any dropped record invalidates a capture.
++// Callers must stop accessing the object before destruction (flush can race
++// append, destruction cannot). No allocation, formatting or I/O in append.
++template <size_t Capacity = 65536>
++class pacer_trace_buffer
++{
++	static_assert(Capacity > 0 && Capacity <= 65536);
++	std::unique_ptr<pacer_record[]> records;
++	std::atomic<bool> active{false};
++	std::atomic<size_t> writers{0}, next{0}, dropped{0};
++	FILE * output = nullptr;
++
++public:
++	explicit pacer_trace_buffer(const char * path)
++	{
++		if (!path || !*path) return;
++		if (*path != '/') throw std::runtime_error("WIVRN_CODEC_PACER_TRACE requires an absolute new file path");
++		records = std::make_unique<pacer_record[]>(Capacity);
++		output = std::fopen(path, "wx");
++		if (!output) throw std::runtime_error("cannot create WIVRN_CODEC_PACER_TRACE output");
++		active = true;
++	}
++	~pacer_trace_buffer() { flush(); }
++	pacer_trace_buffer(const pacer_trace_buffer &) = delete;
++	pacer_trace_buffer & operator=(const pacer_trace_buffer &) = delete;
++	bool enabled() const noexcept { return active.load(std::memory_order_relaxed); }
++	void append(pacer_record record) noexcept
++	{
++		writers.fetch_add(1);
++		if (active.load())
++		{
++			const auto index = next.fetch_add(1);
++			if (index < Capacity) records[index] = record;
++			else dropped.fetch_add(1);
++		}
++		writers.fetch_sub(1);
++	}
++	void flush() noexcept
++	{
++		if (!active.exchange(false)) return;
++		while (writers.load()) std::this_thread::yield();
++		const auto count = std::min(next.load(), Capacity);
++		std::fprintf(output, "{\"type\":\"header\",\"schema\":1,\"clock\":\"host_monotonic_ns\",\"capacity\":%zu,\"diagnostic_only\":true,\"coverage\":\"predict_calls_until_close\"}\n", Capacity);
++		for (size_t i = 0; i < count; ++i)
++		{
++			const auto & r = records[i];
++			std::fprintf(output,
++			             "{\"type\":\"prediction\",\"sequence\":%zu,\"pacer_id\":%llu,\"frame_id\":%lld,\"now_ns\":%lld,\"previous_client_render_ns\":%lld,\"period_ns\":%lld,\"wake_to_present_ns\":%lld,\"safe_decode_ns\":%lld,\"render_to_display_ns\":%lld,\"margin_ns\":%lld,\"slop_ns\":%lld,\"client_render_ns\":%lld,\"desired_present_ns\":%lld,\"wake_up_ns\":%lld,\"display_ns\":%lld}\n",
++			             i + 1, (unsigned long long)r.pacer_id, (long long)r.frame_id,
++			             (long long)r.now_ns, (long long)r.previous_client_render_ns,
++			             (long long)r.period_ns, (long long)r.wake_to_present_ns,
++			             (long long)r.safe_decode_ns, (long long)r.render_to_display_ns,
++			             (long long)r.margin_ns, (long long)r.slop_ns,
++			             (long long)r.client_render_ns, (long long)r.desired_present_ns,
++			             (long long)r.wake_up_ns, (long long)r.display_ns);
++		}
++		if (!std::ferror(output))
++			std::fprintf(output, "{\"type\":\"footer\",\"records\":%zu,\"dropped\":%zu,\"complete\":true}\n", count, dropped.load());
++		std::fclose(output);
++		output = nullptr;
++	}
++};
++
++inline auto & pacer_trace()
++{
++	static pacer_trace_buffer<> value(std::getenv("WIVRN_CODEC_PACER_TRACE"));
++	return value;
++}
++inline uint64_t next_pacer_trace_id() noexcept
++{
++	static std::atomic<uint64_t> counter{0};
++	return counter.fetch_add(1) + 1;
++}
++} // namespace wivrn::codec_test
++#endif
 diff --git a/server/compositor/compositor.cpp b/server/compositor/compositor.cpp
 index c87c8a4..75f16d4 100644
 --- a/server/compositor/compositor.cpp
@@ -8155,6 +7912,82 @@ index 47bb7f2..1b96bd0 100644
  	auto spc = make_specialization_constants(alpha_width);
  	std::array res{
  	        vk::raii::Pipeline{
+diff --git a/server/compositor/pacer.cpp b/server/compositor/pacer.cpp
+index e4fb501..e87fdcd 100644
+--- a/server/compositor/pacer.cpp
++++ b/server/compositor/pacer.cpp
+@@ -18,6 +18,9 @@
+  */
+ 
+ #include "pacer.h"
++#ifdef WIVRN_CODEC_TESTS
++#include "codec_pacer_trace.h"
++#endif
+ 
+ #include "driver/clock_offset.h"
+ 
+@@ -37,6 +40,11 @@ static const int64_t margin_ns = 3'000'000;
+ static const int64_t slop_ns = 500'000;
+ 
+ pacer::pacer(uint64_t frame_duration) :
++#ifdef WIVRN_CODEC_TESTS
++        // Allocate/open diagnostics before the worker member starts. A path
++        // error must not unwind a jthread blocked on the compute condition.
++        codec_test_pacer_id(codec_test::pacer_trace().enabled() ? codec_test::next_pacer_trace_id() : 0),
++#endif
+         frame_duration_ns(frame_duration),
+         client_margin_ms{
+                 .val = debug_get_float_option_client_margin_ms(),
+@@ -104,6 +112,9 @@ void pacer::predict(
+ 	frame_id = this->frame_id++;
+ 	auto now = os_monotonic_get_ns();
+ 
++#ifdef WIVRN_CODEC_TESTS
++	const auto previous_client_render_ns = last_ns;
++#endif
+ 	int64_t predicted_client_render = last_ns + frame_duration_ns;
+ 
+ 	if (now + mean_wake_up_to_present_ns + safe_present_to_decoded_ns > predicted_client_render)
+@@ -123,6 +134,25 @@ void pacer::predict(
+ 	};
+ 
+ 	out_present_slop_ns = slop_ns;
++#ifdef WIVRN_CODEC_TESTS
++	if (codec_test_pacer_id && codec_test::pacer_trace().enabled())
++		codec_test::pacer_trace().append({
++		        .pacer_id = codec_test_pacer_id,
++		        .frame_id = frame_id,
++		        .now_ns = now,
++		        .previous_client_render_ns = previous_client_render_ns,
++		        .period_ns = frame_duration_ns,
++		        .wake_to_present_ns = mean_wake_up_to_present_ns,
++		        .safe_decode_ns = safe_present_to_decoded_ns,
++		        .render_to_display_ns = mean_render_to_display_ns,
++		        .margin_ns = margin_ns,
++		        .slop_ns = slop_ns,
++		        .client_render_ns = predicted_client_render,
++		        .desired_present_ns = out_desired_present_time_ns,
++		        .wake_up_ns = out_wake_up_time_ns,
++		        .display_ns = out_predicted_display_time_ns,
++		});
++#endif
+ }
+ 
+ void pacer::on_feedback(const wivrn::from_headset::feedback & feedback, const clock_offset & offset)
+diff --git a/server/compositor/pacer.h b/server/compositor/pacer.h
+index 60ff8e1..96bd7b2 100644
+--- a/server/compositor/pacer.h
++++ b/server/compositor/pacer.h
+@@ -46,6 +46,9 @@ public:
+ 	};
+ 
+ private:
++#ifdef WIVRN_CODEC_TESTS
++	uint64_t codec_test_pacer_id = 0;
++#endif
+ 	mutable std::mutex mutex;
+ 	int64_t frame_duration_ns;
+ 	int64_t last_ns = 0;
 diff --git a/server/compositor/shaders/foveation_rgb.comp b/server/compositor/shaders/foveation_rgb.comp
 new file mode 100644
 index 0000000..d1ff138

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "base_commit": "8e4d7a862591b3a5d2d9fc888da967fde0cb9165",
+  "selected_source_commit": "be5fd0bddfc471c8f2243f93b22a85283e618a32",
+  "offline_python_tests": 229,
+  "android_syntax_modes": [
+    "diagnostics_enabled",
+    "diagnostic_macro_disabled"
+  ],
+  "overlay_files": 68,
+  "sources_sha256": {
+    "validation/wivrn-codecs/tests/source_trace_fixture.py": "231ad9371599c719d6d29a0b9cf0efd59857d6fef3f4b5560cd7e2b30b455a75",
+    "validation/wivrn-codecs/tests/test_pacer_source_join.py": "d5a57bf3516efd7db9e08f08524b57ad75a6b72f3fb152bb39483a314ce0f95b",
+    "validation/wivrn-codecs/tests/test_publication_capture.py": "05d70f900c66d8e42f31c64ce130fb1689339a0f510b45e472dc1913b724bc24",
+    "prototypes/vr444/experiments/native_publication_integration/android-syntax-20261009.json": "4ede952626ae2a216c3b212519c8ee703678fb981c854d00f6f66cc967b3fab8",
+    "prototypes/vr444/experiments/native_publication_integration/overlay-parity-20261009.json": "931d45eccde232fed6482ec654fbcb421df948262ed9b620c6f6a8fd0bd0ed99",
+    "prototypes/vr444/experiments/native_publication_integration/verify_overlay.py": "518953e1f0c396ed08e802f89bfe05494a00d91c5e07c779513f9da5d1d66ec9",
+    "prototypes/vr444/experiments/native_publication_integration/README.txt": "847619c36ed5a9004d0dfd2c1908c49d1d62a9d07b8d47732a283f279c9badc6",
+    "prototypes/vr444/experiments/native_publication_integration/overlay-parity-replay-20261009.json": "0fadee1153fa6af05744d287d90d1d02cf8e0e46810b53e32872a3805f810f1e"
+  },
+  "independent_review": "GPU team read-only no blocker; no execution",
+  "native_sources_modified": false,
+  "linked_build": false,
+  "device_operations": false,
+  "latency_qualified": false,
+  "quality_qualified": false,
+  "promotion_eligible": false
+}

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "overlay_files": 68,
+  "patch_text_files": 61,
+  "baseline_subset": "/tmp/sub15-publication-overlay-baseline-20261009",
+  "baseline_is_full_native_checkout": false,
+  "source_native_checkout_modified": false,
+  "linked_build": false,
+  "device_used": false,
+  "manifest_sha256": "d190f249da356aace7ec71caef8c10bc83bc2f64cb6cfe6ba413761d79ee980e",
+  "patch_sha256": "fe2950d0366b9aa0342ab486cec94da8b6d5400ee0590129ce5427c1fc552659",
+  "checks": [
+    "all overlay files exactly match manifest population and after hashes",
+    "reverse text patch reconstructs all manifest before hashes",
+    "forward text patch matches every text overlay after hash",
+    "apply_overlay fills every text/binary after hash"
+  ],
+  "overlay_apply_stdout": "Applied 68 integration files\n"
+}

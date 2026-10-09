@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from test_publication_trace import fixture
-from test_selection_counterfactual import sources
+from source_trace_fixture import sources
 
 spec = importlib.util.spec_from_file_location('publication_capture', Path(__file__).resolve().parents[1]/'integration/native_compare.py')
 compare = importlib.util.module_from_spec(spec)

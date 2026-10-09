@@ -3,7 +3,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 from test_pacer_trace import rows as pacer_rows
-from test_selection_counterfactual import sources
+from source_trace_fixture import sources
 
 ROOT = Path(__file__).resolve().parents[3]
 SPEC = importlib.util.spec_from_file_location('pacer_source_join_test', ROOT / 'prototypes/vr444/experiments/pacer_timing/join_source.py')

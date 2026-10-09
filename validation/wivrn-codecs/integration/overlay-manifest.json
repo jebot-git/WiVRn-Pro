@@ -85,11 +85,11 @@
   },
   "client/scenes/stream.cpp": {
     "before_sha256": "27250cf4d1dd6549f62f6a25b3aa33833cb6238cdc1ff1339a69bb07ef740584",
-    "after_sha256": "c08ed9f015a0fe3cfbba7ae042c333519bd52686f763b6404c329461ac03b7dc"
+    "after_sha256": "b2c4e323ce796ce523195fbc23b937beca017b15525a81a85b736e8d1b7d6c26"
   },
   "client/scenes/stream.h": {
     "before_sha256": "d04badaf6c9f403076a6f5051c7e0fad0748cc64a13c30796ad2db025cb14d25",
-    "after_sha256": "ed32eb725b8af6264b4df74cf26b6bc305834901c11d9d2e7fbed43f73f8d478"
+    "after_sha256": "759a58cd1ded05f6050222c1c2d72e6d18e45f1f2033dc2de65668e69b428b31"
   },
   "client/scenes/stream_defoveator.cpp": {
     "before_sha256": "11be925cd47b7cadbf07b8f21253f3b95135a9df9623c93abef51ba7aa0b8b82",
@@ -151,13 +151,17 @@
     "before_sha256": null,
     "after_sha256": "91aa619f7e6c7a7511533c55c609d2366164baa193e8242e8ad54c0a63ca0196"
   },
+  "common/codec_test/publication_ledger.h": {
+    "before_sha256": null,
+    "after_sha256": "721358e6e0fd072a555ba8199a1a66e33c66b7791f5b4470ea79c8cc2e64dad3"
+  },
   "common/codec_test/selection_policy.h": {
     "before_sha256": null,
     "after_sha256": "ae68144a97d08e143d68156d585266f47fdb1abf83bfee295382287a017e459e"
   },
   "common/codec_test/selection_trace.h": {
     "before_sha256": null,
-    "after_sha256": "3a2579209dd2d11be063aa74607ca706413735d499ad0f95650af6d40c4ef5a3"
+    "after_sha256": "cd876e7b876dbe7978554be241291be759904ad6b6c2abad70bffee1338f9e77"
   },
   "common/codec_test/stereo_admission.h": {
     "before_sha256": null,
@@ -207,6 +211,10 @@
     "before_sha256": "380d2793d25625d3d3cf9d41bbb027104f90d6d6de89d983d2aa777d9959e1cf",
     "after_sha256": "7977e01277f71a3f35a4af3563d63a41656f7567ffdfbb94163e4718f310c21d"
   },
+  "server/compositor/codec_pacer_trace.h": {
+    "before_sha256": null,
+    "after_sha256": "93f1e8b963ba4bdbf7bdcaa674a6fcbee3e1eb4dea3bb7001cba7f9ff802e638"
+  },
   "server/compositor/compositor.cpp": {
     "before_sha256": "8412ee2d713922aed6d318eeb38a361a900e47c26f505b4a93c9d272fd7575ac",
     "after_sha256": "3097bca5fe842c0b581c6769e41537fb09fb9494255f1f46aad7429edce5a565"
@@ -214,6 +222,14 @@
   "server/compositor/foveation.cpp": {
     "before_sha256": "939a8d73d0e22d131c576e07ab229a276962c5dcd31893713a20ed0f50c5f8ca",
     "after_sha256": "9c82a03efdbae35f7fbfb88e5dcbe8def439d1e471f473163de5e187115113ae"
+  },
+  "server/compositor/pacer.cpp": {
+    "before_sha256": "2fd824158a9e49022e93c2e92c2ad4b0e1fd8e71491cfa8868fd68312938d1b6",
+    "after_sha256": "a4f83833addbedd448738d4f60ff3f9e43b072924f1e42ac8de3a3b846e6b14a"
+  },
+  "server/compositor/pacer.h": {
+    "before_sha256": "2ec4c1c64a27ab65fd18b53e493dec2997a82bde521152f1009706405c967f81",
+    "after_sha256": "1e603712260ed711f2999fa9791e778a75c4eee3a09d921b583fb1b8480a63fc"
   },
   "server/compositor/shaders/foveation_rgb.comp": {
     "before_sha256": null,
