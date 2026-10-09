@@ -1,0 +1,98 @@
+Transport and exact-compression closing handoff, 2026-10-09
+===========================================================
+
+The executable qualification/catalog snapshot is immutable commit
+50086f07ef9db98299620db7dd696d97f951a1ba. This later handoff is documentation only;
+it does not change that snapshot, repeat its timings, or imply an integrated
+native build. All 23 algorithm branches were committed, pushed and checked
+against their exact remote heads in remote-heads.json.
+
+Current result
+--------------
+No strict sub-15 ms headset result was achieved or asserted by this research.
+The already-recorded live baseline remains unchanged: valid runs had p95
+20.516--26.086 ms for complete-stereo earliest receipt to post-xrEndFrame at
+576x640 per eye. That boundary is not optical latency. The diagnostic fifth
+capture remains failed under its original trace contract and is not promoted
+into performance evidence. No headset operation was performed by this team.
+
+The strongest CPU candidate is RRB32 immutable band views with vector RGB and
+four persistent workers, pinned at a55dff163e3defa5d5be2e600b8d9a7829a8f7a1.
+Its same-batch captured transcode-plus-decode p95 is below the VR444 control in
+all 12 pairs; individual improvements span 0.016112--0.672624 ms. These are
+576x640 per-eye inputs already encoded as VR444, on the desktop host. Original
+framebuffer encoding, packet delivery, GPU readiness, compositor scheduling and
+the headset runtime are outside that CPU sum. Copy-removal comparisons against
+the other RRB controls retain mixed tails; the result is not universal.
+
+Wire cost prevents a blanket codec preference. Across the four captured pairs
+per group, canonical RRB32/VR444 bytes are:
+  Q1:     66,332 / 98,239
+  Q8-a:  245,567 /182,910
+  Q8-b:  194,380 /135,653
+Exact Q8 means preserving the existing decoded Q8 bytes. It does not recover
+original source information lost before this transcode experiment.
+
+Transport choices remain conditional. Native batching and GSO/GRO improved the
+owned loopback tests, which do not estimate physical wireless behavior. The
+VXB block stream preserves canonical complete-stereo assembly, but CPU/GPU/
+network overlap was not measured. VXP per-block repair has substantial parity
+overhead. VWG record windows reduce offered bytes in 143/144 captured variants
+against VXP, but the declared two-fragment loss matrix completed only 38/432
+versus 301/432 cases. Those fixed erasures are not loss probabilities or equal
+contiguous wire bursts. No repair format is promoted on bytes alone.
+
+Fresh and supplemental qualification
+-----------------------------------
+The sealed catalog covers 146 historical artifacts and 543 matching declared
+repository bindings. Sixteen old receipt/source differences remain explicit;
+external historical caches/binaries are not silently treated as reproduced.
+Fresh execution passed 134 protocol/model tests from eight distinct Git trees,
+12 catalog adversarial tests, and two byte-bound historical native executables
+(ASan/UBSan and TSan). The native executions are not fresh rebuilds. Their
+original build/Android evidence is kept separately at its own pinned revision.
+
+The corrected VWG branch is 788ba8b4c1bfb931c17d7a2ae9ad237c5ed48afc. Known
+recoverable parity is checked before either an original or recovered source
+can complete stereo, including a missing redundant-manifest edge case. Its
+complete corpus rerun passed 282 native stereo oracles and 9,462 logical
+delivery/loss replays with unchanged exact case results.
+
+A supplementary finite campaign is separate from the 23-algorithm catalog:
+  research/sub15-20261009/packet-window-campaign
+  abfc9dd5e0947f89c688345bc248ef09bd6fdebd
+It passes 432 arrival orders, 24 two-frame clean/repair controls, and 4,800 seeded
+CRC-repaired mutation schedules covering all 240 mutation/K/shape cells. Every
+published pair matches complete original bytes/frame/warp. Expiry/configuration
+replay and retained-state bounds pass. This is a small synthetic Python byte
+campaign, not native pixel execution, network probability or latency evidence.
+Completed groups deliberately ignore later redundant parity after outer checks;
+records arriving after valid publication cannot invalidate it retroactively.
+The reported post-receive payload highwater excludes transient/metadata/RSS.
+
+Separate team scopes and next matched implementation
+----------------------------------------------------
+The GPU suite handoff is at
+10812531db1f3a22aee484593c200b69c86a12ad, with its fresh code/suite at
+c4dc09128e45fc5bda71fa0588e40d2077678b9b. The measured first-consumer branch is
+068dd29df03e44ab0668d9607d2896650c4b91f9. Its RRB32 direct-mapped candidate uses
+these unchanged codec bytes, but the gain versus staged input removes both a
+copy and workspace clear/resize work. It does not isolate copy cost alone.
+A fixed private staging-buffer control would be a separate attribution test.
+The existing joint private packet-to-image/consumer result remains its own
+measurement, including private poison/readiness/consumer submissions.
+
+The compositor suite is separately pinned at
+fe9dae00c4c8c89dad45502f2908b6c901800737. Its frozen source/target/readiness models,
+publication diagnostics and trace-contract work cannot be combined arithmetically
+with these CPU or GPU quantiles. Conditional model feasibility is not a native
+selector result. Original capture identities and failed evidence stay intact.
+
+The next coherent comparison needs one negotiated payload kind, bounded stereo
+ticket identity, immutable source and private staging ownership, real queue/image
+retirement, and exact byte/color gates through the actual native consumer. It
+must compare selected CPU/server/transport/GPU arms in one source-bound build
+with matched identities and the original metric contract. The private prototypes
+provide components and negative controls; they do not yet provide that adapter.
+Headset tests remain suspended. No production network/codec selection or runtime
+setting was changed, and no stage medians or p95s are added into a sub-15 claim.
