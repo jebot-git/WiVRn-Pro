@@ -1,0 +1,71 @@
+{
+  "schema": "wivrn-neural-live-plan-v1",
+  "run_id": "replace-with-unique-run-id",
+  "evidence": "native_headset",
+  "identity": {
+    "candidate": {
+      "repository": "jebot-git/WiVRn-Pro",
+      "ref": "replace-with-executed-candidate-ref",
+      "commit": null
+    },
+    "baseline": {
+      "repository": "jebot-git/WiVRn-Pro",
+      "ref": "replace-with-executed-baseline-ref",
+      "commit": null
+    },
+    "harness": {
+      "repository": "jebot-git/WiVRn-Pro",
+      "ref": "replace-with-executed-harness-ref",
+      "commit": null
+    }
+  },
+  "learned": true,
+  "inputs": {
+    "config": {
+      "path": null,
+      "sha256": null
+    },
+    "dataset": {
+      "path": null,
+      "sha256": null
+    },
+    "model": {
+      "path": null,
+      "sha256": null
+    }
+  },
+  "quality": {
+    "mode": "new_lossy",
+    "reference": "Replace with the exact reconstruction reference and declared quality arm."
+  },
+  "route": {
+    "profile_id": "planned-native-direct-wifi-udp",
+    "protocol": "udp",
+    "path": "native_direct_wifi",
+    "measurement_layer": "unmeasured; populate from actual instrumented route",
+    "endpoints": "unobserved"
+  },
+  "setup_declared": {
+    "status": "user_declared_only",
+    "host": "Intel NUC 12 Extreme i7",
+    "host_to_ap": "direct 2.5 GbE Ethernet (user-confirmed, not locally measured)",
+    "access_point": "ASUS RT-AXE7800",
+    "headset": "Quest Pro; Magisk via Singularity",
+    "wired_port_and_negotiated_rate": null,
+    "radio_bandwidth_and_link_rate": null,
+    "independent_per_eye_gaze": "quest-pro-decoupled-eye-tracking-v1; research assumption, not verified API",
+    "wireless": "6 GHz network available (user-declared); association/width unobserved"
+  },
+  "gaze": {
+    "arm": "none",
+    "mode": null
+  },
+  "adapter_argv": null,
+  "limits": {
+    "timeout_seconds": 120,
+    "max_artifact_bytes": 268435456,
+    "max_total_bytes": 1073741824,
+    "max_rows": 100000
+  },
+  "stereo_payload_cap_bytes": 262144
+}
