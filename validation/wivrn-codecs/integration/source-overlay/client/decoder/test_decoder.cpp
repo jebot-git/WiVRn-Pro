@@ -5,6 +5,7 @@
 #include "application.h"
 #include "scenes/stream.h"
 #include "codec_test/wire.h"
+#include "codec_test/rrb/native.h"
 #include "codec_test/stereo_admission.h"
 #include "codec_test/metadata.h"
 #include "codec_test/compression/frame_compression.h"
@@ -27,15 +28,33 @@ struct test_decode_job {
     to_headset::video_stream_data_shard::view_info_t view;
     std::chrono::steady_clock::time_point enqueued;
 };
+struct test_publish_eye { std::shared_ptr<decoder::blit_handle> handle; shard_accumulator* accumulator; };
 class test_stereo_state {
 public:
     codec_test::StereoAdmission<test_decode_job> admission;
     bool enabled=true;
+    std::unique_ptr<codec_test::rrb::PairDecoder> rrb_decoder;
+    codec_test::rrb::Publication<test_publish_eye> rrb_publication;
+    bool rrb_gpu_output=false;
+    static std::string choice(const char* name,std::string fallback){
+        std::ifstream file(application::get_config_path()/name);if(!file)return fallback;
+        std::string value,extra;if(!(file>>value)||(file>>extra))throw std::runtime_error("invalid RRB config");return value;
+    }
     test_stereo_state() {
         std::string policy="paired";
         {std::ifstream choice(application::get_config_path()/"codec-test-pairing.txt");if(choice)choice>>policy;}
         if(policy!="paired"&&policy!="independent")throw std::runtime_error("invalid test stereo pairing policy");
         enabled=policy=="paired";
+        auto payload=choice("codec-test-payload.txt","vr444");
+        if(payload!="vr444"&&payload!="rrb32")throw std::runtime_error("invalid test payload opt-in");
+        if(payload=="rrb32"){
+            if(!enabled)throw std::runtime_error("RRB32 requires complete stereo pairing");
+            auto count=choice("codec-test-rrb-workers.txt","4");
+            if(count!="2"&&count!="4")throw std::runtime_error("RRB32 workers must be2 or4");
+            auto output=choice("codec-test-rrb-output.txt","cpu");
+            if(output!="cpu")throw std::runtime_error("RRB32 output helper not enabled in this milestone");
+            rrb_decoder=std::make_unique<codec_test::rrb::PairDecoder>(count=="4"?4:2,false);
+        }
     }
 };
 std::shared_ptr<test_stereo_state> make_test_stereo_state() { return std::make_shared<test_stereo_state>(); }
@@ -78,8 +97,9 @@ class test_decoder final:public decoder {
     struct PairCompletion {
         test_decoder& owner;
         uint64_t frame;
-        bool success=false;
+        bool success=false,rrb=false,arrived=false;
         ~PairCompletion() {
+            if(rrb&&!arrived)owner.stereo->rrb_publication.arrive(owner.eye,frame,{});
             if(owner.paired())owner.stereo->admission.finish(owner.eye,frame,success);
         }
     };
@@ -112,6 +132,7 @@ public:
         pool(d,{.flags=vk::CommandPoolCreateFlagBits::eResetCommandBuffer,.queueFamilyIndex=family}),
         fence(d,{.flags=vk::FenceCreateFlagBits::eSignaled}) {
         stereo=std::move(state);
+        if(stereo&&stereo->rrb_decoder)rowfilter::pixels(extent.width,extent.height);
         folder=application::get_config_path()/"codec-test";
         // Each decoder starts its worker before the next eye is constructed.
         // Separate paths prevent another eye truncating a shader being loaded.
@@ -160,6 +181,8 @@ public:
         }
         if(cpu_output_mode!="cached-copy"&&cpu_output_mode!="mapped-direct")throw std::runtime_error("invalid CPU output mode");
         if(cpu_output_mode=="mapped-direct"&&backend!="cpu-neon")throw std::runtime_error("mapped-direct requires cpu-neon");
+        if(stereo&&stereo->rrb_decoder&&(backend!="cpu-neon"||cpu_output_mode!="cached-copy"))
+            throw std::runtime_error("RRB32 CPU requires cpu-neon cached-copy");
         if(backend=="cpu-neon") {
             if(kernel!="direct-neon" || std::string_view(direct::vector_backend())!="aarch64-neon")
                 throw std::runtime_error("cpu-neon requires the direct-neon ARM backend");
@@ -179,6 +202,7 @@ public:
         // workers before their sequential destructors join, avoiding teardown
         // waiting forever for a missing peer or an incomplete pending pair.
         if(paired())stereo->admission.stop();
+        if(stereo&&stereo->rrb_decoder)stereo->rrb_decoder->stop();
         {std::lock_guard lock(mutex);stopping=true;}cv.notify_all();if(worker.joinable())worker.join();
         if(upload_inflight){
             try{application::get_queue().lock()->waitIdle();}
@@ -202,6 +226,8 @@ public:
     }
     void frame_completed(const from_headset::feedback& fb,const to_headset::video_stream_data_shard::view_info_t& vi) override {
         auto h=codec_test::unpack(assembling);
+        if(h.kind==codec_test::Kind::rrb32&&(!paired()||!stereo->rrb_decoder||h.flags||assembling.size()>codec_test::rrb::stereo_wire_cap-codec_test::header_size))
+            throw std::runtime_error("RRB32 payload requires bounded paired opt-in");
         if(h.flags && !compression_enabled)throw std::runtime_error("compressed test payload not opted in");
         if(h.frame!=fb.frame_index||h.eye!=eye||h.width!=extent.width||h.height!=extent.height||h.warp!=codec_test::warp_hash(vi))
             throw std::runtime_error("codec payload/frame/warp identity mismatch");
@@ -264,14 +290,16 @@ private:
             }else{
                 std::unique_lock lock(mutex);cv.wait(lock,[this]{return stopping||!pending.empty();});if(stopping)break;job=std::move(pending.front());pending.pop_front();
             }
-            PairCompletion completion{*this,job.header.frame};
+            PairCompletion completion{*this,job.header.frame,false,job.header.kind==codec_test::Kind::rrb32};
             try{
                 auto h=job.header;auto body=std::span<const uint8_t>(job.bytes).subspan(codec_test::header_size);
+                auto began=std::chrono::steady_clock::now();
+                auto queue_ms=std::chrono::duration<double,std::milli>(began-job.enqueued).count();
+                std::shared_ptr<const codec_test::rrb::Pair> rrb_pair;
+                if(h.kind==codec_test::Kind::rrb32)rrb_pair=stereo->rrb_decoder->acquire(h,body);
                 std::shared_ptr<ImageSlot> image;
                 for(auto& item:images)if(item.use_count()==1){image=item;break;}
                 if(!image){++dropped;continue;}
-                auto began=std::chrono::steady_clock::now();
-                auto queue_ms=std::chrono::duration<double,std::milli>(began-job.enqueued).count();
                 auto decompress_start=std::chrono::steady_clock::now();
                 if(h.flags & codec_test::flag_lz4)body=codec_test::compression::decode(body,decompression_workspace);
                 double decompress_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-decompress_start).count();
@@ -279,10 +307,12 @@ private:
                 const bool resident=h.kind==codec_test::Kind::vr444 && backend=="resident";
                 const bool cpu_direct=backend=="cpu-neon";
                 const bool cpu_mapped=cpu_direct&&cpu_output_mode=="mapped-direct";
-                if(cpu_direct && h.kind!=codec_test::Kind::vr444)throw std::runtime_error("CPU direct backend requires VR444");
+                if(cpu_direct && h.kind!=codec_test::Kind::vr444 && h.kind!=codec_test::Kind::rrb32)throw std::runtime_error("CPU direct backend requires VR444");
                 const bool capture=h.frame%90==0;
                 vr444::Frame decoded_frame{};
-                if(cpu_direct) {
+                if(rrb_pair){
+                    cpu_ms=rrb_pair->decode_ms;
+                }else if(cpu_direct) {
                     auto cpu_start=std::chrono::steady_clock::now();
                     auto shape=direct::preflight(body);
                     if(shape.width!=extent.width||shape.height!=extent.height)throw std::runtime_error("direct VR444 dimensions mismatch");
@@ -316,7 +346,7 @@ private:
                 }else pixels=hevc(body,h.frame);
                 if(!resident&&!cpu_mapped){
                     auto copy_start=std::chrono::steady_clock::now();
-                    const auto& upload_pixels=cpu_direct?cpu_pixels:pixels;
+                    const auto& upload_pixels=rrb_pair?rrb_pair->cpu.rgba[eye]:cpu_direct?cpu_pixels:pixels;
                     std::memcpy(image->staging.data<uint8_t>(),upload_pixels.data(),upload_pixels.size()*4);
                     staging_copy_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-copy_start).count();
                 }
@@ -371,22 +401,31 @@ private:
                     std::memcpy(pixels.data(),image->staging.data<uint8_t>(),pixels.size()*4);
                     capture_snapshot_ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-snapshot_start).count();
                 }
-                const char* capture_source=!capture?"not_captured":cpu_mapped?"cpu_mapped_staging_snapshot":cpu_direct?"cpu_cached_output":resident?"gpu_output_readback":"decoded_cpu_output";
+                const char* capture_source=!capture?"not_captured":cpu_mapped?"cpu_mapped_staging_snapshot":rrb_pair?"rrb_pair_cpu_output":cpu_direct?"cpu_cached_output":resident?"gpu_output_readback":"decoded_cpu_output";
                 events<<"{\"frame\":"<<h.frame<<",\"eye\":"<<unsigned(eye)<<",\"warp\":"<<h.warp
                       <<",\"decoder_kernel\":\""<<kernel<<"\",\"decoder_backend\":\""<<backend<<"\",\"compression_policy\":\""<<(compression_enabled?"lz4":"none")
                       <<"\",\"bytes\":"<<job.bytes.size()<<",\"compression_applied\":"<<((h.flags & codec_test::flag_lz4)?"true":"false")
                       <<",\"decoded_payload_bytes\":"<<body.size()<<",\"decompression_ms\":"<<decompress_ms<<",\"decode_gpu_ms\":"<<gpu_ms
                       <<",\"gpu_timing_valid\":"<<((h.kind==codec_test::Kind::vr444&&!cpu_direct)?"true":"false")
+                      <<",\"effective_codec\":\""<<(rrb_pair?"rrb32":h.kind==codec_test::Kind::vr444?"vr444":"legacy")
+                      <<"\",\"rrb_workers\":"<<(rrb_pair?stereo->rrb_decoder->workers():0)
+                      <<",\"rrb_block_rows\":"<<(rrb_pair?32:0)
+                      <<",\"stereo_envelope_cap\":"<<(rrb_pair?262144:0)
+                      <<",\"pair_decode_ms\":"<<(rrb_pair?rrb_pair->decode_ms:0)
                       <<",\"cpu_decode_ms\":"<<cpu_ms<<",\"cpu_vector_backend\":\""<<(cpu_direct?direct::vector_backend():"not_used")
                       <<"\",\"cpu_output_mode\":\""<<(cpu_direct?cpu_output_mode:"not_used")<<"\",\"staging_memory_type\":"<<image->staging_memory_type
                       <<",\"staging_memory_flags\":"<<image->staging_memory_flags<<",\"staging_copy_ms\":"<<staging_copy_ms
                       <<",\"capture_source\":\""<<capture_source<<"\",\"capture_snapshot_ms\":"<<capture_snapshot_ms
                       <<",\"submit_fence_wait_ms\":"<<submit_wait_ms<<",\"queue_wait_ms\":"<<queue_ms<<",\"queue_dropped_so_far\":"<<dropped.load()
                       <<",\"decode_upload_ms\":"<<std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-began).count();write_pair_stats();events<<"}\n";events.flush();
-                if(capture){const auto& captured_pixels=cpu_direct&&!cpu_mapped?cpu_pixels:pixels;std::ofstream(folder/(std::to_string(h.frame)+"-"+std::to_string(eye)+".rgba"),std::ios::binary).write(reinterpret_cast<const char*>(captured_pixels.data()),captured_pixels.size()*4);}
+                if(capture){const auto& captured_pixels=rrb_pair?rrb_pair->cpu.rgba[eye]:cpu_direct&&!cpu_mapped?cpu_pixels:pixels;std::ofstream(folder/(std::to_string(h.frame)+"-"+std::to_string(eye)+".rgba"),std::ios::binary).write(reinterpret_cast<const char*>(captured_pixels.data()),captured_pixels.size()*4);}
                 if(auto target=scene.lock()){
-                    target->push_blit_handle(accumulator,std::make_shared<Handle>(job.feedback,job.view,extent,image,sampled_rgb_is_linear()));
-                    completion.success=true;
+                    auto handle=std::make_shared<Handle>(job.feedback,job.view,extent,image,sampled_rgb_is_linear());
+                    if(rrb_pair){
+                        auto ready=stereo->rrb_publication.arrive(eye,h.frame,std::make_shared<test_publish_eye>(test_publish_eye{handle,accumulator}));
+                        completion.arrived=true;completion.success=true;
+                        if(ready)completion.success=target->push_test_blit_pair({(*ready)[0]->accumulator,(*ready)[1]->accumulator},{(*ready)[0]->handle,(*ready)[1]->handle});
+                    }else{target->push_blit_handle(accumulator,std::move(handle));completion.success=true;}
                 }
             }catch(const std::exception& e){
                 ++dropped;spdlog::error("codec test decode: {}",e.what());
