@@ -1,0 +1,13 @@
+{
+  "pass": true,
+  "roundtrips": 65,
+  "rejections": 9895,
+  "mutations": 10000,
+  "dictionary_sha256_crosscheck": true,
+  "independent_out_of_order_frames": true,
+  "maximum_raw_bytes": 16777216,
+  "sanitizers": [
+    "address",
+    "undefined"
+  ]
+}

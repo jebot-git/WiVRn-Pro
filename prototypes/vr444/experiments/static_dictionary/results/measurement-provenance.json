@@ -1,0 +1,30 @@
+{
+  "created_utc": "2026-10-09T06:21:06.323260+00:00",
+  "git_base": "87cdb175bba0caaaca74b7ca1e07db985aebcef6",
+  "platform": "Linux-7.2.9-200.nobara.fc44.x86_64-x86_64-with-glibc2.43",
+  "cpu_model": "12th Gen Intel(R) Core(TM) i7-12700",
+  "compiler": "clang version 22.1.8 (Fedora 22.1.8-4.fc44)",
+  "openssl": "OpenSSL 3.5.9 29 Sep 2026 (Library: OpenSSL 3.5.9 29 Sep 2026)",
+  "headset_accessed": false,
+  "network_accessed": false,
+  "android_runtime_tested": false,
+  "source_sha256": {
+    "prototypes/vr444/experiments/static_dictionary/README.txt": "e321b025215f532412e65ab067130197ca57e07b9ec55dc1754d4578258d1c95",
+    "prototypes/vr444/experiments/static_dictionary/bench.cpp": "25ca8be3f73eb055225638210b9101ac028af165069afaddc8f11a2514dda55f",
+    "prototypes/vr444/experiments/static_dictionary/build.sh": "7ae56b2467b20a46c59e58a7a228270bc2e5aa5ea536311a92fb1d428ad41522",
+    "prototypes/vr444/experiments/static_dictionary/dictionary.hpp": "5660e0bfa8a2ee7ac8fecebbfd6e18bd524e5646fadb21ece14facf7a9f73855",
+    "prototypes/vr444/experiments/static_dictionary/prepare.py": "e3d81086aa4adea89052a3ba092367049645b536b1ff1cac0760e5f18c61849f",
+    "prototypes/vr444/experiments/static_dictionary/summarize.py": "b42c628c82ed0d823553339c198d7ea49416fff8564d30de8834b9598c3cb86a",
+    "prototypes/vr444/experiments/static_dictionary/test.cpp": "f8df9577ccdc9e3a552533a30735a552daa4d64908b6b29c430bcf5946b61ae5"
+  },
+  "binary_sha256": {
+    "test": "5c641791670a9031e6b7a702ba0ca0eaff7e7dbfaa01223299dbc1cecebf654c",
+    "bench": "70fca6ee20d6b1420fe3826b95898c601dfe428e5faa7d578ef038bee511ed05"
+  },
+  "bench_sha256": "efd21e18d0c38a852c9b0f4de298001b293f83ac4523a415a7ad53cd68727894",
+  "split_sha256": "1074711c02e8cd4519e212ee2114a233edfdade7ff2d0667c87627530fbdf958",
+  "command": "/tmp/wivrn-static-dictionary-build/bench /tmp/sub15-static-dictionary-corpus/heldout /tmp/sub15-static-dictionary-corpus/dictionary.bin 31",
+  "coordinated_window": "GPU and compositor agents explicitly confirmed idle before final batch; ordinary desktop and existing services continued",
+  "discarded_batches": "preliminary batch before candidate audit; candidate-audit batch with possible 0.24-second collaborator correctness overlap; neither used for frozen comparative results",
+  "limitations": "one x86 host; no affinity, frequency or thermal control; nearby tiny scene split; no provisioning timing, network or target/headset measurement"
+}

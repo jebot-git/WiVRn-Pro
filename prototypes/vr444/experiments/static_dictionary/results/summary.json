@@ -1,0 +1,276 @@
+{
+  "schema": 1,
+  "domain": "offline host only",
+  "pass_exact": true,
+  "statistic": "mean of per-case p50, not a pooled latency percentile",
+  "dictionary_bytes": 65536,
+  "groups": {
+    "paired-a": {
+      "cases": 6,
+      "profiles": [
+        {
+          "profile": "plain_lz4",
+          "wire_bytes": 141588,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 6
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.09492500000000001,
+            "unwrap_ms": 0.0800645,
+            "client_with_vr444_ms": 0.42938516666666665,
+            "encode_plus_client_ms": 0.5407821666666667
+          }
+        },
+        {
+          "profile": "dictionary_fast_adaptive",
+          "wire_bytes": 141588,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 6
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.19500283333333332,
+            "unwrap_ms": 0.08011499999999999,
+            "client_with_vr444_ms": 0.4295796666666667,
+            "encode_plus_client_ms": 0.6454525
+          }
+        },
+        {
+          "profile": "dictionary_slow_adaptive",
+          "wire_bytes": 141588,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 6
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.19446983333333334,
+            "unwrap_ms": 0.08011866666666667,
+            "client_with_vr444_ms": 0.4217031666666667,
+            "encode_plus_client_ms": 0.6506918333333334
+          }
+        }
+      ]
+    },
+    "paired-b": {
+      "cases": 8,
+      "profiles": [
+        {
+          "profile": "plain_lz4",
+          "wire_bytes": 135653,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 8
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.079236,
+            "unwrap_ms": 0.068838375,
+            "client_with_vr444_ms": 0.332497125,
+            "encode_plus_client_ms": 0.422636
+          }
+        },
+        {
+          "profile": "dictionary_fast_adaptive",
+          "wire_bytes": 135653,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 8
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.16406075,
+            "unwrap_ms": 0.068893,
+            "client_with_vr444_ms": 0.336647125,
+            "encode_plus_client_ms": 0.5208524999999999
+          }
+        },
+        {
+          "profile": "dictionary_slow_adaptive",
+          "wire_bytes": 135653,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 8
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.163106375,
+            "unwrap_ms": 0.068924,
+            "client_with_vr444_ms": 0.33721025,
+            "encode_plus_client_ms": 0.517940375
+          }
+        }
+      ]
+    },
+    "lossless": {
+      "cases": 8,
+      "profiles": [
+        {
+          "profile": "plain_lz4",
+          "wire_bytes": 98239,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 8
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.066585375,
+            "unwrap_ms": 0.06203025,
+            "client_with_vr444_ms": 0.230048125,
+            "encode_plus_client_ms": 0.298703125
+          }
+        },
+        {
+          "profile": "dictionary_fast_adaptive",
+          "wire_bytes": 98239,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 8
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.137914375,
+            "unwrap_ms": 0.062033625,
+            "client_with_vr444_ms": 0.22562025,
+            "encode_plus_client_ms": 0.37735725
+          }
+        },
+        {
+          "profile": "dictionary_slow_adaptive",
+          "wire_bytes": 98239,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 8
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.136564125,
+            "unwrap_ms": 0.062027374999999996,
+            "client_with_vr444_ms": 0.226852375,
+            "encode_plus_client_ms": 0.368413375
+          }
+        }
+      ]
+    },
+    "synthetic": {
+      "cases": 14,
+      "profiles": [
+        {
+          "profile": "plain_lz4",
+          "wire_bytes": 2965876,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 10,
+            "0": 4
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.6206266428571429,
+            "unwrap_ms": 0.23227385714285714,
+            "client_with_vr444_ms": 1.7176264285714287,
+            "encode_plus_client_ms": 2.3379964285714285
+          }
+        },
+        {
+          "profile": "dictionary_fast_adaptive",
+          "wire_bytes": 2965757,
+          "saved_bytes_vs_plain": 119,
+          "saved_percent_vs_plain": 0.004012305302042297,
+          "selected_modes": {
+            "1": 9,
+            "2": 1,
+            "0": 4
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.9562475,
+            "unwrap_ms": 0.23275557142857142,
+            "client_with_vr444_ms": 1.7247682142857144,
+            "encode_plus_client_ms": 2.6798255
+          }
+        },
+        {
+          "profile": "dictionary_slow_adaptive",
+          "wire_bytes": 2965757,
+          "saved_bytes_vs_plain": 119,
+          "saved_percent_vs_plain": 0.004012305302042297,
+          "selected_modes": {
+            "1": 9,
+            "2": 1,
+            "0": 4
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.9560186428571429,
+            "unwrap_ms": 0.23239114285714285,
+            "client_with_vr444_ms": 1.7199565714285714,
+            "encode_plus_client_ms": 2.6755589285714287
+          }
+        }
+      ]
+    },
+    "all": {
+      "cases": 36,
+      "profiles": [
+        {
+          "profile": "plain_lz4",
+          "wire_bytes": 3341356,
+          "saved_bytes_vs_plain": 0,
+          "saved_percent_vs_plain": 0.0,
+          "selected_modes": {
+            "1": 32,
+            "0": 4
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.2895803888888889,
+            "unwrap_ms": 0.13275472222222223,
+            "client_with_vr444_ms": 0.8645400833333333,
+            "encode_plus_client_ms": 1.1596487777777778
+          }
+        },
+        {
+          "profile": "dictionary_fast_adaptive",
+          "wire_bytes": 3341237,
+          "saved_bytes_vs_plain": 119,
+          "saved_percent_vs_plain": 0.0035614283542370223,
+          "selected_modes": {
+            "1": 31,
+            "2": 1,
+            "0": 4
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.47148008333333336,
+            "unwrap_ms": 0.13296336111111112,
+            "client_with_vr444_ms": 0.8672881111111111,
+            "encode_plus_client_ms": 1.3493319444444445
+          }
+        },
+        {
+          "profile": "dictionary_slow_adaptive",
+          "wire_bytes": 3341237,
+          "saved_bytes_vs_plain": 119,
+          "saved_percent_vs_plain": 0.0035614283542370223,
+          "selected_modes": {
+            "1": 31,
+            "2": 1,
+            "0": 4
+          },
+          "mean_case_p50_ms": {
+            "encode_ms": 0.47079011111111113,
+            "unwrap_ms": 0.13282775,
+            "client_with_vr444_ms": 0.8645031111111111,
+            "encode_plus_client_ms": 1.3459112777777777
+          }
+        }
+      ]
+    }
+  },
+  "all_once_including_dictionary_bytes": {
+    "plain_lz4": 3341356,
+    "dictionary_fast_adaptive": 3406773,
+    "dictionary_slow_adaptive": 3406773
+  },
+  "one_time_dictionary_transfer_caveat": "counts dictionary bytes once; excludes provisioning framing and timing",
+  "recommendation": "Do not promote: no held-out capture wire savings; adaptive compression adds server work"
+}
