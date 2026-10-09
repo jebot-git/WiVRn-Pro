@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "pass": true,
+  "test_count": 11,
+  "device_execution_by_this_tool": false,
+  "source_sha256": {
+    "prototypes/vr444/experiments/android_gpu_comparison/triage.py": "dc6b317eb68b8458e5b880033edb87b90dc1029af973170126c9b4a97342669a",
+    "prototypes/vr444/experiments/android_gpu_comparison/test_triage.py": "6dd9231d0929c9804b38f6fa9ce51797e0272665de6f7f9f2899ca900b872687"
+  },
+  "log_sha256": "16c70604596b5b8df0452d6d32ea935b528f263c29d92ae136f6e7cea06f2e6c",
+  "analysis_sha256": "80f6290729f0ecd852db136dbe78bea1fc706da6f4dcd22f98ef71fca1727c7e",
+  "review": "Compositor agent read-only source/gate review found no blocker; no device or execution by reviewer."
+}
