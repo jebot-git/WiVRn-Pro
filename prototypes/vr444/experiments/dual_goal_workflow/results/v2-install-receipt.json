@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "package": "org.meumeu.wivrn.codectest",
+  "physical_serial": "230YC01D8W000E",
+  "previous_apk_sha256": "fe146e4086abc3d7d7c9b9b155b23d41befefe5c4501703d143a0c85ae73d021",
+  "installed_apk_sha256": "1439efe540e42d26104dbc0b72e2ce50a8cb296786b390873dfaaa839d2f610f",
+  "production_package_unchanged": true,
+  "application_launched": false,
+  "headset_wearing_required": false,
+  "commands": [
+    {
+      "label": "install-serial",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "getprop",
+        "ro.serialno"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "c1bc05a54512f062e20d07657dea4d33cf7571c32f9fd60803beea95626c57d6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-app-stopped",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "pidof",
+        "org.meumeu.wivrn.codectest"
+      ],
+      "returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-apk-identity",
+      "argv": [
+        "/home/blux/Android/Sdk/build-tools/36.1.0/aapt2",
+        "dump",
+        "badging",
+        "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-v2-build/build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "b0c7ee72e2ef9be21b7b47a1a07ab0e9bc9fb5357990c7a9bd83077ca2482415",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-production-before",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "dumpsys",
+        "package",
+        "org.meumeu.wivrn"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "495ed9ad030ad0f76d4cc46b61eaf7031bdcb1373d2cc9d66b7bca15c84c87f1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-prior-path",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "pm",
+        "path",
+        "org.meumeu.wivrn.codectest"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "89e24fb22ff2953b50921ee98ddc007bf557fd911424330bb93ee162b5f67129",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-prior-apk",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "exec-out",
+        "cat",
+        "/data/app/~~R2k-28BgqPjdkpBPaxJy4A==/org.meumeu.wivrn.codectest-uE20x_dI7rGfMlC_gt56UQ==/base.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "fe146e4086abc3d7d7c9b9b155b23d41befefe5c4501703d143a0c85ae73d021",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-new",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "install",
+        "-r",
+        "/home/blux/spatial-bridge/.worktrees/wivrn-dual-goal-v2-build/build/android/outputs/apk/debug/wivrn-codec-tests-debug.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-new-path",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "pm",
+        "path",
+        "org.meumeu.wivrn.codectest"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "54b6ce383f7f2a192decfc424969e7a1a5b06f31720d6512510c8b3ee1d00972",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-new-hash",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "sha256sum",
+        "/data/app/~~DUDwpDA3buFqNN7CkeMWkw==/org.meumeu.wivrn.codectest-Tl9hncJGNBqOBSsoLROSXQ==/base.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "392bbe5e2048f606cb3a5b4535eced93f658d2d124b09556f266ef13ae4ab34e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "install-production-after",
+      "argv": [
+        "adb",
+        "-s",
+        "192.168.1.105:5555",
+        "shell",
+        "dumpsys",
+        "package",
+        "org.meumeu.wivrn"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "495ed9ad030ad0f76d4cc46b61eaf7031bdcb1373d2cc9d66b7bca15c84c87f1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

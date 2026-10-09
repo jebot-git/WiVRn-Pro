@@ -19,6 +19,8 @@ def main():
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
     plan = json.loads(args.plan.read_text())
+    if plan.get('headset_readiness_required') is True and plan.get('headset_readiness_confirmed') is not True:
+        raise ValueError('This campaign is waiting for the requested worn-headset readiness response')
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
     (out / 'preflight').mkdir()
