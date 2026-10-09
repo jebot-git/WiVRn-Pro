@@ -34,7 +34,8 @@ MILESTONES=(
  ('rowblocks-rgb-vector','a0ee674309a7b479eb0fb79dbed86a515807c638','rowblocks_rgb_vector'),
  ('rowblocks-band-views','a55dff163e3defa5d5be2e600b8d9a7829a8f7a1','rowblocks_band_views'),
  ('rowblock-stream','7f097f3da85bfbb008d3632ffe8592e6934ffd11','rowblock_stream'),
- ('rowblock-stream-fec','8e5d1d50b77b9857817890f1c7466e90f0db38e1','rowblock_stream_fec'))
+ ('rowblock-stream-fec','8e5d1d50b77b9857817890f1c7466e90f0db38e1','rowblock_stream_fec'),
+ ('packet-window-fec','788ba8b4c1bfb931c17d7a2ae9ad237c5ed48afc','packet_window_fec'))
 MAPS={'source_sha256','sources_sha256','source_hashes','all_native_source_sha256',
       'model_source_sha256','source_and_input_sha256','control_sha256','input_sha256','inputs_sha256'}
 

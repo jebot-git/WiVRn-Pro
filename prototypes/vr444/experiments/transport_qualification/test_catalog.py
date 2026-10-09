@@ -29,8 +29,8 @@ class CatalogTests(unittest.TestCase):
     def setUp(self):self.git=FakeGit();self.catalog=c.make(self.git)
     def test_complete_pinned_inventory(self):
         result=c.verify(self.catalog,self.git)
-        self.assertEqual(result['status'],'pass');self.assertEqual(result['approach_count'],22)
-        self.assertEqual(result['artifacts_verified'],44);self.assertEqual(result['matched_repository_bindings'],22)
+        self.assertEqual(result['status'],'pass');self.assertEqual(result['approach_count'],len(c.MILESTONES))
+        self.assertEqual(result['artifacts_verified'],2*len(c.MILESTONES));self.assertEqual(result['matched_repository_bindings'],len(c.MILESTONES))
         self.assertFalse(result['fresh_execution']);self.assertFalse(result['promotion_eligible'])
     def test_omitted_duplicate_or_changed_approach_rejected(self):
         for mutation in ('omit','duplicate','commit','branch','directory'):

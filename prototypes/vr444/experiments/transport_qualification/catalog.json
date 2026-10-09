@@ -1496,6 +1496,48 @@
           "recorded_snapshot_differences": []
         }
       ]
+    },
+    {
+      "id": "packet-window-fec",
+      "branch": "research/sub15-20261009/packet-window-fec",
+      "commit": "788ba8b4c1bfb931c17d7a2ae9ad237c5ed48afc",
+      "directory": "prototypes/vr444/experiments/packet_window_fec",
+      "directory_files": [
+        "prototypes/vr444/experiments/packet_window_fec/README.txt",
+        "prototypes/vr444/experiments/packet_window_fec/RESULTS.txt",
+        "prototypes/vr444/experiments/packet_window_fec/loss_matrix.py",
+        "prototypes/vr444/experiments/packet_window_fec/qualification.json",
+        "prototypes/vr444/experiments/packet_window_fec/qualify.py",
+        "prototypes/vr444/experiments/packet_window_fec/test_transport.py",
+        "prototypes/vr444/experiments/packet_window_fec/transport.py",
+        "prototypes/vr444/experiments/packet_window_fec/unit-qualification.json"
+      ],
+      "artifacts": [
+        {
+          "path": "prototypes/vr444/experiments/packet_window_fec/README.txt",
+          "sha256": "fd900c4b4c065e58edbb796344429fb56d89378bc6dae949681c2bdfb760167b",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/packet_window_fec/RESULTS.txt",
+          "sha256": "31f263d5ea62f34ecc33865d8d475f0f68e73f92c28bfea1d0da24fff70fdf3f",
+          "bindings": 0,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/packet_window_fec/qualification.json",
+          "sha256": "4d2310b9fffb09364c3f605b03b3085716151f36f806a9d595ff624a5e9260fc",
+          "bindings": 250,
+          "recorded_snapshot_differences": []
+        },
+        {
+          "path": "prototypes/vr444/experiments/packet_window_fec/unit-qualification.json",
+          "sha256": "bbcd1389309480f9d4dcdb452d578a89d48adcb25c899bd8ca4dde623b906ee8",
+          "bindings": 3,
+          "recorded_snapshot_differences": []
+        }
+      ]
     }
   ],
   "headset_testing_suspended": true,

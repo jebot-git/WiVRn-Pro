@@ -15,7 +15,7 @@ import catalog as c
 PYTHON_STAGES=(('datagram-xor','test_transport.py'),('transport-queue','test_replay.py'),
     ('xor-interleave','test_transport.py'),('codec-transport-budget','test_model.py'),
     ('latency-wire-frontier','test_frontier.py'),('rowblock-stream','test_transport.py'),
-    ('rowblock-stream-fec','test_transport.py'))
+    ('rowblock-stream-fec','test_transport.py'),('packet-window-fec','test_transport.py'))
 
 def snapshot(root):
     result={}
@@ -96,7 +96,7 @@ def main():
         native_bound_executions=2 if args.native_band_directory else 0,runner_sha256=before,
         sources_unchanged=True,new_native_build=False,android_runtime_tested=False,headset_operations=False,
         performance_measurement=False,latency_gate_pass=False,promotion_eligible=False,
-        limitations=['Seven Python suites run from distinct immutable approach snapshots. They are not merged production integration tests.',
+        limitations=['Eight Python suites run from distinct immutable approach snapshots. They are not merged production integration tests.',
             'Optional native executables are byte-bound historical ASan/UBSan and TSan tests; no rebuild or compiler environment reproduction is claimed.',
             'Loopback/native interop is historical only in this runner; it does not launch sockets or repeat archived performance measurements.',
             'Historical source differences remain explicit regardless of fresh selected-suite outcomes.'])

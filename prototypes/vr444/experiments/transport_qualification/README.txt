@@ -1,7 +1,7 @@
 Transport and exact-compression team handoff, 2026-10-09
 ======================================================
 
-22 independent research approaches are pinned in catalog.json. Every approach
+23 independent research approaches are pinned in catalog.json. Every approach
 was committed and pushed under research/sub15-20261009/<name>. This catalog is
 a separate handoff branch; it does not merge the approaches into production or
 authorize headset tests. Headset testing remains suspended.
@@ -13,10 +13,13 @@ captured server-plus-client p95 than VR444 in all 12 pairs. That is one desktop
 CPU batch, not the headset receipt-to-post-xrEndFrame metric. The GPU team's
 separate RRB image paths have their own device-specific evidence; results from
 different batches/devices cannot be added into an asserted end-to-end speedup.
+The CPU input is an already encoded VR444 payload; original framebuffer encoding
+is outside this measured transcode/decode path. Q1 RRB32 bytes decrease, but Q8
+RRB32 bytes increase, so the component win does not establish a transport win.
 
 The transport alternatives remain bounded prototypes. UDP batching/offload
 helps on owned localhost; no physical wireless throughput/latency claim follows.
-VXF/VXI/VXB/VXP use CRC and optional XOR, not authenticated transport. They need
+VXF/VXI/VXB/VXP/VWG use CRC and optional XOR, not authenticated transport. They need
 production identity, capability, congestion, ownership and lifetime integration
 before any device experiment. No production interface, route, listener or codec
 selection was changed by this team.
@@ -47,6 +50,7 @@ rowblocks-rgb-vector          a0ee6743  Vector color/store path; stronger matche
 rowblocks-band-views          a55dff16  Removes private input-band copy/reframing; strongest final captured CPU tail result in one batch.
 rowblock-stream               7f097f3d  VXB independent block emission, exact complete-stereo assembly; overlap remains unmeasured.
 rowblock-stream-fec           8e5d1d50  VXP per-block XOR repair; correct, but captured parity overhead is a substantial negative.
+packet-window-fec             788ba8b4  VWG complete-record repair windows; fewer bytes in143/144 capture variants but much weaker declared multi-loss completion.
 
 Branch URL form:
   https://github.com/jebot-git/WiVRn-Pro/tree/research/sub15-20261009/<name>
@@ -56,9 +60,9 @@ artifact hashes and every recognized declared repository binding difference.
 Historical integrity is separate from fresh execution
 ------------------------------------------------------
 
-catalog.py inventories all 142 notes/JSON artifacts in the 22 pinned approach
+catalog.py inventories all 146 notes/JSON artifacts in the 23 pinned approach
 directories, including intentionally retained earlier receipts. It verifies
-artifact bytes and 521 matching repository bindings. Sixteen declared snapshot
+artifact bytes and 543 matching repository bindings. Sixteen declared snapshot
 differences remain explicit and prevent a blanket historical-source pass:
 
 * rgb-palette: two older timing receipts precede later inspect/golden/export API
@@ -77,11 +81,15 @@ Only recognized explicit digest maps are audited; complete dependency coverage
 is not inferred from an artifact's existence. External/contextual hashes remain
 unverified in this Git-only stage.
 
-run.py extracts each of seven Python suites from its own pinned Git tree into a
+run.py extracts each of eight Python suites from its own pinned Git tree into a
 temporary directory. It rejects links and path traversal, checks every extracted
 file against its Git blob BEFORE execution, runs unittest with a bounded timeout,
 requires a nonzero test count and plain OK/no skips, and rechecks source bytes.
 It does not combine mutually exclusive branches into an artificial source tree.
+The final execution covers134 protocol/model tests. Twelve additional catalog
+adversarial tests check omitted approaches, forged bindings, unsafe archives, skips
+and source-snapshot containment. remote-heads.json separately records an exact
+remote-branch query; the Git-only history audit itself does not query the remote.
 
 Optional --native-band-directory executes the historical band-view ASan/UBSan
 and TSan binaries only after their hashes and pinned dependency bindings match
@@ -122,3 +130,23 @@ contract. It must bind the chosen server codec, transport and GPU client in one
 build and one matched capture before making an end-to-end claim. CPU, GPU, wire
 and compositor metrics have different boundaries and are not interchangeable.
 No headset launch is performed or authorized by this handoff.
+
+Cross-team evidence to review separately
+---------------------------------------
+
+GPU mapped-input-consumer, immutable commit
+068dd29df03e44ab0668d9607d2896650c4b91f9:
+  https://github.com/jebot-git/WiVRn-Pro/tree/068dd29df03e44ab0668d9607d2896650c4b91f9/prototypes/vr444/experiments/mapped_input_consumer
+This uses unchanged RRB32 bytes and tests direct mapped LZ4 output through the
+first actual stereo sampled-image consumer on Arc and UHD. Its private image
+poison/readiness/compute-consumer submissions exclude this team's server, wire,
+native compositor and headset. The GPU receipts must be assessed in that scope;
+their gains are not added to this team's CPU measurements.
+
+Compositor exact-phase analysis, immutable commit
+306920270d9a5b4601851e8fe3958f32e9306d5a:
+  https://github.com/jebot-git/WiVRn-Pro/tree/306920270d9a5b4601851e8fe3958f32e9306d5a/prototypes/vr444/experiments/selection_policy
+This is frozen-data diagnosis with explicit receipt, readiness, target and source
+identity constraints, not a deployed selector or a headset performance result.
+Later source-age/cadence/envelope stages remain independently cataloged by that
+team. No cross-team source tree or integrated performance test is claimed here.
