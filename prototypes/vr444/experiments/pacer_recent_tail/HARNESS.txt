@@ -1,0 +1,53 @@
+Recent-tail harness adapter
+===========================
+
+integration/pacer_tail.py is a standalone, offline helper. It changes no native
+source, runner, decoder selection, or latency/promotion policy. The root-owned
+native_compare.py integration must call these three functions:
+
+  helpers = pacer_tail.validate(args, native_source)
+  env.update(pacer_tail.configure(args, output))
+  result['pacer_tail'] = pacer_tail.evaluate(output, args.pacer_window_frames)
+
+Validate before device commands or output creation. Add the returned four paths
+to source_helper_sha256 and record pacer_window_frames in provenance.json. The
+new CLI integer defaults to 0; nonzero must be 360..1800 and requires the existing
+custom CPU NEON, pacer, source and candidate diagnostics. Configure performs no
+native file reads or writes and returns only the explicit window and tail-path
+environment additions. The caller must continue clearing inherited WIVRN_CODEC_TEST
+variables, retain WIVRN_CODEC_PACER_TRACE, and preserve all existing diagnostics.
+
+Evaluate after graceful host shutdown, which exports the bounded tail footer.
+Treat any status other than pass/off as a run failure. This helper never grants
+latency or promotion eligibility; the caller still evaluates the source, pacer,
+candidate, publication, runtime and payload gates independently. Runtime target
+regression is not excused by enabling the estimator.
+
+The trace is read once (8 MiB maximum), hashed and parsed from the same bytes.
+Duplicate JSON keys, nonfinite constants, incomplete/footer loss, invalid updates,
+configuration mismatch, incorrect slew arithmetic and changed source bindings
+fail. Exact recorded hashes of the four native helpers must equal this reviewed
+overlay. This is a recorded source association, not binary/build attestation.
+The existing run hashes.json is checked if present; immediate evaluation normally
+precedes its creation. The report explicitly distinguishes those cases and records
+the actual trace/provenance/analyzer hashes. Existing binaries need a separate
+pinned build receipt and the new host pacer build; this module does not build them.
+
+Off returns no source paths/environment changes and rejects even a dangling
+unexpected sidecar symlink. Output directories and native input files are never
+modified by these helpers. Configure uses an absolute new host/pacer-tail.jsonl
+path, but exclusive trace creation/no-overwrite remains the native guard.
+
+Reproduce offline qualification:
+  python3 -m unittest discover -s validation/wivrn-codecs/tests -p 'test_pacer*.py' -v
+  python3 -m unittest discover -s prototypes/vr444/experiments/pacer_recent_tail -p test_analyze.py -v
+
+The new seven tests cover exact integer controls, disabled and missing source,
+source drift, pure configuration, one-read byte binding, optional manifest replay,
+repaired-hash semantic corruption, missing/dropped footer, type/JSON errors and
+unexpected files/symlinks. Existing eleven pacer/source-join and five tail-analyzer
+tests also pass. No device, native build, graphics or comparative timing was run.
+
+Independent codec-team read-only review found no blocker in this pure-helper
+scope. In particular configure(off) intentionally does not clear ambient keys;
+the root runner owns its existing inherited-environment scrub before update.

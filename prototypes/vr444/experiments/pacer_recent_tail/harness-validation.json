@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "status": "pass",
+  "generated_utc": "2026-10-09T15:36:47.348891+00:00",
+  "native_parent_commit": "b6c59ec24a71dfaf3421290db15cfef03f8a3da9",
+  "source_sha256": {
+    "validation/wivrn-codecs/integration/pacer_tail.py": "375a2e2eb2edee89d142604b5396ae1c6718d0e24fbe6644aab8a05e668fb416",
+    "validation/wivrn-codecs/tests/test_pacer_tail.py": "76cebf15c8a165197e4ab043b37055e10a549e2247f4250458153e3e21e3f191",
+    "validation/wivrn-codecs/tests/test_pacer_trace.py": "df85ac9476ea8c1118c1bb4d2bec97c3d22b39cb619d4b01f99472530afaf4e2",
+    "validation/wivrn-codecs/tests/test_pacer_source_join.py": "d5a57bf3516efd7db9e08f08524b57ad75a6b72f3fb152bb39483a314ce0f95b",
+    "prototypes/vr444/experiments/pacer_recent_tail/analyze.py": "d1ad28720846b7e74d134b878545d3c48579e5d55b8de3a043335aa06d760a94",
+    "prototypes/vr444/experiments/pacer_recent_tail/test_analyze.py": "60c3f4d1d18691a0c6cbb9a4ec00cb89ebb7d30c7a2fe4a6e7b214dfc3773935",
+    "prototypes/vr444/experiments/pacer_timing/analyze.py": "52e988abb06fa88c9d44486d566d8cb69c4ecba8db56a1f677e70a3911bda5e1",
+    "prototypes/vr444/experiments/pacer_timing/join_source.py": "efb62c56134eda148180052338e83ea185f61161df7983bde3af6a9749d94b5e",
+    "prototypes/vr444/experiments/compositor_freshness/analyze.py": "f631fcfe506999a03612f720f89f395265c7785a907e3a0e4388867cb1b5be10",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.cpp": "48e2a42c72f113dd25edbf84e81045556bd7fcb590535a5a351ae1e57a1d2434",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/pacer.h": "a9076b5e0ab5247c52d43366e4920f1d868b1e150100d5360bb8b3b2eb502be1",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_trace.h": "93f1e8b963ba4bdbf7bdcaa674a6fcbee3e1eb4dea3bb7001cba7f9ff802e638",
+    "validation/wivrn-codecs/integration/source-overlay/server/compositor/codec_pacer_tail.h": "7e8de43fdbb4d0ced732e6300aad5e707f9fde23e5d557a7cc7bab3c864487c4"
+  },
+  "source_unchanged": true,
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "validation/wivrn-codecs/tests",
+        "-p",
+        "test_pacer*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_duplicate_instance_match_is_ambiguous_and_unaccepted_predictions_are_allowed (test_pacer_source_join.PacerSourceJoinTests.test_duplicate_instance_match_is_ambiguous_and_unaccepted_predictions_are_allowed) ... ok\ntest_exact_output_target_join_preserves_phase_values (test_pacer_source_join.PacerSourceJoinTests.test_exact_output_target_join_preserves_phase_values) ... ok\ntest_matching_id_with_wrong_target_or_preceding_prediction_fails (test_pacer_source_join.PacerSourceJoinTests.test_matching_id_with_wrong_target_or_preceding_prediction_fails) ... ok\ntest_missing_selected_frame_false_footer_or_domain_fails (test_pacer_source_join.PacerSourceJoinTests.test_missing_selected_frame_false_footer_or_domain_fails) ... ok\ntest_same_host_clock_translation_preserves_durations (test_pacer_source_join.PacerSourceJoinTests.test_same_host_clock_translation_preserves_durations) ... ok\ntest_bound_single_trace_read_and_optional_manifest_replay (test_pacer_tail.PacerTail.test_bound_single_trace_read_and_optional_manifest_replay) ... ok\ntest_exact_source_preflight_and_configuration_has_no_reads_or_writes (test_pacer_tail.PacerTail.test_exact_source_preflight_and_configuration_has_no_reads_or_writes) ... ok\ntest_json_and_hash_drift_fail_closed (test_pacer_tail.PacerTail.test_json_and_hash_drift_fail_closed) ... ok\ntest_off_rejects_unexpected_and_broken_symlink (test_pacer_tail.PacerTail.test_off_rejects_unexpected_and_broken_symlink) ... ok\ntest_provenance_window_source_and_diagnostic_controls_must_match (test_pacer_tail.PacerTail.test_provenance_window_source_and_diagnostic_controls_must_match) ... ok\ntest_repaired_hash_does_not_bypass_semantic_or_window_checks (test_pacer_tail.PacerTail.test_repaired_hash_does_not_bypass_semantic_or_window_checks) ... ok\ntest_strict_default_and_enabled_control_admission (test_pacer_tail.PacerTail.test_strict_default_and_enabled_control_admission) ... ok\ntest_all_outputs_and_native_constants_are_replayed (test_pacer_trace.PacerTraceTests.test_all_outputs_and_native_constants_are_replayed) ... ok\ntest_feedback_phase_changes_do_not_require_prior_target_equality (test_pacer_trace.PacerTraceTests.test_feedback_phase_changes_do_not_require_prior_target_equality) ... ok\ntest_instances_keep_independent_identity_and_first_prediction (test_pacer_trace.PacerTraceTests.test_instances_keep_independent_identity_and_first_prediction) ... ok\ntest_missing_tail_overflow_and_drops_fail (test_pacer_trace.PacerTraceTests.test_missing_tail_overflow_and_drops_fail) ... ok\ntest_schema_and_field_types_are_exact (test_pacer_trace.PacerTraceTests.test_schema_and_field_types_are_exact) ... ok\ntest_valid_and_floor_residual_is_not_declared_failure (test_pacer_trace.PacerTraceTests.test_valid_and_floor_residual_is_not_declared_failure) ... ok\n\n----------------------------------------------------------------------\nRan 18 tests in 0.040s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "prototypes/vr444/experiments/pacer_recent_tail",
+        "-p",
+        "test_analyze.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_complete_trace_and_typed_header (test_analyze.TailAudit.test_complete_trace_and_typed_header) ... ok\ntest_epoch_reset_retains_budget_but_clears_watermark (test_analyze.TailAudit.test_epoch_reset_retains_budget_but_clears_watermark) ... ok\ntest_rehashed_semantics_reject (test_analyze.TailAudit.test_rehashed_semantics_reject) ... ok\ntest_subset_tail_can_exceed_legacy_tail (test_analyze.TailAudit.test_subset_tail_can_exceed_legacy_tail) ... ok\ntest_supported_slew_and_sparse_fallback (test_analyze.TailAudit.test_supported_slew_and_sparse_fallback) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK\n"
+    }
+  ],
+  "new_test_methods": 7,
+  "total_test_methods": 23,
+  "device_used": false,
+  "native_build_performed": false,
+  "performance_measured": false,
+  "latency_qualified": false,
+  "promotion_eligible": false,
+  "independent_review": {
+    "team": "transport_compression",
+    "mode": "read-only",
+    "result": "no material blocker",
+    "scope": "pure helper control, source/input bindings, fail-closed evidence and caller-owned environment cleanup"
+  }
+}
