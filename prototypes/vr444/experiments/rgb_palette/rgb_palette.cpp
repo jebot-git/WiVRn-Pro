@@ -168,4 +168,14 @@ void decode_into(std::span<const uint8_t> wire,std::span<uint32_t> output) {
     auto parsed=preflight(wire);need(output.size()==size_t(parsed.header.w)*parsed.header.h);
     expand(wire,parsed,output);
 }
+Layout inspect(std::span<const uint8_t> wire) {
+    auto parsed=preflight(wire);Layout result{parsed.header.w,parsed.header.h,{}};
+    result.tiles.reserve(parsed.tiles.size());
+    for(auto& tile:parsed.tiles) {
+        uint32_t colors=tile.mode>=2 && tile.mode<=4?wire[tile.at]:0;
+        result.tiles.push_back({uint32_t(tile.at),tile.bytes,tile.mode,tile.x,tile.y,tile.w,tile.h,
+                               colors,uint32_t(tile.at)+(colors?1+3*colors:0),colors?1u<<(tile.mode-2):0});
+    }
+    return result;
+}
 }

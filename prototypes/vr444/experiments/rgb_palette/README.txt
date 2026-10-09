@@ -119,3 +119,31 @@ https://qoiformat.org/qoi-specification.pdf
 https://github.com/lz4/lz4/blob/v1.10.0/doc/lz4_Block_format.md
   LZ4 is the existing lossless byte-wrapper comparison, not a new image quality
   mode. Vendored implementation and license are in ../native_lz4/vendor.
+
+GPU handoff and independent fixtures
+inspect(wire) performs the same complete header/body CRC and tile-grammar checks
+as decode, then returns a Layout with width/height and a TileRecord array. Each
+record contains absolute byte_offset, byte_length, mode, x/y/width/height,
+palette_colors (zero for nonpalette modes), pixel_data_offset (first packed index
+byte for palettes; payload start otherwise), and index_bits (1/2/4 or zero).
+Offsets apply only to those exact immutable wire bytes. The API returns no partial
+layout on failure and allocates no pixels. GPU users must validate the whole eye
+before enqueueing work, match trusted outer dimensions, and keep both eye outputs
+unpublished until the complete stereo identity is valid. Shader bounds/status and
+resource lifetime checks remain necessary even after CPU preflight.
+
+The six tiny golden fixtures in fixtures/ were constructed by golden.py without
+using the C++ encoder. They cover every mode, partial tiles and palette tail bits,
+and include exact expected little-endian RGBA bytes plus SHA-256 hashes. Verify:
+  python3 prototypes/vr444/experiments/rgb_palette/golden.py /tmp/rpt-golden \
+    --verify /tmp/rgb-palette/export
+
+For the existing local captured/synthetic corpus, export RPT1 plus independent
+existing-VR444-reference RGBA files (no capture files are committed by this tool):
+  /tmp/rgb-palette/export CORPUS_DIRECTORY /tmp/rpt-gpu-corpus \
+    > /tmp/rpt-gpu-corpus-manifest.json
+This validates all 38 prepared cases before writing fixtures. Binary writes are
+bounded to decoded RGBA and wire packet sizes, and use explicit little-endian
+pixel serialization. The exporter does not measure GPU performance or enqueue
+GPU work. inspect/golden additions pass all 240 exact roundtrips, 34,379 rejection
+checks, 13,000 mutations and all six independently authored golden decodes.
