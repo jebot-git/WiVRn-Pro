@@ -752,7 +752,7 @@ void wivrn_session::operator()(from_headset::htc_body && body_tracking)
 }
 void wivrn_session::operator()(const spatial::snapshot & packet)
 {
-	if (!spatial_bridge.enabled())
+	if (!spatial_bridge.enabled() || get_info().client_model != "seacliff")
 		return;
 	auto offset = offset_est.get_offset();
 	std::optional<XrPosef> mapping;
@@ -1282,6 +1282,7 @@ std::pair<bool, std::optional<std::string>> wivrn_session::validate_headset_info
 
 		// only allow connecting from the "same" headset
 		refuse |= prev_info.system_name != info.system_name;
+        refuse |= prev_info.client_model != info.client_model;
 
 		for (uint32_t i = 0; i < 2; i++)
 		{

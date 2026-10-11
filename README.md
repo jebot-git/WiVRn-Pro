@@ -1,20 +1,23 @@
 # WiVRn Pro
 
-A WiVRn fork for **Meta Quest Pro over Wi-Fi with Intel Arc, NVIDIA NVENC and AMD VAAPI**.
+A WiVRn fork for **Meta Quest Pro and Steam Frame over Wi-Fi with Intel Arc, NVIDIA NVENC and AMD VAAPI**.
+This development branch adds a native ARM64 Frame client and unified headset profiles; see [Frame support and known limitations](fork/STEAM-FRAME.md).
 WiVRn client, server, guided spatial capture and the complete current native Shora backend are
 one source tree. Both peers must be built from this branch; stock WiVRn clients
 use a different protocol. The standalone spatial bridge remains on `main`.
 
 - Intel Arc retains Vulkan Video, VAAPI and optional QSV. NVIDIA defaults to
   NVENC and AMD to VAAPI. Encoding stays on the selected Vulkan GPU; software
-  encoders and Intel UHD remain excluded. H.264/HEVC and Quest Pro restrictions
-  are unchanged. The Arc CBR/CQP presets also support NVENC and VAAPI.
+  encoders and Intel UHD remain excluded. H.264/HEVC remain the default codecs;
+  Frame also offers an explicitly selected experimental PyroWave codec. The Arc CBR/CQP presets also support NVENC and VAAPI.
 - An explicit **SlimeVR / Motoc Lighthouse** bridge-mode selector keeps the two
   tracking paths mutually exclusive. Mode changes require a WiVRn restart.
   Motoc includes rigid-tracker continuous calibration and experimental
   room-anchor continuation after initial cross-space calibration.
-- Quest Pro (`seacliff`) is checked on the device and in the server handshake.
-  No AV1, USB tethering, ADB reverse connection controls or desktop XR client.
+- The server accepts Quest Pro (`seacliff`) and the native Steam Frame client.
+  Auto, Quest Pro and Steam Frame profiles are selectable in the dashboard.
+  Quest anchor logic and saved calibration remain intact; Frame hides anchor controls.
+  No AV1, USB tethering or ADB reverse connection controls.
 - Room capture saves up to 12 markers with a guided scan and reload verification.
   Spatial data uses WiVRn's own stage mapping and supports 32 concurrent PC
   readers. It starts automatically with the runtime, with no bridge opt-in.

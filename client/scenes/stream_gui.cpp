@@ -430,6 +430,17 @@ void scenes::stream::gui_settings(float)
 	switch (current_settings_page)
 	{
 		case settings_page::spatial:
+            if (!application::get_hmd_traits().spatial_anchors_available())
+            {
+                const bool available = system.passthrough_supported() != xr::passthrough_type::none;
+                ImGui::SeparatorText("Passthrough");
+                ImGui::BeginDisabled(!available);
+                ImGui::Checkbox("Show room", &room_view);
+                ImGui::EndDisabled();
+                ImGui::TextWrapped(available ? "Show your surroundings while keeping the WiVRn menu open. Turn off to return to the game."
+                    : "This OpenXR runtime does not expose passthrough. A compatible camera and runtime are required.");
+                break;
+            }
 			if (spatial)
 			{
 				auto & portal = spatial->portal;

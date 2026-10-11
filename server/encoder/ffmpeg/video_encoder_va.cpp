@@ -73,6 +73,7 @@ const char * encoder(video_codec codec, bool qsv)
 			return qsv ? "hevc_qsv" : "hevc_vaapi";
 		case video_codec::av1:
 			throw std::runtime_error("AV1 is not supported by Quest Pro");
+		case video_codec::pyrowave:
 		case video_codec::raw:
 			break;
 	}
@@ -602,6 +603,7 @@ void video_encoder_va::open_codec()
 		case video_codec::av1:
 			encoder_ctx->profile = AV_PROFILE_AV1_MAIN;
 			break;
+		case video_codec::pyrowave:
 		case video_codec::raw:
 			throw std::runtime_error("raw codec not supported");
 	}

@@ -865,6 +865,7 @@ void on_headset_info_packet(const wivrn::from_headset::headset_info_packet & inf
 	static const std::map<video_codec, const char *> codec_names = {
 	        {h264, "h264"},
 	        {h265, "h265"},
+            {pyrowave, "pyrowave"},
 	        {av1, "av1"}};
 	for (const auto & capability: info.supported_codecs)
 	{
@@ -875,6 +876,7 @@ void on_headset_info_packet(const wivrn::from_headset::headset_info_packet & inf
 	codecs.push_back(nullptr);
 	wivrn_server_set_supported_codecs(dbus_server, codecs.data());
 	wivrn_server_set_system_name(dbus_server, info.system_name.c_str());
+	wivrn_server_set_client_model(dbus_server, info.client_model.c_str());
 }
 
 void on_name_acquired(GDBusConnection * connection, const gchar * name, gpointer user_data)

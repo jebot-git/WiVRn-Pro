@@ -91,6 +91,7 @@ static auto encode_guid(video_codec codec)
 			return NV_ENC_CODEC_HEVC_GUID;
 		case av1:
 			return NV_ENC_CODEC_AV1_GUID;
+		case pyrowave:
 		case raw:
 			break;
 	}
@@ -327,6 +328,7 @@ video_encoder_nvenc::video_encoder_nvenc(
 			set_intra_refresh(config.encodeCodecConfig.av1Config);
 
 			break;
+		case video_codec::pyrowave:
 		case video_codec::raw:
 			throw std::runtime_error("raw codec not supported for nvenc");
 	}

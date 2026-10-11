@@ -26,7 +26,7 @@ require('res.push_back(wivrn::video_codec::raw)' not in read('client/decoder/dec
 require('fork_policy::hardware_gpu' in read('server/utils/wivrn_vk_bundle.cpp'), 'GPU selection lost Arc gate')
 require('require_wifi(control.get_fd())' in read('client/wivrn_client.cpp'), 'Wi-Fi route check removed')
 require('fork_policy::quest_pro' in read('client/hmd_traits.cpp'), 'Client lost Quest Pro gate')
-require('info_packet.client_model != "seacliff"' in read('server/driver/wivrn_connection.cpp'), 'Server lost Quest Pro handshake gate')
+require('fork_policy::accepts_profile' in read('server/driver/wivrn_connection.cpp'), 'Server lost supported-headset handshake gate')
 require('WIVRN_SPATIAL_BRIDGE' not in read('server/driver/spatial_bridge.cpp'), 'Spatial API became optional')
 require('std::unique_ptr<wivrn::spatial_source> spatial' in read('client/application.h'), 'Spatial source lost application lifetime')
 require('spatial->event(e.header)' in read('client/application.cpp'), 'Central spatial event dispatch removed')

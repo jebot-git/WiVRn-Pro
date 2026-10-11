@@ -62,6 +62,7 @@ static void split_bitrate(std::array<wivrn::encoder_settings, 3> & encoders, uin
 				break;
 			case wivrn::h265:
 			case wivrn::av1:
+			case wivrn::pyrowave:
 			case wivrn::raw:
 				break;
 		}
@@ -192,6 +193,7 @@ class prober
 			}
 			case av1:
 				U_LOG_D("Vulkan video encode for AV1 is not implemented in WiVRn");
+			case pyrowave:
 			case raw:
 				return false;
 		}
@@ -206,6 +208,19 @@ public:
 
 	std::pair<std::string, video_codec> select_encoder(const configuration::encoder & config)
 	{
+        if (config.name == "pyrowave" || config.codec == pyrowave ||
+            (config.name.empty() && !config.codec && info.supported_codecs.size() == 1 && info.supported_codecs.front().codec == pyrowave))
+        {
+#if WIVRN_USE_PYROWAVE
+            if (!config.name.empty() && config.name != "pyrowave") throw std::runtime_error("PyroWave requires the pyrowave encoder");
+            if (config.codec && config.codec != pyrowave) throw std::runtime_error("PyroWave encoder requires the pyrowave codec");
+            if (!std::ranges::contains(info.supported_codecs, pyrowave, &video_codec_capability::codec))
+                throw std::runtime_error("The connected client does not support PyroWave");
+            return {"pyrowave", pyrowave};
+#else
+            throw std::runtime_error("Experimental PyroWave was not built; configure WIVRN_USE_PYROWAVE=ON");
+#endif
+        }
 		if (!fork_policy::encoder(config.name))
 			throw std::runtime_error("Encoder removed from this fork: " + config.name);
 		if (config.codec && *config.codec != h264 && *config.codec != h265)

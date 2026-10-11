@@ -242,7 +242,7 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
 
 	self->network_session->send_control([&]() {
 		from_headset::headset_info_packet info{
-		        .client_model = "seacliff",
+		        .client_model = application::get_hmd_traits().client_model(),
 		        .language = application::get_messages_info().language,
 		        .country = application::get_messages_info().country,
 		        .variant = application::get_messages_info().variant,
@@ -360,6 +360,10 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
 			info.supported_codecs = {{.codec = *config.codec, .supports_10bit = supports_10bit}};
 			switch (*config.codec)
 			{
+				case pyrowave:
+                    if (!application::pyrowave_available) throw std::runtime_error("PyroWave is unavailable on this client");
+                    info.bit_depth = 8;
+                    break;
 				case h264:
 					break;
 				case raw:
@@ -1093,7 +1097,7 @@ void scenes::stream::render(const XrFrameState & frame_state)
 	// Allow the headset to time warp if we are redisplaying a frame
 	if ((not application::get_hmd_traits().discard_frame) or
 	    std::ranges::any_of(current_blit_handles, [](const auto & h) { return h and h->feedback.times_displayed < 2; }) or
-	    is_gui_interactable() || cutout_visible || cutout_was_visible)
+	    is_gui_interactable() || room_view || cutout_visible || cutout_was_visible)
 	{
 		cutout_was_visible = cutout_visible;
 		XrExtent2Di extents[view_count];
@@ -1234,7 +1238,8 @@ void scenes::stream::render(const XrFrameState & frame_state)
 #endif
 		swapchain.release();
 
-		const bool room_capture = spatial && spatial->capture_active();
+		const bool room_capture = (spatial && spatial->capture_active()) ||
+                (room_view && system.passthrough_supported() != xr::passthrough_type::none);
 		if (output_alpha || room_capture)
 			session.enable_passthrough(system);
 		else

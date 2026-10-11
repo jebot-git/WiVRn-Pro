@@ -302,7 +302,7 @@ std::string hmd_traits::model_name() const
 
 	return manufacturer + " " + model;
 #else
-	return "Unknown headset";
+	return WIVRN_CLIENT_STEAM_FRAME ? "Valve Steam Frame" : "Unknown headset";
 #endif
 }
 

@@ -179,6 +179,10 @@ if (WIVRN_BUILD_SERVER)
 	endif()
 
 
+	if(WIVRN_USE_PYROWAVE)
+        target_sources(wivrn-server PRIVATE encoder/video_encoder_pyrowave.cpp)
+        target_link_libraries(wivrn-server PRIVATE pyrowave)
+    endif()
 	if(WIVRN_USE_NVENC)
 		target_sources(wivrn-server PRIVATE encoder/video_encoder_nvenc.cpp encoder/video_encoder_nvenc_shared_state.cpp)
 	endif()

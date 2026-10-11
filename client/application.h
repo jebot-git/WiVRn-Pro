@@ -421,6 +421,7 @@ public:
 		return instance().openxr_post_processing_supported;
 	}
 
+	static inline bool pyrowave_available = false;
 	static const hmd_traits & get_hmd_traits()
 	{
 		assert(instance().runtime_hmd_traits.is_initialized());

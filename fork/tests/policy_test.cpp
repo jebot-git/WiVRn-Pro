@@ -20,4 +20,9 @@ static_assert(codec("h264") && codec("h265") && !codec("av1") && !codec("raw"));
 static_assert(wifi_interface("wlan0") && !wifi_interface("lo") && !wifi_interface("usb0") && !wifi_interface("eth0"));
 static_assert(hardware_gpu(0x10de, 0x2684) && hardware_gpu(0x1002, 0x744c));
 static_assert(!hardware_gpu(0x8086, 0x4680) && !hardware_gpu(0x1234, 0x1111));
+static_assert(accepts_profile("auto", "seacliff") && accepts_profile("auto", "steam-frame"));
+static_assert(accepts_profile("quest-pro", "seacliff") && !accepts_profile("quest-pro", "steam-frame"));
+static_assert(accepts_profile("steam-frame", "steam-frame") && !accepts_profile("steam-frame", "seacliff"));
+static_assert(!accepts_profile("auto", "unknown") && !accepts_profile("invalid", "seacliff"));
+static_assert(spatial_anchors("seacliff") && !spatial_anchors("steam-frame") && !spatial_anchors("unknown"));
 int main() {}

@@ -80,6 +80,7 @@ struct output_image_info
 	vk::Extent2D output_size;
 	VkImage color;
 	VkImage depth;
+	uint32_t base_array_layer = 0;
 
 	bool operator==(const output_image_info & other) const noexcept = default;
 };
@@ -276,7 +277,7 @@ public:
 	        vk::Image color_buffer,
 	        vk::Image depth_buffer,
 	        std::span<frame_info> info,
-	        bool render_debug_draws = false);
+	        bool render_debug_draws = false, uint32_t base_array_layer = 0);
 	void end_frame();
 
 	void debug_draw_clear();

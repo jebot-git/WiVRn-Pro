@@ -300,6 +300,11 @@ void settings_video(const settings_context & ctx)
 		});
 	}
 
+    if (WIVRN_CLIENT_STEAM_FRAME)
+    {
+        if (ImGui::Checkbox("Per-eye rendering (experimental double-vision workaround)", &config.separate_eye_rendering)) config.save();
+        ImGui::TextWrapped("Renders hands, controller rays and menus separately for each eye. May increase GPU cost; does not change streamed game projections.");
+    }
 	ui::page_header(_cS("page header title", "Video"), _cS("page header subtitle", "Frame rate and resolution."));
 	render_settings(ctx, "##video", list);
 }
@@ -337,6 +342,8 @@ void settings_streaming(const settings_context & ctx)
 			return _C("Codec", "Automatic");
 		switch (*codec)
 		{
+			case wivrn::pyrowave:
+                return "PyroWave (experimental)";
 			case wivrn::h264:
 				return _C("Codec", "H.264");
 			case wivrn::h265:
@@ -351,7 +358,7 @@ void settings_streaming(const settings_context & ctx)
 
 	std::vector<wivrn::video_codec> codecs;
 	for (auto capability: wivrn::decoder::supported_codecs())
-		if ((capability.codec == wivrn::h264 || capability.codec == wivrn::h265))
+		if ((capability.codec == wivrn::h264 || capability.codec == wivrn::h265 || capability.codec == wivrn::pyrowave))
 			codecs.push_back(capability.codec);
 
 	list.push_back({

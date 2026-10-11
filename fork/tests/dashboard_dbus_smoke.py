@@ -15,6 +15,8 @@ xml='''<node><interface name="io.github.wivrn.Server">
 <property name="JsonConfiguration" type="s" access="readwrite"/>
 <property name="KnownKeysJson" type="s" access="read"/>
 <property name="KnownKeys" type="a(ssx)" access="read"/>
+<property name="ClientModel" type="s" access="read"/>
+<property name="HeadsetConnected" type="b" access="read"/>
 <property name="SessionRunning" type="b" access="read"/>
 <property name="PairingEnabled" type="b" access="read"/>
 <property name="Pin" type="s" access="read"/>
@@ -22,7 +24,7 @@ xml='''<node><interface name="io.github.wivrn.Server">
 <method name="RestartWayVR"/>
 <method name="EnablePairing"><arg type="i" direction="in"/><arg type="s" direction="out"/></method>
 </interface></node>'''
-props={'WayVRStatus': GLib.Variant('s','Waiting'), 'JsonConfiguration': GLib.Variant('s','{"encoder":"vaapi","unknown":{"keep":true}}'),
+props={'ClientModel':GLib.Variant('s','seacliff'), 'HeadsetConnected':GLib.Variant('b',True), 'WayVRStatus': GLib.Variant('s','Waiting'), 'JsonConfiguration': GLib.Variant('s','{"encoder":"vaapi","unknown":{"keep":true}}'),
  'KnownKeysJson':GLib.Variant('s',json.dumps([['Quest Pro','fake-key',123]])),
  'KnownKeys':GLib.Variant('a(ssx)',[('Quest Pro','fake-key',123)]),
  'SessionRunning':GLib.Variant('b',False),'PairingEnabled':GLib.Variant('b',False),'Pin':GLib.Variant('s','')}
@@ -51,6 +53,11 @@ def wait(check):
     raise AssertionError(('Timed out',errors,panel.status.text(),panel.keys.count()))
 try:
     wait(lambda: panel.original is not None)
+    props['ClientModel'] = GLib.Variant('s','steam-frame'); client.refresh()
+    wait(lambda: motoc.mode.view().isRowHidden(motoc.mode.findData('anchors')))
+    props['ClientModel'] = GLib.Variant('s','seacliff'); client.refresh()
+    wait(lambda: not motoc.mode.view().isRowHidden(motoc.mode.findData('anchors')))
+    panel.headset_profile.setCurrentIndex(panel.headset_profile.findData('auto'))
     client.method('RestartWayVR'); wait(lambda:'Restarting' in panel.wayvr_status.text())
     assert panel.keys.count()==1, f'KnownKeys decode failed: {panel.keys.count()}'
     panel.tcp.setChecked(True);panel.save()

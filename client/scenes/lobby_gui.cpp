@@ -1203,6 +1203,7 @@ std::vector<std::pair<int, XrCompositionLayerQuad>> scenes::lobby::draw_gui(XrTi
 				break;
 
 			case tab::spatial:
+                if (!application::get_hmd_traits().spatial_anchors_available()) break;
 				ImGui::TextWrapped("Capture or check anchors here without connecting to a PC. The same markers remain available when streaming starts. To design an anchored passthrough window, connect to your PC and open the WiVRn menu > Passthrough / room.");
 				application::get_spatial_source().draw_controls(system.passthrough_supported() != xr::passthrough_type::none, "Finish room capture");
 				break;
@@ -1268,7 +1269,7 @@ std::vector<std::pair<int, XrCompositionLayerQuad>> scenes::lobby::draw_gui(XrTi
 				current_tab = tab::devices;
 			if (wivrn::ui::nav_item(ICON_FA_LOCATION_CROSSHAIRS, _cS("tab label", "Tracking"), current_tab == tab::tracking))
 				current_tab = tab::tracking;
-			if (wivrn::ui::nav_item(ICON_FA_LOCATION_CROSSHAIRS, "Room capture", current_tab == tab::spatial))
+			if (application::get_hmd_traits().spatial_anchors_available() && wivrn::ui::nav_item(ICON_FA_LOCATION_CROSSHAIRS, "Room capture", current_tab == tab::spatial))
 				current_tab = tab::spatial;
 			if (wivrn::ui::nav_item(ICON_FA_GEARS, _cS("tab label", "System"), current_tab == tab::system))
 				current_tab = tab::system;

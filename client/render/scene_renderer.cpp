@@ -463,7 +463,7 @@ scene_renderer::output_image scene_renderer::create_output_image_data(const outp
 	                                .aspectMask = vk::ImageAspectFlagBits::eColor,
 	                                .baseMipLevel = 0,
 	                                .levelCount = 1,
-	                                .baseArrayLayer = 0,
+	                                .baseArrayLayer = info.base_array_layer,
 	                                .layerCount = info.renderpass.multiview_count,
 	                        },
 	                });
@@ -503,7 +503,7 @@ scene_renderer::output_image scene_renderer::create_output_image_data(const outp
 	                        .aspectMask = vk::ImageAspectFlagBits::eDepth,
 	                        .baseMipLevel = 0,
 	                        .levelCount = 1,
-	                        .baseArrayLayer = 0,
+	                        .baseArrayLayer = info.depth ? info.base_array_layer : 0,
 	                        .layerCount = info.renderpass.multiview_count,
 	                },
 	        });
@@ -865,8 +865,15 @@ void scene_renderer::render(
         vk::Image color_buffer,
         vk::Image depth_buffer,
         std::span<frame_info> frames,
-        bool render_debug_draws)
+        bool render_debug_draws, uint32_t base_array_layer)
 {
+    if (WIVRN_CLIENT_STEAM_FRAME && application::get_config().separate_eye_rendering && frames.size() > 1)
+    {
+        for (size_t eye = 0; eye < frames.size(); ++eye)
+            render(scene, clear_color, layer_mask, output_size, color_format, depth_format,
+                   color_buffer, depth_buffer, frames.subspan(eye, 1), render_debug_draws, base_array_layer + eye);
+        return;
+    }
 	assert(frames.size() <= instance_gpu_data{}.modelview.size());
 
 	per_frame_resources & resources = current_frame();
@@ -1011,6 +1018,7 @@ void scene_renderer::render(
 	        .output_size = output_size,
 	        .color = color_buffer,
 	        .depth = depth_buffer,
+	        .base_array_layer = base_array_layer,
 	});
 
 	vk::DeviceSize frame_ubo_offset = resources.uniform_buffer_offset;

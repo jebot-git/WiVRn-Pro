@@ -79,3 +79,7 @@ endif()
 target_include_directories(wivrn-common-base PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(wivrn-common PUBLIC Boost::pfr OpenSSL::Crypto wivrn-external wivrn-common-base)
 target_compile_definitions(wivrn-common PUBLIC VULKAN_HPP_NO_STRUCT_CONSTRUCTORS)
+
+if(WIVRN_USE_PYROWAVE AND (WIVRN_BUILD_SERVER OR WIVRN_BUILD_CLIENT))
+    add_subdirectory(pyrowave)
+endif()

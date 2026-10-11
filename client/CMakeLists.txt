@@ -352,3 +352,8 @@ if(NOT ANDROID)
 
     install(DIRECTORY "${ASSETS_DIR}" DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn)
 endif()
+
+if(WIVRN_USE_PYROWAVE)
+    target_sources(wivrn PRIVATE decoder/pyrowave/decoder.cpp)
+    target_link_libraries(wivrn pyrowave)
+endif()

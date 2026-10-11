@@ -839,6 +839,10 @@ void application::initialize_vulkan()
 	auto graphics_requirements = xr_system_id.graphics_requirements();
 	XrVersion vulkan_version = std::max(app_info.min_vulkan_version, graphics_requirements.minApiVersionSupported);
 	spdlog::info("OpenXR runtime wants Vulkan {}", xr::to_string(graphics_requirements.minApiVersionSupported));
+#if WIVRN_USE_PYROWAVE && WIVRN_CLIENT_STEAM_FRAME
+    if (graphics_requirements.maxApiVersionSupported >= XR_MAKE_VERSION(1, 3, 0))
+        vulkan_version = std::max<XrVersion>(vulkan_version, XR_MAKE_VERSION(1, 3, 0));
+#endif
 	spdlog::info("Requesting Vulkan {}", xr::to_string(vulkan_version));
 
 	std::vector<const char *> layers;
@@ -1052,7 +1056,52 @@ void application::initialize_vulkan()
 	        vk::PhysicalDeviceMultiviewFeaturesKHR{
 	                .multiview = true,
 	        },
-	        vk::PhysicalDeviceIndexTypeUint8FeaturesEXT{}};
+	        vk::PhysicalDeviceIndexTypeUint8FeaturesEXT{},
+            vk::PhysicalDevice16BitStorageFeatures{},
+            vk::PhysicalDevice8BitStorageFeatures{},
+            vk::PhysicalDeviceShaderFloat16Int8Features{},
+            vk::PhysicalDeviceSubgroupSizeControlFeatures{},
+            vk::PhysicalDeviceMaintenance4Features{}};
+    device_create_info.unlink<vk::PhysicalDevice16BitStorageFeatures>();
+    device_create_info.unlink<vk::PhysicalDevice8BitStorageFeatures>();
+    device_create_info.unlink<vk::PhysicalDeviceShaderFloat16Int8Features>();
+    device_create_info.unlink<vk::PhysicalDeviceSubgroupSizeControlFeatures>();
+    device_create_info.unlink<vk::PhysicalDeviceMaintenance4Features>();
+#if WIVRN_USE_PYROWAVE && WIVRN_CLIENT_STEAM_FRAME
+    if (vulkan_version >= XR_MAKE_VERSION(1, 3, 0) && vk_physical_device.getProperties().apiVersion >= VK_API_VERSION_1_3)
+    {
+        auto features = vk_physical_device.getFeatures2<vk::PhysicalDeviceFeatures2,
+            vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features>();
+        const auto & f = features.get<vk::PhysicalDeviceFeatures2>().features;
+        const auto & f11 = features.get<vk::PhysicalDeviceVulkan11Features>();
+        const auto & f12 = features.get<vk::PhysicalDeviceVulkan12Features>();
+        const auto & f13 = features.get<vk::PhysicalDeviceVulkan13Features>();
+        pyrowave_available = f.shaderStorageImageWriteWithoutFormat && f11.storageBuffer16BitAccess &&
+            f12.storageBuffer8BitAccess && f12.timelineSemaphore && f13.subgroupSizeControl &&
+            f13.computeFullSubgroups && f13.maintenance4;
+        const auto props = vk_physical_device.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan11Properties, vk::PhysicalDeviceVulkan13Properties>();
+        constexpr auto required_ops = vk::SubgroupFeatureFlagBits::eVote | vk::SubgroupFeatureFlagBits::eBallot |
+            vk::SubgroupFeatureFlagBits::eArithmetic | vk::SubgroupFeatureFlagBits::eShuffle |
+            vk::SubgroupFeatureFlagBits::eShuffleRelative | vk::SubgroupFeatureFlagBits::eBasic;
+        pyrowave_available = pyrowave_available &&
+            (props.get<vk::PhysicalDeviceVulkan11Properties>().subgroupSupportedOperations & required_ops) == required_ops;
+        if (pyrowave_available)
+        {
+            device_features.shaderStorageImageWriteWithoutFormat = true;
+            device_create_info.relink<vk::PhysicalDevice16BitStorageFeatures>();
+            device_create_info.get<vk::PhysicalDevice16BitStorageFeatures>().storageBuffer16BitAccess = true;
+            device_create_info.relink<vk::PhysicalDevice8BitStorageFeatures>();
+            device_create_info.get<vk::PhysicalDevice8BitStorageFeatures>().storageBuffer8BitAccess = true;
+            device_create_info.relink<vk::PhysicalDeviceShaderFloat16Int8Features>();
+            device_create_info.get<vk::PhysicalDeviceShaderFloat16Int8Features>().shaderFloat16 = f12.shaderFloat16;
+            device_create_info.relink<vk::PhysicalDeviceSubgroupSizeControlFeatures>();
+            device_create_info.get<vk::PhysicalDeviceSubgroupSizeControlFeatures>().subgroupSizeControl = true;
+            device_create_info.get<vk::PhysicalDeviceSubgroupSizeControlFeatures>().computeFullSubgroups = true;
+            device_create_info.relink<vk::PhysicalDeviceMaintenance4Features>();
+            device_create_info.get<vk::PhysicalDeviceMaintenance4Features>().maintenance4 = true;
+        }
+    }
+#endif
 
 	auto check_feature_flag = [&](auto feature_flag, const char * extension_name) -> bool {
 		using FeatureStruct = class_from_member_t<decltype(feature_flag)>;
@@ -1070,7 +1119,8 @@ void application::initialize_vulkan()
 		}
 	};
 
-	check_feature_flag(&vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR::timelineSemaphore, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+	if (!check_feature_flag(&vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR::timelineSemaphore, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME))
+        pyrowave_available = false;
 	check_feature_flag(&vk::PhysicalDeviceIndexTypeUint8FeaturesEXT::indexTypeUint8, VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME);
 
 	vk_device = xr_system_id.create_device(vk_physical_device, device_create_info.get());
@@ -1763,7 +1813,7 @@ wivrn::spatial_source & application::get_spatial_source()
 {
 	auto & app = instance();
 	if (!app.spatial)
-		app.spatial = std::make_unique<wivrn::spatial_source>(app.xr_instance, app.xr_session, space(xr::spaces::world), space(xr::spaces::view), get_config_path() / "spatial-bridge-v1", app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_STORAGE_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME), app.xr_instance.has_extension(XR_FB_SCENE_EXTENSION_NAME));
+		app.spatial = std::make_unique<wivrn::spatial_source>(app.xr_instance, app.xr_session, space(xr::spaces::world), space(xr::spaces::view), get_config_path() / "spatial-bridge-v1", get_hmd_traits().spatial_anchors_available() && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_STORAGE_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME), get_hmd_traits().spatial_anchors_available() && app.xr_instance.has_extension(XR_FB_SCENE_EXTENSION_NAME));
 	return *app.spatial;
 }
 

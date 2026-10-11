@@ -306,6 +306,20 @@ wivrn::vk_bundle::vk_bundle() :
 		}
 #endif
 
+#if WIVRN_USE_PYROWAVE
+        {
+            auto f = physical_device.getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features>();
+            feat.get<vk::PhysicalDeviceFeatures2>().features.shaderInt16 = f.get<vk::PhysicalDeviceFeatures2>().features.shaderInt16;
+            feat.get<vk::PhysicalDeviceVulkan11Features>().storageBuffer16BitAccess = f.get<vk::PhysicalDeviceVulkan11Features>().storageBuffer16BitAccess;
+            auto & f12 = feat.get<vk::PhysicalDeviceVulkan12Features>();
+            f12.storageBuffer8BitAccess = f.get<vk::PhysicalDeviceVulkan12Features>().storageBuffer8BitAccess;
+            f12.shaderFloat16 = f.get<vk::PhysicalDeviceVulkan12Features>().shaderFloat16;
+            auto & f13 = feat.get<vk::PhysicalDeviceVulkan13Features>();
+            f13.subgroupSizeControl = f.get<vk::PhysicalDeviceVulkan13Features>().subgroupSizeControl;
+            f13.computeFullSubgroups = f.get<vk::PhysicalDeviceVulkan13Features>().computeFullSubgroups;
+            f13.maintenance4 = f.get<vk::PhysicalDeviceVulkan13Features>().maintenance4;
+        }
+#endif
 		// Enable features
 		auto [phys_feat, phys_feat12, phys_feat13] = physical_device.getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features>();
 

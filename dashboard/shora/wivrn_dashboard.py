@@ -121,7 +121,7 @@ class ServerClient(QObject):
     def refresh(self):
         if self.refreshing: return
         self.refreshing = True
-        names = ['JsonConfiguration', 'SessionRunning', 'SystemName', 'SteamCommand', 'PairingEnabled', 'Pin', 'KnownKeysJson', 'WayVRStatus']
+        names = ['JsonConfiguration', 'SessionRunning', 'HeadsetConnected', 'ClientModel', 'SystemName', 'SteamCommand', 'PairingEnabled', 'Pin', 'KnownKeysJson', 'WayVRStatus']
         state = {}
         remaining = set(names)
         def receive(name, args):
@@ -205,11 +205,15 @@ class StreamingPanel(QWidget):
         self.preset.currentIndexChanged.connect(self.preset_selected)
         self.load_preset.clicked.connect(self.load_encoder_preset)
         form = QFormLayout()
+        self.headset_profile = QComboBox()
+        for label, profile in [('Auto-detect headset', 'auto'), ('Quest Pro', 'quest-pro'), ('Steam Frame', 'steam-frame')]:
+            self.headset_profile.addItem(label, profile)
+        self.headset_profile.setToolTip('Auto accepts both clients. A specific profile restricts new connections to that headset. Anchor controls follow the connected client.')
         self.encoder = QComboBox()
-        self.encoder.addItems(['Preserve current layout', 'auto', 'vaapi', 'vulkan', 'qsv', 'nvenc'])
-        self.encoder.setToolTip('Selecting an encoder replaces the encoder layout. QSV requires a QSV-enabled server build.')
+        self.encoder.addItems(['Preserve current layout', 'auto', 'vaapi', 'vulkan', 'qsv', 'nvenc', 'pyrowave'])
+        self.encoder.setToolTip('Selecting an encoder replaces the encoder layout. QSV requires a QSV-enabled server build. PyroWave is experimental and requires compatible client and server builds.')
         self.codec = QComboBox()
-        self.codec.addItems(['Preserve current codec', 'h264', 'h265'])
+        self.codec.addItems(['Preserve current codec', 'h264', 'h265', 'pyrowave'])
         self.depth = QComboBox()
         self.depth.addItems(['Use default', '8', '10'])
         self.tcp = QCheckBox('Use TCP for streaming')
@@ -227,7 +231,7 @@ class StreamingPanel(QWidget):
         self.wayvr_dashboard = QCheckBox('Open this dashboard inside WayVR')
         self.hostname = QLineEdit()
         self.port = QSpinBox(); self.port.setRange(1, 65535); self.port.setValue(9757)
-        for label, control in [('Encoder', self.encoder), ('Codec', self.codec), ('Bit depth', self.depth),
+        for label, control in [('Headset profile', self.headset_profile), ('Encoder', self.encoder), ('Codec', self.codec), ('Bit depth', self.depth),
                                ('Tracking bridge mode (restart required)', self.lighthouse), ('OpenVR runtime', self.xrizer), ('Manual runtime path', self.xrizer_path), ('Hostname', self.hostname), ('Port', self.port), ('', self.tcp), ('', self.hid), ('', self.debug), ('', self.wayvr), ('', self.wayvr_dashboard)]:
             form.addRow(label, control)
         layout.addLayout(form)
@@ -249,7 +253,7 @@ class StreamingPanel(QWidget):
         layout.addWidget(self.wayvr_restart)
         self.pairing = QLabel(); layout.addWidget(self.pairing)
         pair = QHBoxLayout()
-        for text, method, args in [('Pair Quest Pro (2 min)', 'EnablePairing', [120]), ('Disable pairing', 'DisablePairing', []), ('Disconnect headset', 'Disconnect', [])]:
+        for text, method, args in [('Pair headset (2 min)', 'EnablePairing', [120]), ('Disable pairing', 'DisablePairing', []), ('Disconnect headset', 'Disconnect', [])]:
             button = QPushButton(text); button.clicked.connect(lambda _, m=method, a=args: backend.method(m, *a)); pair.addWidget(button)
         layout.addLayout(pair)
         self.keys = QComboBox(); layout.addWidget(self.keys)
@@ -262,7 +266,7 @@ class StreamingPanel(QWidget):
         backend.failure.connect(self.save_message.emit)
         backend.saved.connect(self.saved)
         self.raw.textChanged.connect(self.changed)
-        for widget in (self.encoder, self.codec, self.depth): widget.currentIndexChanged.connect(self.changed)
+        for widget in (self.headset_profile, self.encoder, self.codec, self.depth): widget.currentIndexChanged.connect(self.changed)
         for widget in (self.tcp, self.hid, self.debug, self.wayvr, self.wayvr_dashboard, self.lighthouse_controllers): widget.toggled.connect(self.changed)
         self.lighthouse.currentIndexChanged.connect(self.changed)
         self.xrizer.currentIndexChanged.connect(self.changed)
@@ -324,7 +328,7 @@ class StreamingPanel(QWidget):
             self.status.setText('WiVRn service is stopped or unavailable')
             self.pairing.setText(''); self.keys.clear()
             return
-        self.status.setText(f"{'Streaming' if state.get('SessionRunning') else 'Ready'} · {state.get('SystemName') or 'Quest Pro disconnected'}\nSteam launch: {state.get('SteamCommand', '')}")
+        self.status.setText(f"{'Streaming' if state.get('SessionRunning') else 'Ready'} · {state.get('SystemName') or 'Headset disconnected'}\nSteam launch: {state.get('SteamCommand', '')}")
         self.pairing.setText(f"Pairing PIN: {state.get('Pin', '')}" if state.get('PairingEnabled') else 'Pairing disabled')
         keys = state.get('KnownKeys', [])
         if isinstance(keys, list):
@@ -347,6 +351,7 @@ class StreamingPanel(QWidget):
         self.raw.setPlainText(json.dumps(self.original, indent=2))
         self.encoder.setCurrentIndex(0); self.codec.setCurrentIndex(0)
         self.depth.setCurrentIndex({8: 1, 10: 2}.get(self.original.get('bit-depth'), 0))
+        self.headset_profile.setCurrentIndex(max(0, self.headset_profile.findData(self.original.get('headset-profile', 'auto'))))
         self.hostname.setText(self.original.get('hostname', ''))
         self.port.setValue(self.original.get('port', 9757))
         self.tcp.setChecked(self.original.get('tcp-only', False))
@@ -365,7 +370,7 @@ class StreamingPanel(QWidget):
         self.loading = False; self.dirty = False
 
     def controls(self):
-        return {'tracking-mode': ['slimevr', 'motoc'][self.lighthouse.currentIndex()], 'compatibility-mode': self.xrizer.currentIndex(), 'compatibility-path': self.xrizer_path.text(), 'tcp-only': self.tcp.isChecked(), 'hid-forwarding': self.hid.isChecked(),
+        return {'headset-profile': self.headset_profile.currentData(), 'tracking-mode': ['slimevr', 'motoc'][self.lighthouse.currentIndex()], 'compatibility-mode': self.xrizer.currentIndex(), 'compatibility-path': self.xrizer_path.text(), 'tcp-only': self.tcp.isChecked(), 'hid-forwarding': self.hid.isChecked(),
                 'motoc-lighthouse-controllers': self.lighthouse_controllers.isChecked(),
                 'debug-gui': self.debug.isChecked(), 'hostname': self.hostname.text(),
                 'port': self.port.value(), 'bit-depth': [None, 8, 10][self.depth.currentIndex()],
@@ -445,6 +450,7 @@ class Dashboard(HubWindow):
         streaming = StreamingPanel(self.backend)
         self.tabs.insertTab(0, streaming, 'WiVRn streaming')
         self.tabs.addTab(MotocPanel(self.client, streaming), 'Motoc / Lighthouse')
+        self.backend.state.connect(lambda state: self.tracking.anchor_rest.setVisible(state.get('ClientModel') != 'steam-frame'))
         self.tabs.setCurrentIndex(0)
         self.logs.setPlaceholderText('Service logs: journalctl --user -u wivrn-pro.service\nTracking diagnostics and calibration messages appear below.')
         self.backend.failure.connect(self.show_error)

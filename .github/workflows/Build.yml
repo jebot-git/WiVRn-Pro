@@ -32,7 +32,7 @@ jobs:
           python3 fork/check-motoc-source.py
           CARGO_TARGET_DIR="$PWD/build/motoc-tests" cargo test --locked --manifest-path server/motoc/upstream/Cargo.toml
       - name: Build server and OpenXR runtime
-        run: fork/build-server.sh -DWIVRN_USE_QSV=${{ matrix.qsv }} -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        run: fork/build-server.sh -DWIVRN_USE_PYROWAVE=ON -DWIVRN_USE_QSV=${{ matrix.qsv }} -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - name: Upstream WayVR tests (no XR session)
         run: cargo test --locked --release --manifest-path server/wayvr/upstream/Cargo.toml -p wayvr --no-default-features --features openxr,wayland,x11
       - name: Staged combined service package

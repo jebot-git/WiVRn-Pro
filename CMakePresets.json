@@ -77,25 +77,6 @@
       }
     },
     {
-      "name": "everything-no-systemd",
-      "displayName": "Everything (no systemd)",
-      "inherits": "everything",
-      "binaryDir": "${sourceDir}/build-no-systemd",
-      "cacheVariables": {
-        "WIVRN_BUILD_WIVRNCTL": "OFF",
-        "WIVRN_USE_SYSTEMD": "OFF"
-      }
-    },
-    {
-      "name": "everything-no-system-boost",
-      "displayName": "Everything (no system Boost)",
-      "inherits": "everything",
-      "binaryDir": "${sourceDir}/build-no-system-boost",
-      "cacheVariables": {
-        "WIVRN_USE_SYSTEM_BOOST": "OFF"
-      }
-    },
-    {
       "name": "server-no-systemd",
       "displayName": "Server only (no systemd)",
       "inherits": "server",
@@ -150,7 +131,9 @@
         "WIVRN_USE_SYSTEM_LIBKTX": "OFF",
         "WIVRN_USE_SYSTEM_OPENXR": "OFF",
         "WIVRN_COMPRESS_GLB": "ON",
-        "WIVRN_WERROR": "ON"
+        "WIVRN_WERROR": "ON",
+        "WIVRN_CLIENT_STEAM_FRAME": "ON",
+        "WIVRN_USE_PYROWAVE": "ON"
       }
     }
   ],

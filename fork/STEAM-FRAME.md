@@ -1,0 +1,136 @@
+# Unified Quest Pro / Steam Frame development branch
+
+This worktree is based on `feature/standalone-portability` at `5522c141`.
+The Quest Pro anchoring implementation, SlimeVR/Motoc worker, keep-alive bridge,
+Lighthouse controller selection, GPU encoders and WayVR integration are retained.
+
+## Headset profiles
+
+WiVRn streaming settings offer **Auto-detect headset**, **Quest Pro** and
+**Steam Frame**. The JSON key is `headset-profile`: `auto` (default), `quest-pro`
+or `steam-frame`. Auto accepts both client types; an explicit profile restricts
+new connections to that type. GPU and tracking settings remain shared.
+
+The matched client reports `seacliff` or `steam-frame`; D-Bus exposes this as
+`ClientModel`. Unsupported clients are rejected. A different headset cannot take
+over an existing headset's retained session; end that session before switching.
+
+Anchor capture, cutout design, anchor-assisted rest locking and Motoc's room-anchor
+mode are hidden for Frame. The server ignores Frame spatial-reference packets.
+Saved Quest anchor/calibration settings are preserved. They become available
+again with Quest Pro. Motoc one-time alignment, continuous rigid-tracker mode,
+Index controllers and the exclusive SlimeVR/Motoc bridge selection remain available.
+A saved Motoc anchor profile must be changed and saved as one-time or rigid mode
+before starting calibration on Frame.
+
+## Frame client and passthrough
+
+This is a **native Linux ARM64 client**, not an APK. Add its executable to Steam
+and launch it with the Steam Runtime/OpenXR loader. PipeWire provides audio;
+V4L2 provides H.264/HEVC decoding. Ten-bit selection follows decoder capabilities.
+The headset's system settings control refresh rate if it exposes only one rate.
+
+The local client uses OpenXR passthrough when the runtime exposes it, including
+`XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND`. In-stream **Passthrough / room → Show
+room** temporarily hides the game projection and leaves the WiVRn menu available.
+It resets on the next session. Lobby passthrough and streamed alpha also use the
+existing compositing path. Arcturus support is conditional on its runtime exposing
+that blend mode: this does not implement raw camera capture or camera discovery.
+Frame spatial anchors stay unavailable until a suitable API is implemented.
+
+## Experimental PyroWave
+
+Build with `-DWIVRN_USE_PYROWAVE=ON` on server and Frame client (enabled in the
+`frame` preset). Choose encoder/codec `pyrowave` in server streaming settings,
+or choose PyroWave on a compatible Frame client. Automatic codec selection keeps
+H.264/HEVC. Quest Pro's MediaCodec choices remain H.264/HEVC.
+
+The codec uses Vulkan compute and eight-bit input. Vulkan features and client
+codec support are checked before selection. Integration adapts the old upstream
+prototype to the current per-eye encoder, two-slot ownership, timeline semaphore,
+bitrate, decoder and feedback interfaces. Host-visible buffers are flushed or
+invalidated explicitly, frame sizes are bounded, and partial data is discarded
+when the frame changes. The prototype's unverified linear-image alias optimization
+is disabled.
+
+This remains a prototype. A local Arc A770 GPU round trip of a smooth 128×128
+Y/Cb/Cr pattern passed (maximum error 1 level, mean absolute error 0.0107), including
+137-byte packet fragmentation. A discontinuous edge stress pattern fails the
+strict quality gate (mean 1.51, worst pixel 113 levels with the compute decoder).
+The fragment decoder performed worse in that test, so the compute path is used.
+These edge artifacts are unresolved; H.264/HEVC remain the recommended choices.
+Neither Frame performance nor headset end-to-end streaming has been validated.
+
+Run the hardware tests explicitly:
+
+```sh
+cmake --build build/native --target pyrowave-gpu-test
+build/native/common/pyrowave/pyrowave-gpu-test
+# Known strict-quality failure on the imported prototype:
+build/native/common/pyrowave/pyrowave-gpu-test --stress
+```
+
+## Double vision investigation
+
+Upstream issue [#1140](https://github.com/WiVRn/WiVRn/issues/1140) reports mismatched
+right-eye projection for lobby hands/controller rays. The renderer already sends
+separate view/projection matrices. Frame's Video settings now expose **Per-eye
+rendering (experimental double-vision workaround)**. This renders each array layer
+in a separate pass with that eye's matrices, avoiding a two-view shader invocation.
+The option is off by default and does not change streamed game projections or the
+Quest render path. It may cost GPU time. It is a diagnostic workaround, not a
+hardware-confirmed fix; game-side stereo issues need separate investigation.
+
+## Building
+
+Use the upstream SDK image:
+`registry.gitlab.steamos.cloud/steamrt/steamrt4/sdk/arm64:4.0.20260805.254769`.
+Install KTX-Software 4.4.2 ARM64 tools, librsvg2-bin and
+`@gltf-transform/cli@4.1.1`, as in `.github/workflows/Build.yml`, then run:
+
+```sh
+DESTDIR="$PWD/build/frame-install" fork/build-frame.sh -DCMAKE_INSTALL_PREFIX=/usr
+```
+
+The matching unified server is built with the existing `fork/build-server.sh`;
+add `-DWIVRN_USE_PYROWAVE=ON` to include that experimental encoder. Rebuild the
+Quest APK from this branch as well: upstream controller IDs and codec-capability
+packets change the protocol hash. Released portability APKs are not a matching
+client for this development branch.
+
+## Provenance
+
+Frame backports come from upstream [PR #1130](https://github.com/WiVRn/WiVRn/pull/1130)
+and [PR #1139](https://github.com/WiVRn/WiVRn/pull/1139), plus subsequent upstream
+codec-capability, refresh-rate and battery fixes. Original authors are preserved
+in the cherry-picked commits. The fork's field-of-view packet and Quest-specific
+features were retained instead of merging all upstream changes.
+
+PyroWave source and adapters originate from upstream `proto/pyrowave`, pinned at
+`a0f5700d0bae9bbe72876a59c78a385930c5c70d` (2025-09-03). Source license notices are
+preserved; the encoder/decoder wrappers are adapted here. Its old Monado Vulkan
+patch series was not applied: the current fork creates and configures its own
+Vulkan device.
+
+References: [Valve native-engine guidance](https://partner.steamgames.com/doc/steamhardware/steamframe/engines/custom),
+[Arcturus OpenXR passthrough guidance](https://arcturus.vision/developers).
+
+## Local validation (2026-10-11)
+
+- GCC 16 native build: unified server, runtime, dashboard and Linux client.
+- ARM64 cross build against the pinned Steam Runtime SDK using GCC 14; Frame
+  client built with warnings as errors. Bundled libraries resolve inside that SDK.
+- Matching optimized Quest Pro APK built with NDK 29; locally development-signed.
+- Native/Android protocol constant: `5971f5c36950a3a8`.
+- Offline suite passed, including anchor lifecycle, spatial transforms, cutouts,
+  audio/video recovery, tracking/WayVR supervision and dashboard tests.
+- Twenty-four dashboard tests and a real isolated Qt D-Bus smoke test passed.
+- Integrated SlimeVR worker reconnect and Motoc exclusive-mode smoke tests passed.
+- PyroWave smooth-pattern GPU/packet round trip passed on Arc A770; edge-stress
+  quality failure remains documented above. No Frame headset or Arcturus hardware
+  validation, and no claimed confirmation of the stereo workaround.
+
+Development artifacts are in `build/artifacts/frame-dev/`. The Frame archive
+includes a `launch-wivrn-pro` script and local KTX/OpenXR loader libraries; add the
+script to Steam. The APK uses the local Android development key. These builds
+are not a new published release and do not replace the portability release.

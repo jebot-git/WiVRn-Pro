@@ -65,6 +65,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(
                 {av1, "av1"},
                 {av1, "AV1"},
                 {raw, "raw"},
+                {pyrowave, "pyrowave"},
         })
 
 NLOHMANN_JSON_SERIALIZE_ENUM(
@@ -199,6 +200,13 @@ configuration::configuration()
 
 		if (auto it = json.find("xrizer-auto-detect"); it != json.end())
 			xrizer_auto_detect = *it;
+        if (auto it = json.find("headset-profile"); it != json.end())
+        {
+            const auto profile = it->get<std::string>();
+            if (profile != "auto" && profile != "quest-pro" && profile != "steam-frame")
+                throw std::runtime_error("headset-profile must be auto, quest-pro or steam-frame");
+            headset_profile = profile;
+        }
         if (auto it = json.find("tracking-mode"); it != json.end())
         {
             const auto mode = it->get<std::string>();

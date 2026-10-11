@@ -26,6 +26,10 @@
 #include "decoder/ffmpeg/ffmpeg_decoder.h"
 #endif
 #include <stdexcept>
+#include "application.h"
+#if WIVRN_USE_PYROWAVE
+#include "decoder/pyrowave/decoder.h"
+#endif
 
 wivrn::decoder::~decoder() = default;
 
@@ -57,6 +61,12 @@ std::shared_ptr<wivrn::decoder> wivrn::decoder::make(
 			return std::make_shared<wivrn::ffmpeg::decoder>(
 			        device, phys_dev, description, stream_index, scene, acc);
 #endif
+        case pyrowave:
+#if WIVRN_USE_PYROWAVE
+            if (application::pyrowave_available)
+                return std::make_shared<pyrowave_decoder>(device, phys_dev, vk_queue_family_index, description, stream_index, scene, acc);
+#endif
+            throw std::runtime_error("PyroWave is not available on this client");
 		case av1:
 		case raw:
 			throw std::runtime_error("WiVRn Pro supports only H.264 and HEVC");
@@ -80,6 +90,10 @@ static std::vector<wivrn::video_codec_capability> supported_codecs_()
 	res.reserve(codecs.size());
 	for (auto codec: codecs)
 		res.push_back({.codec = codec, .supports_10bit = wivrn::decoder::supports_10bit(codec)});
+#if WIVRN_USE_PYROWAVE
+    if (application::pyrowave_available)
+        res.push_back({.codec = wivrn::pyrowave, .supports_10bit = false});
+#endif
 	return res;
 }
 
@@ -105,6 +119,7 @@ bool wivrn::decoder::supports_10bit(wivrn::video_codec codec)
 			return supported;
 		}
 		case wivrn::video_codec::h264:
+		case wivrn::video_codec::pyrowave:
 		case wivrn::video_codec::raw:
 			return false;
 	}

@@ -134,6 +134,10 @@ std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::C
 	                .pViewFormats = formats.data(),
 	        },
 	};
+#if WIVRN_USE_PYROWAVE
+    if (std::ranges::any_of(encoders, [](const auto & e) { return e.encoder_name == "pyrowave"; }))
+        image_info.get().usage |= vk::ImageUsageFlagBits::eSampled;
+#endif
 #if WIVRN_USE_VULKAN_ENCODE
 	if (
 	        std::get<vk::PhysicalDeviceVideoMaintenance1FeaturesKHR>(vk.feat).videoMaintenance1 and

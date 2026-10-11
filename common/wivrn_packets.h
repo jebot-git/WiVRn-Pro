@@ -223,6 +223,7 @@ enum video_codec
 	hevc = h265,
 	av1,
 	raw,
+	pyrowave,
 };
 
 struct video_codec_capability

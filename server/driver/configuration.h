@@ -56,6 +56,7 @@ struct configuration
 	std::optional<std::array<float, 3>> grip_surface;
 	std::vector<std::string> application;
 	bool debug_gui = false;
+	std::string headset_profile = "auto";
 	std::string tracking_mode = "slimevr";
 	bool motoc_lighthouse_controllers = true;
 	bool use_steamvr_lh = false;
