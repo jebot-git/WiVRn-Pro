@@ -1080,7 +1080,9 @@ int inner_main(int argc, char * argv[], bool show_instructions)
 	notify_init("WiVRn");
 
 	// The tracking worker outlives individual headset/runtime sessions.
-	auto tracking = std::make_unique<wivrn::tracking_worker>();
+	auto tracking_mode = wivrn::configuration().tracking_mode;
+    setenv("WIVRN_TRACKING_MODE", tracking_mode.c_str(), true);
+	auto tracking = std::make_unique<wivrn::tracking_worker>(tracking_mode);
 	// Main loop
 	g_main_loop_run(main_loop);
 

@@ -7,12 +7,14 @@ use serde::{Deserialize, Serialize};
 use tokio::{io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader}, net::{UnixListener, UnixStream}, sync::{mpsc, oneshot, Semaphore}};
 use crate::status::StatusHandle;
 
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, PartialEq)]
 #[serde(tag = "command", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
     Status, YawReset, FullReset, MountingReset, PauseTracking, Restart, ShutdownTrackers, Shutdown,
     SetSettings { settings: crate::settings::TrackingSettings },
     ClearDrift,
+    MotocCalibrate, MotocContinue, MotocStop,
+    SetMotocSettings { motoc: crate::motoc::Settings },
     SaveRelaxedPose { pose: crate::stay_aligned::PoseKind },
     ClearStayAligned,
     SetHaritoraSettings { tracker_mac: [u8;6], hardware: crate::haritorax::settings::HardwareSettings },
@@ -29,7 +31,7 @@ fn parse_request(bytes: &[u8]) -> anyhow::Result<Command> {
     // request envelope separately so misspelled or irrelevant payloads fail.
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
-    struct Request { command: String, settings: Option<crate::settings::TrackingSettings>, pose: Option<crate::stay_aligned::PoseKind>,
+    struct Request { command: String, motoc: Option<crate::motoc::Settings>, settings: Option<crate::settings::TrackingSettings>, pose: Option<crate::stay_aligned::PoseKind>,
         tracker_mac:Option<[u8;6]>, hardware:Option<crate::haritorax::settings::HardwareSettings> }
     let request: Request = serde_json::from_slice(bytes)?;
     anyhow::ensure!(request.command == "set_settings" || request.settings.is_none(),
@@ -38,6 +40,7 @@ fn parse_request(bytes: &[u8]) -> anyhow::Result<Command> {
         "pose is only accepted for save_relaxed_pose");
     anyhow::ensure!(request.command == "set_haritora_settings" || (request.tracker_mac.is_none() && request.hardware.is_none()),
         "hardware and tracker_mac are only accepted for set_haritora_settings");
+    anyhow::ensure!(request.command == "set_motoc_settings" || request.motoc.is_none(), "motoc is only accepted for set_motoc_settings");
     Ok(serde_json::from_slice(bytes)?)
 }
 
@@ -136,5 +139,8 @@ mod tests {
         assert!(parse_request(br#"{"command":"save_relaxed_pose","pose":"typo"}"#).is_err());
         assert!(parse_request(br#"{"command":"save_relaxed_pose"}"#).is_err());
         assert!(parse_request(br#"{"command":"yaw_reset","pose":"standing"}"#).is_err());
+        assert!(parse_request(br#"{"command":"motoc_continue","motoc":{}}"#).is_err());
+        assert!(parse_request(br#"{"command":"set_motoc_settings","motoc":{"mode":"typo"}}"#).is_err());
+        assert!(matches!(parse_request(br#"{"command":"set_motoc_settings","motoc":{"mode":"anchors"}}"#).unwrap(), Command::SetMotocSettings{..}));
     }
 }

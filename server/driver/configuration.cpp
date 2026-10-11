@@ -197,6 +197,19 @@ configuration::configuration()
 		if (auto it = json.find("debug-gui"); it != json.end())
 			debug_gui = *it;
 
+		if (auto it = json.find("xrizer-auto-detect"); it != json.end())
+			xrizer_auto_detect = *it;
+        if (auto it = json.find("tracking-mode"); it != json.end())
+        {
+            const auto mode = it->get<std::string>();
+            if (mode != "slimevr" && mode != "motoc")
+                throw std::runtime_error("tracking-mode must be slimevr or motoc");
+#if !WIVRN_FEATURE_STEAMVR_LIGHTHOUSE
+            if (mode == "motoc")
+                throw std::runtime_error("Lighthouse/Motoc support was not built");
+#endif
+            tracking_mode = mode;
+        }
 		if (auto it = json.find("use-steamvr-lh"); it != json.end())
 			use_steamvr_lh = *it;
 

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "title": "AVC Main CQP 24 \u2014 experimental A/B, uncapped",
+  "requires_cqp_branch": true,
+  "host_config": {
+    "encoder": {
+      "encoder": "qsv",
+      "codec": "h264",
+      "options": {
+        "async_depth": "1",
+        "preset": "veryfast",
+        "look_ahead_depth": "0",
+        "forced_idr": "1",
+        "low_power": "1",
+        "low_delay_brc": "0",
+        "look_ahead": "0",
+        "rate_control": "cqp",
+        "qp": "24"
+      }
+    },
+    "bit-depth": 8,
+    "tcp-only": false
+  },
+  "headset_settings": {
+    "instructions_only": true,
+    "bitrate_mbps": null,
+    "refresh_rate_hz": 90,
+    "foveation_percent": 75,
+    "codec": "H.264",
+    "ten_bit_color": false,
+    "low_latency_decoding": true,
+    "application_spacewarp": false,
+    "render_resolution": "Keep current; expected baseline 576x640 encoded pixels per eye"
+  },
+  "notes": [
+    "CQP-capable branch required. No aggregate bitrate cap or validated total traffic prediction. Earlier single-eye synthetic measurements exclude real stereo/alpha behavior; alpha no longer receives the CBR 1.23% budget share. Content and keyframes determine output rate.",
+    "Host options apply equally to left eye, right eye and alpha. Host CBR configurations are identical across bitrate profiles; the actual difference is the required headset bitrate setting.",
+    "Host currently supplies max_b_frames=0 and GOP=240. Preset does not change either.",
+    "Encoder profile: HEVC Main or H.264 Main; pixel format 8-bit 4:2:0. Target is the selected Intel Arc A770; no brittle render-node override."
+  ]
+}

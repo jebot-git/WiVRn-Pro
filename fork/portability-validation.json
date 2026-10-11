@@ -1,0 +1,39 @@
+{
+  "base": "84fad67091f36a0343e090388ad8708b258420f3",
+  "branch": "feature/standalone-portability",
+  "date": "2026-10-11",
+  "build": {
+    "server_and_openxr": "passed",
+    "nvenc": true,
+    "vaapi": true,
+    "qsv": true,
+    "lighthouse": true,
+    "warnings_as_errors": true,
+    "staged_install": "passed"
+  },
+  "checks": {
+    "fork/test-offline.sh": "passed; existing optional subtitle dependency test skipped",
+    "Shora Cargo workspace": "148 tests passed including simulated Motoc readiness/reaping",
+    "Motoc Cargo workspace": "5 tests passed",
+    "WayVR Cargo tests": "50 tests passed including both calibration layouts",
+    "portable GUI controls": "3 tests passed, plus original 17 dashboard tests",
+    "xrizer_discovery_test.cpp": "passed",
+    "cqp_rate_control_test.cpp": "passed",
+    "tracking_worker_smoke.py": "passed",
+    "motoc_worker_smoke.py": "passed",
+    "dashboard_dbus_smoke.py": "passed on isolated mock bus",
+    "wayvr_package.py": "passed including Motoc and profile checks",
+    "source integrity": "Motoc and WayVR pins verified"
+  },
+  "environment_notes": [
+    "Used existing source dependency caches read-only for CMake.",
+    "Local libinput runtime-only installation needed a build-local linker symlink; packaging expects libinput development libraries.",
+    "No live service changes, deployment, headset connection or GPU encoding performed."
+  ],
+  "hardware_validation_pending": [
+    "NVIDIA and AMD encode output/performance",
+    "Lighthouse reconnect and driver compatibility",
+    "Rigid calibration accuracy",
+    "Room anchor accuracy, drift and relocalization latency"
+  ]
+}

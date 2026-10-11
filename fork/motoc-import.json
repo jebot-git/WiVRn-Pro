@@ -1,0 +1,35 @@
+{
+  "source": "https://github.com/galister/motoc",
+  "head": "e9d4a407f643df452a91d8bf3868c701d0541250",
+  "license": "GPL-3.0-only",
+  "sha256": {
+    ".gitignore": "9717e16194701d9aab9c87869d6571dc9ba344857310465603b5d7e9c8d41e9f",
+    "Cargo.lock": "aa7240b030b78b5c24f8699fbd43690ab23a3ce23db060f76e31e4d13463f61b",
+    "Cargo.toml": "3f090c7ac3fd7e017d08a80657d65f1179b41550a7957fa4b906665cffdfaa5b",
+    "LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "README.md": "85d0721c6240ec66d4c47b61a27297fe7ccb0cb1830324ddb6b7d1e532da2c10",
+    "libmotoc/Cargo.toml": "6e88b382fc48dbe0320e093f1f9633dd86cee825bee528293f4ce4d26f6cd1cf",
+    "libmotoc/src/calibrator/floor.rs": "ec058f2f0408f97096a0f8599de754e94e21e2baf965a9632ed4842080024282",
+    "libmotoc/src/calibrator/mod.rs": "74b201af92f8c1e36db415f6c1ee3a5f434bfa54415b0d5d0427aada32b9c3a6",
+    "libmotoc/src/calibrator/offset.rs": "97aa215b70affe1365e257bb5abbb342a6f9149117a75def1046ce2910188dbf",
+    "libmotoc/src/calibrator/recenter.rs": "93bf2b453c7c882367e1ac33e83ccb6aa19461a581c33bd20bfd7d44f8137e3a",
+    "libmotoc/src/calibrator/sampled.rs": "a6a167325a74faf8f314f498621447c5cd5dd85f8d8602f817381429ddcd14d6",
+    "libmotoc/src/common.rs": "188e9d9a6854a06d21864cdfd1b2dd7daa9651815c1986f502768caf8fd2a5ff",
+    "libmotoc/src/error.rs": "7cd79c58e25f68c29c71d0e06213f3b07e81a0b42a2fb3b9a1c60df3a858d565",
+    "libmotoc/src/helpers_xr.rs": "6ba0d1d2140fdea80452c38405457642cedd7a33ef92ae8dd0b4510abfb958d3",
+    "libmotoc/src/lib.rs": "f914266a887eb0e76e0b82db0c650199039664eeb27983f79e8813ad9dd5e723",
+    "libmotoc/src/test.rs": "0895fdacd65e5c668062a03a34ccd09367d8e4b54052c268cb535ce3f1c526c0",
+    "libmotoc/src/transformd.rs": "0010cd758e5bea9604d23360e3d0848d2a2662b6c0763fb15f4feab5a40ef960",
+    "motoc/Cargo.toml": "41ff780a87ad58ffe60194ecb18ec081d7494ad934c9562ad51c091e6f34356f",
+    "motoc/src/logbridge.rs": "36303e8fc78f6d818539735189c1c1ff227decace3c4121bca784c2039a6d852",
+    "motoc/src/main.rs": "f34127a530fa0c8c13d40976da7535d3e6884779215bc26afe9b8abf8eabd5e4",
+    "motoc/src/tui.rs": "718c4c2cc23e998de9943db94bc46dd81f0c55e3c6fb22ce508a09a8ac840fa8"
+  },
+  "fork_sha256": {
+    ".gitignore": "306fd52e74fca6746e12acc750f232de15e71da917756a1270d74c91f5eb7368",
+    "Cargo.lock": "5ecb555a61c62207996a2a6c3a1b60bde473ff99baa63f95ea7d258319a13235",
+    "motoc/Cargo.toml": "195e18ab86f1b7bb838add842a14e868453b485bf26f99abae729ec1d8e0aedc",
+    "motoc/src/anchor.rs": "4ed4fcf6a284771f782439183effa28ba2749d7e669cee58171c085f63fd17dd",
+    "motoc/src/main.rs": "61c57dd18ca491260197ba27714744fadc97e3608e29e035ee37a357213029f1"
+  }
+}

@@ -14,7 +14,7 @@
 #include <unistd.h>
 namespace wivrn
 {
-tracking_worker::tracking_worker()
+tracking_worker::tracking_worker(std::string mode) : tracking_mode(std::move(mode))
 {
 	auto runtime = std::getenv("XDG_RUNTIME_DIR");
 	auto dir = (runtime ? std::filesystem::path(runtime) : std::filesystem::path("/run/user") / std::to_string(getuid())) / "wivrn-pro";
@@ -42,6 +42,15 @@ void tracking_worker::spawn()
 		argv.push_back(arg.data());
 	argv.push_back(nullptr);
 	auto env = g_get_environ();
+    env = g_environ_setenv(env, "WIVRN_TRACKING_MODE", tracking_mode.c_str(), TRUE);
+#ifdef WIVRN_MOTOC_BUILD_PATH
+    auto executable = std::filesystem::read_symlink("/proc/self/exe");
+    auto motoc = executable.parent_path() / "motoc/cargo/release/motoc";
+    if (!std::filesystem::exists(motoc)) motoc = WIVRN_MOTOC_INSTALL_PATH;
+    env = g_environ_setenv(env, "WIVRN_MOTOC_EXECUTABLE", motoc.c_str(), TRUE);
+#endif
+    // libmonado resolves the matching library through this runtime's manifest.
+    env = g_environ_unsetenv(env, "LIBMONADO_PATH");
 	env = g_environ_setenv(env, "XR_RUNTIME_JSON", manifest.c_str(), TRUE);
 	env = g_environ_setenv(env, "WIVRN_SPATIAL_SOCKET", spatial_path.c_str(), TRUE);
 	GError * error = nullptr;

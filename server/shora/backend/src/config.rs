@@ -176,6 +176,7 @@ pub struct AssignmentFile {
 #[derive(Deserialize, Default, Debug, Clone)]
 #[serde(default, deny_unknown_fields)]
 pub struct FileConfig {
+    pub motoc: crate::motoc::Settings,
     pub tracker_port: Option<u16>,
     pub solarxr_socket: Option<String>,
     pub feeder_socket: Option<String>,
@@ -199,6 +200,7 @@ pub struct FileConfig {
 /// Resolved runtime configuration.
 #[derive(Debug, Clone)]
 pub struct Config {
+    pub motoc: crate::motoc::Settings,
     /// The exact startup profile used for persistent live tracking changes.
     pub config_path: Option<PathBuf>,
     pub tracker_port: u16,
@@ -224,6 +226,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            motoc: Default::default(),
             config_path: None,
             tracker_port: DEFAULT_TRACKER_PORT,
             solarxr_socket: default_solarxr_socket(),
@@ -273,6 +276,23 @@ impl Config {
         })().with_context(|| format!("Failed to save tracking settings to {}", path.display()))
     }
 
+    pub fn save_motoc_settings(&self, settings: &crate::motoc::Settings) -> anyhow::Result<()> {
+        use anyhow::Context;
+        use std::io::Write;
+        settings.validate()?;
+        let path = self.config_path.as_ref().context("No startup profile for Motoc settings")?;
+        let original = std::fs::read_to_string(path)?;
+        let _: FileConfig = toml::from_str(&original)?;
+        let mut document: toml_edit::DocumentMut = original.parse()?;
+        let value: toml_edit::DocumentMut = toml::to_string(settings)?.parse()?;
+        document["motoc"] = toml_edit::Item::Table(value.as_table().clone());
+        let mut tmp = tempfile::NamedTempFile::new_in(path.parent().context("Profile has no parent")?)?;
+        tmp.write_all(document.to_string().as_bytes())?;
+        tmp.as_file().sync_all()?;
+        anyhow::ensure!(std::fs::read_to_string(path)? == original, "Profile changed; retry saving");
+        tmp.persist(path)?;
+        Ok(())
+    }
     pub fn tracking_settings(&self) -> crate::settings::TrackingSettings {
         crate::settings::TrackingSettings { height_m: self.height_m, smoothing: self.smoothing,
             prediction: self.prediction, drift_correction: self.drift_correction, drift_amount: self.drift_amount, stay_aligned: self.stay_aligned }
@@ -364,6 +384,8 @@ impl Config {
     }
 
     fn apply_file(&mut self, f: FileConfig) -> anyhow::Result<()> {
+        f.motoc.validate()?;
+        self.motoc = f.motoc;
         self.stay_aligned = f.stay_aligned;
         if let Some(v) = f.drift_correction { self.drift_correction = v; }
         if let Some(v) = f.drift_amount { self.drift_amount = v; }
@@ -407,6 +429,17 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn motoc_settings_persist_without_changing_shora_tuning() {
+        let directory=tempfile::tempdir().unwrap(); let path=directory.path().join("profile.toml");
+        std::fs::write(&path,"# preserve\nheight_m = 1.75\n[face]\nenabled = false\n").unwrap();
+        let config=Config::load(&Cli::parse_from(["worker","--config",path.to_str().unwrap()])).unwrap();
+        let settings=crate::motoc::Settings { enabled:true, target:"LHR-123".into(),mode:crate::motoc::Mode::Anchors,..Default::default() };
+        config.save_motoc_settings(&settings).unwrap();
+        let reload=Config::load(&Cli::parse_from(["worker","--config",path.to_str().unwrap()])).unwrap();
+        assert_eq!(reload.motoc,settings); assert_eq!(reload.height_m,1.75);
+        assert!(std::fs::read_to_string(&path).unwrap().contains("# preserve"));
+    }
     #[test]
     fn live_tuning_and_all_relaxed_poses_survive_reload_without_overwriting_other_settings() {
         use crate::stay_aligned::{PoseKind, RelaxedPose};

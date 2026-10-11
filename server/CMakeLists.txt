@@ -1,6 +1,9 @@
 if(WIVRN_BUILD_SERVER)
     add_subdirectory(shora)
     add_subdirectory(wayvr)
+    if(WIVRN_FEATURE_STEAMVR_LIGHTHOUSE)
+        add_subdirectory(motoc)
+    endif()
 endif()
 set(U_GIT_TAG_CPP "${CMAKE_BINARY_DIR}/u_git_tag.cpp")
 
@@ -151,6 +154,12 @@ if (WIVRN_BUILD_SERVER)
 			utils/gpu_timestamp_pool.cpp
 		)
 
+    if(WIVRN_FEATURE_STEAMVR_LIGHTHOUSE)
+        add_dependencies(wivrn-server wivrn-motoc)
+        target_compile_definitions(wivrn-server PRIVATE
+            WIVRN_MOTOC_BUILD_PATH="${WIVRN_MOTOC_BUILD_PATH}"
+            WIVRN_MOTOC_INSTALL_PATH="${CMAKE_INSTALL_FULL_LIBEXECDIR}/wivrn-pro/motoc")
+    endif()
 	target_compile_features(wivrn-server PRIVATE cxx_std_20)
 	target_compile_definitions(wivrn-server PRIVATE VULKAN_HPP_NO_CONSTRUCTORS)
 
@@ -169,6 +178,10 @@ if (WIVRN_BUILD_SERVER)
 		target_link_libraries(wivrn-server PRIVATE drv_solarxr)
 	endif()
 
+
+	if(WIVRN_USE_NVENC)
+		target_sources(wivrn-server PRIVATE encoder/video_encoder_nvenc.cpp encoder/video_encoder_nvenc_shared_state.cpp)
+	endif()
 
 	if(WIVRN_USE_VAAPI OR WIVRN_USE_QSV)
 		target_sources(

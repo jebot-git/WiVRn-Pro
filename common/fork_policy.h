@@ -51,6 +51,10 @@ constexpr bool intel_arc(uint32_t vendor, uint32_t device)
 			return true;
 	return false;
 }
+constexpr bool hardware_gpu(uint32_t vendor, uint32_t device)
+{
+	return intel_arc(vendor, device) || vendor == 0x10de || vendor == 0x1002;
+}
 constexpr bool wifi_interface(std::string_view name)
 {
 	return name.starts_with("wlan");
@@ -61,7 +65,7 @@ constexpr bool quest_pro(std::string_view device, std::string_view manufacturer)
 }
 constexpr bool encoder(std::string_view name)
 {
-	return name.empty() || name == "vaapi" || name == "vulkan" || name == "qsv";
+	return name.empty() || name == "vaapi" || name == "vulkan" || name == "qsv" || name == "nvenc";
 }
 constexpr bool codec(std::string_view name)
 {

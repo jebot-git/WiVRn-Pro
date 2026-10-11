@@ -30,6 +30,9 @@
 #include <cmath>
 #include <string>
 
+#if WIVRN_USE_NVENC
+#include "video_encoder_nvenc.h"
+#endif
 #if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 #include "ffmpeg/video_encoder_va.h"
 #endif
@@ -134,6 +137,14 @@ std::unique_ptr<video_encoder> video_encoder::create(
 		}
 #else
 		throw std::runtime_error("Vulkan video encode not enabled");
+#endif
+	}
+	if (settings.encoder_name == encoder_nvenc)
+	{
+#if WIVRN_USE_NVENC
+		res = std::make_unique<video_encoder_nvenc>(wivrn_vk, settings, stream_idx);
+#else
+		throw std::runtime_error("NVENC was not built");
 #endif
 	}
 	if (settings.encoder_name == encoder_vaapi || settings.encoder_name == encoder_qsv)

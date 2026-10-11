@@ -15,7 +15,9 @@ static_assert(!quest_pro("eureka", "Oculus"));
 static_assert(!quest_pro("hollywood", "Oculus"));
 static_assert(!quest_pro("seacliff", "Pico"));
 static_assert(encoder("qsv") && encoder("vaapi") && encoder("vulkan") && encoder(""));
-static_assert(!encoder("nvenc") && !encoder("x264") && !encoder("raw"));
+static_assert(encoder("nvenc") && !encoder("x264") && !encoder("raw"));
 static_assert(codec("h264") && codec("h265") && !codec("av1") && !codec("raw"));
 static_assert(wifi_interface("wlan0") && !wifi_interface("lo") && !wifi_interface("usb0") && !wifi_interface("eth0"));
+static_assert(hardware_gpu(0x10de, 0x2684) && hardware_gpu(0x1002, 0x744c));
+static_assert(!hardware_gpu(0x8086, 0x4680) && !hardware_gpu(0x1234, 0x1111));
 int main() {}

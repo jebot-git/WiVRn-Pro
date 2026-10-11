@@ -138,63 +138,9 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 	static_xdevs[static_xdev_count++] = &gamepad_device.emplace(*this);
 
 	auto conf = configuration();
+    if (const auto * mode = std::getenv("WIVRN_TRACKING_MODE")) conf.tracking_mode = mode;
 
-#if WIVRN_FEATURE_STEAMVR_LIGHTHOUSE
 
-	auto use_steamvr_lh = conf.use_steamvr_lh || std::getenv("WIVRN_USE_STEAMVR_LH");
-	xrt_system_devices * lhdevs = NULL;
-
-	if (use_steamvr_lh)
-	{
-		if (conf.lh_stick_deadzone > 0.01f)
-			setenv("LH_STICK_DEADZONE", std::format("{:.2}", *conf.lh_stick_deadzone).c_str(), true);
-
-		if (conf.lh_max_extrapolation.has_value())
-			setenv("LH_MAX_EXTRAPOLATION_MS", std::format("{}", *conf.lh_max_extrapolation).c_str(), true);
-
-		U_LOG_W("=====================");
-		U_LOG_W("Disregard lighthousedb / chaperone related error messages from the lighthouse driver. These are irrelevant in case of WiVRn.");
-		U_LOG_W("If getting a SIGSEGV right after this, you are likely using an unsupported SteamVR version!");
-		U_LOG_W("=====================");
-		if (steamvr_lh_create_devices(nullptr, &lhdevs) == XRT_SUCCESS)
-		{
-			for (int i = 0; i < lhdevs->static_xdev_count; i++)
-			{
-				auto lhdev = lhdevs->static_xdevs[i];
-				switch (lhdev->device_type)
-				{
-					case XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER:
-						roles.left = static_xdev_count;
-						static_roles.hand_tracking.unobstructed.left = nullptr;
-						static_roles.hand_tracking.conforming.left = lhdev;
-						break;
-					case XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER:
-						roles.right = static_xdev_count;
-						static_roles.hand_tracking.unobstructed.right = nullptr;
-						static_roles.hand_tracking.conforming.right = lhdev;
-						break;
-					case XRT_DEVICE_TYPE_ANY_HAND_CONTROLLER:
-						if (roles.left == left_controller_index)
-						{
-							roles.left = static_xdev_count;
-							static_roles.hand_tracking.unobstructed.left = nullptr;
-							static_roles.hand_tracking.conforming.left = lhdev;
-						}
-						else if (roles.right == right_controller_index)
-						{
-							roles.right = static_xdev_count;
-							static_roles.hand_tracking.unobstructed.right = nullptr;
-							static_roles.hand_tracking.conforming.right = lhdev;
-						}
-						break;
-					default:
-						break;
-				}
-				static_xdevs[static_xdev_count++] = lhdev;
-			}
-		}
-	}
-#endif
 	if (get_info().eye_gaze || is_forced_extension("EXT_eye_gaze_interaction"))
 	{
 		// The tracker space needs to be attached to the head pose once the space overseer is created
@@ -245,7 +191,66 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 		}
 	}
 
+#if WIVRN_FEATURE_STEAMVR_LIGHTHOUSE
+
+	auto use_steamvr_lh = conf.tracking_mode == "motoc";
+	xrt_system_devices * lhdevs = NULL;
+
+	if (use_steamvr_lh)
+	{
+		if (conf.lh_stick_deadzone > 0.01f)
+			setenv("LH_STICK_DEADZONE", std::format("{:.2}", *conf.lh_stick_deadzone).c_str(), true);
+
+		if (conf.lh_max_extrapolation.has_value())
+			setenv("LH_MAX_EXTRAPOLATION_MS", std::format("{}", *conf.lh_max_extrapolation).c_str(), true);
+
+		U_LOG_W("=====================");
+		U_LOG_W("Disregard lighthousedb / chaperone related error messages from the lighthouse driver. These are irrelevant in case of WiVRn.");
+		U_LOG_W("If getting a SIGSEGV right after this, you are likely using an unsupported SteamVR version!");
+		U_LOG_W("=====================");
+		if (steamvr_lh_create_devices(nullptr, &lhdevs) == XRT_SUCCESS)
+		{
+			lighthouse_devices = lhdevs;
+			for (int i = 0; i < lhdevs->static_xdev_count && static_xdev_count < ARRAY_SIZE(static_xdevs); i++)
+			{
+				auto lhdev = lhdevs->static_xdevs[i];
+				switch (lhdev->device_type)
+				{
+					case XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER:
+						roles.left = static_xdev_count;
+						static_roles.hand_tracking.unobstructed.left = nullptr;
+						static_roles.hand_tracking.conforming.left = lhdev;
+						break;
+					case XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER:
+						roles.right = static_xdev_count;
+						static_roles.hand_tracking.unobstructed.right = nullptr;
+						static_roles.hand_tracking.conforming.right = lhdev;
+						break;
+					case XRT_DEVICE_TYPE_ANY_HAND_CONTROLLER:
+						if (roles.left == left_controller_index)
+						{
+							roles.left = static_xdev_count;
+							static_roles.hand_tracking.unobstructed.left = nullptr;
+							static_roles.hand_tracking.conforming.left = lhdev;
+						}
+						else if (roles.right == right_controller_index)
+						{
+							roles.right = static_xdev_count;
+							static_roles.hand_tracking.unobstructed.right = nullptr;
+							static_roles.hand_tracking.conforming.right = lhdev;
+						}
+						break;
+					default:
+						break;
+				}
+				static_xdevs[static_xdev_count++] = lhdev;
+			}
+		}
+	}
+#endif
 #if WIVRN_FEATURE_SOLARXR
+    if (conf.tracking_mode == "slimevr")
+    {
 	uint32_t num_devs = solarxr_device_create_xdevs(static_cast<xrt_device>(hmd).tracking_origin, &static_xdevs[static_xdev_count], ARRAY_SIZE(static_xdevs) - static_xdev_count);
 	if (num_devs != 0)
 	{
@@ -253,6 +258,7 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 		solarxr_device_set_feeder_devices(static_roles.body, static_xdevs, static_xdev_count);
 	}
 	static_xdev_count += num_devs;
+    }
 #endif
 
 	if (roles.left >= 0)
@@ -289,9 +295,19 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 wivrn_session::~wivrn_session()
 {
 #if WIVRN_FEATURE_SOLARXR
-	solarxr_device_clear_feeder_devices(static_roles.body);
+    if (const auto * mode = std::getenv("WIVRN_TRACKING_MODE"); !mode || std::string_view(mode) == "slimevr")
+	    solarxr_device_clear_feeder_devices(static_roles.body);
 #endif
 
+    if (lighthouse_devices)
+    {
+        // The Lighthouse system owns its driver context and devices. Remove our
+        // aliases before destroying it, exactly once, at runtime teardown.
+        for (auto & device : static_xdevs)
+            for (uint32_t i = 0; i < lighthouse_devices->static_xdev_count; ++i)
+                if (device == lighthouse_devices->static_xdevs[i]) device = nullptr;
+        xrt_system_devices_destroy(&lighthouse_devices);
+    }
 	for (size_t i = 0; i < ARRAY_SIZE(static_xdevs); i++)
 	{
 		xrt_device_destroy(&static_xdevs[i]);

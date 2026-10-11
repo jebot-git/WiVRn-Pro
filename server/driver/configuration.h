@@ -56,7 +56,9 @@ struct configuration
 	std::optional<std::array<float, 3>> grip_surface;
 	std::vector<std::string> application;
 	bool debug_gui = false;
+	std::string tracking_mode = "slimevr";
 	bool use_steamvr_lh = false;
+	bool xrizer_auto_detect = false;
 	std::optional<int64_t> lh_max_extrapolation;
 	std::optional<float> lh_stick_deadzone;
 	bool hid_forwarding = false;

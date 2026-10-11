@@ -16,12 +16,32 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QFormLayout, 
     QMenu, QSystemTrayIcon, QScrollArea)
 from shora_qt import HubWindow, STYLE
 from tracking_panel import DEFAULTS
+from motoc_panel import MotocPanel
 
 SERVICE = 'io.github.wivrn.Server'
 OBJECT = '/io/github/wivrn/Server'
 CONFIG_HOME = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
 PROFILE = CONFIG_HOME / 'wivrn-pro' / 'shora.toml'
 SOCKET = Path(os.environ.get('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}')) / 'wivrn-pro' / 'ShoraControl'
+
+
+def encoder_presets():
+    here = Path(__file__).resolve()
+    for directory in (here.parents[1] / 'encoder-presets', here.parents[2] / 'fork/encoder-presets'):
+        if (directory / 'profiles').is_dir():
+            return {p.stem: json.loads(p.read_text()) for p in sorted((directory / 'profiles').glob('*.json'))}
+    return {}
+
+
+def portable_preset(profile, backend):
+    host = copy.deepcopy(profile['host_config'])
+    encoder = host['encoder']
+    encoder['encoder'] = backend
+    if backend != 'qsv':
+        # QSV's private AVOptions must never leak into VAAPI or NVENC.
+        options = encoder.get('options', {})
+        encoder['options'] = {k: v for k, v in options.items() if k in ('rate_control', 'qp')}
+    return host
 
 
 def atomic_save(path, text, expected):
@@ -165,15 +185,36 @@ class StreamingPanel(QWidget):
         self.status = QLabel('WiVRn service is stopped')
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
+        self.presets = encoder_presets()
+        self.preset_backend = QComboBox(); self.preset_backend.addItems(["qsv", "nvenc", "vaapi"])
+        self.preset = QComboBox()
+        self.preset.addItem('Choose an encoder preset', None)
+        for name, profile in self.presets.items():
+            self.preset.addItem(profile['title'], name)
+        self.preset_qp = QSpinBox(); self.preset_qp.setRange(1, 51); self.preset_qp.setValue(24)
+        self.preset_qp.setPrefix('QP '); self.preset_qp.setEnabled(False)
+        self.preset_qp.setToolTip('CQP quantizer: lower values improve quality and increase uncapped traffic.')
+        self.load_preset = QPushButton('Load preset')
+        self.load_preset.setEnabled(False)
+        preset_row = QHBoxLayout()
+        preset_row.addWidget(self.preset, 1); preset_row.addWidget(self.preset_backend); preset_row.addWidget(self.preset_qp); preset_row.addWidget(self.load_preset)
+        layout.addLayout(preset_row)
+        self.preset_notice = QLabel('Load a preset into the editor, then save for the next streaming session.')
+        self.preset_notice.setWordWrap(True); layout.addWidget(self.preset_notice)
+        self.preset.currentIndexChanged.connect(self.preset_selected)
+        self.load_preset.clicked.connect(self.load_encoder_preset)
         form = QFormLayout()
         self.encoder = QComboBox()
-        self.encoder.addItems(['Preserve current layout', 'auto', 'vaapi', 'vulkan', 'qsv'])
+        self.encoder.addItems(['Preserve current layout', 'auto', 'vaapi', 'vulkan', 'qsv', 'nvenc'])
         self.encoder.setToolTip('Selecting an encoder replaces the encoder layout. QSV requires a QSV-enabled server build.')
         self.codec = QComboBox()
         self.codec.addItems(['Preserve current codec', 'h264', 'h265'])
         self.depth = QComboBox()
         self.depth.addItems(['Use default', '8', '10'])
         self.tcp = QCheckBox('Use TCP for streaming')
+        self.lighthouse = QComboBox(); self.lighthouse.addItems(['SlimeVR bridge', 'Motoc / Lighthouse bridge'])
+        self.xrizer = QComboBox(); self.xrizer.addItems(['Default compatibility discovery', 'Auto-detect system xrizer', 'Manual compatibility path', 'Disabled'])
+        self.xrizer_path = QLineEdit(); self.xrizer_path.setPlaceholderText('/path/to/xrizer')
         self.hid = QCheckBox('Forward input devices')
         self.debug = QCheckBox('Enable runtime debug UI')
         self.wayvr = QCheckBox('Run bundled upstream WayVR with each VR session')
@@ -181,7 +222,7 @@ class StreamingPanel(QWidget):
         self.hostname = QLineEdit()
         self.port = QSpinBox(); self.port.setRange(1, 65535); self.port.setValue(9757)
         for label, control in [('Encoder', self.encoder), ('Codec', self.codec), ('Bit depth', self.depth),
-                               ('Hostname', self.hostname), ('Port', self.port), ('', self.tcp), ('', self.hid), ('', self.debug), ('', self.wayvr), ('', self.wayvr_dashboard)]:
+                               ('Tracking bridge mode (restart required)', self.lighthouse), ('OpenVR runtime', self.xrizer), ('Manual runtime path', self.xrizer_path), ('Hostname', self.hostname), ('Port', self.port), ('', self.tcp), ('', self.hid), ('', self.debug), ('', self.wayvr), ('', self.wayvr_dashboard)]:
             form.addRow(label, control)
         layout.addLayout(form)
         layout.addWidget(QLabel('Full configuration JSON (application, OpenVR, custom encoder layouts and other options)'))
@@ -216,10 +257,53 @@ class StreamingPanel(QWidget):
         self.raw.textChanged.connect(self.changed)
         for widget in (self.encoder, self.codec, self.depth): widget.currentIndexChanged.connect(self.changed)
         for widget in (self.tcp, self.hid, self.debug, self.wayvr, self.wayvr_dashboard): widget.toggled.connect(self.changed)
+        self.lighthouse.currentIndexChanged.connect(self.changed)
+        self.xrizer.currentIndexChanged.connect(self.changed)
+        self.xrizer_path.textEdited.connect(self.changed)
         self.hostname.textEdited.connect(self.changed); self.port.valueChanged.connect(self.changed)
 
     def changed(self, *_):
         if not self.loading: self.dirty = True
+
+    def preset_selected(self, *_):
+        profile = self.presets.get(self.preset.currentData())
+        self.load_preset.setEnabled(profile is not None)
+        cqp = bool(profile and profile['requires_cqp_branch'])
+        self.preset_qp.setEnabled(cqp)
+        if not profile:
+            self.preset_notice.setText('Load a preset into the editor, then save for the next streaming session.')
+            return
+        if cqp:
+            self.preset_qp.setValue(int(profile['host_config']['encoder']['options']['qp']))
+        client = profile['headset_settings']
+        rate = ('CQP is uncapped; the headset bitrate slider has no effect.' if cqp else
+                f"Set the headset bitrate to {client['bitrate_mbps']} Mbit/s; this host preset cannot set it.")
+        self.preset_notice.setText(f"{rate} Headset: {client['refresh_rate_hz']} Hz, {client['foveation_percent']}% foveation, "
+                                  f"{client['codec']}, 8-bit, low-latency decoding on, SpaceWarp off. Keep render resolution unchanged. "
+                                  'Save and reconnect to apply.')
+
+    def load_encoder_preset(self):
+        profile = self.presets.get(self.preset.currentData())
+        if not profile: return
+        try:
+            # Fold unsaved controls into the draft before replacing encoder options.
+            value = self.configuration()
+            host = portable_preset(profile, self.preset_backend.currentText())
+            if profile['requires_cqp_branch']:
+                host['encoder']['options']['qp'] = str(self.preset_qp.value())
+            value.update(host)
+            self.loading = True
+            self.raw.setPlainText(json.dumps(value, indent=2))
+            self.encoder.setCurrentIndex(0); self.codec.setCurrentIndex(0)
+            self.depth.setCurrentIndex({8: 1, 10: 2}.get(value.get('bit-depth'), 0))
+            self.tcp.setChecked(value.get('tcp-only', False))
+            self.initial_controls = self.controls()
+            self.loading = False
+            self.dirty = True
+            self.notice.setText('Preset loaded into the editor. Save WiVRn settings, then reconnect the headset.')
+        except (ValueError, TypeError, KeyError) as error:
+            self.loading = False
+            self.notice.setText(str(error))
 
     def saved(self):
         self.dirty = False
@@ -260,6 +344,10 @@ class StreamingPanel(QWidget):
         self.port.setValue(self.original.get('port', 9757))
         self.tcp.setChecked(self.original.get('tcp-only', False))
         self.hid.setChecked(self.original.get('hid-forwarding', False))
+        self.lighthouse.setCurrentIndex(1 if self.original.get('tracking-mode') == 'motoc' else 0)
+        compatibility = self.original.get('openvr-compat-path')
+        self.xrizer.setCurrentIndex(2 if isinstance(compatibility, str) else 3 if 'openvr-compat-path' in self.original else 1 if self.original.get('xrizer-auto-detect') else 0)
+        self.xrizer_path.setText(compatibility if isinstance(compatibility, str) else '')
         self.debug.setChecked(self.original.get('debug-gui', False))
         overlay = self.original.get('wayvr', {})
         if not isinstance(overlay, dict): overlay = {}
@@ -269,7 +357,7 @@ class StreamingPanel(QWidget):
         self.loading = False; self.dirty = False
 
     def controls(self):
-        return {'tcp-only': self.tcp.isChecked(), 'hid-forwarding': self.hid.isChecked(),
+        return {'tracking-mode': ['slimevr', 'motoc'][self.lighthouse.currentIndex()], 'compatibility-mode': self.xrizer.currentIndex(), 'compatibility-path': self.xrizer_path.text(), 'tcp-only': self.tcp.isChecked(), 'hid-forwarding': self.hid.isChecked(),
                 'debug-gui': self.debug.isChecked(), 'hostname': self.hostname.text(),
                 'port': self.port.value(), 'bit-depth': [None, 8, 10][self.depth.currentIndex()],
                 'wayvr-enabled': self.wayvr.isChecked(), 'wayvr-dashboard': self.wayvr_dashboard.isChecked()}
@@ -279,12 +367,21 @@ class StreamingPanel(QWidget):
         if not isinstance(value, dict): raise ValueError('Configuration must be a JSON object')
         for key, setting in self.controls().items():
             if setting != self.initial_controls[key]:
+                if key.startswith('compatibility-'): continue
                 if key.startswith('wayvr-'):
                     overlay = value.setdefault('wayvr', {})
                     if not isinstance(overlay, dict): raise ValueError('wayvr must be an object')
                     overlay[key.removeprefix('wayvr-')] = setting
                 elif setting is None: value.pop(key, None)
                 else: value[key] = setting
+        if any(self.controls()[key] != self.initial_controls[key] for key in ('compatibility-mode', 'compatibility-path')):
+            mode = self.xrizer.currentIndex()
+            value.pop('openvr-compat-path', None); value.pop('xrizer-auto-detect', None)
+            if mode == 1: value['xrizer-auto-detect'] = True
+            elif mode == 2:
+                if not self.xrizer_path.text().strip(): raise ValueError('Enter a compatibility runtime path')
+                value['openvr-compat-path'] = self.xrizer_path.text().strip()
+            elif mode == 3: value['openvr-compat-path'] = None
         if self.encoder.currentIndex():
             if self.encoder.currentText() == 'auto': value.pop('encoder', None)
             else: value['encoder'] = self.encoder.currentText()
@@ -336,6 +433,7 @@ class Dashboard(HubWindow):
         self.detach_button.clicked.disconnect()
         self.detach_button.clicked.connect(lambda: self.backend.service('restart'))
         self.tabs.insertTab(0, StreamingPanel(self.backend), 'WiVRn streaming')
+        self.tabs.addTab(MotocPanel(self.client), 'Motoc / Lighthouse')
         self.tabs.setCurrentIndex(0)
         self.logs.setPlaceholderText('Service logs: journalctl --user -u wivrn-pro.service\nTracking diagnostics and calibration messages appear below.')
         self.backend.failure.connect(self.show_error)

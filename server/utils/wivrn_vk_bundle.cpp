@@ -174,7 +174,7 @@ wivrn::vk_bundle::vk_bundle() :
 		auto index = debug_get_num_option_force_gpu_index();
 		auto supported = [](const auto & device) {
 			const auto p = device.getProperties();
-			return fork_policy::intel_arc(p.vendorID, p.deviceID);
+			return fork_policy::hardware_gpu(p.vendorID, p.deviceID);
 		};
 		if (index < 0)
 		{
@@ -185,12 +185,12 @@ wivrn::vk_bundle::vk_bundle() :
 					break;
 				}
 			if (index < 0)
-				throw std::runtime_error("No supported Intel Arc GPU found (this fork does not support Intel UHD, AMD, NVIDIA or software GPUs)");
+				throw std::runtime_error("No supported Intel Arc, AMD or NVIDIA GPU found");
 		}
 		if (size_t(index) >= phys_devices.size())
-			throw std::runtime_error("Forced Intel Arc GPU index is outside the device list");
+			throw std::runtime_error("Forced GPU index is outside the device list");
 		if (!supported(phys_devices[index]))
-			throw std::runtime_error("Selected GPU is not a supported Intel Arc device");
+			throw std::runtime_error("Selected GPU is not an Intel Arc, AMD or NVIDIA device");
 		physical_device = std::move(phys_devices[index]);
 	}
 

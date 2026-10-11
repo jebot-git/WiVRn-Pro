@@ -18,6 +18,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "encoder_settings.h"
+#include "rate_control.h"
 
 #include "driver/configuration.h"
 #include "driver/wivrn_session.h"
@@ -32,6 +33,9 @@
 
 #include "wivrn_config.h"
 
+#if WIVRN_USE_NVENC
+#include "video_encoder_nvenc.h"
+#endif
 #if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 #include "ffmpeg/video_encoder_va.h"
 #include <libavutil/ffversion.h>
@@ -91,6 +95,38 @@ class prober
 {
 	wivrn::vk_bundle & vk;
 	const from_headset::headset_info_packet & info;
+#if WIVRN_USE_NVENC
+	std::map<video_codec, bool> nvenc_support;
+
+	bool check_nvenc(video_codec codec)
+	{
+		if (auto it = nvenc_support.find(codec); it != nvenc_support.end())
+			return it->second;
+		try
+		{
+			video_encoder_nvenc test(
+			        vk,
+			        encoder_settings{
+			                .width = 800,
+			                .height = 800,
+			                .codec = codec,
+			                .fps = 60,
+			                .bitrate = 50'000'000,
+			                .bit_depth = 8,
+			        },
+			        0);
+			nvenc_support[codec] = true;
+			return true;
+		}
+		catch (std::exception & e)
+		{
+			nvenc_support[codec] = false;
+			U_LOG_I("nvenc not supported for %s", std::string(magic_enum::enum_name(codec)).c_str());
+			return false;
+		}
+	}
+#endif
+
 
 #if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 	std::map<std::pair<video_codec, bool>, bool> vaapi_support;
@@ -101,6 +137,8 @@ class prober
 			return it->second;
 		try
 		{
+			if (qsv && !fork_policy::intel_arc(vk.physical_device.getProperties().vendorID, vk.physical_device.getProperties().deviceID))
+				return false;
 			video_encoder_va test(
 			        vk,
 			        encoder_settings{
@@ -176,6 +214,19 @@ public:
 		std::erase_if(codecs, [&](auto codec) {
 			return (codec != h264 && codec != h265) || !std::ranges::contains(info.supported_codecs, codec);
 		});
+#if WIVRN_USE_NVENC
+        if (vk.physical_device.getProperties().vendorID == 0x10de && (config.name.empty() || config.name == encoder_nvenc))
+            for (auto codec: codecs)
+                if (check_nvenc(codec))
+                    return {encoder_nvenc, codec};
+#endif
+#if WIVRN_USE_VAAPI
+        // AMD defaults to VAAPI; retain the existing Arc encoder preference.
+        if (vk.physical_device.getProperties().vendorID == 0x1002 && config.name.empty())
+            for (auto codec: codecs)
+                if (check_vaapi(codec))
+                    return {encoder_vaapi, codec};
+#endif
 #if WIVRN_USE_QSV
 		if (config.name == encoder_qsv)
 			for (auto codec: codecs)
@@ -203,7 +254,7 @@ public:
 				if (check_vaapi(codec, true))
 					return {encoder_qsv, codec};
 #endif
-		throw std::runtime_error("No usable Intel Arc hardware encoder for the requested Quest Pro codec");
+		throw std::runtime_error("No usable hardware encoder for the requested Quest Pro codec");
 	}
 };
 } // namespace
@@ -230,6 +281,7 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 		dst.device = src.device;
 
 		std::tie(dst.encoder_name, dst.codec) = prober.select_encoder(src);
+        cqp_quantizer(dst.options, dst.encoder_name == encoder_qsv || dst.encoder_name == encoder_nvenc || dst.encoder_name == encoder_vaapi);
 	}
 
 	auto width = align(info.stream_eye_width, 64);
@@ -319,7 +371,17 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 	}
 
 	for (auto & i: res)
-		i.bit_depth = bit_depth.value_or(10);
+    {
+        i.bit_depth = bit_depth.value_or(10);
+#if WIVRN_USE_NVENC
+        if (i.encoder_name == encoder_nvenc)
+        {
+            const auto max = video_encoder_nvenc::get_max_size(bundle, i.codec);
+            if (i.width > max[0] || i.height > max[1])
+                throw std::runtime_error("Requested eye size exceeds NVENC limits; reduce headset resolution");
+        }
+#endif
+    }
 
 	split_bitrate(res, settings.bitrate_bps);
 	return res;

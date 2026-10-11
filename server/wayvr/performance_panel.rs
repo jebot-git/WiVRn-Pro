@@ -175,7 +175,7 @@ mod tests {
             wgui::palette::PALETTES[0].1.clone(),
         )
         .unwrap();
-        for path in ["gui/performance.xml", "gui/watch.xml"] {
+        for path in ["gui/performance.xml", "gui/watch.xml", "gui/watch-motoc.xml"] {
             let (mut layout, mut parser) = wgui::parser::new_layout_from_assets(
                 &wgui::parser::ParseDocumentParams {
                     globals: globals.clone(),

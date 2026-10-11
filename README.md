@@ -1,14 +1,18 @@
 # WiVRn Pro
 
-A WiVRn fork for **Meta Quest Pro over Wi-Fi and Intel Arc discrete GPUs**.
+A WiVRn fork for **Meta Quest Pro over Wi-Fi with Intel Arc, NVIDIA NVENC and AMD VAAPI**.
 WiVRn client, server, guided spatial capture and the complete current native Shora backend are
 one source tree. Both peers must be built from this branch; stock WiVRn clients
 use a different protocol. The standalone spatial bridge remains on `main`.
 
-- Intel Arc A/B and Arc Pro PCI IDs are explicitly accepted. Other GPUs, unknown
-  IDs, NVIDIA NVENC, software x264 and raw encoding are rejected. Vulkan Video
-  and VAAPI encode H.264/HEVC; optional FFmpeg QSV shares the selected Arc's
-  VAAPI surfaces. No offload to Intel UHD or another GPU.
+- Intel Arc retains Vulkan Video, VAAPI and optional QSV. NVIDIA defaults to
+  NVENC and AMD to VAAPI. Encoding stays on the selected Vulkan GPU; software
+  encoders and Intel UHD remain excluded. H.264/HEVC and Quest Pro restrictions
+  are unchanged. The Arc CBR/CQP presets also support NVENC and VAAPI.
+- An explicit **SlimeVR / Motoc Lighthouse** bridge-mode selector keeps the two
+  tracking paths mutually exclusive. Mode changes require a WiVRn restart.
+  Motoc includes rigid-tracker continuous calibration and experimental
+  room-anchor continuation after initial cross-space calibration.
 - Quest Pro (`seacliff`) is checked on the device and in the server handshake.
   No AV1, USB tethering, ADB reverse connection controls or desktop XR client.
 - Room capture saves up to 12 markers with a guided scan and reload verification.
@@ -29,9 +33,10 @@ when applied in the dashboard. The worker reads this same profile on restart.
 Save failures are reported without applying the change. Runtime reset offsets
 and learned correction history still need fresh calibration after restarting.
 
-WayVR's wrist controls use a 4×2 button grid, with Full reset and Mounting reset
+In SlimeVR mode, WayVR's wrist controls use a 4×2 button grid, with Full reset and Mounting reset
 in the last column. Both use a three-second countdown; press either reset button
 again to cancel. The wrist panel displays the result or the tracking worker's error.
+Motoc mode replaces these with Calibrate and Resume. See [portability and Motoc setup](fork/PORTABILITY.md).
 
 See [build and service setup](docs/building.md), [encoder configuration](docs/configuration.md),
 [spatial API and capture](fork/SPATIAL.md), [Shora integration](fork/SHORA.md),

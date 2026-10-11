@@ -9,7 +9,7 @@ connect to a headset or change running services.
 Requires CMake 3.28+, Ninja, a C++23 compiler, Vulkan headers 1.4.304+, OpenXR
 headers, Boost (locale/url/iostreams), OpenSSL, Eigen3, nlohmann-json, CLI11,
 Avahi, GLib, libnotify, librsvg, libarchive, libdrm, FFmpeg development libraries,
-shader tools, libudev and OpenXR loader development libraries, Python 3.11+ and Rust/Cargo. Separate Cargo.lock files pin Shora and the bundled upstream WayVR worker.
+shader tools, libudev and OpenXR loader development libraries, Python 3.11+ and Rust/Cargo. Separate Cargo.lock files pin Shora, WayVR and Motoc.
 WayVR additionally needs libinput, ALSA, fontconfig, PipeWire/SPA, Wayland, X11/XCB
 and xkbcommon (including X11) development libraries. Its GLSL shaders use shaderc;
 Cargo can build shaderc from source. Use a current Rust toolchain supporting the
@@ -30,8 +30,11 @@ hardware context without opening a GPU. Runtime also needs a compatible Intel
 media driver and oneVPL dispatcher/implementation. Encoding uses VAAPI surfaces
 on the same Arc as Vulkan. An explicit `qsv` selection fails if QSV is unavailable;
 it never silently selects a different backend. See [configuration](configuration.md).
-`WIVRN_SHORA_OFFLINE=ON` and `WIVRN_WAYVR_OFFLINE=ON` use only cached Cargo dependencies for each component. At least one of VAAPI,
-Vulkan Video and QSV must be enabled. NVENC/x264/Lighthouse ON is a configure error.
+`WIVRN_SHORA_OFFLINE=ON`, `WIVRN_MOTOC_OFFLINE=ON` and `WIVRN_WAYVR_OFFLINE=ON` use only cached Cargo dependencies for each component. At least one of VAAPI,
+Vulkan Video, QSV and NVENC must be enabled. NVENC and Lighthouse/Motoc build support default ON;
+use `WIVRN_USE_NVENC=OFF` or `WIVRN_FEATURE_STEAMVR_LIGHTHOUSE=OFF` to omit them.
+Lighthouse mode needs a compatible SteamVR Lighthouse driver installation and device USB permissions.
+Selecting xrizer for OpenVR does not supply that hardware driver. x264 remains unsupported.
 
 Artifacts: `build/server/server/wivrn-pro-server`,
 `build/server/openxr_wivrn-dev.json`, the corresponding runtime shared libraries,

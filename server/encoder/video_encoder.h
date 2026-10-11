@@ -43,6 +43,7 @@ struct encoder_settings;
 struct vk_bundle;
 class wivrn_session;
 
+inline const char * encoder_nvenc = "nvenc";
 inline const char * encoder_qsv = "qsv";
 inline const char * encoder_vaapi = "vaapi";
 inline const char * encoder_vulkan = "vulkan";

@@ -27,6 +27,10 @@ jobs:
         run: fork/test-offline.sh
       - name: Shora protocol and reconnect tests
         run: cargo test --workspace --locked --manifest-path server/shora/Cargo.toml
+      - name: Motoc source and anchor continuation tests (no XR session)
+        run: |
+          python3 fork/check-motoc-source.py
+          CARGO_TARGET_DIR="$PWD/build/motoc-tests" cargo test --locked --manifest-path server/motoc/upstream/Cargo.toml
       - name: Build server and OpenXR runtime
         run: fork/build-server.sh -DWIVRN_USE_QSV=${{ matrix.qsv }} -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - name: Upstream WayVR tests (no XR session)
@@ -38,6 +42,7 @@ jobs:
       - name: Integrated tracking worker and Qt IPC (simulated only)
         run: |
           python3 fork/tests/tracking_worker_smoke.py --server build/server/server/wivrn-pro-server
+          python3 fork/tests/motoc_worker_smoke.py --server build/server/server/wivrn-pro-server
           dbus-run-session -- python3 fork/tests/dashboard_dbus_smoke.py
   quest-pro:
     runs-on: ubuntu-24.04

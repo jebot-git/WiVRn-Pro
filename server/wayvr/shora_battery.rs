@@ -24,6 +24,8 @@ struct Tracker {
 }
 #[derive(Clone, Deserialize)]
 struct Status {
+    #[serde(default)]
+    tracking_mode: String,
     pid: u32,
     paused: bool,
     trackers: Vec<Tracker>,
@@ -135,7 +137,13 @@ fn battery_tiles(sample: Option<&(Instant, Status)>) -> Vec<BatteryTile> {
         .collect()
 }
 impl BatteryFeed {
-    pub fn request_reset(&self, kind: ResetKind) { self.reset.request(kind); }
+    pub fn motoc_mode(&self) -> bool {
+        self.state.read().unwrap().sample.as_ref().is_some_and(|(_, s)| s.tracking_mode == "motoc")
+    }
+    pub fn request_reset(&self, kind: ResetKind) {
+        let kind = if self.motoc_mode() { match kind { ResetKind::Full => ResetKind::MotocCalibrate, ResetKind::Mounting => ResetKind::MotocContinue, other => other } } else { kind };
+        self.reset.request(kind);
+    }
     pub fn reset_text(&self) -> String { self.reset.text() }
     pub fn new() -> Self {
         let state = Arc::new(RwLock::new(State::default()));
@@ -191,7 +199,8 @@ impl BatteryFeed {
             return false;
         }
         self.next_widget_check = Instant::now() + Duration::from_millis(500);
-        let keys = self.tiles().into_iter().map(|t| t.key).collect::<Vec<_>>();
+        let mut keys = self.tiles().into_iter().map(|t| t.key).collect::<Vec<_>>();
+        keys.push(if self.motoc_mode() {"mode:motoc"} else {"mode:slimevr"}.into());
         if self.widget_keys == keys {
             return false;
         }
@@ -274,6 +283,7 @@ mod tests {
     #[test]
     fn tiles_represent_physical_batteries_and_expire_without_losing_identity() {
         let mut status = Status {
+            tracking_mode: "slimevr".into(),
             pid: 1,
             paused: false,
             trackers: vec![],
@@ -326,6 +336,7 @@ mod tests {
             sample: Some((
                 Instant::now(),
                 Status {
+                    tracking_mode: "slimevr".into(),
                     pid: 1,
                     paused: false,
                     trackers: vec![Tracker {
@@ -366,6 +377,7 @@ mod tests {
     #[test]
     fn known_unknown_offline_low_and_overflow_match_existing_hooks() {
         let mut status = Status {
+            tracking_mode: "slimevr".into(),
             pid: 1,
             paused: false,
             trackers: vec![],
@@ -406,6 +418,7 @@ mod tests {
             sample: Some((
                 Instant::now() - MAX_AGE - Duration::from_secs(1),
                 Status {
+                    tracking_mode: "slimevr".into(),
                     pid: 1,
                     paused: false,
                     trackers: vec![],

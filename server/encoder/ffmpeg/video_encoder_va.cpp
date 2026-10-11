@@ -21,6 +21,9 @@
 // must be included before vulkan_raii
 
 #include "video_encoder_va.h"
+#include "fork_policy.h"
+#include "encoder/rate_control.h"
+#include "rate_control.h"
 
 #include "encoder/encoder_settings.h"
 
@@ -110,7 +113,7 @@ get_render_device(vk::raii::PhysicalDevice & physical_device)
 	std::filesystem::path path = "/dev/dri/renderD" + std::to_string(drm_props.renderMinor);
 	if (not std::filesystem::exists(path))
 	{
-		throw std::runtime_error("Selected Intel Arc DRM render node does not exist");
+		throw std::runtime_error("Selected GPU DRM render node does not exist");
 	}
 	return path;
 }
@@ -118,9 +121,9 @@ get_render_device(vk::raii::PhysicalDevice & physical_device)
 av_buffer_ptr make_drm_hw_ctx(vk::raii::PhysicalDevice & physical_device, const std::optional<std::string> & device)
 {
 	const auto render_device = get_render_device(physical_device);
-	// Vulkan and the media engine must be the SAME Arc, even with a device override.
+	// Vulkan and the media engine must be the SAME GPU, even with a device override.
 	if (!render_device || (device && !std::filesystem::equivalent(*device, *render_device)))
-		throw std::runtime_error("Encoder device must be the selected Intel Arc DRM render node");
+		throw std::runtime_error("Encoder device must be the selected GPU DRM render node");
 	AVBufferRef * hw_ctx;
 	int err = av_hwdevice_ctx_create(&hw_ctx, AV_HWDEVICE_TYPE_DRM, render_device ? render_device->c_str() : NULL, NULL, 0);
 	if (err)
@@ -182,6 +185,8 @@ video_encoder_va::video_encoder_va(wivrn::vk_bundle & vk,
         codec_settings{settings},
         cmd_pool{make_cmd_pool(vk, stream_idx)}
 {
+	if (use_qsv && !fork_policy::intel_arc(vk.physical_device.getProperties().vendorID, vk.physical_device.getProperties().deviceID))
+		throw std::runtime_error("QSV requires the selected Intel Arc GPU");
 #if !WIVRN_USE_QSV
 	if (use_qsv)
 		throw std::runtime_error("QSV encoding was not built");
@@ -609,9 +614,16 @@ void video_encoder_va::open_codec()
 		av_dict_set(&opts, "preset", "veryfast", 0);
 		av_dict_set(&opts, "low_delay_brc", "1", 0);
 	}
+    const auto qp = cqp_quantizer(codec_settings.options, codec_settings.codec == video_codec::h264 || codec_settings.codec == video_codec::h265);
+    if (qp)
+    {
+        if (use_qsv) av_dict_set(&opts, "low_delay_brc", "0", 0);
+        else { av_dict_set(&opts, "rc_mode", "CQP", 0); av_dict_set(&opts, "qp", std::to_string(*qp).c_str(), 0); }
+    }
 	for (auto option: codec_settings.options)
 	{
-		av_dict_set(&opts, option.first.c_str(), option.second.c_str(), 0);
+		if (option.first != "rate_control" && option.first != "qp")
+			av_dict_set(&opts, option.first.c_str(), option.second.c_str(), 0);
 	}
 
 	encoder_ctx->width = extent.width;
@@ -631,6 +643,7 @@ void video_encoder_va::open_codec()
 	encoder_ctx->hw_frames_ctx = av_buffer_ref(use_qsv ? qsv_frames.get() : vaapi_frame_ctx.get());
 	encoder_ctx->rc_max_rate = codec_settings.bitrate;
 	encoder_ctx->rc_buffer_size = int(codec_settings.bitrate / codec_settings.fps);
+    configure_rate_control(*encoder_ctx, qp, codec_settings.bitrate, codec_settings.fps);
 
 	err = avcodec_open2(encoder_ctx.get(), codec, &opts);
 	av_dict_free(&opts);
@@ -659,7 +672,7 @@ bool video_encoder_va::recover(unsigned attempt)
 	qsv_device.reset();
 #if WIVRN_USE_VAAPI
 	// Stay on VAAPI for the rest of this runtime session after fallback.
-	if (use_qsv && attempt >= 2)
+	if (use_qsv && attempt >= 2 && !cqp_quantizer(codec_settings.options, true))
 	{
 		use_qsv = false;
 		codec_settings.encoder_name = encoder_vaapi;
@@ -679,7 +692,8 @@ bool video_encoder_va::apply_pending_settings()
 {
 	const auto bitrate = pending_bitrate.exchange(0);
 	const auto fps = pending_framerate.exchange(0);
-	const bool changed = (bitrate && bitrate != codec_settings.bitrate) || (fps && fps != codec_settings.fps);
+	const auto qp = cqp_quantizer(codec_settings.options, true);
+	const bool changed = (!qp && bitrate && bitrate != codec_settings.bitrate) || (fps && fps != codec_settings.fps);
 	if (!changed)
 		return true;
 	if (bitrate)
@@ -693,8 +707,10 @@ bool video_encoder_va::apply_pending_settings()
 		request_reconfigure();
 		throw encoder_reconfiguration{};
 	}
-	encoder_ctx->bit_rate = codec_settings.bitrate;
-	encoder_ctx->rc_max_rate = codec_settings.bitrate;
+	if (!qp) {
+		encoder_ctx->bit_rate = codec_settings.bitrate;
+		encoder_ctx->rc_max_rate = codec_settings.bitrate;
+	}
 	encoder_ctx->framerate = AVRational{.num = int(codec_settings.fps * 1000), .den = 1000};
 	idr->reset();
 	return true;
