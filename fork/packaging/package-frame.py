@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--stage', type=Path, required=True)
     parser.add_argument('--runtime-archive', type=Path, required=True)
     parser.add_argument('--libktx', type=Path, help='Required when KTX is dynamically linked')
+    parser.add_argument('--ktx-license', type=Path, help='KTX distribution license notices')
     parser.add_argument('--openxr-loader', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
@@ -37,6 +38,8 @@ def main():
         require_arm64(binary)
     if args.libktx:
         require_arm64(args.libktx)
+        if not args.ktx_license or not args.ktx_license.is_file():
+            parser.error('--libktx requires --ktx-license')
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='frame-package-', dir=args.output.parent) as temp:
         bundle = Path(temp) / 'wivrn-pro-frame'
@@ -54,6 +57,8 @@ def main():
         shutil.copy2(source / 'fork/packaging/launch-wivrn-pro', bundle / 'launch-wivrn-pro')
         shutil.copy2(source / 'fork/STEAM-FRAME.md', bundle / 'README.md')
         shutil.copy2(source / 'COPYING', bundle / 'COPYING')
+        if args.ktx_license:
+            shutil.copy2(args.ktx_license, bundle / ('KTX-LICENSE' + args.ktx_license.suffix))
         with tarfile.open(args.runtime_archive) as runtime:
             runtime.extractall(bundle, filter='data')
         runtime = bundle / 'SteamLinuxRuntime_4-arm64'
