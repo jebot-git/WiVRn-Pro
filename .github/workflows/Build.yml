@@ -122,11 +122,22 @@ jobs:
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
         cd "$GITHUB_WORKSPACE/build"
         DESTDIR="$GITHUB_WORKSPACE/install" ninja install
+        install -m755 "$GITHUB_WORKSPACE/fork/packaging/launch-wivrn-pro" "$GITHUB_WORKSPACE/install/launch-wivrn-pro"
+        install -m644 "$GITHUB_WORKSPACE/fork/STEAM-FRAME.md" "$GITHUB_WORKSPACE/install/README.md"
+
+    - name: Package native ARM64 runtime and client
+      run: |
+        wget -O "$GITHUB_WORKSPACE/SteamLinuxRuntime_4-arm64.tar.xz" https://repo.steampowered.com/steamrt4/images/4.0.20260805.254769/SteamLinuxRuntime_4-arm64.tar.xz
+        python3 fork/packaging/package-frame.py \
+          --stage "$GITHUB_WORKSPACE/install" \
+          --runtime-archive "$GITHUB_WORKSPACE/SteamLinuxRuntime_4-arm64.tar.xz" \
+          --openxr-loader "$GITHUB_WORKSPACE/cmake-fetch/openxr_loader-build/src/loader/libopenxr_loader.so.1" \
+          --output "$GITHUB_WORKSPACE/wivrn-frame-client.tar.xz"
 
     - name: Archive
       uses: actions/upload-artifact@v7
       with:
-        name: wivrn-frame-client.zip
-        path: install/usr
+        name: wivrn-frame-client
+        path: wivrn-frame-client.tar.xz
         if-no-files-found: error
         retention-days: 30

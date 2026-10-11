@@ -6,4 +6,8 @@ cd "$(dirname "$0")/.."
 build_dir=${WIVRN_FRAME_BUILD_DIR:-build/frame}
 cmake --preset frame -B "$build_dir" "$@"
 cmake --build "$build_dir" --parallel "${BUILD_JOBS:-4}"
-if [[ -n ${DESTDIR:-} ]]; then cmake --install "$build_dir"; fi
+if [[ -n ${DESTDIR:-} ]]; then
+    cmake --install "$build_dir"
+    install -m755 fork/packaging/launch-wivrn-pro "$DESTDIR/launch-wivrn-pro"
+    install -m644 fork/STEAM-FRAME.md "$DESTDIR/README.md"
+fi

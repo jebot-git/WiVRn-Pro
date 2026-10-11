@@ -25,8 +25,10 @@ before starting calibration on Frame.
 
 ## Frame client and passthrough
 
-This is a **native Linux ARM64 client**, not an APK. Add its executable to Steam
-and launch it with the Steam Runtime/OpenXR loader. PipeWire provides audio;
+This is a **native Linux ARM64 client**, not an APK. Run `launch-wivrn-pro`, or
+add that script to Steam. It enters **Steam Linux Runtime 4.0 (ARM64)** before
+starting the client. The client release archive includes the matching ARM64 runtime.
+PipeWire provides audio;
 V4L2 provides H.264/HEVC decoding. Ten-bit selection follows decoder capabilities.
 The headset's system settings control refresh rate if it exposes only one rate.
 
@@ -37,6 +39,46 @@ It resets on the next session. Lobby passthrough and streamed alpha also use the
 existing compositing path. Arcturus support is conditional on its runtime exposing
 that blend mode: this does not implement raw camera capture or camera discovery.
 Frame spatial anchors stay unavailable until a suitable API is implemented.
+
+### Startup library errors
+
+The original `frame.1` launcher ran directly against SteamOS libraries. Errors
+mentioning `GLIBC_2.40` in `libmvec.so.1` and `OPENSSL_3.4.0` in `libcrypto.so.3`
+mean that this SDK-built client was launched outside its required runtime.
+For the original archive, if the ARM64 runtime is installed in Steam, run this
+from the extracted `wivrn-pro-frame` folder:
+
+```sh
+PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1 \
+  "$HOME/.steam/root/steamapps/common/SteamLinuxRuntime_4-arm64/run" -- \
+  "$PWD/launch-wivrn-pro"
+```
+
+The corrected launcher first uses the bundled `SteamLinuxRuntime_4-arm64`, then
+looks for that native runtime in the default Steam library. For a separate
+installation, use
+`WIVRN_STEAM_RUNTIME=/path/to/SteamLinuxRuntime_4-arm64 ./launch-wivrn-pro`.
+Extract the complete release archive and launch its script from a terminal or
+as a native Steam shortcut. The launcher enters its own matching container.
+
+An `Exec format error` from `pressure-vessel-wrap` after using
+`SteamLinuxRuntime_4/run` means the x86 runtime launcher was selected on ARM64.
+`SteamLinuxRuntime_4` and `SteamLinuxRuntime_4-arm64` are separate Valve depots.
+The ARM64 helper directory inside the x86 depot is for emulation and does not
+turn that depot's x86 userspace into a native ARM64 runtime. The launcher checks
+both the selected userspace and the helper ELF architecture before entering it.
+An already active x86 Steam Runtime container is rejected as well.
+
+Use the full `frame.2` client archive to avoid installing a separate runtime.
+Its bundled Valve runtime is pinned to `4.0.20260805.254769`, with its original
+license notices and a corresponding-source URL in `STEAM-RUNTIME-SOURCE.txt`.
+SteamOS system library changes are unnecessary. When launching from Steam,
+leave compatibility forcing disabled so the launcher selects the native runtime.
+
+The tracked launcher is `fork/packaging/launch-wivrn-pro`. Package staged client
+files with `fork/packaging/package-frame.py`, which verifies the Valve archive
+checksum and ARM64 binaries and includes the runtime and local KTX/OpenXR loader.
+These changes address startup packaging; headset streaming still needs a retest.
 
 ## Experimental PyroWave
 
@@ -130,7 +172,9 @@ References: [Valve native-engine guidance](https://partner.steamgames.com/doc/st
   quality failure remains documented above. No Frame headset or Arcturus hardware
   validation, and no claimed confirmation of the stereo workaround.
 
-Development artifacts are in `build/artifacts/frame-dev/`. The Frame archive
+The original development artifacts are in `build/artifacts/frame-dev/`.
+The corrected client is published as `v26.9.2-frame.2`, with local artifacts in
+`build/artifacts/v26.9.2-frame.2/`. It uses the existing `frame.1` server packages
+and protocol `5971f5c36950a3a8`. The Frame archive
 includes a `launch-wivrn-pro` script and local KTX/OpenXR loader libraries; add the
-script to Steam. The APK uses the local Android development key. These builds
-are not a new published release and do not replace the portability release.
+script to Steam. The APK uses the local Android development key. The Frame prereleases do not replace the stable portability release.
