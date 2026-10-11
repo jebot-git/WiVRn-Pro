@@ -26,6 +26,16 @@ its other uncommitted work is not part of this branch.
    compatibility paths and explicit disable remain available. xrizer translates
    OpenVR applications; the Lighthouse hardware driver is a separate dependency.
 
+The Motoc tab also provides **Use Lighthouse controllers when available**
+(`motoc-lighthouse-controllers`, default true). Detected Index/Lighthouse
+controllers take their assigned hands; any remaining hand uses its headset
+controller. Disable this option to keep headset controllers with Lighthouse
+trackers. Save **WiVRn settings** and restart WiVRn to change controller roles.
+Pair and power controllers before startup. Their poses use the same calibrated
+Lighthouse origin as trackers, and headset tracking updates preserve their native
+interaction profiles and bindings. Controller selection stays fixed during a
+headset reconnect; this is not automatic switching on controller tracking loss.
+
 The wrist panel keeps its existing four-column layout. In Motoc bridge mode the
 last column becomes **Calib** / **Resume**, with Motoc instructions and the same
 three-second cancelable countdown. In SlimeVR mode it retains Full/Mounting reset.

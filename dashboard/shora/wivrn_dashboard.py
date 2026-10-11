@@ -174,6 +174,7 @@ class ServerClient(QObject):
 
 
 class StreamingPanel(QWidget):
+    save_message = Signal(str)
     def __init__(self, backend):
         super().__init__()
         self.backend = backend
@@ -213,6 +214,11 @@ class StreamingPanel(QWidget):
         self.depth.addItems(['Use default', '8', '10'])
         self.tcp = QCheckBox('Use TCP for streaming')
         self.lighthouse = QComboBox(); self.lighthouse.addItems(['SlimeVR bridge', 'Motoc / Lighthouse bridge'])
+        # Displayed in the Motoc tab; shares this editor's JSON draft and save path.
+        self.lighthouse_controllers = QCheckBox('Use Lighthouse controllers when available (e.g. Valve Index)', self)
+        self.lighthouse_controllers.hide()
+        self.lighthouse_controllers.setToolTip('In Motoc mode, use detected Lighthouse controllers for their assigned hands. '
+            'Other hands use headset controllers. Turn off to keep headset controllers while using Lighthouse trackers. Restart WiVRn to apply.')
         self.xrizer = QComboBox(); self.xrizer.addItems(['Default compatibility discovery', 'Auto-detect system xrizer', 'Manual compatibility path', 'Disabled'])
         self.xrizer_path = QLineEdit(); self.xrizer_path.setPlaceholderText('/path/to/xrizer')
         self.hid = QCheckBox('Forward input devices')
@@ -252,11 +258,12 @@ class StreamingPanel(QWidget):
         revoke = QPushButton('Forget selected headset'); revoke.clicked.connect(self.revoke_key); keyrow.addWidget(revoke)
         layout.addLayout(keyrow)
         backend.state.connect(self.update_state)
-        backend.failure.connect(self.notice.setText)
+        self.save_message.connect(self.notice.setText)
+        backend.failure.connect(self.save_message.emit)
         backend.saved.connect(self.saved)
         self.raw.textChanged.connect(self.changed)
         for widget in (self.encoder, self.codec, self.depth): widget.currentIndexChanged.connect(self.changed)
-        for widget in (self.tcp, self.hid, self.debug, self.wayvr, self.wayvr_dashboard): widget.toggled.connect(self.changed)
+        for widget in (self.tcp, self.hid, self.debug, self.wayvr, self.wayvr_dashboard, self.lighthouse_controllers): widget.toggled.connect(self.changed)
         self.lighthouse.currentIndexChanged.connect(self.changed)
         self.xrizer.currentIndexChanged.connect(self.changed)
         self.xrizer_path.textEdited.connect(self.changed)
@@ -307,7 +314,7 @@ class StreamingPanel(QWidget):
 
     def saved(self):
         self.dirty = False
-        self.notice.setText('Settings saved. They apply to the next streaming session.')
+        self.save_message.emit('WiVRn settings saved. Restart WiVRn to apply bridge/controller changes.')
 
     def update_state(self, state):
         self.apply.setEnabled(bool(state))
@@ -345,6 +352,7 @@ class StreamingPanel(QWidget):
         self.tcp.setChecked(self.original.get('tcp-only', False))
         self.hid.setChecked(self.original.get('hid-forwarding', False))
         self.lighthouse.setCurrentIndex(1 if self.original.get('tracking-mode') == 'motoc' else 0)
+        self.lighthouse_controllers.setChecked(self.original.get('motoc-lighthouse-controllers', True))
         compatibility = self.original.get('openvr-compat-path')
         self.xrizer.setCurrentIndex(2 if isinstance(compatibility, str) else 3 if 'openvr-compat-path' in self.original else 1 if self.original.get('xrizer-auto-detect') else 0)
         self.xrizer_path.setText(compatibility if isinstance(compatibility, str) else '')
@@ -358,6 +366,7 @@ class StreamingPanel(QWidget):
 
     def controls(self):
         return {'tracking-mode': ['slimevr', 'motoc'][self.lighthouse.currentIndex()], 'compatibility-mode': self.xrizer.currentIndex(), 'compatibility-path': self.xrizer_path.text(), 'tcp-only': self.tcp.isChecked(), 'hid-forwarding': self.hid.isChecked(),
+                'motoc-lighthouse-controllers': self.lighthouse_controllers.isChecked(),
                 'debug-gui': self.debug.isChecked(), 'hostname': self.hostname.text(),
                 'port': self.port.value(), 'bit-depth': [None, 8, 10][self.depth.currentIndex()],
                 'wayvr-enabled': self.wayvr.isChecked(), 'wayvr-dashboard': self.wayvr_dashboard.isChecked()}
@@ -398,7 +407,8 @@ class StreamingPanel(QWidget):
     def save(self):
         try:
             if self.original is not None: self.backend.save(self.configuration(), self.original)
-        except (ValueError, TypeError) as error: self.notice.setText(str(error))
+            else: self.save_message.emit('WiVRn settings are unavailable. Start the server first.')
+        except (ValueError, TypeError) as error: self.save_message.emit(str(error))
 
     def rename_key(self):
         if not self.keys.currentData(): return
@@ -432,8 +442,9 @@ class Dashboard(HubWindow):
         self.detach_button.setText('Restart WiVRn')
         self.detach_button.clicked.disconnect()
         self.detach_button.clicked.connect(lambda: self.backend.service('restart'))
-        self.tabs.insertTab(0, StreamingPanel(self.backend), 'WiVRn streaming')
-        self.tabs.addTab(MotocPanel(self.client), 'Motoc / Lighthouse')
+        streaming = StreamingPanel(self.backend)
+        self.tabs.insertTab(0, streaming, 'WiVRn streaming')
+        self.tabs.addTab(MotocPanel(self.client, streaming), 'Motoc / Lighthouse')
         self.tabs.setCurrentIndex(0)
         self.logs.setPlaceholderText('Service logs: journalctl --user -u wivrn-pro.service\nTracking diagnostics and calibration messages appear below.')
         self.backend.failure.connect(self.show_error)

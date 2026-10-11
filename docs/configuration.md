@@ -44,6 +44,14 @@ Select the mode in the GUI and restart WiVRn; the active mode cannot change
 mid-session. Motoc settings are saved under `[motoc]` in the Shora profile.
 See [Motoc and experimental anchor continuation](../fork/PORTABILITY.md).
 
+In the **Motoc / Lighthouse** tab, **Use Lighthouse controllers when available**
+enables Index and other Lighthouse controllers alongside the WiVRn headset.
+It defaults on (`"motoc-lighthouse-controllers": true`); each hand without a
+detected Lighthouse controller keeps its headset controller. Turn it off to use
+headset controllers with Lighthouse body trackers. Save **WiVRn settings**, then
+restart WiVRn; power on paired controllers before startup. This option only
+affects Motoc bridge mode and uses the same playspace calibration as trackers.
+
 `"xrizer-auto-detect": true` with no `openvr-compat-path` searches installed
 xrizer directories under `/usr/local/lib64`, `/usr/local/lib`, `/usr/lib64`,
 `/usr/lib`, common Debian multiarch directories and `/opt`. A candidate must

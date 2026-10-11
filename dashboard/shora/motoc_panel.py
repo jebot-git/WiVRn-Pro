@@ -2,12 +2,27 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFormLayout, QCheckBox, QLineEdit, QComboBox, QLabel, QPushButton, QHBoxLayout
 
 class MotocPanel(QWidget):
-    def __init__(self, client):
+    def __init__(self, client, streaming=None):
         super().__init__()
         self.client = client
         self.dirty = False
         self.loading = False
         layout = QVBoxLayout(self)
+        if streaming is not None:
+            layout.addWidget(streaming.lighthouse_controllers)
+            streaming.lighthouse_controllers.show()
+            self.save_controllers = QPushButton('Save WiVRn settings')
+            self.save_controllers.setToolTip('Save the controller toggle and any pending edits in WiVRn streaming settings.')
+            self.save_controllers.clicked.connect(streaming.save)
+            self.save_controllers.setEnabled(streaming.original is not None)
+            streaming.backend.state.connect(lambda state: self.save_controllers.setEnabled(bool(state)))
+            layout.addWidget(self.save_controllers)
+            self.controller_notice = QLabel('Applies in Motoc bridge mode. Power on and pair controllers before starting WiVRn. '
+                'Save WiVRn settings and restart WiVRn after changing this option. '
+                'Lighthouse controllers use the same Motoc playspace alignment as trackers.')
+            self.controller_notice.setWordWrap(True)
+            streaming.save_message.connect(self.controller_notice.setText)
+            layout.addWidget(self.controller_notice)
         self.enabled = QCheckBox('Use Motoc calibration for Lighthouse devices')
         self.keep_alive = QCheckBox('Keep calibration running and resume after process/reconnect interruptions')
         self.source = QLineEdit('WiVRn HMD')

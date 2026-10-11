@@ -212,6 +212,8 @@ configuration::configuration()
         }
 		if (auto it = json.find("use-steamvr-lh"); it != json.end())
 			use_steamvr_lh = *it;
+		if (auto it = json.find("motoc-lighthouse-controllers"); it != json.end())
+			motoc_lighthouse_controllers = it->get<bool>();
 
 		if (auto it = json.find("lh-max-extrapolation"); it != json.end())
 			lh_max_extrapolation = *it;

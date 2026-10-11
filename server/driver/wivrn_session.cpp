@@ -23,6 +23,7 @@
 #include "accept_connection.h"
 #include "application.h"
 #include "configuration.h"
+#include "controller_roles.h"
 #include "driver/app_pacer.h"
 #include "driver/xrt_cast.h"
 #include "server/ipc_server.h"
@@ -214,31 +215,18 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 			for (int i = 0; i < lhdevs->static_xdev_count && static_xdev_count < ARRAY_SIZE(static_xdevs); i++)
 			{
 				auto lhdev = lhdevs->static_xdevs[i];
-				switch (lhdev->device_type)
+				switch (lighthouse_controller_hand(lhdev->device_type, conf.motoc_lighthouse_controllers,
+				                                  roles.left == left_controller_index, roles.right == right_controller_index))
 				{
-					case XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER:
+					case 0:
 						roles.left = static_xdev_count;
 						static_roles.hand_tracking.unobstructed.left = nullptr;
 						static_roles.hand_tracking.conforming.left = lhdev;
 						break;
-					case XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER:
+					case 1:
 						roles.right = static_xdev_count;
 						static_roles.hand_tracking.unobstructed.right = nullptr;
 						static_roles.hand_tracking.conforming.right = lhdev;
-						break;
-					case XRT_DEVICE_TYPE_ANY_HAND_CONTROLLER:
-						if (roles.left == left_controller_index)
-						{
-							roles.left = static_xdev_count;
-							static_roles.hand_tracking.unobstructed.left = nullptr;
-							static_roles.hand_tracking.conforming.left = lhdev;
-						}
-						else if (roles.right == right_controller_index)
-						{
-							roles.right = static_xdev_count;
-							static_roles.hand_tracking.unobstructed.right = nullptr;
-							static_roles.hand_tracking.conforming.right = lhdev;
-						}
 						break;
 					default:
 						break;
@@ -604,8 +592,10 @@ void wivrn_session::operator()(const from_headset::tracking & tracking)
 			uinput_handler->destroy_gamepad();
 	}
 
-	auto left = (roles.left == -1 || roles.left == left_controller_index || roles.left == left_hand_interaction_index) ? get_name(tracking.interaction_profiles[0]) : XRT_DEVICE_INVALID;
-	auto right = (roles.right == -1 || roles.right == right_controller_index || roles.right == right_hand_interaction_index) ? get_name(tracking.interaction_profiles[1]) : XRT_DEVICE_INVALID;
+	auto left = controller_profile(roles.left, left_controller_index, left_hand_interaction_index,
+	                               roles.left_profile, get_name(tracking.interaction_profiles[0]));
+	auto right = controller_profile(roles.right, right_controller_index, right_hand_interaction_index,
+	                                roles.right_profile, get_name(tracking.interaction_profiles[1]));
 	joystick_emulation.poll(os_monotonic_get_ns(),
 	                        (get_name(tracking.interaction_profiles[0]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 1u : 0u) |
 	                                (get_name(tracking.interaction_profiles[1]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 2u : 0u));

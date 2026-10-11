@@ -57,6 +57,7 @@ struct configuration
 	std::vector<std::string> application;
 	bool debug_gui = false;
 	std::string tracking_mode = "slimevr";
+	bool motoc_lighthouse_controllers = true;
 	bool use_steamvr_lh = false;
 	bool xrizer_auto_detect = false;
 	std::optional<int64_t> lh_max_extrapolation;
