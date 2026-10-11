@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-11",
+  "source_commit": "4370817ae1998b7b67d529f9060ba119caa9c227",
+  "branch": "feature/standalone-portability",
+  "artifacts": [
+    {
+      "file": "wivrn-pro-26.9.1-1-x86_64.pkg.tar.zst",
+      "size_bytes": 19991298,
+      "sha256": "8b074627f744aab365345f9ace00ebec5f3e7dd76d3b956092add1d18947a6db"
+    },
+    {
+      "file": "wivrn-pro-26.9.1-1.portability.fc44.x86_64.rpm",
+      "size_bytes": 15404304,
+      "sha256": "8bee3a1a0bb7ceff7c55d326767ed208828c50a867bb29aff3c9d3c75785a73d"
+    },
+    {
+      "file": "wivrn-pro-26.9.1-portability-questpro-arm64-debug.apk",
+      "size_bytes": 47592097,
+      "sha256": "63628415de69b6082dc5f89d0b127802f0f8cac17dc64b791c4ed04887cde4e0"
+    },
+    {
+      "file": "wivrn-pro-26.9.1-portability-questpro-arm64.apk",
+      "size_bytes": 39647923,
+      "sha256": "4f6a6029fcc4a6db8215a63fb4e532b6518c55d7d216a2a3fac9616d9310c9db"
+    },
+    {
+      "file": "wivrn-pro_26.9.1-1+deb13_amd64.deb",
+      "size_bytes": 20535780,
+      "sha256": "c9631e39085bf000d8269600134b7e93785c98a276f3ea7b878d6346265ad572"
+    }
+  ],
+  "targets": {
+    "apk": "Quest Pro, arm64-v8a, org.meumeu.wivrn.spatial, 26.9-pro1; optimized and debug builds signed with local Android debug certificate",
+    "rpm": "x86_64, built on Nobara 44; clean Fedora 44 installation verified",
+    "deb": "amd64, Debian 13 trixie",
+    "arch": "x86_64, Arch Linux repositories as of 2026-10-11"
+  },
+  "features": [
+    "NVENC",
+    "VAAPI",
+    "QSV",
+    "Vulkan encoding",
+    "Lighthouse/Motoc",
+    "SlimeVR",
+    "WayVR",
+    "Qt dashboard",
+    "8 encoder profiles"
+  ],
+  "checks": {
+    "apk": "Gradle assembleDebug and assembleRelease; apksigner verify, zipalign -c -P 16, ARM64 and Quest Pro manifest verified",
+    "all_linux": "native Release compilation; staged and installed CLI help, ldd dependency resolution, OpenXR manifest/library loading, PySide6 imports, service/profile/license checks",
+    "rpm": "RPM digest verification and clean dnf installation in Fedora 44",
+    "deb": "dpkg-deb metadata and clean apt installation in Debian 13 with --no-install-recommends",
+    "arch": "native makepkg metadata and clean pacman installation",
+    "tracking": "SlimeVR worker/Qt smoke and exclusive Motoc worker/process-cleanup smoke passed with each distribution binary",
+    "source": "Motoc and WayVR source provenance checks passed; shell/Python syntax checks passed"
+  },
+  "notes": [
+    "Linux packages are unsigned local builds. APKs use an Android development certificate, not a Meta Store release key.",
+    "No host/headset installation or service changes were performed. Install tests ran in disposable containers.",
+    "GPU streaming, headset operation and real Lighthouse calibration/reconnection remain untested on hardware.",
+    "GCC maybe-uninitialized diagnostic in nlohmann-json headers remains a warning; all other configured warnings remain errors."
+  ],
+  "logs": "build/package-logs/"
+}

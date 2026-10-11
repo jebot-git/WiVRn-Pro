@@ -1,0 +1,21 @@
+FROM docker.io/library/debian:trixie
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates curl git cmake ninja-build g++ pkg-config dpkg-dev fakeroot file binutils \
+    libboost-all-dev libssl-dev libvulkan-dev glslang-tools spirv-tools \
+    libopenxr-dev libavcodec-dev libavutil-dev libbsd-dev \
+    libavahi-client-dev libavahi-glib-dev libeigen3-dev libglm-dev nlohmann-json3-dev \
+    librsvg2-dev librsvg2-bin libdrm-dev libglib2.0-dev-bin libpipewire-0.3-dev \
+    libcli11-dev libnotify-dev libarchive-dev libudev-dev libwayland-dev libxrandr-dev \
+    libsystemd-dev libvpl2 libinput-dev libasound2-dev libfontconfig-dev \
+    libxkbcommon-dev libxkbcommon-x11-dev libxcb1-dev libx11-dev libxext-dev \
+    python3 python3-pyside6.qtwidgets python3-pyside6.qtnetwork python3-pyside6.qtdbus \
+    dbus-daemon zstd gettext patchelf && rm -rf /var/lib/apt/lists/*
+# Locked WayVR dependencies require Rust >= 1.95; Debian 13 ships 1.85.
+ARG RUST_VERSION=1.98.0
+RUN curl --fail --location --output /tmp/rustup-init \
+    https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init && \
+    chmod +x /tmp/rustup-init && /tmp/rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} && \
+    rm /tmp/rustup-init
+ENV PATH=/root/.cargo/bin:$PATH
+RUN apt-get update && apt-get install -y --no-install-recommends bsdextrautils libclang-dev && rm -rf /var/lib/apt/lists/*
+WORKDIR /src

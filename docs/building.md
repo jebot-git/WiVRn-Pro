@@ -12,11 +12,11 @@ Avahi, GLib, libnotify, librsvg, libarchive, libdrm, FFmpeg development librarie
 shader tools, libudev and OpenXR loader development libraries, Python 3.11+ and Rust/Cargo. Separate Cargo.lock files pin Shora, WayVR and Motoc.
 WayVR additionally needs libinput, ALSA, fontconfig, PipeWire/SPA, Wayland, X11/XCB
 and xkbcommon (including X11) development libraries. Its GLSL shaders use shaderc;
-Cargo can build shaderc from source. Use a current Rust toolchain supporting the
-pinned workspace dependencies.
+Cargo can build shaderc from source. PipeWire bindings need libclang and its C
+resource headers. Use Rust 1.95 or newer for the pinned workspace dependencies.
 Monado's revision and patches remain managed by WiVRn CMake. See CI for an
-Ubuntu dependency list. Native installation is supported; old distro/container
-release recipes are deliberately absent.
+Ubuntu dependency list. Native installation is supported. RPM, Debian 13 and
+Arch packaging recipes are documented in [native portability packages](../fork/packaging/README.md).
 
 ```sh
 fork/build-server.sh -DCMAKE_INSTALL_PREFIX="$HOME/.local/opt/wivrn-pro" \
@@ -50,7 +50,7 @@ port remain shared with stock WiVRn, so run only one server at a time.
 
 ## Quest Pro APK
 
-Requires JDK 21, Android SDK 34, NDK 29.0.14206865, Android CMake 3.31.5,
+Requires JDK 17 or 21, Android SDK 34, NDK 29.0.14206865, Android CMake 3.31.5,
 `glslangValidator`, `spirv-opt`, `rsvg-convert`, gettext and KTX-Software's `ktx`.
 Set `JAVA_HOME` and `ANDROID_HOME`, then:
 
