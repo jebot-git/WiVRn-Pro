@@ -59,7 +59,7 @@ def main():
     docs = stage / 'usr/share/doc/wivrn-pro'
     docs.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source / 'COPYING', docs / 'copyright')
-    for name in ['fork/PORTABILITY.md', 'docs/configuration.md', 'docs/building.md', 'fork/packaging/README.md']:
+    for name in ['fork/PORTABILITY.md', 'fork/STEAM-FRAME.md', 'docs/configuration.md', 'docs/building.md', 'fork/packaging/README.md']:
         shutil.copy2(source / name, docs / Path(name).name)
     (docs / 'build-info.json').write_text(json.dumps({
         'commit': args.commit, 'version': args.version, 'release': args.release,

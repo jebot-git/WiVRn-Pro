@@ -1,0 +1,109 @@
+name: Frame preview packages
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/steam-frame]
+    paths:
+      - .github/workflows/Frame-Packages.yml
+      - fork/packaging/build-arch-frame-release.sh
+      - fork/packaging/Containerfile.arch
+
+permissions:
+  contents: read
+
+env:
+  RELEASE_TAG: v26.9.2-frame.3
+  PACKAGE_VERSION: 26.9.2
+  PACKAGE_RELEASE: '0.3'
+
+jobs:
+  cachyos:
+    name: Arch package for CachyOS
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Build native Arch environment
+        run: |
+          docker build --build-arg BUILDER_UID="$(id -u)" --build-arg BUILDER_GID="$(id -g)" \
+            -t wivrn-frame-arch -f fork/packaging/Containerfile.arch fork/packaging
+          mkdir -p "$RUNNER_TEMP/wivrn-build" "$RUNNER_TEMP/wivrn-out"
+      - name: Build, test and package as unprivileged user
+        run: |
+          docker run --rm --user builder \
+            -v "$PWD:/src" -v "$RUNNER_TEMP/wivrn-build:/build" -v "$RUNNER_TEMP/wivrn-out:/out" \
+            -e SOURCE_REV="$GITHUB_SHA" -e RELEASE_TAG -e PACKAGE_VERSION -e PACKAGE_RELEASE \
+            -e CARGO_HOME=/build/cargo-home -e BUILD_JOBS=4 -e QT_QPA_PLATFORM=offscreen \
+            wivrn-frame-arch bash /src/fork/packaging/build-arch-frame-release.sh
+      - name: Verify installed package in a fresh container
+        run: |
+          docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/wivrn-out:/out" \
+            -e QT_QPA_PLATFORM=offscreen wivrn-frame-arch bash -euo pipefail -c '
+              pacman -U --noconfirm /out/*.pkg.tar.zst
+              python3 /src/fork/packaging/verify-installed.py | tee /out/installed-validation.txt
+              python3 /src/fork/tests/tracking_worker_smoke.py --server /usr/bin/wivrn-pro-server | tee /out/tracking-validation.txt
+              python3 /src/fork/tests/motoc_worker_smoke.py --server /usr/bin/wivrn-pro-server | tee /out/motoc-validation.txt
+            '
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: frame-preview-arch
+          path: ${{ runner.temp }}/wivrn-out/
+          if-no-files-found: error
+          retention-days: 30
+
+  frame:
+    name: Steam Frame ARM64 package
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    container:
+      image: registry.gitlab.steamos.cloud/steamrt/steamrt4/sdk/arm64:4.0.20260805.254769
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Install asset tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin npm ccache
+          wget -O /tmp/ktx.deb https://github.com/KhronosGroup/KTX-Software/releases/download/v4.4.2/KTX-Software-4.4.2-Linux-arm64.deb
+          sudo dpkg --install /tmp/ktx.deb
+          sudo npm install --global @gltf-transform/cli@4.1.1
+      - name: Build matching client
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cmake --preset frame -B build/frame \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+            -DFETCHCONTENT_BASE_DIR="$GITHUB_WORKSPACE/cmake-fetch" \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DGIT_DESC="$RELEASE_TAG" -DGIT_COMMIT="$GITHUB_SHA"
+          cmake --build build/frame --parallel 4
+          DESTDIR="$GITHUB_WORKSPACE/install" cmake --install build/frame
+      - name: Package client and native ARM64 runtime
+        run: |
+          mkdir -p out
+          wget -O SteamLinuxRuntime_4-arm64.tar.xz https://repo.steampowered.com/steamrt4/images/4.0.20260805.254769/SteamLinuxRuntime_4-arm64.tar.xz
+          python3 fork/packaging/package-frame.py \
+            --stage install --runtime-archive SteamLinuxRuntime_4-arm64.tar.xz \
+            --openxr-loader cmake-fetch/openxr_loader-build/src/loader/libopenxr_loader.so.1 \
+            --ktx-license /usr/share/doc/KTX-Software/html/license.html \
+            --output "out/wivrn-pro-${RELEASE_TAG#v}-steamframe-arm64.tar.xz"
+          python3 -m unittest discover -s fork/tests -p test_frame_launcher.py
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess
+          pathlib.Path('out/frame-build-info.json').write_text(json.dumps({
+              'commit': os.environ['GITHUB_SHA'],
+              'version': os.environ['RELEASE_TAG'],
+              'sdk': '4.0.20260805.254769',
+              'compiler': subprocess.check_output(['c++', '--version'], text=True).splitlines()[0],
+              'hardware_tested': False,
+          }, indent=2) + '\n')
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: frame-preview-arm64
+          path: out/
+          if-no-files-found: error
+          retention-days: 30

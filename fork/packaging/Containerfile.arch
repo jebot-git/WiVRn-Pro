@@ -2,9 +2,13 @@ FROM docker.io/library/archlinux:base-devel
 RUN pacman -Syu --noconfirm --needed cmake ninja rust git pkgconf \
     boost openssl vulkan-headers vulkan-icd-loader glslang spirv-tools openxr openvr \
     ffmpeg libbsd avahi eigen glm nlohmann-json librsvg libdrm glib2 glib2-devel pipewire \
-    cli11 libnotify libarchive systemd-libs wayland libxrandr libinput alsa-lib \
+    cli11 spdlog libnotify libarchive systemd-libs wayland libxrandr libinput alsa-lib \
     fontconfig libxkbcommon libxkbcommon-x11 libxcb libx11 libxext \
     python pyside6 dbus zstd patchelf && pacman -Scc --noconfirm
-RUN useradd --create-home builder
+ARG BUILDER_UID=1000
+ARG BUILDER_GID=1000
+RUN groupadd --gid "$BUILDER_GID" builder && \
+    useradd --uid "$BUILDER_UID" --gid builder --create-home builder
 RUN pacman -Syu --noconfirm --needed clang && pacman -Scc --noconfirm
+ENV QT_QPA_PLATFORM=offscreen
 WORKDIR /src
