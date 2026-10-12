@@ -3,7 +3,7 @@ RUN pacman -Syu --noconfirm --needed cmake ninja rust git pkgconf \
     boost openssl vulkan-headers vulkan-icd-loader glslang spirv-tools openxr openvr \
     ffmpeg libbsd avahi eigen glm nlohmann-json librsvg libdrm glib2 glib2-devel pipewire \
     cli11 spdlog libnotify libarchive systemd-libs wayland libxrandr libinput alsa-lib \
-    fontconfig libxkbcommon libxkbcommon-x11 libxcb libx11 libxext \
+    fontconfig ttf-dejavu libxkbcommon libxkbcommon-x11 libxcb libx11 libxext \
     python pyside6 dbus zstd patchelf && pacman -Scc --noconfirm
 ARG BUILDER_UID=1000
 ARG BUILDER_GID=1000

@@ -94,7 +94,7 @@ url='https://github.com/jebot-git/WiVRn-Pro'
 license=('GPL-3.0-or-later' 'MIT' 'Apache-2.0' 'BSL-1.0' 'OFL-1.1')
 depends=('boost-libs' 'openssl' 'vulkan-icd-loader' 'ffmpeg' 'libbsd' 'avahi'
          'librsvg' 'libdrm' 'pipewire' 'libnotify' 'libarchive' 'systemd-libs'
-         'wayland' 'libxrandr' 'libinput' 'alsa-lib' 'fontconfig' 'libxkbcommon'
+         'wayland' 'libxrandr' 'libinput' 'alsa-lib' 'fontconfig' 'ttf-dejavu' 'libxkbcommon'
          'libxkbcommon-x11' 'libxcb' 'libx11' 'libxext' 'python' 'pyside6'
          'openxr' 'openvr' 'hicolor-icon-theme')
 optdepends=('steam: SteamVR Lighthouse driver for Motoc tracking'
