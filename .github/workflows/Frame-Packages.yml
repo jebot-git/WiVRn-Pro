@@ -7,6 +7,7 @@ on:
       - .github/workflows/Frame-Packages.yml
       - fork/packaging/build-arch-frame-release.sh
       - fork/packaging/Containerfile.arch
+      - patches/monado/**
 
 permissions:
   contents: read

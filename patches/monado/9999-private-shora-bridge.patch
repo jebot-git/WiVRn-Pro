@@ -1,3 +1,7 @@
+From: Codex <codex@localhost>
+Date: Fri, 2 Oct 2026 01:09:24 +0200
+Subject: [PATCH] solarxr: use the private WiVRn Pro bridge socket
+
 --- a/src/xrt/drivers/solarxr/solarxr_ipc_socket.c
 +++ b/src/xrt/drivers/solarxr/solarxr_ipc_socket.c
 @@ -116,7 +116,7 @@
