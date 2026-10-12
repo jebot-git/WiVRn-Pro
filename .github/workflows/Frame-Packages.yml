@@ -72,6 +72,9 @@ jobs:
           sudo apt-get install -y librsvg2-bin npm ccache
           wget -O /tmp/ktx.deb https://github.com/KhronosGroup/KTX-Software/releases/download/v4.4.2/KTX-Software-4.4.2-Linux-arm64.deb
           sudo dpkg --install /tmp/ktx.deb
+          # The SDK's dpkg policy excludes installed documentation.
+          dpkg-deb --extract /tmp/ktx.deb /tmp/ktx-package
+          test -s /tmp/ktx-package/usr/share/doc/KTX-Software/html/license.html
           sudo npm install --global @gltf-transform/cli@4.1.1
       - name: Build matching client
         run: |
@@ -90,7 +93,7 @@ jobs:
           python3 fork/packaging/package-frame.py \
             --stage install --runtime-archive SteamLinuxRuntime_4-arm64.tar.xz \
             --openxr-loader cmake-fetch/openxr_loader-build/src/loader/libopenxr_loader.so.1 \
-            --ktx-license /usr/share/doc/KTX-Software/html/license.html \
+            --ktx-license /tmp/ktx-package/usr/share/doc/KTX-Software/html/license.html \
             --output "out/wivrn-pro-${RELEASE_TAG#v}-steamframe-arm64.tar.xz"
           python3 -m unittest discover -s fork/tests -p test_frame_launcher.py
           python3 - <<'PY'
