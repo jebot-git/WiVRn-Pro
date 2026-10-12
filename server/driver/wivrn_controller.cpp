@@ -52,6 +52,7 @@ enum wivrn_controller_input_index
 	WIVRN_CONTROLLER_PALM_POSE,
 	WIVRN_CONTROLLER_HAND_TRACKING_LEFT,
 	WIVRN_CONTROLLER_HAND_TRACKING_RIGHT = WIVRN_CONTROLLER_HAND_TRACKING_LEFT,
+	WIVRN_CONTROLLER_HAND_TRACKING_CONFORMING,
 
 	WIVRN_CONTROLLER_MENU_CLICK,        // /user/hand/XXXX/input/menu/click
 	WIVRN_CONTROLLER_MENU_TOUCH,        // /user/hand/XXXX/input/menu/touch
@@ -175,13 +176,13 @@ input_data map_input(device_id id)
 		case device_id::B_TOUCH:
 			return {WIVRN_CONTROLLER_B_TOUCH, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER};
 		case device_id::DPAD_UP_CLICK:
-			return {WIVRN_CONTROLLER_DPAD_UP_CLICK, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER};
+			return {WIVRN_CONTROLLER_DPAD_UP_CLICK, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER};
 		case device_id::DPAD_UP_TOUCH:
-			return {WIVRN_CONTROLLER_DPAD_UP_TOUCH, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER};
+			return {WIVRN_CONTROLLER_DPAD_UP_TOUCH, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER};
 		case device_id::DPAD_LEFT_CLICK:
-			return {WIVRN_CONTROLLER_DPAD_LEFT_CLICK, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER};
+			return {WIVRN_CONTROLLER_DPAD_LEFT_CLICK, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER};
 		case device_id::DPAD_LEFT_TOUCH:
-			return {WIVRN_CONTROLLER_DPAD_LEFT_TOUCH, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER};
+			return {WIVRN_CONTROLLER_DPAD_LEFT_TOUCH, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER};
 		case device_id::LEFT_MENU_CLICK:
 			return {WIVRN_CONTROLLER_MENU_CLICK, wivrn_input_type::BOOL, XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER};
 		case device_id::RIGHT_MENU_CLICK:
@@ -408,10 +409,10 @@ xrt_binding_input_pair frame_input_binding_left[] = {
         {XRT_INPUT_FRAME_DPAD_UP_TOUCH, XRT_INPUT_FRAME_DPAD_UP_TOUCH},
         {XRT_INPUT_FRAME_DPAD_DOWN_CLICK, XRT_INPUT_TOUCH_X_CLICK},
         {XRT_INPUT_FRAME_DPAD_DOWN_TOUCH, XRT_INPUT_TOUCH_X_TOUCH},
-        {XRT_INPUT_FRAME_DPAD_LEFT_CLICK, XRT_INPUT_TOUCH_Y_CLICK},
-        {XRT_INPUT_FRAME_DPAD_LEFT_TOUCH, XRT_INPUT_TOUCH_Y_TOUCH},
-        {XRT_INPUT_FRAME_DPAD_RIGHT_CLICK, XRT_INPUT_FRAME_DPAD_RIGHT_CLICK},
-        {XRT_INPUT_FRAME_DPAD_RIGHT_TOUCH, XRT_INPUT_FRAME_DPAD_RIGHT_TOUCH},
+        {XRT_INPUT_FRAME_DPAD_LEFT_CLICK, XRT_INPUT_FRAME_DPAD_LEFT_CLICK},
+        {XRT_INPUT_FRAME_DPAD_LEFT_TOUCH, XRT_INPUT_FRAME_DPAD_LEFT_TOUCH},
+        {XRT_INPUT_FRAME_DPAD_RIGHT_CLICK, XRT_INPUT_TOUCH_Y_CLICK},
+        {XRT_INPUT_FRAME_DPAD_RIGHT_TOUCH, XRT_INPUT_TOUCH_Y_TOUCH},
         {XRT_INPUT_FRAME_VIEW_CLICK, XRT_INPUT_FRAME_VIEW_CLICK},
         {XRT_INPUT_FRAME_VIEW_TOUCH, XRT_INPUT_FRAME_VIEW_TOUCH},
         {XRT_INPUT_FRAME_SYSTEM_CLICK, XRT_INPUT_TOUCH_MENU_CLICK},
@@ -739,6 +740,7 @@ wivrn_controller::wivrn_controller(xrt_device_name name,
         pinch_ext(hand_id == 0 ? device_id::LEFT_PINCH_POSE : device_id::RIGHT_PINCH_POSE),
         poke_ext(hand_id == 0 ? device_id::LEFT_POKE : device_id::RIGHT_POKE),
         joints(hand_id),
+        controller_joints(hand_id, from_headset::hand_tracking::data_source::controller),
         inputs_array(input_count, xrt_input{}),
         cnx(cnx)
 {
@@ -778,6 +780,8 @@ wivrn_controller::wivrn_controller(xrt_device_name name,
 		{
 			inputs[WIVRN_CONTROLLER_HAND_TRACKING_LEFT].name = XRT_INPUT_HT_UNOBSTRUCTED_LEFT;
 			inputs[WIVRN_CONTROLLER_HAND_TRACKING_LEFT].active = true;
+			inputs[WIVRN_CONTROLLER_HAND_TRACKING_CONFORMING].name = XRT_INPUT_HT_CONFORMING_LEFT;
+			inputs[WIVRN_CONTROLLER_HAND_TRACKING_CONFORMING].active = true;
 			SET_INPUT(FRAME, VIEW_CLICK);
 			SET_INPUT(FRAME, VIEW_TOUCH);
 
@@ -796,6 +800,8 @@ wivrn_controller::wivrn_controller(xrt_device_name name,
 		{
 			inputs[WIVRN_CONTROLLER_HAND_TRACKING_RIGHT].name = XRT_INPUT_HT_UNOBSTRUCTED_RIGHT;
 			inputs[WIVRN_CONTROLLER_HAND_TRACKING_RIGHT].active = true;
+			inputs[WIVRN_CONTROLLER_HAND_TRACKING_CONFORMING].name = XRT_INPUT_HT_CONFORMING_RIGHT;
+			inputs[WIVRN_CONTROLLER_HAND_TRACKING_CONFORMING].active = true;
 			SET_INPUT(FRAME, MENU_CLICK);
 			SET_INPUT(FRAME, MENU_TOUCH);
 
@@ -983,25 +989,31 @@ xrt_result_t wivrn_controller::get_tracked_pose(xrt_input_name name, int64_t at_
 
 xrt_result_t wivrn_controller::get_hand_tracking(xrt_input_name name, int64_t desired_timestamp_ns, xrt_hand_joint_set * out_value, int64_t * out_timestamp_ns)
 {
+	hand_joints_list * history = nullptr;
 	switch (name)
 	{
 		case XRT_INPUT_HT_UNOBSTRUCTED_LEFT:
-		case XRT_INPUT_HT_UNOBSTRUCTED_RIGHT: {
-			*out_timestamp_ns = desired_timestamp_ns;
-			XrTime production_timestamp;
-			std::tie(production_timestamp, *out_value) = joints.get_at(desired_timestamp_ns);
-			// Do not hold a pinch through a stalled hand-tracking stream. The
-			// generic pose history otherwise retains the last sample for 1 s.
-			if (production_timestamp <= 0 or os_monotonic_get_ns() - production_timestamp > 150'000'000)
-				*out_value = {};
-			cnx->add_tracking_request(joints.hand_id == 0 ? device_id::LEFT_HAND : device_id::RIGHT_HAND, desired_timestamp_ns, production_timestamp);
-			return XRT_SUCCESS;
-		}
+		case XRT_INPUT_HT_UNOBSTRUCTED_RIGHT:
+			history = &joints;
+			break;
+		case XRT_INPUT_HT_CONFORMING_LEFT:
+		case XRT_INPUT_HT_CONFORMING_RIGHT:
+			history = &controller_joints;
+			break;
 
 		default:
 			U_LOG_XDEV_UNSUPPORTED_INPUT(this, u_log_get_global_level(), name);
 			return XRT_ERROR_INPUT_UNSUPPORTED;
 	}
+	*out_timestamp_ns = desired_timestamp_ns;
+	XrTime production_timestamp;
+	std::tie(production_timestamp, *out_value) = history->get_at(desired_timestamp_ns);
+	// Do not hold a pinch through a stalled hand-tracking stream. The
+	// generic pose history otherwise retains the last sample for 1 s.
+	if (production_timestamp <= 0 or os_monotonic_get_ns() - production_timestamp > 150'000'000)
+		*out_value = {};
+	cnx->add_tracking_request(joints.hand_id == 0 ? device_id::LEFT_HAND : device_id::RIGHT_HAND, desired_timestamp_ns, production_timestamp);
+	return XRT_SUCCESS;
 }
 
 void wivrn_controller::set_derived_pose(const from_headset::derived_pose & derived)
@@ -1032,6 +1044,7 @@ void wivrn_controller::update_tracking(const from_headset::tracking & tracking, 
 void wivrn_controller::update_hand_tracking(const from_headset::hand_tracking & tracking, const clock_offset & offset)
 {
 	joints.update_tracking(tracking, offset);
+	controller_joints.update_tracking(tracking, offset);
 }
 
 xrt_result_t wivrn_controller::set_output(xrt_output_name name, const xrt_output_value * value)

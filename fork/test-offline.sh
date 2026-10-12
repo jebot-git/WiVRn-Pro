@@ -25,6 +25,10 @@ fi
   -Iclient -Icommon -Iexternal fork/tests/passthrough_lifecycle_test.cpp client/xr/passthrough.cpp \
   "${spdlog_flags[@]}" -o build/native-tests/passthrough-lifecycle-test
 build/native-tests/passthrough-lifecycle-test
+"$cxx" -std=c++23 -O1 -Iclient -Icommon -Iexternal \
+  fork/tests/hand_tracking_packet_test.cpp common/crypto.cpp common/smp.cpp \
+  "${spdlog_flags[@]}" -lcrypto -o build/native-tests/hand-tracking-packet-test
+build/native-tests/hand-tracking-packet-test
 python3 fork/tests/portal_health_test.py
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Icommon fork/tests/policy_test.cpp -o build/native-tests/policy-test
 build/native-tests/policy-test

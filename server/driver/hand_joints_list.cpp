@@ -38,6 +38,19 @@ static xrt_hand_joint_value interpolate(const xrt_hand_joint_value & a, const xr
 
 xrt_hand_joint_set hand_joints_list::interpolate(const xrt_hand_joint_set & a, const xrt_hand_joint_set & b, float t)
 {
+	// history::get_at uses t = 0 for the newer endpoint. A source switch
+	// deactivates this channel: never interpolate a hand into inactive joints.
+	if (a.is_active != b.is_active)
+	{
+		if (t <= 0)
+			return b;
+		if (t >= 1)
+			return a;
+		return {};
+	}
+	if (not a.is_active)
+		return {};
+
 	xrt_hand_joint_set j = {
 	        .hand_pose = pose_list::interpolate(a.hand_pose, b.hand_pose, t),
 	        .is_active = a.is_active,
@@ -104,7 +117,7 @@ void hand_joints_list::update_tracking(const from_headset::hand_tracking & track
 		add_sample(
 		        tracking.production_timestamp,
 		        tracking.timestamp,
-		        convert_joints(tracking.joints),
+		        tracking.source == source ? convert_joints(tracking.joints) : xrt_hand_joint_set{},
 		        offset);
 }
 } // namespace wivrn

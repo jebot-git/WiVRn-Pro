@@ -24,6 +24,19 @@ fi
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver/driver -I"$monado_headers" \
     fork/tests/controller_roles_test.cpp -o build/native-tests/controller-roles-test
 build/native-tests/controller-roles-test
+monado_auxiliary="${monado_headers%/include}/auxiliary"
+mkdir -p build/native-tests/hand-joints
+# These isolated history tests do not use codec or platform feature switches.
+sed -e 's/^#cmakedefine01 \([A-Z0-9_]*\)$/#define \1 0/' -e 's/@[A-Z0-9_]*@//g' \
+    common/wivrn_config.h.in > build/native-tests/hand-joints/wivrn_config.h
+"$cxx" -std=c++23 -O1 -pthread -ffunction-sections -fdata-sections -Wl,--gc-sections \
+    -Iserver -Iserver/driver -Icommon -Iexternal -Ibuild/native-tests/hand-joints \
+    -I"$monado_headers" -I"$monado_auxiliary" $(pkg-config --cflags eigen3) \
+    fork/tests/hand_joints_list_test.cpp server/driver/hand_joints_list.cpp \
+    server/driver/pose_list.cpp server/driver/clock_offset.cpp server/driver/xrt_cast.cpp \
+    "$monado_auxiliary/math/m_space.cpp" "$monado_auxiliary/math/m_base.cpp" \
+    common/crypto.cpp common/smp.cpp -lcrypto -o build/native-tests/hand-joints-list-test
+build/native-tests/hand-joints-list-test
 python3 -m unittest discover -s fork/tests -p 'test_portability_dashboard.py'
 cargo test --workspace --locked --manifest-path server/shora/Cargo.toml
 CARGO_TARGET_DIR="$PWD/build/motoc-tests" cargo test --locked --manifest-path server/motoc/upstream/Cargo.toml

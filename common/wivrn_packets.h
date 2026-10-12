@@ -486,6 +486,11 @@ struct hand_tracking
 		left,
 		right,
 	};
+	enum class data_source : uint8_t
+	{
+		unobstructed,
+		controller,
+	};
 	struct pose
 	{
 		XrVector3f position;
@@ -502,6 +507,8 @@ struct hand_tracking
 	XrTime timestamp;
 	hand_id hand;
 	std::optional<std::array<pose, XR_HAND_JOINT_COUNT_EXT>> joints;
+	// Runtimes without XR_EXT_hand_tracking_data_source retain the legacy behavior.
+	data_source source = data_source::unobstructed;
 };
 
 struct meta_body

@@ -19,6 +19,7 @@
 
 #include "application.h"
 #include "battery.h"
+#include "hand_tracking_packet.h"
 #include "stream.h"
 #include "utils/overloaded.h"
 #include "wivrn_packets.h"
@@ -155,32 +156,6 @@ public:
 
 } // namespace
 
-static std::optional<std::array<from_headset::hand_tracking::pose, XR_HAND_JOINT_COUNT_EXT>> locate_hands(xr::hand_tracker & hand, XrSpace space, XrTime time)
-{
-	auto located = hand.locate(space, time);
-
-	if (located and located->is_input_source())
-	{
-		std::array<from_headset::hand_tracking::pose, XR_HAND_JOINT_COUNT_EXT> poses;
-		for (int i = 0; i < XR_HAND_JOINT_COUNT_EXT; i++)
-		{
-			const auto & joint = located->joints[i];
-			poses[i] = {
-			        .position = joint.first.pose.position,
-			        .orientation = pack(joint.first.pose.orientation),
-			        .linear_velocity = joint.second.linearVelocity,
-			        .angular_velocity = joint.second.angularVelocity,
-			        .radius = uint16_t(joint.first.radius * 10'000),
-			        .flags = from_headset::to_pose_flags(joint.first.locationFlags, joint.second.velocityFlags),
-			};
-		}
-
-		return poses;
-	}
-	else
-		return std::nullopt;
-}
-
 template <typename T>
 static T & from_pool(std::vector<T> & container, std::vector<T> & pool)
 {
@@ -273,6 +248,7 @@ void scenes::stream::tracking()
 	XrTime t0 = instance.now();
 	from_headset::tracking tracking;
 	std::vector<from_headset::hand_tracking> hands;
+	std::array<std::optional<from_headset::hand_tracking::data_source>, 2> last_hand_sources;
 	std::vector<std::variant<from_headset::meta_body, from_headset::bd_body, from_headset::htc_body>> body;
 	std::vector<XrView> views;
 
@@ -491,21 +467,21 @@ void scenes::stream::tracking()
 						case wivrn::device_id::LEFT_HAND:
 							if (left_hand)
 							{
-								hands.emplace_back(
+								hands.emplace_back(wivrn::make_hand_tracking_packet(
+								        left_hand->locate(world_space, tracking.timestamp),
 								        t0,
 								        at_time,
-								        from_headset::hand_tracking::left,
-								        locate_hands(*left_hand, world_space, tracking.timestamp));
+								        from_headset::hand_tracking::left));
 							}
 							break;
 						case wivrn::device_id::RIGHT_HAND:
 							if (right_hand)
 							{
-								hands.emplace_back(
+								hands.emplace_back(wivrn::make_hand_tracking_packet(
+								        right_hand->locate(world_space, tracking.timestamp),
 								        t0,
 								        at_time,
-								        from_headset::hand_tracking::right,
-								        locate_hands(*right_hand, world_space, tracking.timestamp));
+								        from_headset::hand_tracking::right));
 							}
 							break;
 						case wivrn::device_id::BODY:
@@ -531,6 +507,15 @@ void scenes::stream::tracking()
 				if (e.code().category() != xr::error_category() or
 				    e.code().value() != XR_ERROR_TIME_INVALID)
 					throw;
+			}
+
+			for (const auto & hand: hands)
+			{
+				if (hand.joints and last_hand_sources[hand.hand] != hand.source)
+				{
+					spdlog::info("Streaming {} hand joints from {} source", magic_enum::enum_name(hand.hand), magic_enum::enum_name(hand.source));
+					last_hand_sources[hand.hand] = hand.source;
+				}
 			}
 
 			// FIXME: switch to event based

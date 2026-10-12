@@ -23,6 +23,28 @@ Index controllers and the exclusive SlimeVR/Motoc bridge selection remain availa
 A saved Motoc anchor profile must be changed and saved as one-time or rigid mode
 before starting calibration on Frame.
 
+### Frame controller skeletons
+
+The active controller profile is `/interaction_profiles/valve/frame_controller_valve`.
+The `generic-trigger-squeeze` startup setting selects the local controller model;
+it does not replace that interaction profile. Applications such as xrizer can use
+the existing Oculus Touch binding fallback and still receive runtime hand joints.
+
+The client now forwards controller-derived hand joints with their data source.
+Previously its bare-hand input filter discarded those joints before streaming.
+The server exposes them as controller-derived tracking, separately from optical
+hands, so they cannot activate bare-hand gestures. Lighthouse controller overrides
+continue to select their own skeletons. Frame's left D-pad routing and left/right
+bindings have also been corrected.
+
+This changes the protocol hash to `3fcff6be4c2a5f34`: rebuild both server and client
+from this revision (including the Quest APK if used). The released `frame.2`
+client and `frame.1` server do not include these changes. With hand tracking enabled,
+the client logs `Streaming left hand joints from controller source` and the
+corresponding right-hand message when the runtime supplies controller skeletons.
+Packet conversion and server source-transition regression tests cover the fix;
+controller animation still requires a headset retest.
+
 ## Frame client and passthrough
 
 This is a **native Linux ARM64 client**, not an APK. Run `launch-wivrn-pro`, or
