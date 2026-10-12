@@ -40,7 +40,8 @@ jobs:
       - name: Verify installed package in a fresh container
         run: |
           docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/wivrn-out:/out" \
-            -e QT_QPA_PLATFORM=offscreen wivrn-frame-arch bash -euo pipefail -c '
+            -e QT_QPA_PLATFORM=offscreen archlinux:base bash -euo pipefail -c '
+              pacman -Syu --noconfirm --needed python binutils
               pacman -U --noconfirm /out/*.pkg.tar.zst
               python3 /src/fork/packaging/verify-installed.py | tee /out/installed-validation.txt
               python3 /src/fork/tests/tracking_worker_smoke.py --server /usr/bin/wivrn-pro-server | tee /out/tracking-validation.txt

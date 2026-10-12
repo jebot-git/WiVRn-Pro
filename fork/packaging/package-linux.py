@@ -64,7 +64,8 @@ def main():
     (docs / 'build-info.json').write_text(json.dumps({
         'commit': args.commit, 'version': args.version, 'release': args.release,
         'os_release': Path('/etc/os-release').read_text(),
-        'encoders': ['nvenc', 'vaapi', 'qsv', 'vulkan'],
+        'encoders': ['nvenc', 'vaapi', 'qsv', 'vulkan'] +
+                    (['pyrowave'] if 'WIVRN_USE_PYROWAVE:BOOL=ON\n' in cache else []),
         'tracking_modes': ['slimevr', 'motoc'],
     }, indent=2) + '\n')
     # CMake's PROGRAMS installation does not strip the Rust executables.
