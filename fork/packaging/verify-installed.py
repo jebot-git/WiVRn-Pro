@@ -29,7 +29,12 @@ assert library.is_file()
 ctypes.CDLL(str(library))
 for name in ['wivrn-pro.service', 'wivrn-pro-dashboard.service']:
     assert (root / 'usr/lib/systemd/user' / name).is_file()
-assert len(list((root / 'usr/share/wivrn-pro/encoder-presets/profiles').glob('*.json'))) == 8
+profiles = list((root / 'usr/share/wivrn-pro/encoder-presets/profiles').glob('*.json'))
+assert len(profiles) >= 8
+info = json.loads((root / 'usr/share/doc/wivrn-pro/build-info.json').read_text())
+if 'pyrowave' in info['encoders']:
+    pyro = root / 'usr/share/wivrn-pro/encoder-presets/profiles/pyrowave-444-experimental.json'
+    assert json.loads(pyro.read_text())['host_config']['encoder']['codec'] == 'pyrowave'
 assert (root / 'usr/share/licenses/wivrn-pro/motoc/LICENSE').is_file()
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'
 sys.path.insert(0, str(root / 'usr/share/wivrn-pro/dashboard'))
