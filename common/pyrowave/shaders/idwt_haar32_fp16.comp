@@ -1,0 +1,6 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#define PRECISION 0
+#define FP16 1
+#define DUAL 0
+#include "idwt_haar32.inc"

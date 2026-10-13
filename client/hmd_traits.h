@@ -20,6 +20,7 @@
 #pragma once
 
 #include "configuration.h"
+#include "wivrn_config.h"
 #include "xr/space.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -34,6 +35,12 @@ using hmd_permissions = magic_enum::containers::array<feature, const char *>;
 class hmd_traits
 {
 public:
+    static constexpr const char * client_model()
+    {
+        return WIVRN_CLIENT_STEAM_FRAME ? "steam-frame" : "seacliff";
+    }
+    static constexpr bool spatial_anchors_available() { return !WIVRN_CLIENT_STEAM_FRAME; }
+
 	// Properties have the defaults below
 	// The cpp file has per-headset values
 	// it is possible to override values:

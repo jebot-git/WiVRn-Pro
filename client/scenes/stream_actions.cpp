@@ -81,7 +81,7 @@ void scenes::stream::operator()(to_headset::haptics && haptics)
 	{
 		XrAction action = it->second.action;
 		float old = it->second.amplitude;
-		it->second.amplitude = old;
+		it->second.amplitude = haptics.amplitude;
 		// Some runtimes may be slow to process actions
 		// Skip it if not necessary
 		if (old == 0 and haptics.amplitude == 0)
@@ -121,11 +121,11 @@ void scenes::stream::update_cutout(XrTime time)
         // Do not mix controller and hand geometry within one gesture.
         hands = {};
         for (size_t i = 0; i < 2; ++i)
-            if (auto joints = trackers[i]->locate(application::space(xr::spaces::world), time))
+            if (auto joints = trackers[i]->locate(application::space(xr::spaces::world), time); joints && joints->is_input_source())
             {
-                const auto & a = (*joints)[XR_HAND_JOINT_THUMB_TIP_EXT].first;
-                const auto & b = (*joints)[XR_HAND_JOINT_INDEX_TIP_EXT].first;
-                const auto & wrist = (*joints)[XR_HAND_JOINT_WRIST_EXT].first;
+                const auto & a = joints->joints[XR_HAND_JOINT_THUMB_TIP_EXT].first;
+                const auto & b = joints->joints[XR_HAND_JOINT_INDEX_TIP_EXT].first;
+                const auto & wrist = joints->joints[XR_HAND_JOINT_WRIST_EXT].first;
                 constexpr auto flags = XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_POSITION_TRACKED_BIT;
                 if ((a.locationFlags & flags) == flags && (b.locationFlags & flags) == flags
                     && wivrn::room_calibration::tracked({wrist.pose, wrist.locationFlags}))

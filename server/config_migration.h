@@ -70,7 +70,7 @@ inline void normalize_encoder(nlohmann::json & item, std::vector<std::string> & 
 		return;
 	}
 	auto normalize_name = [&](nlohmann::json & name) {
-		if (name == "nvenc" || name == "x264" || name == "raw")
+		if (name == "x264" || name == "raw")
 		{
 			changes.push_back("Unsupported encoder " + name.dump() + " replaced with vaapi");
 			name = "vaapi";
@@ -105,7 +105,7 @@ inline std::vector<std::string> carry_over(const std::filesystem::path & config_
 		if (json.value("use-steamvr-lh", false))
 		{
 			json["use-steamvr-lh"] = false;
-			changes.push_back("SteamVR Lighthouse disabled in Quest Pro fork");
+			changes.push_back("Select Motoc tracking-mode explicitly to enable Lighthouse");
 		}
 		if (create_once(dest / "config.json", json.dump(2) + "\n"))
 			changes.push_back("Imported wivrn/config.json");

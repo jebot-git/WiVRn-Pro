@@ -10,6 +10,8 @@ use crate::{autobone, calibration::Calibration, config::Config, control::{Comman
 
 pub async fn run(config: Config) -> anyhow::Result<()> {
     let started = Instant::now();
+    let motoc_mode = std::env::var("WIVRN_TRACKING_MODE").as_deref() == Ok("motoc");
+    let mut motoc = crate::motoc::Manager::new(config.motoc.clone(), motoc_mode);
     let registry = Arc::new(RwLock::new(TrackerRegistry::default()));
     let pose = Arc::new(RwLock::new(Pose::default()));
     let calib = Arc::new(RwLock::new(Calibration::new()));
@@ -45,16 +47,20 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
     // Claim the control endpoint before opening hardware or starting services.
     let control = if let Some(path) = &config.control_socket { Some(ControlServer::bind(path.clone()).await?) } else { None };
     let mut face_relay = if config.face.enabled { Some(face::FaceRelay::start(config.face.clone())?) } else { None };
-    let mut acquisition = Acquisition::start(config.haritorax.clone())?;
+    let mut hardware_config = config.haritorax.clone();
+    if motoc_mode { hardware_config.enabled = false; }
+    let mut acquisition = Acquisition::start(hardware_config)?;
     let mut bridge = Bridge::default();
     let mut services = tokio::task::JoinSet::new();
     if let Some((path, shared)) = spatial_reference { services.spawn(crate::spatial_reference::run(path, shared)); }
     if let Some(control) = control { services.spawn(control.run(status.clone(), commands.clone())); }
+    if !motoc_mode {
     services.spawn(tracker::udp::run(SocketAddr::from(([0,0,0,0],config.tracker_port)),
         registry.clone(), calib.clone(), hmd.clone(), assignments.clone(), config.ping_interval_secs, config.tracker_timeout_secs));
     services.spawn(solarxr::run(config.solarxr_socket.clone(), pose.clone(), registry.clone(),
         calib.clone(), hmd.clone(), lengths.clone(), autobone.clone(), target_height.clone()));
     services.spawn(feeder::run(config.feeder_socket.clone(), hmd.clone(), fresh_hmd.clone()));
+    }
     let mut tui = if config.ui == UiMode::Tui { Some(TuiHandle::start(status.clone(), commands.clone())?) } else { None };
     let mut filter = smoothing::RotationFilter::new(config.smoothing, config.prediction);
     let mut tick = tokio::time::interval(Duration::from_millis(33));
@@ -140,8 +146,23 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                     continue;
                 }
             }
-            let result = match envelope.command {
+            let motoc_command = matches!(envelope.command, Command::MotocCalibrate | Command::MotocContinue | Command::MotocStop);
+            let slime_command = matches!(envelope.command, Command::YawReset | Command::FullReset | Command::MountingReset | Command::Restart | Command::ShutdownTrackers);
+            let result = if motoc_command && !motoc_mode {
+                Err(anyhow::anyhow!("Select Motoc bridge mode in streaming settings and restart WiVRn"))
+            } else if slime_command && motoc_mode {
+                Err(anyhow::anyhow!("SlimeVR is disabled while Motoc owns the tracking bridge"))
+            } else { match envelope.command.clone() {
                 Command::Status => Ok(()),
+                Command::MotocCalibrate => motoc.start(true).await,
+                Command::MotocContinue => motoc.start(false).await,
+                Command::MotocStop => { motoc.stop().await; Ok(()) },
+                Command::SetMotocSettings { motoc: next } => {
+                    match config.save_motoc_settings(&next) {
+                        Ok(()) => { motoc.configure(next).await; Ok(()) },
+                        Err(error) => Err(error),
+                    }
+                },
                 Command::Shutdown => { stop = true; Ok(()) }
                 Command::ShutdownTrackers => acquisition.shutdown_trackers().await,
                 Command::SetHaritoraSettings { hardware, .. } => hardware.validate().and_then(|_| Err(anyhow::anyhow!("A sensor settings request is already pending"))),
@@ -198,8 +219,9 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                     if reg.iter().all(|t| t.rotation.is_none()) { Err(anyhow::anyhow!("no tracker samples available for calibration")) }
                     else { reset::handle_user_action(&reg, &mut calib.write().unwrap(), hmd.read().unwrap().as_ref(), &action) }
                 }
+            }
             };
-            if let (Command::SaveRelaxedPose { pose }, Err(error)) = (envelope.command, &result) {
+            if let (Command::SaveRelaxedPose { pose }, Err(error)) = (envelope.command.clone(), &result) {
                 tracing::warn!(?pose, error = %error, "Relaxed pose was not saved");
             }
             status.write().unwrap().last_action = match &result {
@@ -212,6 +234,7 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             };
             reply = envelope.reply.map(|tx| (tx, result.map_err(|e| format!("{e:#}"))));
         }
+        if frame_due { motoc.tick().await; }
         if frame_due && !paused {
             let mut trackers: Vec<_> = registry.read().unwrap().iter().cloned().collect();
             let now = Instant::now();
@@ -232,6 +255,8 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             snapshot.uptime_secs = started.elapsed().as_secs(); snapshot.paused = paused;
             snapshot.ports = acquisition.ports();
             snapshot.settings = settings;
+            snapshot.motoc = motoc.status();
+            snapshot.tracking_mode = if motoc_mode {"motoc"} else {"slimevr"}.into();
             let reg = registry.read().unwrap();
             snapshot.refresh_pose(&pose.read().unwrap(), &reg);
             let calibration = calib.read().unwrap();
@@ -250,6 +275,7 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             break;
         }
     }
+    motoc.stop().await;
     drop(tui);
     services.abort_all();
     while services.join_next().await.is_some() {}

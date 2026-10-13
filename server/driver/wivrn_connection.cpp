@@ -19,6 +19,7 @@
 
 #include "wivrn_connection.h"
 #include "configuration.h"
+#include "fork_policy.h"
 #include "protocol_version.h"
 #include "secrets.h"
 #include "smp.h"
@@ -275,8 +276,8 @@ void wivrn::wivrn_connection::init(std::stop_token stop_token, std::function<voi
 	control.send(to_headset::handshake{.stream_port = port});
 
 	info_packet = std::get<from_headset::headset_info_packet>(receive(10s).first);
-	if (info_packet.client_model != "seacliff")
-		throw std::runtime_error("WiVRn Pro accepts only Quest Pro clients");
+	if (!fork_policy::accepts_profile(configuration().headset_profile, info_packet.client_model))
+		throw std::runtime_error("Headset does not match the selected Quest Pro / Steam Frame profile");
 
 	active = true;
 

@@ -4,16 +4,24 @@
 use std::{path::{Path, PathBuf}, sync::{Arc, Mutex, mpsc}, time::{Duration, Instant}};
 
 #[derive(Clone, Copy, Debug)]
-pub enum ResetKind { Full, Mounting }
+pub enum ResetKind { Full, Mounting, MotocCalibrate, MotocContinue }
 impl ResetKind {
+    fn validate(self, status: &super::Status) -> anyhow::Result<()> {
+        let motoc = matches!(self, Self::MotocCalibrate | Self::MotocContinue);
+        anyhow::ensure!(motoc == (status.tracking_mode == "motoc"), "Bridge mode changed; retry using the current calibration controls");
+        anyhow::ensure!(motoc || (!status.paused && status.trackers.iter().any(|t| t.active)), "Connect trackers and resume tracking first");
+        Ok(())
+    }
     fn command(self) -> &'static str {
-        match self { Self::Full => "full_reset", Self::Mounting => "mounting_reset" }
+        match self { Self::Full => "full_reset", Self::Mounting => "mounting_reset", Self::MotocCalibrate => "motoc_calibrate", Self::MotocContinue => "motoc_continue" }
     }
     fn label(self) -> &'static str {
-        match self { Self::Full => "Full reset", Self::Mounting => "Mounting reset" }
+        match self { Self::Full => "Full reset", Self::Mounting => "Mounting reset", Self::MotocCalibrate => "Motoc calibrate", Self::MotocContinue => "Motoc resume" }
     }
     fn instructions(self) -> &'static str {
         match self {
+            Self::MotocCalibrate => "Hold the selected tracker firmly against the headset, then move slowly together",
+            Self::MotocContinue => "Resume the saved Motoc alignment for the configured mode",
             Self::Full => "Stand upright and face forward",
             Self::Mounting => "After a full reset, bend knees and lean forward in a ski pose",
         }
@@ -44,8 +52,7 @@ impl ResetControl {
                 let kind = match message { Message::Reset(kind) => kind, Message::Cancel => continue, Message::Stop => return };
                 let result = (|| -> anyhow::Result<()> {
                     let status = super::read_status(&path)?;
-                    anyhow::ensure!(!status.paused && status.trackers.iter().any(|t| t.active),
-                        "Connect trackers and resume tracking first");
+                    kind.validate(&status)?;
                     shared.lock().unwrap().countdown = Some((kind, Instant::now() + delay));
                     match receiver.recv_timeout(delay) {
                         Err(mpsc::RecvTimeoutError::Timeout) => {}
@@ -55,7 +62,9 @@ impl ResetControl {
                     send_reset(&path, kind, status.pid)
                 })();
                 let message = match result {
-                    Ok(()) => format!("{} complete", kind.label()),
+                    Ok(()) => if matches!(kind, ResetKind::MotocCalibrate | ResetKind::MotocContinue) {
+                        format!("{} command accepted", kind.label())
+                    } else { format!("{} complete", kind.label()) },
                     Err(error) => format!("{}: {error}", kind.label()),
                 };
                 log::info!("{message}");
@@ -105,8 +114,7 @@ fn send_reset(path: &Path, kind: ResetKind, expected_pid: u32) -> anyhow::Result
     let mut stream = super::connect(path)?;
     let status = super::exchange(&mut stream, "status")?;
     anyhow::ensure!(status.pid == expected_pid, "Tracking worker restarted; retry the reset");
-    anyhow::ensure!(!status.paused && status.trackers.iter().any(|t| t.active),
-        "Connect trackers and resume tracking first");
+    kind.validate(&status)?;
     super::exchange(&mut stream, kind.command())?;
     Ok(())
 }
@@ -140,6 +148,14 @@ mod tests {
         }
     }
 
+    #[test]
+    fn modes_cannot_dispatch_each_others_commands() {
+        let mut status: super::super::Status = serde_json::from_str(r#"{"pid":1,"paused":false,"trackers":[],"tracking_mode":"motoc"}"#).unwrap();
+        assert!(ResetKind::MotocCalibrate.validate(&status).is_ok());
+        assert!(ResetKind::Full.validate(&status).is_err());
+        status.tracking_mode="slimevr".into();
+        assert!(ResetKind::MotocContinue.validate(&status).is_err());
+    }
     #[test]
     fn reset_buttons_send_typed_commands_and_preserve_backend_errors() {
         for (kind, error) in [(ResetKind::Full, None), (ResetKind::Mounting, Some("Reference protection: wait for stable tracking"))] {

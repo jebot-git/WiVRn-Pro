@@ -21,7 +21,7 @@ struct stream_performance
 		uint8_t displayed;
 	};
 	std::deque<seen_frame> seen;
-	uint64_t frames = 0, repeats = 0;
+	uint64_t frames = 0, presented_frames = 0, repeats = 0;
 	int64_t updated_ns = 0;
 	from_headset::feedback last{};
 	// A coherent first presentation; legacy stage measurements can refer to

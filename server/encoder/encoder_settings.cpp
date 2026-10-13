@@ -33,6 +33,9 @@
 
 #include "wivrn_config.h"
 
+#if WIVRN_USE_NVENC
+#include "video_encoder_nvenc.h"
+#endif
 #if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 #include "ffmpeg/video_encoder_va.h"
 #include <libavutil/ffversion.h>
@@ -59,6 +62,7 @@ static void split_bitrate(std::array<wivrn::encoder_settings, 3> & encoders, uin
 				break;
 			case wivrn::h265:
 			case wivrn::av1:
+			case wivrn::pyrowave:
 			case wivrn::raw:
 				break;
 		}
@@ -96,6 +100,38 @@ class prober
 {
 	wivrn::vk_bundle & vk;
 	const from_headset::headset_info_packet & info;
+#if WIVRN_USE_NVENC
+	std::map<video_codec, bool> nvenc_support;
+
+	bool check_nvenc(video_codec codec)
+	{
+		if (auto it = nvenc_support.find(codec); it != nvenc_support.end())
+			return it->second;
+		try
+		{
+			video_encoder_nvenc test(
+			        vk,
+			        encoder_settings{
+			                .width = 800,
+			                .height = 800,
+			                .codec = codec,
+			                .fps = 60,
+			                .bitrate = 50'000'000,
+			                .bit_depth = 8,
+			        },
+			        0);
+			nvenc_support[codec] = true;
+			return true;
+		}
+		catch (std::exception & e)
+		{
+			nvenc_support[codec] = false;
+			U_LOG_I("nvenc not supported for %s", std::string(magic_enum::enum_name(codec)).c_str());
+			return false;
+		}
+	}
+#endif
+
 
 #if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 	std::map<std::pair<video_codec, bool>, bool> vaapi_support;
@@ -106,6 +142,8 @@ class prober
 			return it->second;
 		try
 		{
+			if (qsv && !fork_policy::intel_arc(vk.physical_device.getProperties().vendorID, vk.physical_device.getProperties().deviceID))
+				return false;
 			video_encoder_va test(
 			        vk,
 			        encoder_settings{
@@ -159,6 +197,7 @@ class prober
 			}
 			case av1:
 				U_LOG_D("Vulkan video encode for AV1 is not implemented in WiVRn");
+			case pyrowave:
 			case raw:
 				return false;
 		}
@@ -173,14 +212,42 @@ public:
 
 	std::pair<std::string, video_codec> select_encoder(const configuration::encoder & config)
 	{
+        if (config.name == "pyrowave" || config.codec == pyrowave ||
+            (config.name.empty() && !config.codec && info.supported_codecs.size() == 1 && info.supported_codecs.front().codec == pyrowave))
+        {
+#if WIVRN_USE_PYROWAVE
+            if (!config.name.empty() && config.name != "pyrowave") throw std::runtime_error("PyroWave requires the pyrowave encoder");
+            if (config.codec && config.codec != pyrowave) throw std::runtime_error("PyroWave encoder requires the pyrowave codec");
+            if (!std::ranges::contains(info.supported_codecs, pyrowave, &video_codec_capability::codec))
+                throw std::runtime_error("The connected client does not support PyroWave");
+            return {"pyrowave", pyrowave};
+#else
+            throw std::runtime_error("Experimental PyroWave was not built; configure WIVRN_USE_PYROWAVE=ON");
+#endif
+        }
 		if (!fork_policy::encoder(config.name))
 			throw std::runtime_error("Encoder removed from this fork: " + config.name);
 		if (config.codec && *config.codec != h264 && *config.codec != h265)
 			throw std::runtime_error("Quest Pro supports only H.264 / HEVC in this fork");
-		auto codecs = config.codec ? std::vector{*config.codec} : info.supported_codecs;
+		std::vector<video_codec> codecs;
+		if (config.codec) codecs.push_back(*config.codec);
+		else for (auto capability : info.supported_codecs) codecs.push_back(capability.codec);
 		std::erase_if(codecs, [&](auto codec) {
-			return (codec != h264 && codec != h265) || !std::ranges::contains(info.supported_codecs, codec);
+			return (codec != h264 && codec != h265) || !std::ranges::contains(info.supported_codecs, codec, &video_codec_capability::codec);
 		});
+#if WIVRN_USE_NVENC
+        if (vk.physical_device.getProperties().vendorID == 0x10de && (config.name.empty() || config.name == encoder_nvenc))
+            for (auto codec: codecs)
+                if (check_nvenc(codec))
+                    return {encoder_nvenc, codec};
+#endif
+#if WIVRN_USE_VAAPI
+        // AMD defaults to VAAPI; retain the existing Arc encoder preference.
+        if (vk.physical_device.getProperties().vendorID == 0x1002 && config.name.empty())
+            for (auto codec: codecs)
+                if (check_vaapi(codec))
+                    return {encoder_vaapi, codec};
+#endif
 #if WIVRN_USE_QSV
 		if (config.name == encoder_qsv)
 			for (auto codec: codecs)
@@ -208,7 +275,7 @@ public:
 				if (check_vaapi(codec, true))
 					return {encoder_qsv, codec};
 #endif
-		throw std::runtime_error("No usable Intel Arc hardware encoder for the requested Quest Pro codec");
+		throw std::runtime_error("No usable hardware encoder for the requested Quest Pro codec");
 	}
 };
 } // namespace
@@ -238,6 +305,9 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 		cqp_quantizer(dst.options, dst.encoder_name == encoder_qsv && (dst.codec == video_codec::h264 || dst.codec == video_codec::h265));
 	}
 
+	const bool any_pyrowave = std::ranges::any_of(res, [](const auto & e) { return e.codec == pyrowave; });
+	if (any_pyrowave && !std::ranges::all_of(res, [](const auto & e) { return e.codec == pyrowave; }))
+		throw std::runtime_error("PyroWave 4:4:4 must be selected for every stream, including alpha");
 	auto width = align(info.stream_eye_width, 64);
 	auto height = align(info.stream_eye_height, 64);
 
@@ -254,10 +324,20 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 	if (bit_depth and bit_depth != 8 and bit_depth != 10)
 		throw std::runtime_error("invalid bit-depth setting. supported values: 8, 10");
 
-	if (std::ranges::contains(res, video_codec::h264, &encoder_settings::codec))
+	const bool all_encoders_10bit = std::ranges::all_of(res, [&](const encoder_settings & encoder) {
+		auto it = std::ranges::find(info.supported_codecs, encoder.codec, &video_codec_capability::codec);
+		return it != info.supported_codecs.end() and it->supports_10bit;
+	});
+
+	if (bit_depth == 10 and not all_encoders_10bit)
+	{
+		U_LOG_I("Using 8-bit encoding due to mixed encoder support.");
 		bit_depth = 8;
+	}
 	else if (not bit_depth)
-		bit_depth = 10;
+	{
+		bit_depth = all_encoders_10bit ? 10 : 8;
+	}
 
 	auto check_format = [&](vk::Format format) {
 		try
@@ -325,7 +405,17 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 	}
 
 	for (auto & i: res)
-		i.bit_depth = bit_depth.value_or(10);
+    {
+        i.bit_depth = bit_depth.value_or(10);
+#if WIVRN_USE_NVENC
+        if (i.encoder_name == encoder_nvenc)
+        {
+            const auto max = video_encoder_nvenc::get_max_size(bundle, i.codec);
+            if (i.width > max[0] || i.height > max[1])
+                throw std::runtime_error("Requested eye size exceeds NVENC limits; reduce headset resolution");
+        }
+#endif
+    }
 
 	split_bitrate(res, settings.bitrate_bps);
 	return res;

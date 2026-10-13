@@ -865,16 +865,18 @@ void on_headset_info_packet(const wivrn::from_headset::headset_info_packet & inf
 	static const std::map<video_codec, const char *> codec_names = {
 	        {h264, "h264"},
 	        {h265, "h265"},
+            {pyrowave, "pyrowave"},
 	        {av1, "av1"}};
-	for (video_codec codec: info.supported_codecs)
+	for (const auto & capability: info.supported_codecs)
 	{
-		auto it = codec_names.find(codec);
+		auto it = codec_names.find(capability.codec);
 		if (it != codec_names.end())
 			codecs.push_back(it->second);
 	}
 	codecs.push_back(nullptr);
 	wivrn_server_set_supported_codecs(dbus_server, codecs.data());
 	wivrn_server_set_system_name(dbus_server, info.system_name.c_str());
+	wivrn_server_set_client_model(dbus_server, info.client_model.c_str());
 }
 
 void on_name_acquired(GDBusConnection * connection, const gchar * name, gpointer user_data)
@@ -1080,7 +1082,9 @@ int inner_main(int argc, char * argv[], bool show_instructions)
 	notify_init("WiVRn");
 
 	// The tracking worker outlives individual headset/runtime sessions.
-	auto tracking = std::make_unique<wivrn::tracking_worker>();
+	auto tracking_mode = wivrn::configuration().tracking_mode;
+    setenv("WIVRN_TRACKING_MODE", tracking_mode.c_str(), true);
+	auto tracking = std::make_unique<wivrn::tracking_worker>(tracking_mode);
 	// Main loop
 	g_main_loop_run(main_loop);
 

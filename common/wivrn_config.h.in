@@ -28,10 +28,13 @@ static const int default_port = 9757;
 static const int64_t max_extrapolation_ns = 80'000'000;
 } // namespace wivrn
 
+#cmakedefine01 WIVRN_USE_PYROWAVE
+#cmakedefine01 WIVRN_USE_NVENC
 #cmakedefine01 WIVRN_USE_QSV
 #cmakedefine01 WIVRN_USE_VAAPI
 #cmakedefine01 WIVRN_USE_VULKAN_ENCODE
-
+#cmakedefine01 WIVRN_USE_V4L2
+#cmakedefine01 WIVRN_CLIENT_STEAM_FRAME
 
 #cmakedefine01 WIVRN_USE_PIPEWIRE
 

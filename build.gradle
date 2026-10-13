@@ -158,6 +158,7 @@ android {
                           '-DWIVRN_USE_SYSTEM_FREETYPE=OFF',
                           '-DWIVRN_USE_ANDROID_BIN_LIBKTX=ON',
                           '-DWIVRN_BUILD_CLIENT=ON',
+                          '-DWIVRN_USE_PYROWAVE=' + (project.hasProperty('wivrn_pyrowave') ? 'ON' : 'OFF'),
                           '-DWIVRN_BUILD_SERVER=OFF',
                           '-DWIVRN_BUILD_SERVER_LIBRARY=OFF',
                           '-DWIVRN_BUILD_WIVRNCTL=OFF',
@@ -214,7 +215,7 @@ android {
         release {
             if (releaseStore && releasePassword) signingConfig = signingConfigs.metaRelease
             manifestPlaceholders.ComOculusSupportedDevices = "questpro"
-            applicationIdSuffix = ".spatial"
+            applicationIdSuffix = project.hasProperty("wivrn_pyrowave") ? ".pyrowave" : ".spatial"
         }
 
         releaseDebuggable {
@@ -233,12 +234,12 @@ android {
         oculus
         {
             initWith release
-            applicationIdSuffix = ".spatial"
+            applicationIdSuffix = project.hasProperty("wivrn_pyrowave") ? ".pyrowave" : ".spatial"
             manifestPlaceholders.ComOculusSupportedDevices = "questpro"
         }
 
         debug {
-            applicationIdSuffix = ".spatial"
+            applicationIdSuffix = project.hasProperty("wivrn_pyrowave") ? ".pyrowave" : ".spatial"
             manifestPlaceholders.ComOculusSupportedDevices = "questpro"
         }
 

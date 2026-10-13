@@ -74,6 +74,7 @@ class wivrn_session : public xrt_system_devices
 	thread_safe<from_headset::settings_changed> settings;
 
 	shora_bridge shora;
+	xrt_system_devices * lighthouse_devices = nullptr;
 public:
 private:
 	wivrn::compositor compositor;

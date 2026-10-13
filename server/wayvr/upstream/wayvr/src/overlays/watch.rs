@@ -31,14 +31,16 @@ struct WatchState {
     overlay_list: OverlayList,
     set_list: SetList,
     clock_12h: bool,
+    motoc: bool,
 }
 
 pub fn create_watch(app: &mut AppState) -> anyhow::Result<OverlayWindowConfig> {
     let state = WatchState {
         clock_12h: app.session.config.clock_12h,
+        motoc: app.shora_battery.motoc_mode(),
         ..Default::default()
     };
-    let watch_xml = "gui/watch.xml";
+    let watch_xml = if app.shora_battery.motoc_mode() { "gui/watch-motoc.xml" } else { "gui/watch.xml" };
 
     let mut panel =
         GuiPanel::new_from_template(app, watch_xml, state, NewGuiPanelParams::default())?;
@@ -76,6 +78,16 @@ pub fn create_watch(app: &mut AppState) -> anyhow::Result<OverlayWindowConfig> {
                 &doc_params,
             )?;
 
+            if app.shora_battery.motoc_mode() != panel.state.motoc {
+                panel.state.motoc = app.shora_battery.motoc_mode();
+                let root = panel.parser_state.get_widget_id("interaction_buttons")?;
+                panel.layout.remove_children(root);
+                let path = if panel.state.motoc { "gui/watch-motoc.xml" } else { "gui/watch.xml" };
+                panel.parser_state.instantiate_template(
+                    &ParseDocumentParams { globals: doc_params.globals.clone(), path: AssetPathRef::BuiltIn(path), extra: Default::default() },
+                    "TrackingControls", &mut panel.layout, root, Default::default())?;
+                elems_changed = true;
+            }
             match event_data {
                 OverlayEventData::EditModeChanged(edit_mode) => {
                     if let Ok(btn_edit_mode) = panel

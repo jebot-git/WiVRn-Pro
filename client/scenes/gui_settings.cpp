@@ -222,15 +222,19 @@ void settings_video(const settings_context & ctx)
 	auto & default_config = ctx.default_config;
 	const std::string disconnect_tip = ctx.in_game ? _C("tooltip for disabled settings", "Disconnect to change this setting.") : std::string{};
 	std::vector<setting> list;
+	const auto rates = ctx.session.get_refresh_rates();
 
-	if (const auto rates = ctx.session.get_refresh_rates(); not rates.empty())
+	if (not rates.empty())
 	{
+		const auto system_managed = rates.size() < 2;
 		int default_rate_index = index(rates, default_config.preferred_refresh_rate).value_or(-1) + 1;
 
 		list.push_back({
 		        .id = "##refresh",
 		        .label = _("Refresh rate"),
-		        .description = _("Use 'auto' to select the refresh rate based on measured application performance. May cause flicker when a change happens."),
+		        .description = system_managed
+		                               ? _("WiVRn can't directly change the refresh rate on this device. See your device's settings to change the refresh rate.")
+		                               : _("Use 'auto' to select the refresh rate based on measured application performance. May cause flicker when a change happens."),
 		        .ui = rates.size() < 7 ? ui_kind::segmented : ui_kind::combo,
 		        .get_int = [&config, rates] {
 			        for (size_t i = 0; i < rates.size(); ++i)
@@ -258,6 +262,7 @@ void settings_video(const settings_context & ctx)
 				        opts.push_back(fmt::format("{}", int(r)));
 			        return opts; },
 		        .default_int = default_rate_index,
+		        .enabled = [system_managed] { return not system_managed; },
 		});
 	}
 
@@ -280,7 +285,7 @@ void settings_video(const settings_context & ctx)
 		});
 	}
 
-	if (ctx.instance.has_extension(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME))
+	if (rates.size() > 1 && ctx.instance.has_extension(XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME))
 	{
 		list.push_back({
 		        .id = "##spacewarp",
@@ -295,6 +300,11 @@ void settings_video(const settings_context & ctx)
 		});
 	}
 
+    if (WIVRN_CLIENT_STEAM_FRAME)
+    {
+        if (ImGui::Checkbox("Per-eye rendering (experimental double-vision workaround)", &config.separate_eye_rendering)) config.save();
+        ImGui::TextWrapped("Renders hands, controller rays and menus separately for each eye. May increase GPU cost; does not change streamed game projections.");
+    }
 	ui::page_header(_cS("page header title", "Video"), _cS("page header subtitle", "Frame rate and resolution."));
 	render_settings(ctx, "##video", list);
 }
@@ -362,6 +372,8 @@ void settings_streaming(const settings_context & ctx)
 			return _C("Codec", "Automatic");
 		switch (*codec)
 		{
+			case wivrn::pyrowave:
+                return "PyroWave 4:4:4 Haar (experimental)";
 			case wivrn::h264:
 				return _C("Codec", "H.264");
 			case wivrn::h265:
@@ -375,9 +387,9 @@ void settings_streaming(const settings_context & ctx)
 	};
 
 	std::vector<wivrn::video_codec> codecs;
-	for (auto c: wivrn::decoder::supported_codecs())
-		if (c == wivrn::h264 || c == wivrn::h265)
-			codecs.push_back(c);
+	for (auto capability: wivrn::decoder::supported_codecs())
+		if ((capability.codec == wivrn::h264 || capability.codec == wivrn::h265 || capability.codec == wivrn::pyrowave))
+			codecs.push_back(capability.codec);
 
 	list.push_back({
 	        .id = "##codec",
@@ -400,7 +412,7 @@ void settings_streaming(const settings_context & ctx)
 	        .disabled_tooltip = disconnect_tip,
 	});
 
-	if (config.codec == wivrn::h265 or config.codec == wivrn::av1)
+	if (config.codec && wivrn::decoder::supports_10bit(*config.codec))
 	{
 		list.push_back({
 		        .id = "##ten_bit",
@@ -543,6 +555,7 @@ void settings_audio(const settings_context & ctx)
 	        .disabled_tooltip = disconnect_tip,
 	});
 
+#ifdef __ANDROID__
 	list.push_back({
 	        .id = "##unprocessed",
 	        .label = _C("setting name", "Unprocessed audio"),
@@ -554,6 +567,7 @@ void settings_audio(const settings_context & ctx)
 	        .enabled = [&ctx, &config] { return not ctx.in_game and config.check_feature(feature::microphone); },
 	        .disabled_tooltip = disconnect_tip,
 	});
+#endif
 
 	ui::page_header(_cS("page header title", "Audio"), _cS("page header subtitle", "Microphone streamed to the PC."));
 	render_settings(ctx, "##audio", list);

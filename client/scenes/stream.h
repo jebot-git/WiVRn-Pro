@@ -75,6 +75,7 @@ private:
 	std::mutex frames_mutex;
 	std::array<std::shared_ptr<wivrn::shard_accumulator::blit_handle>, decoder_count> common_frame(XrTime display_time);
 
+	bool room_view = false; // Temporary passthrough; never persisted across sessions.
 	wivrn::spatial_source * spatial = nullptr; // Owned by application, not the stream.
 	std::unique_ptr<wivrn_session> network_session;
 	std::thread network_thread;

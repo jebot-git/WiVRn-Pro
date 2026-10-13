@@ -31,6 +31,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <format>
+#include <fstream>
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <limits>
 #include <optional>
@@ -139,7 +140,14 @@ std::optional<std::unordered_set<std::string>> env(std::string_view name)
 	if (not values)
 		return std::nullopt;
 
+#if defined(__cpp_lib_containers_ranges) && __cpp_lib_containers_ranges >= 202202L
 	return std::unordered_set<std::string>{std::from_range, utils::split(*values, ",")};
+#else
+	std::optional<std::unordered_set<std::string>> res{std::in_place};
+	for (auto & val: utils::split(*values))
+		res->insert(std::move(val));
+	return res;
+#endif
 }
 
 void hmd_traits::init()
@@ -168,6 +176,41 @@ void hmd_traits::init()
 	hand_interaction_grip_surface = false;
 	panel_width_override = 1800;
 	controller_profile = "meta-quest-touch-pro";
+#else // not android
+	for (const auto & entry: std::filesystem::directory_iterator("/sys/class/drm"))
+	{
+		std::ifstream modes(entry.path() / "modes");
+		if (not modes)
+			continue;
+
+		std::string mode;
+		while (std::getline(modes, mode))
+		{
+			// panel modes are reported as `2*2160x2160_120` etc.
+			if (not mode.starts_with("2*"))
+				// not a HMD
+				continue;
+
+			const auto x = mode.find('x', 2);
+			if (x == std::string::npos)
+				continue;
+
+			try
+			{
+				panel_width_override = std::stoul(mode.substr(2, x - 2));
+				spdlog::info("Detected native panel mode {}, panel width {}", mode, panel_width_override);
+				break;
+			}
+			catch (...)
+			{
+				spdlog::warn("Failed to parse native panel mode {}", mode);
+			}
+		}
+
+		if (panel_width_override > 0)
+			break;
+	}
+
 #endif
 
 	spdlog::info("HMD traits initialized");
@@ -259,7 +302,7 @@ std::string hmd_traits::model_name() const
 
 	return manufacturer + " " + model;
 #else
-	return "Unknown headset";
+	return WIVRN_CLIENT_STEAM_FRAME ? "Valve Steam Frame" : "Unknown headset";
 #endif
 }
 

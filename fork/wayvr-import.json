@@ -732,7 +732,7 @@
     "wayvr/src/overlays/dashboard.rs": "d45c4b52033e399e0c03c287d0a79f27ec7225591458fdb37ef7fe68141a8101",
     "dash-frontend/assets/gui/tab/home.xml": "897cf5fecaa7ed770791e6526ca6fd084a2e0e270ed75a3369604bc4aac6e44c",
     "dash-frontend/src/tab/home.rs": "fa35db9373957459f68c05e4748537bd70c11aba67f1ef86380245e45a6d79c0",
-    "wayvr/src/assets/gui/watch.xml": "85f91a3405eedee265b826e5ee2d0f57b156ba4e52ed855ede1ce074434cec11",
+    "wayvr/src/assets/gui/watch.xml": "94e3dc46a9399755f83518f180e4e5aae62a59ea60179fe1000192805e2d53a9",
     "wayvr/src/gui/panel/label.rs": "121757db6c03087035238191880fbf968977c0488ee8dcb6126d9fd71c495693",
     "wayvr/src/state.rs": "180a5ac669ad15789c39270b9861aadefefc0e3ae666417eb8af297c39eb6539",
     "wlx-common/src/dash_interface.rs": "49dbe44ff105eb3c22e9da7e741f1d2a1529d13d892f2b77f0e052d44cc5ee8b",
@@ -748,9 +748,10 @@
     "wayvr/src/shaders/mod.rs": "54a91c8460a38bd0077d27c175f2450b87d867a03144610b929531cf6e4fd40d",
     "wayvr/src/backend/wayvr/input_capture.rs": "76c38118749e17569b941f73dad2d883add515e0ea48815e9f4a8a269b6c530e",
     "wayvr/src/subsystem/input.rs": "5bb25ba69e88aa4dea52b8d367b25f46aba583b9990299bb0b5bde4814dbe7b7",
-    "wayvr/src/gui/asset.rs": "44d34b8346d45e69d6fd6990ecae504fb5cec6b0ff6e83c6c4fe1f65a0429db3",
+    "wayvr/src/gui/asset.rs": "428171c64fe02306c54c0d2be31b39fe6832117c2ab64e8fc2d87e3d6c7eac26",
     "wayvr/src/gui/panel/device_list.rs": "5e15deb9a9377cc45bdc15d2d069bb940b856e3ae511ea60bf97ffe03aa6a2c7",
     "wayvr/src/graphics/dmabuf.rs": "107d0416590aee6e2209d50020d891238d7801848ee7fc1b9663720ff7576e3a",
-    "dash-frontend/assets/lang/en.json": "c811211af457e73da4cddda0897c3915156d81c75ba93b33e09da9625aa9d345"
+    "dash-frontend/assets/lang/en.json": "c811211af457e73da4cddda0897c3915156d81c75ba93b33e09da9625aa9d345",
+    "wayvr/src/overlays/watch.rs": "b39f2d169ed1788707731a7a406a755086c0662211ebd5ade3974154f04f70f5"
   }
 }

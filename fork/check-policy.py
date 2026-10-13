@@ -12,7 +12,7 @@ def require(condition, message):
         errors.append(message)
 def read(path):
     return (root / path).read_text()
-for stem in ('video_encoder_nvenc', 'video_encoder_x264', 'video_encoder_raw'):
+for stem in ('video_encoder_x264', 'video_encoder_raw'):
     require(not list((root / 'server/encoder').glob(stem + '*')), 'Removed encoder returned: ' + stem)
 for path in ('client/android/usb.cpp', 'client/android/usb.h', 'client/java/NetworkInfoCallback.java',
              'dashboard/adb.cpp', 'dashboard/apk_installer.cpp', 'dashboard/qml/ConnectUsbDialog.qml'):
@@ -20,13 +20,13 @@ for path in ('client/android/usb.cpp', 'client/android/usb.h', 'client/java/Netw
 for directory in ('client', 'dashboard'):
     for path in (root / directory).rglob('*'):
         if path.suffix in ('.cpp', '.h', '.java', '.qml'):
-            require(not re.search(r'set_usb_networking|startUsbConnection|NetworkInfoCallback|Settings\.(Nvenc|X264)|ApkInstaller|\bAdb\.', path.read_text()), 'Removed API reference: ' + str(path.relative_to(root)))
+            require(not re.search(r'set_usb_networking|startUsbConnection|NetworkInfoCallback|Settings\.(X264)|ApkInstaller|\bAdb\.', path.read_text()), 'Removed API reference: ' + str(path.relative_to(root)))
 require('wivrn::video_codec::av1,' not in read('client/decoder/android/android_decoder.cpp'), 'AV1 advertised by Quest Pro')
 require('res.push_back(wivrn::video_codec::raw)' not in read('client/decoder/decoder.cpp'), 'Raw codec advertised')
-require('fork_policy::intel_arc' in read('server/utils/wivrn_vk_bundle.cpp'), 'GPU selection lost Arc gate')
+require('fork_policy::hardware_gpu' in read('server/utils/wivrn_vk_bundle.cpp'), 'GPU selection lost Arc gate')
 require('require_wifi(control.get_fd())' in read('client/wivrn_client.cpp'), 'Wi-Fi route check removed')
 require('fork_policy::quest_pro' in read('client/hmd_traits.cpp'), 'Client lost Quest Pro gate')
-require('info_packet.client_model != "seacliff"' in read('server/driver/wivrn_connection.cpp'), 'Server lost Quest Pro handshake gate')
+require('fork_policy::accepts_profile' in read('server/driver/wivrn_connection.cpp'), 'Server lost supported-headset handshake gate')
 require('WIVRN_SPATIAL_BRIDGE' not in read('server/driver/spatial_bridge.cpp'), 'Spatial API became optional')
 require('std::unique_ptr<wivrn::spatial_source> spatial' in read('client/application.h'), 'Spatial source lost application lifetime')
 require('spatial->event(e.header)' in read('client/application.cpp'), 'Central spatial event dispatch removed')
@@ -38,7 +38,7 @@ require('wivrn-pro/' in read('patches/monado/9999-private-shora-bridge.patch'), 
 require('"questpro"' in read('build.gradle'), 'Quest Pro manifest target missing')
 for preset in json.loads(read('CMakePresets.json'))['configurePresets']:
     for key, value in preset.get('cacheVariables', {}).items():
-        require(not (key in ('WIVRN_USE_NVENC','WIVRN_USE_X264') and value == 'ON'), 'Forbidden preset: ' + key)
+        require(not (key in ('WIVRN_USE_X264',) and value == 'ON'), 'Forbidden preset: ' + key)
 text = read('server/dist/wivrn-pro.service.in')
 require('RuntimeDirectoryPreserve=yes' in text, 'Private socket directory must survive restarts')
 require('tracking_worker' in read('server/main.cpp'), 'Integrated tracking worker owner removed')

@@ -21,6 +21,9 @@
 #include "driver/wivrn_session.h"
 
 #include "video_encoder.h"
+#if WIVRN_USE_PYROWAVE
+#include "video_encoder_pyrowave.h"
+#endif
 
 #include "encoder_settings.h"
 #include "os/os_time.h"
@@ -30,6 +33,9 @@
 #include <cmath>
 #include <string>
 
+#if WIVRN_USE_NVENC
+#include "video_encoder_nvenc.h"
+#endif
 #if WIVRN_USE_VAAPI || WIVRN_USE_QSV
 #include "ffmpeg/video_encoder_va.h"
 #endif
@@ -129,11 +135,20 @@ std::unique_ptr<video_encoder> video_encoder::create(
 				break;
 			case video_codec::av1:
 				throw std::runtime_error("av1 not supported for vulkan video encode");
+			case video_codec::pyrowave:
 			case video_codec::raw:
 				throw std::runtime_error("raw codec only supported on raw encoder");
 		}
 #else
 		throw std::runtime_error("Vulkan video encode not enabled");
+#endif
+	}
+	if (settings.encoder_name == encoder_nvenc)
+	{
+#if WIVRN_USE_NVENC
+		res = std::make_unique<video_encoder_nvenc>(wivrn_vk, settings, stream_idx);
+#else
+		throw std::runtime_error("NVENC was not built");
 #endif
 	}
 	if (settings.encoder_name == encoder_vaapi || settings.encoder_name == encoder_qsv)
@@ -145,6 +160,9 @@ std::unique_ptr<video_encoder> video_encoder::create(
 #endif
 	}
 
+#if WIVRN_USE_PYROWAVE
+    if (settings.encoder_name == "pyrowave") res = std::make_unique<video_encoder_pyrowave>(wivrn_vk, settings, stream_idx);
+#endif
 	if (not res)
 		throw std::runtime_error("Failed to create encoder " + settings.encoder_name);
 
@@ -164,6 +182,9 @@ std::unique_ptr<video_encoder> video_encoder::create(
 			case av1:
 				file += ".av1";
 				break;
+			case pyrowave:
+                file += ".pyrowave";
+                break;
 			case raw:
 				file += ".yuv";
 				break;

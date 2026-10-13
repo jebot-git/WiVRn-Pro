@@ -1,0 +1,15 @@
+{
+  "resolution_scale": 1.0,
+  "stream_scale": 1.0,
+  "codec": "pyrowave",
+  "bitrate_bps": 400000000,
+  "bit_depth": 8,
+  "extended_config": true,
+  "preferred_refresh_rate": 90,
+  "minimum_refresh_rate": 90,
+  "fps_divider": 1,
+  "high_power_mode": true,
+  "override_foveation_enable": true,
+  "override_foveation_pitch": 0,
+  "override_foveation_distance": 1
+}

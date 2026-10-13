@@ -18,6 +18,7 @@
  */
 
 #include "application.h"
+#include "battery.h"
 #include "stream.h"
 #include "utils/overloaded.h"
 #include "wivrn_packets.h"
@@ -30,10 +31,6 @@
 #include <ranges>
 #include <spdlog/spdlog.h>
 #include <thread>
-
-#ifdef __ANDROID__
-#include "android/battery.h"
-#endif
 
 namespace
 {
@@ -160,14 +157,14 @@ public:
 
 static std::optional<std::array<from_headset::hand_tracking::pose, XR_HAND_JOINT_COUNT_EXT>> locate_hands(xr::hand_tracker & hand, XrSpace space, XrTime time)
 {
-	auto joints = hand.locate(space, time);
+	auto located = hand.locate(space, time);
 
-	if (joints)
+	if (located and located->is_input_source())
 	{
 		std::array<from_headset::hand_tracking::pose, XR_HAND_JOINT_COUNT_EXT> poses;
 		for (int i = 0; i < XR_HAND_JOINT_COUNT_EXT; i++)
 		{
-			const auto & joint = (*joints)[i];
+			const auto & joint = located->joints[i];
 			poses[i] = {
 			        .position = joint.first.pose.position,
 			        .orientation = pack(joint.first.pose.orientation),
@@ -233,10 +230,10 @@ void scenes::stream::tracking()
 #ifdef __ANDROID__
 	// Runtime may use JNI and needs the thread to be attached
 	application::instance().setup_jni();
+#endif
 
 	XrTime next_battery_check = 0;
 	const XrDuration battery_check_interval = 30'000'000'000; // 30s
-#endif
 
 	magic_enum::containers::array<device_id, XrSpace> spaces{};
 
@@ -536,7 +533,6 @@ void scenes::stream::tracking()
 					throw;
 			}
 
-#ifdef __ANDROID__
 			// FIXME: switch to event based
 			if (next_battery_check < now)
 			{
@@ -549,7 +545,6 @@ void scenes::stream::tracking()
 
 				next_battery_check = now + battery_check_interval;
 			}
-#endif
 
 			if (auto fb = std::get_if<xr::fb_body_tracker>(&body_tracker); fb and fb->should_send_skeleton())
 			{
@@ -679,6 +674,7 @@ void scenes::stream::on_interaction_profile_changed(const XrEventDataInteraction
 			DO_PROFILE(yvr, touch_controller_yvr)
 			DO_PROFILE(samsung, odyssey_controller)
 			DO_PROFILE(valve, index_controller)
+			DO_PROFILE(valve, frame_controller_valve)
 
 			// FIXME: remove once support for pre-1.1 profiles is dropped
 			if (profile == "/interaction_profiles/facebook/touch_controller_pro")

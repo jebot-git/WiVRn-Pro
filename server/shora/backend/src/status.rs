@@ -29,6 +29,8 @@ pub struct BoneInfo {
 }
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct StatusSnapshot {
+    pub tracking_mode: String,
+    pub motoc: crate::motoc::Status,
     pub version: String,
     pub pid: u32,
     pub uptime_secs: u64,

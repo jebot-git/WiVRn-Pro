@@ -1,0 +1,55 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+set -eu
+bundle_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+# The Frame client targets steamrt4, whose libc/OpenSSL can be newer than
+# SteamOS. Add bundled libraries only AFTER entering the runtime container.
+if ! grep -Eq '^VERSION_CODENAME="?steamrt4"?$' /etc/os-release; then
+    if [ "${WIVRN_FRAME_ENTERING_RUNTIME:-}" = 1 ]; then
+        echo 'WiVRn Pro: the selected runtime did not enter Steam Runtime 4.' >&2
+        exit 1
+    fi
+    runtime=${WIVRN_STEAM_RUNTIME:-}
+    if [ -z "$runtime" ]; then
+        for candidate in "$bundle_dir/SteamLinuxRuntime_4-arm64" \
+            "$HOME/.steam/root/steamapps/common/SteamLinuxRuntime_4-arm64" \
+            "$HOME/.steam/steam/steamapps/common/SteamLinuxRuntime_4-arm64" \
+            "${XDG_DATA_HOME:-$HOME/.local/share}/Steam/steamapps/common/SteamLinuxRuntime_4-arm64"; do
+            if [ -x "$candidate/run" ]; then
+                runtime=$candidate
+                break
+            fi
+        done
+    fi
+    if [ -z "$runtime" ] || [ ! -x "$runtime/run" ]; then
+        cat >&2 <<'EOF'
+WiVRn Pro requires Steam Linux Runtime 4.0 (ARM64).
+Extract the complete client archive, including SteamLinuxRuntime_4-arm64.
+For a separately installed ARM64 runtime, set:
+  WIVRN_STEAM_RUNTIME=/path/to/SteamLinuxRuntime_4-arm64 ./launch-wivrn-pro
+This build cannot run directly against SteamOS's system libc/OpenSSL.
+EOF
+        exit 1
+    fi
+    # The x86 depot also contains ARM64 pressure-vessel helpers for emulation,
+    # but its run script still selects an x86 userspace. Require both ARM64.
+    if ! grep -Eq '^export PRESSURE_VESSEL_ARCHITECTURES=aarch64-linux-gnu$' "$runtime/run" \
+        || [ "$(od -An -tx1 -j18 -N2 "$runtime/pressure-vessel/bin/pressure-vessel-wrap" 2>/dev/null | tr -d ' \n')" != b700 ]; then
+        echo "WiVRn Pro: '$runtime' is not a complete native ARM64 Steam Runtime 4 installation." >&2
+        echo 'Use SteamLinuxRuntime_4-arm64; SteamLinuxRuntime_4 is the x86 runtime.' >&2
+        exit 1
+    fi
+    export PRESSURE_VESSEL_PREFIX="$runtime/pressure-vessel"
+    export WIVRN_FRAME_ENTERING_RUNTIME=1
+    export PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=${PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES:-1}
+    exec "$runtime/run" -- "$bundle_dir/launch-wivrn-pro" "$@"
+fi
+
+if ! grep -Eq '^VARIANT_ID=.*-arm64-steamrt4"?$' /etc/os-release; then
+    echo 'WiVRn Pro: Steam Runtime 4 is running, but its userspace is not ARM64.' >&2
+    exit 1
+fi
+unset WIVRN_FRAME_ENTERING_RUNTIME
+export LD_LIBRARY_PATH="$bundle_dir/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+exec "$bundle_dir/usr/bin/wivrn" "$@"

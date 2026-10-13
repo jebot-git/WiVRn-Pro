@@ -54,18 +54,29 @@ option(WIVRN_OPTIMIZE_SHADERS "Run spirv-opt on compiled shaders" ON)
 option(WIVRN_DEBUG_SHADERS "Compile shaders with debug information" OFF)
 option(WIVRN_ADDRESS_SANITIZER "Use address sanitizer" OFF)
 
+# V4L2 decoder on by default on Linux AArch64
+set(_WIVRN_USE_V4L2_DEFAULT OFF)
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND NOT ANDROID)
+    set(_WIVRN_USE_V4L2_DEFAULT ON)
+endif()
+option(WIVRN_USE_V4L2 "Enable V4L2 hardware video decoder" ${_WIVRN_USE_V4L2_DEFAULT})
+unset(_WIVRN_USE_V4L2_DEFAULT)
+
 if(WIVRN_OPTIMIZE_SHADERS AND WIVRN_DEBUG_SHADERS)
     message(FATAL_ERROR "WIVRN_OPTIMIZE_SHADERS and WIVRN_DEBUG_SHADERS are incompatible")
 endif()
 
-foreach(removed WIVRN_USE_NVENC WIVRN_USE_X264 WIVRN_FEATURE_STEAMVR_LIGHTHOUSE)
+foreach(removed WIVRN_USE_X264)
     if(DEFINED ${removed} AND ${removed})
         message(FATAL_ERROR "${removed} is not supported by this Intel Arc / Quest Pro fork")
     endif()
     set(${removed} OFF)
 endforeach()
+option(WIVRN_USE_PYROWAVE "Build experimental PyroWave compute codec (explicit selection required)" OFF)
+option(WIVRN_USE_NVENC "Enable NVIDIA NVENC hardware encoding" ON)
+option(WIVRN_FEATURE_STEAMVR_LIGHTHOUSE "Build optional Lighthouse device support" ON)
 option(WIVRN_USE_QSV "Enable optional Intel Quick Sync encoding through FFmpeg/oneVPL" OFF)
-option(WIVRN_USE_VAAPI "Enable Intel Arc VAAPI encoding" ON)
+option(WIVRN_USE_VAAPI "Enable Intel Arc and AMD VAAPI encoding" ON)
 option(WIVRN_USE_VULKAN_ENCODE "Enable vulkan video encoder" ON)
 
 
@@ -86,8 +97,13 @@ if(DEFINED WIVRN_FEATURE_SOLARXR AND NOT WIVRN_FEATURE_SOLARXR)
     message(FATAL_ERROR "SolarXR is integral to the Shora bridge and cannot be disabled")
 endif()
 set(WIVRN_FEATURE_SOLARXR ON)
-if(WIVRN_BUILD_CLIENT AND NOT ANDROID)
-    message(FATAL_ERROR "This fork builds the headset client only for Android Quest Pro")
+option(WIVRN_CLIENT_STEAM_FRAME "Build the native Linux Steam Frame client" OFF)
+if(WIVRN_BUILD_CLIENT)
+    if(WIVRN_CLIENT_STEAM_FRAME AND (ANDROID OR NOT CMAKE_SYSTEM_NAME STREQUAL "Linux"))
+        message(FATAL_ERROR "Steam Frame client requires native Linux")
+    elseif(NOT ANDROID AND NOT WIVRN_CLIENT_STEAM_FRAME)
+        message(FATAL_ERROR "Select the frame preset for the native Steam Frame client")
+    endif()
 endif()
 
 set(WIVRN_CSS "${CMAKE_SOURCE_DIR}/images/wivrn-local.css" CACHE STRING "Stylesheet to use to render SVGs" )
@@ -142,8 +158,8 @@ if (WIVRN_BUILD_SERVER)
         message(FATAL_ERROR "Vulkan version must be at least 1.4.304, found ${Vulkan_VERSION}")
     endif()
 
-    if (NOT WIVRN_USE_VAAPI AND NOT WIVRN_USE_QSV AND NOT WIVRN_USE_VULKAN_ENCODE)
-        message(FATAL_ERROR "Enable at least one Intel Arc encoder: VAAPI, QSV or Vulkan Video")
+    if (NOT WIVRN_USE_NVENC AND NOT WIVRN_USE_VAAPI AND NOT WIVRN_USE_QSV AND NOT WIVRN_USE_VULKAN_ENCODE)
+        message(FATAL_ERROR "Enable at least one hardware encoder: NVENC, VAAPI, QSV or Vulkan Video")
     endif()
 
     if (WIVRN_USE_VAAPI OR WIVRN_USE_QSV)
@@ -154,10 +170,6 @@ if (WIVRN_BUILD_SERVER)
 
     if(WIVRN_USE_QSV)
         include(CheckQsv)
-    endif()
-
-    if (WIVRN_USE_PIPEWIRE)
-        pkg_check_modules(libpipewire REQUIRED IMPORTED_TARGET libpipewire-0.3)
     endif()
 
     pkg_check_modules(AVAHI REQUIRED IMPORTED_TARGET avahi-client avahi-glib)
@@ -181,6 +193,10 @@ if (WIVRN_BUILD_CLIENT)
     find_package(Gettext REQUIRED)
 endif()
 
+if (WIVRN_USE_PIPEWIRE AND (WIVRN_BUILD_SERVER OR (WIVRN_BUILD_CLIENT AND NOT ANDROID)))
+    pkg_check_modules(libpipewire REQUIRED IMPORTED_TARGET libpipewire-0.3)
+endif()
+
 if (WIVRN_BUILD_CLIENT)
     find_program(RSVG_CONVERT rsvg-convert REQUIRED)
     find_program(KTX ktx REQUIRED)
@@ -195,7 +211,9 @@ if (WIVRN_BUILD_CLIENT)
 endif()
 
 if (WIVRN_BUILD_CLIENT AND NOT ANDROID)
-    pkg_check_modules(LIBAV_CLIENT REQUIRED IMPORTED_TARGET libavcodec libavutil libswscale)
+    if(NOT WIVRN_USE_V4L2)
+        pkg_check_modules(LIBAV_CLIENT REQUIRED IMPORTED_TARGET libavcodec libavutil libswscale)
+    endif()
     find_package(Fontconfig REQUIRED)
 
     if (WIVRN_USE_SYSTEM_OPENXR)
@@ -204,6 +222,18 @@ if (WIVRN_BUILD_CLIENT AND NOT ANDROID)
 
     if (WIVRN_USE_SYSTEM_LIBKTX)
         find_package(Ktx REQUIRED)
+        if(TARGET KTX::ktx)
+            # KTX 4.4.2 binary SDKs omit the per-configuration target file.
+            get_target_property(_ktx_configs KTX::ktx IMPORTED_CONFIGURATIONS)
+            get_target_property(_ktx_location KTX::ktx IMPORTED_LOCATION)
+            if(NOT _ktx_configs AND NOT _ktx_location)
+                find_library(WIVRN_KTX_LIBRARY NAMES ktx REQUIRED)
+                set_target_properties(KTX::ktx PROPERTIES IMPORTED_LOCATION "${WIVRN_KTX_LIBRARY}")
+            endif()
+            if(NOT TARGET ktx)
+                add_library(ktx ALIAS KTX::ktx)
+            endif()
+        endif()
     endif()
 endif()
 
@@ -289,6 +319,7 @@ add_custom_target(wivrn-version ALL
         -P ${CMAKE_SOURCE_DIR}/cmake/GitVersion.cmake
         BYPRODUCTS ${CMAKE_BINARY_DIR}/version.cpp ${CMAKE_BINARY_DIR}/u_git_tag.cpp
         SOURCES common/version.cpp.in server/u_git_tag.cpp.in
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 
 add_subdirectory(external)
@@ -307,6 +338,7 @@ if (WIVRN_BUILD_SERVER OR WIVRN_BUILD_SERVER_LIBRARY)
     if (WIVRN_BUILD_SERVER)
         message(STATUS "Selected encoders:")
         message(STATUS "\tQSV   : ${WIVRN_USE_QSV}")
+        message(STATUS "\tNVENC : ${WIVRN_USE_NVENC}")
         message(STATUS "\tVAAPI : ${WIVRN_USE_VAAPI}")
         message(STATUS "\tVulkan: ${WIVRN_USE_VULKAN_ENCODE}")
         message(STATUS "")

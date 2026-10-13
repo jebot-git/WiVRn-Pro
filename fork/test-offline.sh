@@ -67,3 +67,9 @@ build/native-tests/wayvr-supervisor-test
 build/native-tests/hand-joystick-test
 
 python3 -m unittest discover -s apps/spatial-subtitles/tests -p "test_*.py"
+
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/xrizer_discovery_test.cpp -o build/native-tests/xrizer-discovery-test
+build/native-tests/xrizer-discovery-test
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/cqp_rate_control_test.cpp $(pkg-config --cflags --libs libavcodec libavutil) -o build/native-tests/cqp-rate-control-test
+build/native-tests/cqp-rate-control-test
+python3 fork/check-motoc-source.py

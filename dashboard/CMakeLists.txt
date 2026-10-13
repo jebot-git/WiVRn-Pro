@@ -18,3 +18,5 @@ endforeach()
 
 configure_file(wivrn-pro-dashboard.service.in wivrn-pro-dashboard.service @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/wivrn-pro-dashboard.service" DESTINATION lib/systemd/user COMPONENT Dashboard)
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/fork/encoder-presets/profiles" DESTINATION "${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets")

@@ -114,10 +114,29 @@ else()
         target_link_libraries(wivrn openxr_loader)
     endif()
 
-    target_link_libraries(wivrn PkgConfig::LIBAV_CLIENT Fontconfig::Fontconfig CURL::libcurl)
+    target_link_libraries(wivrn Fontconfig::Fontconfig CURL::libcurl)
 
-    file(GLOB PLATFORM_SOURCE CONFIGURE_DEPENDS
-        "decoder/ffmpeg/*.cpp")
+    if(WIVRN_USE_V4L2)
+        file(GLOB CLIENT_V4L2_SOURCE CONFIGURE_DEPENDS
+            "decoder/v4l2/*.cpp")
+        list(APPEND PLATFORM_SOURCE ${CLIENT_V4L2_SOURCE})
+    else()
+        target_link_libraries(wivrn PkgConfig::LIBAV_CLIENT)
+        file(GLOB PLATFORM_SOURCE CONFIGURE_DEPENDS
+            "decoder/ffmpeg/*.cpp")
+    endif()
+
+    file(GLOB CLIENT_LINUX_SOURCE CONFIGURE_DEPENDS
+        "linux/*.cpp")
+    list(APPEND PLATFORM_SOURCE ${CLIENT_LINUX_SOURCE})
+
+    if(WIVRN_USE_PIPEWIRE)
+        file(GLOB CLIENT_PIPEWIRE_SOURCE CONFIGURE_DEPENDS
+            "audio/linux/*.cpp")
+        list(APPEND PLATFORM_SOURCE ${CLIENT_PIPEWIRE_SOURCE})
+        target_link_libraries(wivrn PkgConfig::libpipewire)
+    endif()
+
     target_sources(wivrn PRIVATE ${PLATFORM_SOURCE})
 
     file(CREATE_LINK ${CMAKE_CURRENT_BINARY_DIR}/share ${CMAKE_BINARY_DIR}/share SYMBOLIC)
@@ -338,4 +357,9 @@ if(NOT ANDROID)
     set_target_properties(wivrn PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
     install(DIRECTORY "${ASSETS_DIR}" DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn)
+endif()
+
+if(WIVRN_USE_PYROWAVE)
+    target_sources(wivrn PRIVATE decoder/pyrowave/decoder.cpp)
+    target_link_libraries(wivrn pyrowave)
 endif()

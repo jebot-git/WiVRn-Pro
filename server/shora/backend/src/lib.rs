@@ -28,3 +28,5 @@ pub fn run_worker(args: Vec<String>) -> anyhow::Result<()> {
     logging::init(cfg.log_file.as_deref())?;
     tokio::runtime::Builder::new_multi_thread().worker_threads(2).enable_all().build()?.block_on(app::run(cfg))
 }
+
+pub mod motoc;

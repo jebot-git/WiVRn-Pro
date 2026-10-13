@@ -111,10 +111,11 @@ vk::raii::PipelineLayout make_layout(wivrn::vk_bundle & vk, vk::DescriptorSetLay
 	return res;
 }
 
-std::array<vk::raii::Pipeline, 2> make_pipelines(wivrn::vk_bundle & vk, vk::PipelineLayout layout, int32_t alpha_width)
+std::array<vk::raii::Pipeline, 2> make_pipelines(wivrn::vk_bundle & vk, vk::PipelineLayout layout, int32_t alpha_width, bool pyrowave444)
 {
 	auto shader = vk.load_shader("foveation");
-	auto spc = make_specialization_constants(alpha_width);
+	auto spc = make_specialization_constants(int32_t(alpha_width), uint32_t(pyrowave444));
+	auto no_alpha = make_specialization_constants(int32_t(0), uint32_t(pyrowave444));
 	std::array res{
 	        vk::raii::Pipeline{
 	                vk.device,
@@ -124,6 +125,7 @@ std::array<vk::raii::Pipeline, 2> make_pipelines(wivrn::vk_bundle & vk, vk::Pipe
 	                                .stage = vk::ShaderStageFlagBits::eCompute,
 	                                .module = *shader,
 	                                .pName = "main",
+                                .pSpecializationInfo = no_alpha,
 	                        },
 	                        .layout = layout,
 	                },
@@ -394,7 +396,7 @@ void foveation::compute_params()
 	}
 }
 
-foveation::foveation(wivrn::vk_bundle & bundle, vk::Extent3D foveated_size) :
+foveation::foveation(wivrn::vk_bundle & bundle, vk::Extent3D foveated_size, bool pyrowave444) :
         foveated_size(foveated_size),
         // normal sight line is between 10° and 15° below horizontal
         // https://apps.dtic.mil/sti/tr/pdf/AD0758339.pdf pages 393-394
@@ -415,7 +417,7 @@ foveation::foveation(wivrn::vk_bundle & bundle, vk::Extent3D foveated_size) :
         sampler(make_sampler(bundle)),
         ds_layout(make_ds_layout(bundle)),
         layout(make_layout(bundle, ds_layout)),
-        pipeline(make_pipelines(bundle, layout, foveated_size.width / 2)),
+        pipeline(make_pipelines(bundle, layout, foveated_size.width / 2, pyrowave444)),
         descriptor_pool(make_ds_pool(bundle)),
         descriptor_set(bundle.device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo{
                 .descriptorPool = descriptor_pool,

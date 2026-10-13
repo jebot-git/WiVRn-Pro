@@ -18,6 +18,7 @@
  */
 
 #include "active_runtime.h"
+#include "xrizer_discovery.h"
 #include "driver/configuration.h"
 #include "utils/flatpak.h"
 #include "utils/overloaded.h"
@@ -66,6 +67,8 @@ std::filesystem::path active_runtime::openvr_compat_path()
 	return std::visit(
 	        utils::overloaded{
 	                [](std::monostate) {
+                        if (configuration().xrizer_auto_detect)
+                            return find_system_xrizer();
 		                // no user configuration: return default
 		                std::optional<std::filesystem::path> flatpak_root = flatpak_key(flatpak::section::instance, "app-path");
 		                // flatpak default

@@ -67,8 +67,8 @@ home (`XDG_CONFIG_HOME`, or `~/.config`):
 
 Existing destinations always win. Imports publish complete 0600 files without
 replacing originals. WiVRn preserves unknown keys and custom encoder layouts;
-removed NVENC/x264/raw encoders become VAAPI, AV1/raw codecs become HEVC, and
-Lighthouse is disabled, with changes reported in the journal. Supported settings
+removed x264/raw encoders become VAAPI (NVENC is retained), AV1/raw codecs become HEVC, and
+Lighthouse stays disabled until Motoc bridge mode is explicitly selected, with migration changes reported in the journal. Supported settings
 are preserved. Malformed legacy JSON is reported instead of silently discarded.
 The Shora TOML is copied byte-for-byte. Worker CLI arguments override only its
 three IPC paths and UI mode. A fresh profile disables serial and face input until

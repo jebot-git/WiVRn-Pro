@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "shora_bridge.h"
+#include <string_view>
 #include <cstdlib>
 #include <filesystem>
 #include <stdexcept>
@@ -11,6 +12,7 @@ namespace wivrn
 {
 shora_bridge::shora_bridge()
 {
+    if (const auto * mode = std::getenv("WIVRN_TRACKING_MODE"); mode && std::string_view(mode) == "motoc") return;
 	const auto * runtime = std::getenv("XDG_RUNTIME_DIR");
 	const auto directory = (runtime ? std::filesystem::path(runtime) : std::filesystem::path("/run/user") / std::to_string(getuid())) / "wivrn-pro";
 	if (mkdir(directory.c_str(), 0700) != 0 && errno != EEXIST)

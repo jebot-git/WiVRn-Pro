@@ -51,6 +51,10 @@ constexpr bool intel_arc(uint32_t vendor, uint32_t device)
 			return true;
 	return false;
 }
+constexpr bool hardware_gpu(uint32_t vendor, uint32_t device)
+{
+	return intel_arc(vendor, device) || vendor == 0x10de || vendor == 0x1002;
+}
 constexpr bool wifi_interface(std::string_view name)
 {
 	return name.starts_with("wlan");
@@ -59,12 +63,26 @@ constexpr bool quest_pro(std::string_view device, std::string_view manufacturer)
 {
 	return device == "seacliff" && (manufacturer == "Oculus" || manufacturer == "Meta");
 }
+constexpr bool supported_client(std::string_view model)
+{
+    return model == "seacliff" || model == "steam-frame";
+}
+constexpr bool spatial_anchors(std::string_view model)
+{
+    return model == "seacliff";
+}
+constexpr bool accepts_profile(std::string_view profile, std::string_view model)
+{
+    return supported_client(model) && (profile == "auto" ||
+           (profile == "quest-pro" && model == "seacliff") ||
+           (profile == "steam-frame" && model == "steam-frame"));
+}
 constexpr bool encoder(std::string_view name)
 {
-	return name.empty() || name == "vaapi" || name == "vulkan" || name == "qsv";
+	return name.empty() || name == "vaapi" || name == "vulkan" || name == "qsv" || name == "nvenc" || name == "pyrowave";
 }
 constexpr bool codec(std::string_view name)
 {
-	return name == "h264" || name == "h265";
+	return name == "h264" || name == "h265" || name == "pyrowave";
 }
 } // namespace wivrn::fork_policy

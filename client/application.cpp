@@ -479,6 +479,68 @@ static std::vector<interaction_profile> interaction_profiles{
                 },
         },
         interaction_profile{
+                .profile_name = "/interaction_profiles/valve/frame_controller_valve",
+                .required_extensions = {"XR_VALVE_frame_controller_interaction"},
+                .input_sources = {
+                        "/user/hand/right/output/haptic",
+                        "/user/hand/left/output/haptic",
+
+                        "/user/hand/right/input/grip/pose",
+                        "/user/hand/left/input/grip/pose",
+
+                        "/user/hand/right/input/aim/pose",
+                        "/user/hand/left/input/aim/pose",
+
+                        "/user/hand/right/input/a/touch",
+                        "/user/hand/right/input/a/click",
+                        "/user/hand/right/input/b/touch",
+                        "/user/hand/right/input/b/click",
+                        "/user/hand/right/input/x/touch",
+                        "/user/hand/right/input/x/click",
+                        "/user/hand/right/input/y/touch",
+                        "/user/hand/right/input/y/click",
+                        "/user/hand/right/input/menu/touch",
+                        "/user/hand/right/input/menu/click",
+                        "/user/hand/right/input/system/touch",
+                        "/user/hand/right/input/system/click",
+                        "/user/hand/right/input/bumper/touch",
+                        "/user/hand/right/input/bumper/click",
+                        "/user/hand/right/input/squeeze/touch",
+                        "/user/hand/right/input/squeeze/click",
+                        "/user/hand/right/input/squeeze/value",
+                        "/user/hand/right/input/trigger/touch",
+                        "/user/hand/right/input/trigger/click",
+                        "/user/hand/right/input/trigger/value",
+                        "/user/hand/right/input/thumbstick/touch",
+                        "/user/hand/right/input/thumbstick/click",
+                        "/user/hand/right/input/thumbstick",
+
+                        "/user/hand/left/input/dpad_up/touch",
+                        "/user/hand/left/input/dpad_up/click",
+                        "/user/hand/left/input/dpad_left/touch",
+                        "/user/hand/left/input/dpad_left/click",
+                        "/user/hand/left/input/dpad_down/touch",
+                        "/user/hand/left/input/dpad_down/click",
+                        "/user/hand/left/input/dpad_right/touch",
+                        "/user/hand/left/input/dpad_right/click",
+                        "/user/hand/left/input/view/touch",
+                        "/user/hand/left/input/view/click",
+                        "/user/hand/left/input/system/touch",
+                        "/user/hand/left/input/system/click",
+                        "/user/hand/left/input/bumper/touch",
+                        "/user/hand/left/input/bumper/click",
+                        "/user/hand/left/input/squeeze/touch",
+                        "/user/hand/left/input/squeeze/click",
+                        "/user/hand/left/input/squeeze/value",
+                        "/user/hand/left/input/trigger/touch",
+                        "/user/hand/left/input/trigger/click",
+                        "/user/hand/left/input/trigger/value",
+                        "/user/hand/left/input/thumbstick/touch",
+                        "/user/hand/left/input/thumbstick/click",
+                        "/user/hand/left/input/thumbstick",
+                },
+        },
+        interaction_profile{
                 .profile_name = "/interaction_profiles/yvr/touch_controller_yvr",
                 .input_sources = {
                         "/user/hand/left/output/haptic",
@@ -777,6 +839,7 @@ void application::initialize_vulkan()
 	auto graphics_requirements = xr_system_id.graphics_requirements();
 	XrVersion vulkan_version = std::max(app_info.min_vulkan_version, graphics_requirements.minApiVersionSupported);
 	spdlog::info("OpenXR runtime wants Vulkan {}", xr::to_string(graphics_requirements.minApiVersionSupported));
+
 	spdlog::info("Requesting Vulkan {}", xr::to_string(vulkan_version));
 
 	std::vector<const char *> layers;
@@ -835,6 +898,19 @@ void application::initialize_vulkan()
 	optional_device_extensions.emplace(VK_IMG_FILTER_CUBIC_EXTENSION_NAME);
 	optional_device_extensions.emplace(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
 	optional_device_extensions.emplace(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
+#if WIVRN_USE_PYROWAVE
+    optional_device_extensions.emplace(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
+    optional_device_extensions.emplace(VK_KHR_16BIT_STORAGE_EXTENSION_NAME);
+    optional_device_extensions.emplace(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME);
+#endif
+
+#if WIVRN_USE_V4L2
+	// V4L2 decoders expose their output through DMA-buf
+	optional_device_extensions.emplace(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+	optional_device_extensions.emplace(VK_EXT_EXTERNAL_MEMORY_DMA_BUF_EXTENSION_NAME);
+	optional_device_extensions.emplace(VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
+	optional_device_extensions.emplace(VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME);
+#endif
 
 #ifdef __ANDROID__
 	vk_device_extensions.push_back(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
@@ -982,7 +1058,51 @@ void application::initialize_vulkan()
 	        vk::PhysicalDeviceMultiviewFeaturesKHR{
 	                .multiview = true,
 	        },
-	        vk::PhysicalDeviceIndexTypeUint8FeaturesEXT{}};
+	        vk::PhysicalDeviceIndexTypeUint8FeaturesEXT{},
+            vk::PhysicalDevice16BitStorageFeatures{},
+            vk::PhysicalDevice8BitStorageFeatures{},
+            vk::PhysicalDeviceShaderFloat16Int8Features{},
+            vk::PhysicalDeviceSubgroupSizeControlFeatures{},
+            vk::PhysicalDeviceMaintenance4Features{}};
+    device_create_info.unlink<vk::PhysicalDevice16BitStorageFeatures>();
+    device_create_info.unlink<vk::PhysicalDevice8BitStorageFeatures>();
+    device_create_info.unlink<vk::PhysicalDeviceShaderFloat16Int8Features>();
+    device_create_info.unlink<vk::PhysicalDeviceSubgroupSizeControlFeatures>();
+    device_create_info.unlink<vk::PhysicalDeviceMaintenance4Features>();
+#if WIVRN_USE_PYROWAVE
+    {
+        auto features = vk_physical_device.getFeatures2<vk::PhysicalDeviceFeatures2,
+            vk::PhysicalDevice16BitStorageFeatures, vk::PhysicalDeviceShaderFloat16Int8Features,
+            vk::PhysicalDeviceSubgroupSizeControlFeatures>();
+        const auto & f = features.get<vk::PhysicalDeviceFeatures2>().features;
+        const auto & f16 = features.get<vk::PhysicalDevice16BitStorageFeatures>();
+        const auto & fsub = features.get<vk::PhysicalDeviceSubgroupSizeControlFeatures>();
+        const auto props = vk_physical_device.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceSubgroupProperties>();
+        constexpr auto ops = vk::SubgroupFeatureFlagBits::eVote | vk::SubgroupFeatureFlagBits::eBallot |
+            vk::SubgroupFeatureFlagBits::eArithmetic | vk::SubgroupFeatureFlagBits::eShuffle |
+            vk::SubgroupFeatureFlagBits::eShuffleRelative | vk::SubgroupFeatureFlagBits::eBasic;
+        pyrowave_available = f.shaderStorageImageWriteWithoutFormat && f16.storageBuffer16BitAccess &&
+            fsub.subgroupSizeControl && fsub.computeFullSubgroups &&
+            props.get<vk::PhysicalDeviceProperties2>().properties.limits.maxTexelBufferElements >= 16 * 1024 * 1024 &&
+            (props.get<vk::PhysicalDeviceSubgroupProperties>().supportedOperations & ops) == ops &&
+            utils::contains(vk_device_extensions, VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
+        pyrowave_native_fp16 = pyrowave_available &&
+            features.get<vk::PhysicalDeviceShaderFloat16Int8Features>().shaderFloat16 &&
+            utils::contains(vk_device_extensions, VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME);
+        if (pyrowave_native_fp16) {
+            device_create_info.relink<vk::PhysicalDeviceShaderFloat16Int8Features>();
+            device_create_info.get<vk::PhysicalDeviceShaderFloat16Int8Features>().shaderFloat16 = true;
+        }
+        if (pyrowave_available) {
+            device_features.shaderStorageImageWriteWithoutFormat = true;
+            device_create_info.relink<vk::PhysicalDevice16BitStorageFeatures>();
+            device_create_info.get<vk::PhysicalDevice16BitStorageFeatures>().storageBuffer16BitAccess = true;
+            device_create_info.relink<vk::PhysicalDeviceSubgroupSizeControlFeatures>();
+            device_create_info.get<vk::PhysicalDeviceSubgroupSizeControlFeatures>().subgroupSizeControl = true;
+            device_create_info.get<vk::PhysicalDeviceSubgroupSizeControlFeatures>().computeFullSubgroups = true;
+        }
+    }
+#endif
 
 	auto check_feature_flag = [&](auto feature_flag, const char * extension_name) -> bool {
 		using FeatureStruct = class_from_member_t<decltype(feature_flag)>;
@@ -1000,7 +1120,8 @@ void application::initialize_vulkan()
 		}
 	};
 
-	check_feature_flag(&vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR::timelineSemaphore, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+	if (!check_feature_flag(&vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR::timelineSemaphore, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME))
+        pyrowave_available = false;
 	check_feature_flag(&vk::PhysicalDeviceIndexTypeUint8FeaturesEXT::indexTypeUint8, VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME);
 
 	vk_device = xr_system_id.create_device(vk_physical_device, device_create_info.get());
@@ -1295,6 +1416,7 @@ void application::initialize()
 	        XR_EXT_EYE_GAZE_INTERACTION_EXTENSION_NAME,
 	        XR_EXT_HAND_INTERACTION_EXTENSION_NAME,
 	        XR_EXT_HAND_TRACKING_EXTENSION_NAME,
+	        XR_EXT_HAND_TRACKING_DATA_SOURCE_EXTENSION_NAME,
 	        XR_FB_HAND_TRACKING_MESH_EXTENSION_NAME,
 	        XR_EXT_PALM_POSE_EXTENSION_NAME,
 	        XR_EXT_PERFORMANCE_SETTINGS_EXTENSION_NAME,
@@ -1692,7 +1814,7 @@ wivrn::spatial_source & application::get_spatial_source()
 {
 	auto & app = instance();
 	if (!app.spatial)
-		app.spatial = std::make_unique<wivrn::spatial_source>(app.xr_instance, app.xr_session, space(xr::spaces::world), space(xr::spaces::view), get_config_path() / "spatial-bridge-v1", app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_STORAGE_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME), app.xr_instance.has_extension(XR_FB_SCENE_EXTENSION_NAME));
+		app.spatial = std::make_unique<wivrn::spatial_source>(app.xr_instance, app.xr_session, space(xr::spaces::world), space(xr::spaces::view), get_config_path() / "spatial-bridge-v1", get_hmd_traits().spatial_anchors_available() && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_STORAGE_EXTENSION_NAME) && app.xr_instance.has_extension(XR_FB_SPATIAL_ENTITY_QUERY_EXTENSION_NAME), get_hmd_traits().spatial_anchors_available() && app.xr_instance.has_extension(XR_FB_SCENE_EXTENSION_NAME));
 	return *app.spatial;
 }
 

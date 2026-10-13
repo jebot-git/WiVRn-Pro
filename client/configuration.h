@@ -72,6 +72,7 @@ public:
 	uint8_t bit_depth = 10;
 
 	bool passthrough_enabled = false;
+	bool separate_eye_rendering = false; // Optional Frame multiview workaround.
 	bool mic_unprocessed_audio = false;
 
 	// Input forwarding, per device. Off by default; only effective if the server permits it.

@@ -1,0 +1,13 @@
+{
+  "source": "Local WiVRn-Pro main checkout at 84fad670 with uncommitted Arc encoder preset/CQP changes",
+  "sha256": {
+    "avc-ab-100.json": "5bc1c21302590723fa2b1ad8a7c1030f1fc90c5eb92319c3e01a8a8951247ecd",
+    "avc-cqp-24-experimental.json": "8509624744e5779de338a68998cd081aa24578fae5e1a6b253091ca570a488ac",
+    "hevc-balanced-100.json": "aac3e42eae3ff54bb617ec45d63052b4296c6911fc2cc3af779ff7d28d30cc67",
+    "hevc-cqp-18-experimental.json": "236f120c51427180d62af8a08c0cffbc4f518ace96e693f9050171ae7f7214d2",
+    "hevc-cqp-24-experimental.json": "f7d6e4700f1e715e39d70e886e24b1b0457499d840fe336aff55501657bf732e",
+    "hevc-latency-50.json": "283d71d9651dcdd25b1d4b339bdb6bc5aa02994d1d4c0ec05b69ea3e01a27b1e",
+    "hevc-latency-75.json": "3e320f3701e83f1fd49e8292206702f66374ac722e1ec402db01e51c063755f1",
+    "hevc-quality-150.json": "25561cec67154c706ad3e0273fd2ff884543a32f1f5fbde235026bfc52ef8cb3"
+  }
+}

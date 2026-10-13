@@ -430,6 +430,17 @@ void scenes::stream::gui_settings(float)
 	switch (current_settings_page)
 	{
 		case settings_page::spatial:
+            if (!application::get_hmd_traits().spatial_anchors_available())
+            {
+                const bool available = system.passthrough_supported() != xr::passthrough_type::none;
+                ImGui::SeparatorText("Passthrough");
+                ImGui::BeginDisabled(!available);
+                ImGui::Checkbox("Show room", &room_view);
+                ImGui::EndDisabled();
+                ImGui::TextWrapped(available ? "Show your surroundings while keeping the WiVRn menu open. Turn off to return to the game."
+                    : "This OpenXR runtime does not expose passthrough. A compatible camera and runtime are required.");
+                break;
+            }
 			if (spatial)
 			{
 				auto & portal = spatial->portal;
@@ -1169,10 +1180,12 @@ void scenes::stream::draw_gui(XrTime predicted_display_time, XrDuration predicte
 			auto left = left_hand->locate(world_space, predicted_display_time);
 			auto right = right_hand->locate(world_space, predicted_display_time);
 
-			if (left and xr::hand_tracker::check_flags(*left, XR_SPACE_LOCATION_POSITION_TRACKED_BIT | XR_SPACE_LOCATION_POSITION_VALID_BIT, 0))
+			if (left and left->is_input_source() and
+			    xr::hand_tracker::check_flags(left->joints, XR_SPACE_LOCATION_POSITION_TRACKED_BIT | XR_SPACE_LOCATION_POSITION_VALID_BIT, 0))
 				hide_left_controller = true;
 
-			if (right and xr::hand_tracker::check_flags(*right, XR_SPACE_LOCATION_POSITION_TRACKED_BIT | XR_SPACE_LOCATION_POSITION_VALID_BIT, 0))
+			if (right and right->is_input_source() and
+			    xr::hand_tracker::check_flags(right->joints, XR_SPACE_LOCATION_POSITION_TRACKED_BIT | XR_SPACE_LOCATION_POSITION_VALID_BIT, 0))
 				hide_right_controller = true;
 		}
 

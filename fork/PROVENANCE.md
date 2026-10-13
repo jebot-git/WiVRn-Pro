@@ -65,3 +65,16 @@ The local source hashes above now also cover `vrmousepriority.*`,
 without grabbing devices and incorporates its existing captured input events;
 its own virtual pointer is excluded. The two compositor paths retain their
 respective button ownership when cancelling synthetic clicks.
+
+Motoc is vendored from https://github.com/galister/motoc at
+`e9d4a407f643df452a91d8bf3868c701d0541250` under GPL-3.0-only, in
+`server/motoc/upstream`. `motoc-import.json` records pristine and adapted hashes.
+The small CLI integration adds experimental room-anchor continuation, validates
+resume device identities, reports calibration readiness and returns startup errors.
+Its separate Cargo.lock pins dependencies; the original LICENSE is installed.
+NVENC sources and ffnvcodec headers are restored from the recorded WiVRn
+`upstream/base-v26.9` history, retaining their original licenses. NVENC is adapted
+for UUID-based CUDA selection, the fork's tracing API and CQP profiles.
+Arc profile data and the CQP parser/FFmpeg helper were selectively imported from
+the local main checkout's pending work; `encoder-presets/import.json` records the
+profile hashes. Other pending work in that checkout was not imported.

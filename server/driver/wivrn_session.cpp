@@ -23,6 +23,7 @@
 #include "accept_connection.h"
 #include "application.h"
 #include "configuration.h"
+#include "controller_roles.h"
 #include "driver/app_pacer.h"
 #include "driver/refresh_rate_policy.h"
 #include "driver/xrt_cast.h"
@@ -139,63 +140,9 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 	static_xdevs[static_xdev_count++] = &gamepad_device.emplace(*this);
 
 	auto conf = configuration();
+    if (const auto * mode = std::getenv("WIVRN_TRACKING_MODE")) conf.tracking_mode = mode;
 
-#if WIVRN_FEATURE_STEAMVR_LIGHTHOUSE
 
-	auto use_steamvr_lh = conf.use_steamvr_lh || std::getenv("WIVRN_USE_STEAMVR_LH");
-	xrt_system_devices * lhdevs = NULL;
-
-	if (use_steamvr_lh)
-	{
-		if (conf.lh_stick_deadzone > 0.01f)
-			setenv("LH_STICK_DEADZONE", std::format("{:.2}", *conf.lh_stick_deadzone).c_str(), true);
-
-		if (conf.lh_max_extrapolation.has_value())
-			setenv("LH_MAX_EXTRAPOLATION_MS", std::format("{}", *conf.lh_max_extrapolation).c_str(), true);
-
-		U_LOG_W("=====================");
-		U_LOG_W("Disregard lighthousedb / chaperone related error messages from the lighthouse driver. These are irrelevant in case of WiVRn.");
-		U_LOG_W("If getting a SIGSEGV right after this, you are likely using an unsupported SteamVR version!");
-		U_LOG_W("=====================");
-		if (steamvr_lh_create_devices(nullptr, &lhdevs) == XRT_SUCCESS)
-		{
-			for (int i = 0; i < lhdevs->static_xdev_count; i++)
-			{
-				auto lhdev = lhdevs->static_xdevs[i];
-				switch (lhdev->device_type)
-				{
-					case XRT_DEVICE_TYPE_LEFT_HAND_CONTROLLER:
-						roles.left = static_xdev_count;
-						static_roles.hand_tracking.unobstructed.left = nullptr;
-						static_roles.hand_tracking.conforming.left = lhdev;
-						break;
-					case XRT_DEVICE_TYPE_RIGHT_HAND_CONTROLLER:
-						roles.right = static_xdev_count;
-						static_roles.hand_tracking.unobstructed.right = nullptr;
-						static_roles.hand_tracking.conforming.right = lhdev;
-						break;
-					case XRT_DEVICE_TYPE_ANY_HAND_CONTROLLER:
-						if (roles.left == left_controller_index)
-						{
-							roles.left = static_xdev_count;
-							static_roles.hand_tracking.unobstructed.left = nullptr;
-							static_roles.hand_tracking.conforming.left = lhdev;
-						}
-						else if (roles.right == right_controller_index)
-						{
-							roles.right = static_xdev_count;
-							static_roles.hand_tracking.unobstructed.right = nullptr;
-							static_roles.hand_tracking.conforming.right = lhdev;
-						}
-						break;
-					default:
-						break;
-				}
-				static_xdevs[static_xdev_count++] = lhdev;
-			}
-		}
-	}
-#endif
 	if (get_info().eye_gaze || is_forced_extension("EXT_eye_gaze_interaction"))
 	{
 		// The tracker space needs to be attached to the head pose once the space overseer is created
@@ -246,7 +193,53 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 		}
 	}
 
+#if WIVRN_FEATURE_STEAMVR_LIGHTHOUSE
+
+	auto use_steamvr_lh = conf.tracking_mode == "motoc";
+	xrt_system_devices * lhdevs = NULL;
+
+	if (use_steamvr_lh)
+	{
+		if (conf.lh_stick_deadzone > 0.01f)
+			setenv("LH_STICK_DEADZONE", std::format("{:.2}", *conf.lh_stick_deadzone).c_str(), true);
+
+		if (conf.lh_max_extrapolation.has_value())
+			setenv("LH_MAX_EXTRAPOLATION_MS", std::format("{}", *conf.lh_max_extrapolation).c_str(), true);
+
+		U_LOG_W("=====================");
+		U_LOG_W("Disregard lighthousedb / chaperone related error messages from the lighthouse driver. These are irrelevant in case of WiVRn.");
+		U_LOG_W("If getting a SIGSEGV right after this, you are likely using an unsupported SteamVR version!");
+		U_LOG_W("=====================");
+		if (steamvr_lh_create_devices(nullptr, &lhdevs) == XRT_SUCCESS)
+		{
+			lighthouse_devices = lhdevs;
+			for (int i = 0; i < lhdevs->static_xdev_count && static_xdev_count < ARRAY_SIZE(static_xdevs); i++)
+			{
+				auto lhdev = lhdevs->static_xdevs[i];
+				switch (lighthouse_controller_hand(lhdev->device_type, conf.motoc_lighthouse_controllers,
+				                                  roles.left == left_controller_index, roles.right == right_controller_index))
+				{
+					case 0:
+						roles.left = static_xdev_count;
+						static_roles.hand_tracking.unobstructed.left = nullptr;
+						static_roles.hand_tracking.conforming.left = lhdev;
+						break;
+					case 1:
+						roles.right = static_xdev_count;
+						static_roles.hand_tracking.unobstructed.right = nullptr;
+						static_roles.hand_tracking.conforming.right = lhdev;
+						break;
+					default:
+						break;
+				}
+				static_xdevs[static_xdev_count++] = lhdev;
+			}
+		}
+	}
+#endif
 #if WIVRN_FEATURE_SOLARXR
+    if (conf.tracking_mode == "slimevr")
+    {
 	uint32_t num_devs = solarxr_device_create_xdevs(static_cast<xrt_device>(hmd).tracking_origin, &static_xdevs[static_xdev_count], ARRAY_SIZE(static_xdevs) - static_xdev_count);
 	if (num_devs != 0)
 	{
@@ -254,6 +247,7 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 		solarxr_device_set_feeder_devices(static_roles.body, static_xdevs, static_xdev_count);
 	}
 	static_xdev_count += num_devs;
+    }
 #endif
 
 	if (roles.left >= 0)
@@ -290,9 +284,19 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
 wivrn_session::~wivrn_session()
 {
 #if WIVRN_FEATURE_SOLARXR
-	solarxr_device_clear_feeder_devices(static_roles.body);
+    if (const auto * mode = std::getenv("WIVRN_TRACKING_MODE"); !mode || std::string_view(mode) == "slimevr")
+	    solarxr_device_clear_feeder_devices(static_roles.body);
 #endif
 
+    if (lighthouse_devices)
+    {
+        // The Lighthouse system owns its driver context and devices. Remove our
+        // aliases before destroying it, exactly once, at runtime teardown.
+        for (auto & device : static_xdevs)
+            for (uint32_t i = 0; i < lighthouse_devices->static_xdev_count; ++i)
+                if (device == lighthouse_devices->static_xdevs[i]) device = nullptr;
+        xrt_system_devices_destroy(&lighthouse_devices);
+    }
 	for (size_t i = 0; i < ARRAY_SIZE(static_xdevs); i++)
 	{
 		xrt_device_destroy(&static_xdevs[i]);
@@ -575,6 +579,8 @@ static xrt_device_name get_name(interaction_profile profile)
 			return XRT_DEVICE_SAMSUNG_ODYSSEY_CONTROLLER;
 		case interaction_profile::valve_index_controller:
 			return XRT_DEVICE_INDEX_CONTROLLER;
+		case interaction_profile::valve_frame_controller_valve:
+			return XRT_DEVICE_FRAME_CONTROLLER;
 	}
 	throw std::runtime_error("invalid interaction profile id " + std::to_string(int(profile)));
 }
@@ -589,8 +595,10 @@ void wivrn_session::operator()(const from_headset::tracking & tracking)
 			uinput_handler->destroy_gamepad();
 	}
 
-	auto left = (roles.left == -1 || roles.left == left_controller_index || roles.left == left_hand_interaction_index) ? get_name(tracking.interaction_profiles[0]) : XRT_DEVICE_INVALID;
-	auto right = (roles.right == -1 || roles.right == right_controller_index || roles.right == right_hand_interaction_index) ? get_name(tracking.interaction_profiles[1]) : XRT_DEVICE_INVALID;
+	auto left = controller_profile(roles.left, left_controller_index, left_hand_interaction_index,
+	                               roles.left_profile, get_name(tracking.interaction_profiles[0]));
+	auto right = controller_profile(roles.right, right_controller_index, right_hand_interaction_index,
+	                                roles.right_profile, get_name(tracking.interaction_profiles[1]));
 	joystick_emulation.poll(os_monotonic_get_ns(),
 	                        (get_name(tracking.interaction_profiles[0]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 1u : 0u) |
 	                                (get_name(tracking.interaction_profiles[1]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 2u : 0u));
@@ -745,7 +753,7 @@ void wivrn_session::operator()(from_headset::htc_body && body_tracking)
 }
 void wivrn_session::operator()(const spatial::snapshot & packet)
 {
-	if (!spatial_bridge.enabled())
+	if (!spatial_bridge.enabled() || get_info().client_model != "seacliff")
 		return;
 	auto offset = offset_est.get_offset();
 	std::optional<XrPosef> mapping;
@@ -1268,6 +1276,7 @@ std::pair<bool, std::optional<std::string>> wivrn_session::validate_headset_info
 
 		// only allow connecting from the "same" headset
 		refuse |= prev_info.system_name != info.system_name;
+        refuse |= prev_info.client_model != info.client_model;
 
 		for (uint32_t i = 0; i < 2; i++)
 		{

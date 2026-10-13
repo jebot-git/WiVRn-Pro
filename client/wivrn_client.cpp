@@ -30,6 +30,7 @@
 #include <array>
 #include <cstring>
 #include <ifaddrs.h>
+#include <filesystem>
 #include <linux/ipv6.h>
 #include <memory>
 #include <net/if.h>
@@ -87,7 +88,12 @@ void require_wifi(int fd)
 	auto connected = address_bytes(reinterpret_cast<const sockaddr *>(&local));
 	for (auto * interface = raw; interface; interface = interface->ifa_next)
 	{
-		if (interface->ifa_addr && wivrn::fork_policy::wifi_interface(interface->ifa_name) &&
+		if (interface->ifa_addr && (wivrn::fork_policy::wifi_interface(interface->ifa_name) ||
+#if WIVRN_CLIENT_STEAM_FRAME
+            std::filesystem::exists(std::filesystem::path("/sys/class/net") / interface->ifa_name / "wireless") ||
+            std::filesystem::exists(std::filesystem::path("/sys/class/net") / interface->ifa_name / "phy80211") ||
+#endif
+            false) &&
 		    (interface->ifa_flags & IFF_UP) && !(interface->ifa_flags & IFF_LOOPBACK) &&
 		    (interface->ifa_addr->sa_family == AF_INET || interface->ifa_addr->sa_family == AF_INET6) &&
 		    address_bytes(interface->ifa_addr) == connected)

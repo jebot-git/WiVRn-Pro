@@ -34,6 +34,8 @@ void stream_performance::update(const from_headset::feedback & f, int64_t now)
 	auto extra = [](uint8_t n) { return n > 1 ? n - 1 : 0; };
 	if (f.times_displayed > it->displayed)
 	{
+		if (it->displayed == 0)
+			presented_frames++;
 		repeats += extra(f.times_displayed) - extra(it->displayed);
 		it->displayed = f.times_displayed;
 	}
@@ -182,7 +184,7 @@ void performance_feed::run()
 					         {"blit_to_predicted_display_ms", duration_ms(f.blitted, f.displayed)},
 					         {"encode_to_predicted_display_ms", duration_ms(f.encode_begin, f.displayed)}};
 				}
-				video.push_back({{"id", i}, {"updated_ns", s.updated_ns}, {"frames", s.frames}, {"repeats", s.repeats}, {"encode_ms", latency(0)}, {"delivery_ms", latency(1)}, {"decode_ms", latency(2)}, {"encode_display_ms", latency(3)},
+				video.push_back({{"id", i}, {"updated_ns", s.updated_ns}, {"frames", s.frames}, {"presented_frames", s.presented_frames}, {"repeats", s.repeats}, {"encode_ms", latency(0)}, {"delivery_ms", latency(1)}, {"decode_ms", latency(2)}, {"encode_display_ms", latency(3)},
 				                 {"stage_frames", {{"encode", stage_frame(0)}, {"delivery", stage_frame(1)}, {"decode", stage_frame(2)}, {"encode_display", stage_frame(3)}}}, {"first_display", first}});
 			}
 			auto data = nlohmann::json({{"version", 1}, {"pid", getpid()}, {"session", session}, {"updated_ns", monotonic_ns()}, {"target_hz", target}, {"apps", apps}, {"streams", video}}).dump();

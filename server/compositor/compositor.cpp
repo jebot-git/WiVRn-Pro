@@ -113,7 +113,8 @@ std::array<vk::Format, 3> image_formats(int bit_depth)
 
 std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::CommandPool command_pool, std::span<wivrn::encoder_settings> encoders)
 {
-	auto formats = image_formats(encoders[0].bit_depth);
+	const bool pyrowave444 = encoders[0].codec == wivrn::pyrowave;
+    auto formats = pyrowave444 ? std::array{vk::Format::eR8G8B8A8Unorm, vk::Format::eR8G8B8A8Unorm, vk::Format::eR8G8B8A8Unorm} : image_formats(encoders[0].bit_depth);
 
 	vk::StructureChain image_info{
 	        vk::ImageCreateInfo{
@@ -135,6 +136,10 @@ std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::C
 	                .pViewFormats = formats.data(),
 	        },
 	};
+#if WIVRN_USE_PYROWAVE
+    if (std::ranges::any_of(encoders, [](const auto & e) { return e.encoder_name == "pyrowave"; }))
+        image_info.get().usage |= vk::ImageUsageFlagBits::eSampled;
+#endif
 #if WIVRN_USE_VULKAN_ENCODE
 	if (
 	        std::get<vk::PhysicalDeviceVideoMaintenance1FeaturesKHR>(vk.feat).videoMaintenance1 and
@@ -169,7 +174,7 @@ std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::C
 		                        .viewType = vk::ImageViewType::e2DArray,
 		                        .format = formats[0],
 		                        .subresourceRange = {
-		                                .aspectMask = vk::ImageAspectFlagBits::ePlane0,
+		                                .aspectMask = pyrowave444 ? vk::ImageAspectFlagBits::eColor : vk::ImageAspectFlagBits::ePlane0,
 		                                .levelCount = 1,
 		                                .layerCount = image_info.get().arrayLayers,
 		                        },
@@ -183,7 +188,7 @@ std::array<wivrn::compositor::image, 2> make_images(wivrn::vk_bundle & vk, vk::C
 		                        .viewType = vk::ImageViewType::e2DArray,
 		                        .format = formats[1],
 		                        .subresourceRange = {
-		                                .aspectMask = vk::ImageAspectFlagBits::ePlane1,
+		                                .aspectMask = pyrowave444 ? vk::ImageAspectFlagBits::eColor : vk::ImageAspectFlagBits::ePlane1,
 		                                .levelCount = 1,
 		                                .layerCount = image_info.get().arrayLayers,
 		                        },
@@ -781,7 +786,7 @@ compositor::compositor(wivrn_session & session) :
         frame_rate(settings[0].fps),
         pacer(U_TIME_1S_IN_NS / frame_rate),
         squasher(vk, render_extent(session.get_info())),
-        foveation(vk, images[0].image.info().extent)
+        foveation(vk, images[0].image.info().extent, settings[0].codec == pyrowave)
 {
 	comp_base * c_base = this;
 	// Ensure we can safely cast pointers

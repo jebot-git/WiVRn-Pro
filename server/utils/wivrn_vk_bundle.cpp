@@ -174,7 +174,7 @@ wivrn::vk_bundle::vk_bundle() :
 		auto index = debug_get_num_option_force_gpu_index();
 		auto supported = [](const auto & device) {
 			const auto p = device.getProperties();
-			return fork_policy::intel_arc(p.vendorID, p.deviceID);
+			return fork_policy::hardware_gpu(p.vendorID, p.deviceID);
 		};
 		if (index < 0)
 		{
@@ -185,12 +185,12 @@ wivrn::vk_bundle::vk_bundle() :
 					break;
 				}
 			if (index < 0)
-				throw std::runtime_error("No supported Intel Arc GPU found (this fork does not support Intel UHD, AMD, NVIDIA or software GPUs)");
+				throw std::runtime_error("No supported Intel Arc, AMD or NVIDIA GPU found");
 		}
 		if (size_t(index) >= phys_devices.size())
-			throw std::runtime_error("Forced Intel Arc GPU index is outside the device list");
+			throw std::runtime_error("Forced GPU index is outside the device list");
 		if (!supported(phys_devices[index]))
-			throw std::runtime_error("Selected GPU is not a supported Intel Arc device");
+			throw std::runtime_error("Selected GPU is not an Intel Arc, AMD or NVIDIA device");
 		physical_device = std::move(phys_devices[index]);
 	}
 
@@ -306,6 +306,20 @@ wivrn::vk_bundle::vk_bundle() :
 		}
 #endif
 
+#if WIVRN_USE_PYROWAVE
+        {
+            auto f = physical_device.getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features>();
+            feat.get<vk::PhysicalDeviceFeatures2>().features.shaderInt16 = f.get<vk::PhysicalDeviceFeatures2>().features.shaderInt16;
+            feat.get<vk::PhysicalDeviceVulkan11Features>().storageBuffer16BitAccess = f.get<vk::PhysicalDeviceVulkan11Features>().storageBuffer16BitAccess;
+            auto & f12 = feat.get<vk::PhysicalDeviceVulkan12Features>();
+            f12.storageBuffer8BitAccess = f.get<vk::PhysicalDeviceVulkan12Features>().storageBuffer8BitAccess;
+            f12.shaderFloat16 = f.get<vk::PhysicalDeviceVulkan12Features>().shaderFloat16;
+            auto & f13 = feat.get<vk::PhysicalDeviceVulkan13Features>();
+            f13.subgroupSizeControl = f.get<vk::PhysicalDeviceVulkan13Features>().subgroupSizeControl;
+            f13.computeFullSubgroups = f.get<vk::PhysicalDeviceVulkan13Features>().computeFullSubgroups;
+            f13.maintenance4 = f.get<vk::PhysicalDeviceVulkan13Features>().maintenance4;
+        }
+#endif
 		// Enable features
 		auto [phys_feat, phys_feat12, phys_feat13] = physical_device.getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features>();
 

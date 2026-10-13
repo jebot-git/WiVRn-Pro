@@ -8,10 +8,11 @@ All values are optional.
 
 ## Encoding
 
-`encoder` accepts `vulkan`, `vaapi`, or `qsv` (requires `WIVRN_USE_QSV=ON`).
-When omitted, the server probes Vulkan Video, then VAAPI, then QSV if built.
+`encoder` accepts `vulkan`, `vaapi`, `nvenc`, or `qsv` (requires `WIVRN_USE_QSV=ON`).
+When omitted, Arc retains Vulkan Video → VAAPI → QSV preference. NVIDIA prefers
+NVENC and AMD prefers VAAPI, then falls back to the other compiled hardware paths.
 Explicit selections have no fallback to another backend. Every backend uses the
-selected Intel Arc GPU. Unknown/removed encoders and AV1/raw codecs fail.
+selected supported GPU. QSV still requires Intel Arc. Unknown/removed encoders and AV1/raw codecs fail.
 
 `codec` accepts `h264` or `h265` (HEVC). Automatic codec choice follows the
 Quest Pro decoder's supported preference order. `bit-depth` defaults to 8;
@@ -26,14 +27,48 @@ HEVC may use 10 bits when supported by both peers and the selected encoder.
 
 The encoder object applies to all eye/alpha streams. A three-element list may
 specify each stream independently. `device` for VAAPI/QSV, if set, must resolve
-to the same DRM render node as the selected Arc; cross-GPU offload is rejected.
-The compositor chooses the first explicitly supported Arc. The optional
-`XRT_COMPOSITOR_FORCE_GPU_INDEX` override also rejects non-Arc devices.
+to the same DRM render node as the selected GPU; cross-GPU offload is rejected.
+The compositor chooses the first supported Arc, AMD or NVIDIA device. The optional
+`XRT_COMPOSITOR_FORCE_GPU_INDEX` override also rejects unsupported vendors and non-Arc Intel devices.
 
 Advanced `options` in VAAPI/QSV objects pass string values to FFmpeg. QSV defaults
 to async depth 1, no B frames/lookahead, forced IDR, a veryfast preset and low-delay
 rate control. Overrides can affect latency and compatibility. Runtime capability
 errors are reported instead of choosing a software encoder.
+
+## Tracking bridge and xrizer
+
+`"tracking-mode": "slimevr"` is the default. `"motoc"` selects Lighthouse and
+turns off the SlimeVR proxy, acquisition and SolarXR output for that worker.
+Select the mode in the GUI and restart WiVRn; the active mode cannot change
+mid-session. Motoc settings are saved under `[motoc]` in the Shora profile.
+See [Motoc and experimental anchor continuation](../fork/PORTABILITY.md).
+
+In the **Motoc / Lighthouse** tab, **Use Lighthouse controllers when available**
+enables Index and other Lighthouse controllers alongside the WiVRn headset.
+It defaults on (`"motoc-lighthouse-controllers": true`); each hand without a
+detected Lighthouse controller keeps its headset controller. Turn it off to use
+headset controllers with Lighthouse body trackers. Save **WiVRn settings**, then
+restart WiVRn; power on paired controllers before startup. This option only
+affects Motoc bridge mode and uses the same playspace calibration as trackers.
+
+`"xrizer-auto-detect": true` with no `openvr-compat-path` searches installed
+xrizer directories under `/usr/local/lib64`, `/usr/local/lib`, `/usr/lib64`,
+`/usr/lib`, common Debian multiarch directories and `/opt`. A candidate must
+contain `bin/linux64/vrclient.so`. An explicit path or `null` retains precedence.
+The GUI exposes default discovery, system xrizer, manual path and disabled modes.
+
+## CBR and variable-traffic CQP presets
+
+The streaming GUI loads the existing Arc profiles for QSV, NVENC or VAAPI.
+Select the target backend beside the preset list. CBR profiles retain their
+headset bitrate instructions; the host preset does not change the headset slider.
+CQP uses `"options": {"rate_control": "cqp", "qp": "24"}` for AVC/HEVC, with
+integer QP 1–51. This is constant quantization with variable, **uncapped** traffic,
+not average-bitrate VBR. The headset bitrate slider does not cap CQP. NVENC maps
+it to CONSTQP; VAAPI to CQP; QSV uses QSCALE. QSV private options are stripped
+when applying presets to NVENC/VAAPI. Unsupported capability errors are reported;
+CQP is not silently converted to CBR. Vulkan CQP is rejected. Defaults remain CBR.
 
 ## `application`
 Default value: unset

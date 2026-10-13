@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "wivrn_config.h"
+
 #ifdef __ANDROID__
 #include "audio_ab_config.h"
 #if WIVRN_AUDIO_AB_STOCK
@@ -29,6 +31,12 @@
 namespace wivrn
 {
 using audio = ::wivrn::android::audio;
+}
+#elif WIVRN_USE_PIPEWIRE
+#include "linux/audio.h"
+namespace wivrn
+{
+using audio = ::wivrn::linux_audio::audio;
 }
 #else
 

@@ -38,9 +38,9 @@ int main(int argc, char ** argv)
 	assert(read(fork / "shora.toml") == "height_m=1.65\n");
 	std::filesystem::remove(fork / "config.json");
 	std::ofstream(legacy / "config.json") << R"({"encoder":[{"encoder":"nvenc","codec":"av1","options":{"keep":1}}],"use-steamvr-lh":true})";
-	assert(carry_over(home).size() == 4);
+	assert(carry_over(home).size() == 3);
 	auto normalized = nlohmann::json::parse(read(fork / "config.json"));
-	assert(normalized["encoder"][0]["encoder"] == "vaapi");
+	assert(normalized["encoder"][0]["encoder"] == "nvenc");
 	assert(normalized["encoder"][0]["codec"] == "h265");
 	assert(normalized["encoder"][0]["options"]["keep"] == 1);
 	assert(normalized["use-steamvr-lh"] == false);
