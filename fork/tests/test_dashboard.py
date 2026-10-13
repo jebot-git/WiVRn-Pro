@@ -51,6 +51,32 @@ class DashboardTests(unittest.TestCase):
         self.assertFalse(self.panel.preset_backend.isEnabled())
         self.assertIn('Experimental', self.panel.preset_notice.text())
 
+    def test_pyrowave_bitrate_saves_override_and_returns_to_headset(self):
+        self.panel.encoder.setCurrentText('pyrowave')
+        self.panel.codec.setCurrentText('pyrowave')
+        self.panel.pyrowave_bitrate.setValue(350)
+        self.panel.save()
+        value = self.server.calls[-1][1]
+        self.assertEqual(value['pyrowave-bitrate'], 350_000_000)
+        self.assertEqual(value['bitrate'], self.config['bitrate'])
+        self.assertEqual(value['application'], self.config['application'])
+        self.panel.dirty = False
+        self.server.state.emit({'JsonConfiguration': json.dumps(value)})
+        self.assertEqual(self.panel.pyrowave_bitrate.value(), 350)
+        self.panel.pyrowave_bitrate.setValue(0)
+        self.assertNotIn('pyrowave-bitrate', self.panel.configuration())
+
+    def test_pyrowave_preset_bitrate_is_editable_and_preserves_raw_edits(self):
+        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
+        self.panel.load_preset.click()
+        self.assertEqual(self.panel.pyrowave_bitrate.value(), 400)
+        self.panel.pyrowave_bitrate.setValue(280)
+        self.assertEqual(self.panel.configuration()['pyrowave-bitrate'], 280_000_000)
+        self.panel.reload()
+        draft = {**self.config, 'pyrowave-bitrate': 225_000_000}
+        self.panel.raw.setPlainText(json.dumps(draft))
+        self.assertEqual(self.panel.configuration(), draft)
+
     def test_noop_is_lossless(self): self.assertEqual(self.panel.configuration(), self.config)
     def test_preset_load_preserves_draft_and_only_saves_explicitly(self):
         self.panel.hostname.setText('draft-host')

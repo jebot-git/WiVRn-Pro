@@ -155,6 +155,13 @@ configuration::configuration()
 	{
 		auto json = read_configuration();
 
+		if (auto it = json.find("pyrowave-bitrate"); it != json.end() && !it->is_null())
+		{
+			if (!it->is_number_integer() || *it < 1'000'000 || *it > 1'000'000'000)
+				throw std::runtime_error("pyrowave-bitrate must be 1000000..1000000000 bits/s");
+			pyrowave_bitrate = it->get<uint32_t>();
+		}
+
 		if (auto it = json.find("grip-surface"); it != json.end())
 		{
 			grip_surface = *it;

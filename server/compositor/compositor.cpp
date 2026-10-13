@@ -20,6 +20,7 @@
 // Copyright 2025-2026, NVIDIA CORPORATION.
 
 #include "compositor.h"
+#include "driver/configuration.h"
 #include "encoder/encode_batch.h"
 #include "utils/performance.h"
 #include "wivrn_ipc.h"
@@ -895,6 +896,8 @@ xrt_system_compositor_info compositor::sys_info() const
 
 void compositor::set_bitrate(uint32_t bitrate)
 {
+	if (settings[0].codec == pyrowave)
+		bitrate = configuration().pyrowave_bitrate.value_or(bitrate);
 	for (auto & encoder: encoders)
 		encoder->set_bitrate(bitrate);
 }

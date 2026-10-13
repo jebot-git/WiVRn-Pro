@@ -802,6 +802,9 @@ void on_json_configuration(WivrnServer * server, const GParamSpec * pspec, gpoin
 		std::cerr << "Failed to save configuration: " << ec.message() << std::endl;
 
 	wivrn_server_set_steam_command(dbus_server, steam_command().c_str());
+	// Re-evaluate the desktop PyroWave override without interrupting the session.
+	if (!ec && wivrn_ipc_socket_main_loop && wivrn_server_get_headset_connected(server))
+		wivrn_ipc_socket_main_loop->send(to_monado::set_bitrate{wivrn_server_get_bitrate(server)});
 }
 
 void expose_known_keys_on_dbus()

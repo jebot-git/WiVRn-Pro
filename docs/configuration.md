@@ -270,3 +270,14 @@ without a premature click; the other hand retains its 45 ms mouse-pinch debounce
 Release to neutral between gestures. Space drag uses wrist displacement even when
 the aim pose disappears, suppresses that hand's touch/cursor interactions while
 held, and releases on tracking loss. A closed fist still selects window grip.
+
+### PyroWave desktop bitrate
+
+The desktop streaming panel exposes **PyroWave bitrate** in Mbit/s. The
+experimental preset loads 400 Mbit/s; edit this value before saving. Zero
+(**Use headset setting**) removes the desktop override. The JSON key
+`pyrowave-bitrate` accepts 1,000,000–1,000,000,000 bits/s and controls the
+aggregate target for both eyes and alpha. It applies only to PyroWave, persists
+across connections, and takes priority over subsequent headset bitrate changes.
+Saving updates an active PyroWave session without restarting VRChat. Actual
+traffic can vary with content; this target is not a network throughput guarantee.

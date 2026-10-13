@@ -9,7 +9,8 @@
       "codec": "pyrowave"
     },
     "bit-depth": 8,
-    "tcp-only": false
+    "tcp-only": false,
+    "pyrowave-bitrate": 400000000
   },
   "headset_settings": {
     "instructions_only": true,
@@ -22,7 +23,7 @@
     "application_spacewarp": false,
     "render_resolution": "OpenXR recommended, resolution/stream scales 1.0"
   },
-  "notice": "Experimental GPU Haar 4:4:4. Headset: PyroWave, 90 Hz, 400 Mbit/s, 8-bit, resolution/stream scales 1.0, foveation 0%. Measured 85–88 fresh frames/s on 5 GHz; sustained 90 Hz and Wi-Fi 6E remain unqualified. Save and reconnect to apply.",
+  "notice": "Experimental GPU Haar 4:4:4. Desktop bitrate: 400 Mbit/s (editable below). Headset: PyroWave, 90 Hz, 8-bit, resolution/stream scales 1.0, foveation 0%. Measured 85–88 fresh frames/s on 5 GHz; sustained 90 Hz and Wi-Fi 6E remain unqualified. Save and reconnect to apply.",
   "notes": [
     "Matching client/server required. GPU compute decoding; preserves full chroma.",
     "Quest Pro OpenXR recommendation 1440x1584 per eye; encoded padding 1472x1600.",

@@ -417,7 +417,7 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 #endif
     }
 
-	split_bitrate(res, settings.bitrate_bps);
+	split_bitrate(res, any_pyrowave ? config.pyrowave_bitrate.value_or(settings.bitrate_bps) : settings.bitrate_bps);
 	return res;
 }
 } // namespace wivrn

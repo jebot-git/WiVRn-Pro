@@ -216,6 +216,9 @@ class StreamingPanel(QWidget):
         self.encoder.setToolTip('Selecting an encoder replaces the encoder layout. QSV requires a QSV-enabled server build. PyroWave is experimental and requires compatible client and server builds.')
         self.codec = QComboBox()
         self.codec.addItems(['Preserve current codec', 'h264', 'h265', 'pyrowave'])
+        self.pyrowave_bitrate = QSpinBox(); self.pyrowave_bitrate.setRange(0, 1000)
+        self.pyrowave_bitrate.setSuffix(' Mbit/s'); self.pyrowave_bitrate.setSpecialValueText('Use headset setting')
+        self.pyrowave_bitrate.setToolTip('Aggregate PyroWave target across both eyes and alpha. A desktop value overrides the headset bitrate; actual traffic can vary. Other codecs are unchanged.')
         self.depth = QComboBox()
         self.depth.addItems(['Use default', '8', '10'])
         self.tcp = QCheckBox('Use TCP for streaming')
@@ -233,7 +236,7 @@ class StreamingPanel(QWidget):
         self.wayvr_dashboard = QCheckBox('Open this dashboard inside WayVR')
         self.hostname = QLineEdit()
         self.port = QSpinBox(); self.port.setRange(1, 65535); self.port.setValue(9757)
-        for label, control in [('Headset profile', self.headset_profile), ('Encoder', self.encoder), ('Codec', self.codec), ('Bit depth', self.depth),
+        for label, control in [('Headset profile', self.headset_profile), ('Encoder', self.encoder), ('Codec', self.codec), ('Bit depth', self.depth), ('PyroWave bitrate', self.pyrowave_bitrate),
                                ('Tracking bridge mode (restart required)', self.lighthouse), ('OpenVR runtime', self.xrizer), ('Manual runtime path', self.xrizer_path), ('Hostname', self.hostname), ('Port', self.port), ('', self.tcp), ('', self.hid), ('', self.debug), ('', self.wayvr), ('', self.wayvr_dashboard)]:
             form.addRow(label, control)
         layout.addLayout(form)
@@ -263,7 +266,7 @@ class StreamingPanel(QWidget):
         # Keep the selected text and padded edit area readable. The enclosing
         # tab scrolls when space is tight instead of crushing these controls.
         for control in (self.preset, self.encoder, self.codec, self.depth, self.keys,
-                        self.preset_qp, self.port, self.hostname):
+                        self.preset_qp, self.port, self.hostname, self.pyrowave_bitrate):
             control.setMinimumHeight(max(36, control.fontMetrics().height() + 18))
         for combo in (self.preset, self.encoder, self.codec, self.depth):
             combo.setMinimumWidth(max(combo.fontMetrics().horizontalAdvance(combo.itemText(i))
@@ -283,6 +286,7 @@ class StreamingPanel(QWidget):
         self.xrizer.currentIndexChanged.connect(self.changed)
         self.xrizer_path.textEdited.connect(self.changed)
         self.hostname.textEdited.connect(self.changed); self.port.valueChanged.connect(self.changed)
+        self.pyrowave_bitrate.valueChanged.connect(self.changed)
 
     def changed(self, *_):
         if not self.loading: self.dirty = True
@@ -323,6 +327,7 @@ class StreamingPanel(QWidget):
             self.raw.setPlainText(json.dumps(value, indent=2))
             self.encoder.setCurrentIndex(0); self.codec.setCurrentIndex(0)
             self.depth.setCurrentIndex({8: 1, 10: 2}.get(value.get('bit-depth'), 0))
+            self.pyrowave_bitrate.setValue(round((value.get('pyrowave-bitrate') or 0) / 1_000_000))
             self.tcp.setChecked(value.get('tcp-only', False))
             self.initial_controls = self.controls()
             self.loading = False
@@ -372,6 +377,7 @@ class StreamingPanel(QWidget):
         self.raw.setPlainText(json.dumps(self.original, indent=2))
         self.encoder.setCurrentIndex(0); self.codec.setCurrentIndex(0)
         self.depth.setCurrentIndex({8: 1, 10: 2}.get(self.original.get('bit-depth'), 0))
+        self.pyrowave_bitrate.setValue(round((self.original.get('pyrowave-bitrate') or 0) / 1_000_000))
         self.headset_profile.setCurrentIndex(max(0, self.headset_profile.findData(self.original.get('headset-profile', 'auto'))))
         self.hostname.setText(self.original.get('hostname', ''))
         self.port.setValue(self.original.get('port', 9757))
@@ -402,6 +408,7 @@ class StreamingPanel(QWidget):
         return {'headset-profile': self.headset_profile.currentData(), 'tracking-mode': ['slimevr', 'motoc'][self.lighthouse.currentIndex()], 'compatibility-mode': self.xrizer.currentIndex(), 'compatibility-path': self.xrizer_path.text(), 'tcp-only': self.tcp.isChecked(), 'hid-forwarding': self.hid.isChecked(),
                 'motoc-lighthouse-controllers': self.lighthouse_controllers.isChecked(),
                 'debug-gui': self.debug.isChecked(), 'hostname': self.hostname.text(),
+                'pyrowave-bitrate': self.pyrowave_bitrate.value() * 1_000_000 or None,
                 'port': self.port.value(), 'bit-depth': [None, 8, 10][self.depth.currentIndex()],
                 'wayvr-enabled': self.wayvr.isChecked(), 'wayvr-dashboard': self.wayvr_dashboard.isChecked()}
 
