@@ -10,7 +10,8 @@
     },
     "bit-depth": 8,
     "tcp-only": false,
-    "pyrowave-bitrate": 400000000
+    "pyrowave-bitrate": 400000000,
+    "pyrowave-foveation": 0
   },
   "headset_settings": {
     "instructions_only": true,
@@ -23,11 +24,12 @@
     "application_spacewarp": false,
     "render_resolution": "OpenXR recommended, resolution/stream scales 1.0"
   },
-  "notice": "Experimental GPU Haar 4:4:4. Desktop bitrate: 400 Mbit/s (editable below). Headset: PyroWave, 90 Hz, 8-bit, resolution/stream scales 1.0, foveation 0%. Measured 85–88 fresh frames/s on 5 GHz; sustained 90 Hz and Wi-Fi 6E remain unqualified. Save and reconnect to apply.",
+  "notice": "Experimental GPU Haar 4:4:4. Desktop bitrate: 400 Mbit/s (editable below). Headset: PyroWave, 90 Hz, 8-bit, resolution/stream scales 1.0, desktop foveation 0% by default (editable; reconnect required). Measured 85–88 fresh frames/s on 5 GHz; sustained 90 Hz and Wi-Fi 6E remain unqualified. Save and reconnect to apply.",
   "notes": [
     "Matching client/server required. GPU compute decoding; preserves full chroma.",
     "Quest Pro OpenXR recommendation 1440x1584 per eye; encoded padding 1472x1600.",
-    "Keeps existing host application, tracking, hostname and service port."
+    "Keeps existing host application, tracking, hostname and service port.",
+    "Experimental spatial foveation retains center detail; gaze follows eye tracking unless headset manual center override is enabled. GPU defoveation restores the render extent; 4:4:4 is retained at encoded sample positions."
   ],
   "expected_target_mbps": {
     "left_eye": 197.530864,

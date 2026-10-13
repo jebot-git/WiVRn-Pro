@@ -73,3 +73,7 @@ build/native-tests/xrizer-discovery-test
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/cqp_rate_control_test.cpp $(pkg-config --cflags --libs libavcodec libavutil) -o build/native-tests/cqp-rate-control-test
 build/native-tests/cqp-rate-control-test
 python3 fork/check-motoc-source.py
+
+"$cxx" -std=c++23 -Wall -Wextra -Werror -UNDEBUG -Iserver \
+  fork/tests/pyrowave_foveation_test.cpp -o build/native-tests/pyrowave-foveation-test
+build/native-tests/pyrowave-foveation-test

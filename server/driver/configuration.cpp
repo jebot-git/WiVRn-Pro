@@ -162,6 +162,13 @@ configuration::configuration()
 			pyrowave_bitrate = it->get<uint32_t>();
 		}
 
+		if (auto it = json.find("pyrowave-foveation"); it != json.end() && !it->is_null())
+		{
+			if (!it->is_number_integer() || *it < 0 || *it > 80)
+				throw std::runtime_error("pyrowave-foveation must be 0..80 percent");
+			pyrowave_foveation = it->get<unsigned>();
+		}
+
 		if (auto it = json.find("grip-surface"); it != json.end())
 		{
 			grip_surface = *it;

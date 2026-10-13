@@ -115,3 +115,15 @@ LAN test. For a matching OpenXR app, set `XDG_RUNTIME_DIR` to the bundle's
 isolated `/run/user/$(id -u)/wivrn-pyrowave-test` directory (or
 `WIVRN_PYROWAVE_RUNTIME`) and `XR_RUNTIME_JSON` to its absolute
 `host/openxr_wivrn.json` path. Keep the host system dependencies installed.
+
+## Experimental desktop foveation
+
+The main preset now supports `pyrowave-foveation` (0–80%) and exposes it in the
+desktop dashboard. Start at 30%, save, and reconnect. It overrides the headset
+stream scale using the reported render extent; no additional stream-scale
+reduction is compounded. Gaze centering uses WiVRn's existing tracking and
+manual-center settings. Codec frames and chroma layout are unchanged, so the
+existing native GPU decoder and GPU defoveator handle the smaller input.
+Default remains 0%. Geometry regression and native codec round trips cover
+aligned sizes; visual reconstruction and performance on Quest Pro remain to be
+qualified with a live session.

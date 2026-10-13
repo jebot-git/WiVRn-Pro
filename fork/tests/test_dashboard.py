@@ -77,6 +77,23 @@ class DashboardTests(unittest.TestCase):
         self.panel.raw.setPlainText(json.dumps(draft))
         self.assertEqual(self.panel.configuration(), draft)
 
+    def test_pyrowave_foveation_preset_and_override_round_trip(self):
+        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
+        self.panel.load_preset.click()
+        self.assertEqual(self.panel.pyrowave_foveation.value(), 0)
+        self.assertEqual(self.panel.configuration()['pyrowave-foveation'], 0)
+        self.panel.pyrowave_foveation.setValue(30)
+        self.panel.save()
+        value = self.server.calls[-1][1]
+        self.assertEqual(value['pyrowave-foveation'], 30)
+        self.assertEqual(value['pyrowave-bitrate'], 400_000_000)
+        self.assertEqual(value['application'], self.config['application'])
+        self.panel.dirty = False
+        self.server.state.emit({'JsonConfiguration': json.dumps(value)})
+        self.assertEqual(self.panel.pyrowave_foveation.value(), 30)
+        self.panel.pyrowave_foveation.setValue(-1)
+        self.assertNotIn('pyrowave-foveation', self.panel.configuration())
+
     def test_noop_is_lossless(self): self.assertEqual(self.panel.configuration(), self.config)
     def test_preset_load_preserves_draft_and_only_saves_explicitly(self):
         self.panel.hostname.setText('draft-host')

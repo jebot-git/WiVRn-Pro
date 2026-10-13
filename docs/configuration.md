@@ -281,3 +281,21 @@ aggregate target for both eyes and alpha. It applies only to PyroWave, persists
 across connections, and takes priority over subsequent headset bitrate changes.
 Saving updates an active PyroWave session without restarting VRChat. Actual
 traffic can vary with content; this target is not a network throughput guarantee.
+
+### Experimental PyroWave foveation
+
+**PyroWave foveation (reconnect)** in the desktop streaming panel overrides the
+headset stream scale for this codec. Save and reconnect to change dimensions.
+`pyrowave-foveation` accepts an integer from 0 to 80: 0 disables spatial
+foveation, while 30 requests 70% of each render axis before 64-pixel alignment.
+**Use headset setting** removes the override. Other codecs are unchanged.
+
+For Quest Pro's raw OpenXR recommendation of 1440×1584 per eye, 30% encodes
+1024×1152, compared with padded 1472×1600 at 0%. This cuts encoded eye pixels
+by about 50%, not necessarily network traffic at a fixed bitrate target.
+The compositor preserves 1:1 detail around the fovea and reduces peripheral
+sampling. The existing GPU defoveator restores the original render dimensions.
+Full chroma is retained at encoded sample positions; peripheral spatial detail
+is reduced. The existing eye-gaze path moves the center when eye tracking is
+enabled and the headset manual foveation-center override is off; otherwise the
+existing fixed center is used. The preset defaults to 0%, pending headset QA.

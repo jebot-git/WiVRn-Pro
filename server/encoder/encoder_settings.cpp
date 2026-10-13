@@ -21,6 +21,7 @@
 #include "rate_control.h"
 
 #include "driver/configuration.h"
+#include "pyrowave_foveation.h"
 #include "driver/wivrn_session.h"
 #include "util/u_logging.h"
 #include "utils/wivrn_vk_bundle.h"
@@ -310,6 +311,14 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 		throw std::runtime_error("PyroWave 4:4:4 must be selected for every stream, including alpha");
 	auto width = align(info.stream_eye_width, 64);
 	auto height = align(info.stream_eye_height, 64);
+	if (any_pyrowave && config.pyrowave_foveation)
+	{
+		const auto extent = pyrowave_foveated_extent(info.render_eye_width, info.render_eye_height, *config.pyrowave_foveation);
+		width = extent[0];
+		height = extent[1];
+		U_LOG_I("PyroWave foveation: %u%%, render %ux%u, encoded %ux%u (64-pixel alignment)",
+		        *config.pyrowave_foveation, info.render_eye_width, info.render_eye_height, width, height);
+	}
 
 	for (auto [i, dst]: std::ranges::enumerate_view(res))
 	{
