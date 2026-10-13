@@ -215,7 +215,7 @@ android {
         release {
             if (releaseStore && releasePassword) signingConfig = signingConfigs.metaRelease
             manifestPlaceholders.ComOculusSupportedDevices = "questpro"
-            applicationIdSuffix = project.hasProperty("wivrn_pyrowave") ? ".pyrowave" : ".spatial"
+            applicationIdSuffix = project.hasProperty("wivrn_pyrowave_test_app") ? ".pyrowave" : ".spatial"
         }
 
         releaseDebuggable {
@@ -234,12 +234,12 @@ android {
         oculus
         {
             initWith release
-            applicationIdSuffix = project.hasProperty("wivrn_pyrowave") ? ".pyrowave" : ".spatial"
+            applicationIdSuffix = project.hasProperty("wivrn_pyrowave_test_app") ? ".pyrowave" : ".spatial"
             manifestPlaceholders.ComOculusSupportedDevices = "questpro"
         }
 
         debug {
-            applicationIdSuffix = project.hasProperty("wivrn_pyrowave") ? ".pyrowave" : ".spatial"
+            applicationIdSuffix = project.hasProperty("wivrn_pyrowave_test_app") ? ".pyrowave" : ".spatial"
             manifestPlaceholders.ComOculusSupportedDevices = "questpro"
         }
 

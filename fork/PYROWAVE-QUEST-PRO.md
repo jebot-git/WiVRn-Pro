@@ -51,7 +51,9 @@ cmake --build build/native --target wivrn-server openxr_wivrn pyrowave-gpu-test 
 python3 fork/tests/performance_feed_test.py build/native
 ```
 
-The Android package is `org.meumeu.wivrn.pyrowave`, displayed as **WiVRn Pro
+Main builds include the experimental option in `org.meumeu.wivrn.spatial`.
+Use `-Pwivrn_pyrowave_test_app=1` to build the separate test package.
+The dedicated test Android package is `org.meumeu.wivrn.pyrowave`, displayed as **WiVRn Pro
 PyroWave**. It installs alongside the production spatial client. The APK is
 `build/android/outputs/apk/debug/wivrn-pyrowave-debug.apk`.
 Local offline builds reused the dependency cache in the steam-frame worktree;

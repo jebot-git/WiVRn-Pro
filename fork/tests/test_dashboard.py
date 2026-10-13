@@ -41,6 +41,16 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.panel.configuration(),{})
         self.panel.tcp.setChecked(True); self.panel.save()
         self.assertEqual(self.server.calls[-1],('save',{'tcp-only':True},{}))
+    def test_pyrowave_preset_preserves_codec_and_host_application(self):
+        self.panel.preset_backend.setCurrentText('nvenc')
+        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
+        self.panel.load_preset.click()
+        value = self.panel.configuration()
+        self.assertEqual(value['encoder'], {'encoder': 'pyrowave', 'codec': 'pyrowave'})
+        self.assertEqual(value['application'], self.config['application'])
+        self.assertFalse(self.panel.preset_backend.isEnabled())
+        self.assertIn('Experimental', self.panel.preset_notice.text())
+
     def test_noop_is_lossless(self): self.assertEqual(self.panel.configuration(), self.config)
     def test_preset_load_preserves_draft_and_only_saves_explicitly(self):
         self.panel.hostname.setText('draft-host')

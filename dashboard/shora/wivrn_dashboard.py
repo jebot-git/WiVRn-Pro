@@ -36,6 +36,8 @@ def encoder_presets():
 def portable_preset(profile, backend):
     host = copy.deepcopy(profile['host_config'])
     encoder = host['encoder']
+    if encoder.get('codec') == 'pyrowave':
+        return host
     encoder['encoder'] = backend
     if backend != 'qsv':
         # QSV's private AVOptions must never leak into VAAPI or NVENC.
@@ -290,6 +292,11 @@ class StreamingPanel(QWidget):
         self.load_preset.setEnabled(profile is not None)
         cqp = bool(profile and profile['requires_cqp_branch'])
         self.preset_qp.setEnabled(cqp)
+        pyro = bool(profile and profile['host_config']['encoder'].get('codec') == 'pyrowave')
+        self.preset_backend.setEnabled(not pyro)
+        if pyro:
+            self.preset_notice.setText(profile['notice'])
+            return
         if not profile:
             self.preset_notice.setText('Load a preset into the editor, then save for the next streaming session.')
             return

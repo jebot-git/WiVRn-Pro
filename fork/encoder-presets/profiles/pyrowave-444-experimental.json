@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "title": "PyroWave 4:4:4 Haar — Quest Pro (experimental)",
+  "requires_cqp_branch": false,
+  "experimental": true,
+  "host_config": {
+    "encoder": {
+      "encoder": "pyrowave",
+      "codec": "pyrowave"
+    },
+    "bit-depth": 8,
+    "tcp-only": false
+  },
+  "headset_settings": {
+    "instructions_only": true,
+    "bitrate_mbps": 400,
+    "refresh_rate_hz": 90,
+    "foveation_percent": 0,
+    "codec": "PyroWave 4:4:4 Haar (experimental)",
+    "ten_bit_color": false,
+    "low_latency_decoding": true,
+    "application_spacewarp": false,
+    "render_resolution": "OpenXR recommended, resolution/stream scales 1.0"
+  },
+  "notice": "Experimental GPU Haar 4:4:4. Headset: PyroWave, 90 Hz, 400 Mbit/s, 8-bit, resolution/stream scales 1.0, foveation 0%. Measured 85–88 fresh frames/s on 5 GHz; sustained 90 Hz and Wi-Fi 6E remain unqualified. Save and reconnect to apply.",
+  "notes": [
+    "Matching client/server required. GPU compute decoding; preserves full chroma.",
+    "Quest Pro OpenXR recommendation 1440x1584 per eye; encoded padding 1472x1600.",
+    "Keeps existing host application, tracking, hostname and service port."
+  ],
+  "expected_target_mbps": {
+    "left_eye": 197.530864,
+    "right_eye": 197.530864,
+    "alpha": 4.938272,
+    "assumption": "Equal eye dimensions and alpha at half eye height; aggregate target, not measured bandwidth."
+  }
+}
