@@ -301,6 +301,9 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
         cqp_quantizer(dst.options, dst.encoder_name == encoder_qsv || dst.encoder_name == encoder_nvenc || dst.encoder_name == encoder_vaapi);
 	}
 
+	const bool any_pyrowave = std::ranges::any_of(res, [](const auto & e) { return e.codec == pyrowave; });
+	if (any_pyrowave && !std::ranges::all_of(res, [](const auto & e) { return e.codec == pyrowave; }))
+		throw std::runtime_error("PyroWave 4:4:4 must be selected for every stream, including alpha");
 	auto width = align(info.stream_eye_width, 64);
 	auto height = align(info.stream_eye_height, 64);
 

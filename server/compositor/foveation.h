@@ -83,7 +83,7 @@ class foveation
 
 public:
 	foveation(wivrn::vk_bundle &,
-	          vk::Extent3D foveated_size);
+	          vk::Extent3D foveated_size, bool pyrowave444 = false);
 
 	void update_tracking(const from_headset::tracking &);
 	void update_foveation_center_override(const from_headset::override_foveation_center &);

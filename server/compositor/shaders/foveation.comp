@@ -41,6 +41,7 @@ layout(set = 0, binding = 2) uniform writeonly restrict image2DArray luma;
 layout(set = 0, binding = 3) uniform writeonly restrict image2DArray chroma;
 
 layout(constant_id = 0) const int alpha_width = 0;
+layout(constant_id = 1) const bool pyrowave444 = false;
 
 const mat3 color_space = mat3(
 //         R        G        B
@@ -129,6 +130,14 @@ void main()
 	colour /= max(count, 1);
 	colour.xyz = rgb_to_ycbcr(from_linear_to_srgb(colour.rgb));
 
+    if (pyrowave444) {
+        imageStore(luma, ivec3(ix, iy, iz), vec4(colour.xyz, 1));
+        vec4 sum = colour + subgroupShuffleDown(colour, 1) + subgroupShuffleDown(colour, 2) + subgroupShuffleDown(colour, 3);
+        if (alpha_width > 0 && (id % 4) == 0) {
+            imageStore(luma, ivec3(alpha_width * int(iz) + int(ix/2), iy/2, 2), vec4(sum.w / 4, 0.5, 0.5, 1));
+        }
+        return;
+    }
 	imageStore(luma, ivec3(ix, iy, iz), vec4(colour.x));
 
 	vec4 sum = colour + subgroupShuffleDown(colour, 1) + subgroupShuffleDown(colour, 2) + subgroupShuffleDown(colour, 3);

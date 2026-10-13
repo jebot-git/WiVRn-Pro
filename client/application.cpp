@@ -839,10 +839,7 @@ void application::initialize_vulkan()
 	auto graphics_requirements = xr_system_id.graphics_requirements();
 	XrVersion vulkan_version = std::max(app_info.min_vulkan_version, graphics_requirements.minApiVersionSupported);
 	spdlog::info("OpenXR runtime wants Vulkan {}", xr::to_string(graphics_requirements.minApiVersionSupported));
-#if WIVRN_USE_PYROWAVE && WIVRN_CLIENT_STEAM_FRAME
-    if (graphics_requirements.maxApiVersionSupported >= XR_MAKE_VERSION(1, 3, 0))
-        vulkan_version = std::max<XrVersion>(vulkan_version, XR_MAKE_VERSION(1, 3, 0));
-#endif
+
 	spdlog::info("Requesting Vulkan {}", xr::to_string(vulkan_version));
 
 	std::vector<const char *> layers;
@@ -901,6 +898,11 @@ void application::initialize_vulkan()
 	optional_device_extensions.emplace(VK_IMG_FILTER_CUBIC_EXTENSION_NAME);
 	optional_device_extensions.emplace(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
 	optional_device_extensions.emplace(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
+#if WIVRN_USE_PYROWAVE
+    optional_device_extensions.emplace(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
+    optional_device_extensions.emplace(VK_KHR_16BIT_STORAGE_EXTENSION_NAME);
+    optional_device_extensions.emplace(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME);
+#endif
 
 #if WIVRN_USE_V4L2
 	// V4L2 decoders expose their output through DMA-buf
@@ -1067,38 +1069,37 @@ void application::initialize_vulkan()
     device_create_info.unlink<vk::PhysicalDeviceShaderFloat16Int8Features>();
     device_create_info.unlink<vk::PhysicalDeviceSubgroupSizeControlFeatures>();
     device_create_info.unlink<vk::PhysicalDeviceMaintenance4Features>();
-#if WIVRN_USE_PYROWAVE && WIVRN_CLIENT_STEAM_FRAME
-    if (vulkan_version >= XR_MAKE_VERSION(1, 3, 0) && vk_physical_device.getProperties().apiVersion >= VK_API_VERSION_1_3)
+#if WIVRN_USE_PYROWAVE
     {
         auto features = vk_physical_device.getFeatures2<vk::PhysicalDeviceFeatures2,
-            vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features>();
+            vk::PhysicalDevice16BitStorageFeatures, vk::PhysicalDeviceShaderFloat16Int8Features,
+            vk::PhysicalDeviceSubgroupSizeControlFeatures>();
         const auto & f = features.get<vk::PhysicalDeviceFeatures2>().features;
-        const auto & f11 = features.get<vk::PhysicalDeviceVulkan11Features>();
-        const auto & f12 = features.get<vk::PhysicalDeviceVulkan12Features>();
-        const auto & f13 = features.get<vk::PhysicalDeviceVulkan13Features>();
-        pyrowave_available = f.shaderStorageImageWriteWithoutFormat && f11.storageBuffer16BitAccess &&
-            f12.storageBuffer8BitAccess && f12.timelineSemaphore && f13.subgroupSizeControl &&
-            f13.computeFullSubgroups && f13.maintenance4;
-        const auto props = vk_physical_device.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan11Properties, vk::PhysicalDeviceVulkan13Properties>();
-        constexpr auto required_ops = vk::SubgroupFeatureFlagBits::eVote | vk::SubgroupFeatureFlagBits::eBallot |
+        const auto & f16 = features.get<vk::PhysicalDevice16BitStorageFeatures>();
+        const auto & fsub = features.get<vk::PhysicalDeviceSubgroupSizeControlFeatures>();
+        const auto props = vk_physical_device.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceSubgroupProperties>();
+        constexpr auto ops = vk::SubgroupFeatureFlagBits::eVote | vk::SubgroupFeatureFlagBits::eBallot |
             vk::SubgroupFeatureFlagBits::eArithmetic | vk::SubgroupFeatureFlagBits::eShuffle |
             vk::SubgroupFeatureFlagBits::eShuffleRelative | vk::SubgroupFeatureFlagBits::eBasic;
-        pyrowave_available = pyrowave_available &&
-            (props.get<vk::PhysicalDeviceVulkan11Properties>().subgroupSupportedOperations & required_ops) == required_ops;
-        if (pyrowave_available)
-        {
+        pyrowave_available = f.shaderStorageImageWriteWithoutFormat && f16.storageBuffer16BitAccess &&
+            fsub.subgroupSizeControl && fsub.computeFullSubgroups &&
+            props.get<vk::PhysicalDeviceProperties2>().properties.limits.maxTexelBufferElements >= 16 * 1024 * 1024 &&
+            (props.get<vk::PhysicalDeviceSubgroupProperties>().supportedOperations & ops) == ops &&
+            utils::contains(vk_device_extensions, VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
+        pyrowave_native_fp16 = pyrowave_available &&
+            features.get<vk::PhysicalDeviceShaderFloat16Int8Features>().shaderFloat16 &&
+            utils::contains(vk_device_extensions, VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME);
+        if (pyrowave_native_fp16) {
+            device_create_info.relink<vk::PhysicalDeviceShaderFloat16Int8Features>();
+            device_create_info.get<vk::PhysicalDeviceShaderFloat16Int8Features>().shaderFloat16 = true;
+        }
+        if (pyrowave_available) {
             device_features.shaderStorageImageWriteWithoutFormat = true;
             device_create_info.relink<vk::PhysicalDevice16BitStorageFeatures>();
             device_create_info.get<vk::PhysicalDevice16BitStorageFeatures>().storageBuffer16BitAccess = true;
-            device_create_info.relink<vk::PhysicalDevice8BitStorageFeatures>();
-            device_create_info.get<vk::PhysicalDevice8BitStorageFeatures>().storageBuffer8BitAccess = true;
-            device_create_info.relink<vk::PhysicalDeviceShaderFloat16Int8Features>();
-            device_create_info.get<vk::PhysicalDeviceShaderFloat16Int8Features>().shaderFloat16 = f12.shaderFloat16;
             device_create_info.relink<vk::PhysicalDeviceSubgroupSizeControlFeatures>();
             device_create_info.get<vk::PhysicalDeviceSubgroupSizeControlFeatures>().subgroupSizeControl = true;
             device_create_info.get<vk::PhysicalDeviceSubgroupSizeControlFeatures>().computeFullSubgroups = true;
-            device_create_info.relink<vk::PhysicalDeviceMaintenance4Features>();
-            device_create_info.get<vk::PhysicalDeviceMaintenance4Features>().maintenance4 = true;
         }
     }
 #endif

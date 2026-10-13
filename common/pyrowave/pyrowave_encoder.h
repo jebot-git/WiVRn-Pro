@@ -8,6 +8,7 @@ namespace PyroWave
 {
 class Encoder : public WaveletBuffers
 {
+	bool haar;
 	vk::raii::DescriptorPool ds_pool;
 	struct pipeline
 	{
@@ -36,7 +37,7 @@ public:
 
 public:
 	using ViewBuffers = std::array<vk::ImageView, 3>;
-	Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device, int width, int height, ChromaSubsampling chroma);
+	Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device, int width, int height, ChromaSubsampling chroma, bool haar = false);
 	~Encoder();
 
 	struct BitstreamBuffers

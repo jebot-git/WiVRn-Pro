@@ -110,8 +110,8 @@ void WaveletBuffers::init_block_meta()
 
 			for (int band = (level == DecompositionLevels - 1 ? 0 : 1); band < 4; band++)
 			{
-				uint32_t level_width = get_width(wavelet_img_high_res, level);
-				uint32_t level_height = get_height(wavelet_img_high_res, level);
+				uint32_t level_width = aligned_width >> (level + 1);
+				uint32_t level_height = aligned_height >> (level + 1);
 
 				int blocks_x_8x8 = (level_width + 7) / 8;
 				int blocks_y_8x8 = (level_height + 7) / 8;
@@ -130,7 +130,7 @@ void WaveletBuffers::init_block_meta()
 	}
 }
 
-WaveletBuffers::WaveletBuffers(vk::raii::Device & device, int width, int height, ChromaSubsampling chroma) :
+WaveletBuffers::WaveletBuffers(vk::raii::Device & device, int width, int height, ChromaSubsampling chroma, bool packed) :
         device(device),
 
         mirror_repeat_sampler(
@@ -159,6 +159,7 @@ WaveletBuffers::WaveletBuffers(vk::raii::Device & device, int width, int height,
         component_layer_views{{nullptr, nullptr, nullptr, nullptr, nullptr}, {nullptr, nullptr, nullptr, nullptr, nullptr}, {nullptr, nullptr, nullptr, nullptr, nullptr}},
         component_ll_views{{nullptr, nullptr, nullptr, nullptr, nullptr}, {nullptr, nullptr, nullptr, nullptr, nullptr}, {nullptr, nullptr, nullptr, nullptr, nullptr}},
 
+        packed(packed),
         width(width),
         height(height),
         aligned_width(std::max(align(width, Alignment), MinimumImageSize)),
@@ -167,10 +168,10 @@ WaveletBuffers::WaveletBuffers(vk::raii::Device & device, int width, int height,
 {
 	vk::ImageCreateInfo info{
 	        .imageType = vk::ImageType::e2D,
-	        .format = Configuration::get().get_precision() == 2 ? vk::Format::eR32Sfloat : vk::Format::eR16Sfloat,
+	        .format = packed ? vk::Format::eR16G16B16A16Sfloat : Configuration::get().get_precision() == 2 ? vk::Format::eR32Sfloat : vk::Format::eR16Sfloat,
 	        .extent = {
-	                .width = aligned_width / 2,
-	                .height = aligned_height / 2,
+	                .width = aligned_width / (packed ? 4 : 2),
+	                .height = aligned_height / (packed ? 4 : 2),
 	                .depth = 1,
 	        },
 	        .mipLevels = uint32_t(Configuration::get().get_precision() != 1 ? DecompositionLevels : WaveletFP16Levels),
@@ -191,7 +192,7 @@ WaveletBuffers::WaveletBuffers(vk::raii::Device & device, int width, int height,
 	{
 		// For the lowest level bands, we want to maintain precision as much as possible and bandwidth here is trivial.
 		info.mipLevels = DecompositionLevels - info.mipLevels;
-		info.format = vk::Format::eR32Sfloat;
+		info.format = packed ? vk::Format::eR32G32B32A32Sfloat : vk::Format::eR32Sfloat;
 		info.extent.width >>= WaveletFP16Levels;
 		info.extent.height >>= WaveletFP16Levels;
 		wavelet_img_low_res = image_allocation(

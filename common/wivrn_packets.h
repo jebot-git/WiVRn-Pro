@@ -845,6 +845,8 @@ struct video_stream_description
 	std::array<video_codec, 3> codec; // left, right, alpha
 	float frame_rate;
 	float refresh_rate;
+	uint8_t pyrowave_chroma = 1; // 4:4:4
+	uint8_t pyrowave_wavelet = 2; // lifting Haar
 	// Frames before this boundary belong to a retired encoder/decoder generation.
 	uint64_t first_frame = 0;
 

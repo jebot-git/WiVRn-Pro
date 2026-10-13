@@ -17,6 +17,26 @@ layout(local_size_x = 128) in;
 
 layout(set = 0, binding = 0) writeonly uniform image2DArray uDequantImg;
 
+// Quad-packed output for the multilevel Haar path: uDequantImg is RGBA at half the band size and
+// each texel holds one 2x2 quad, (0,0), (1,0), (0,1), (1,1) in RGBA. Each invocation's 4x2 values
+// start at an even coordinate, so they are exactly two quads.
+layout(constant_id = 1) const bool PACKED = false;
+
+void store_values(ivec2 coord, int layer, mat2x4 v)
+{
+    if (PACKED)
+    {
+        ivec2 quad = coord >> 1;
+        imageStore(uDequantImg, ivec3(quad, layer), vec4(v[0][0], v[0][1], v[1][0], v[1][1]));
+        imageStore(uDequantImg, ivec3(quad + ivec2(1, 0), layer), vec4(v[0][2], v[0][3], v[1][2], v[1][3]));
+        return;
+    }
+    for (int j = 0; j < 2; j++)
+        for (int i = 0; i < 4; i++)
+            imageStore(uDequantImg, ivec3(coord + ivec2(i, j), layer), vec4(v[j][i]));
+}
+
+
 layout(set = 0, binding = 1) readonly buffer PayloadOffsets
 {
     uint data[];
@@ -57,6 +77,8 @@ layout(push_constant) uniform Registers
     int output_layer;
     int block_offset_32x32;
     int block_stride_32x32;
+    int block_count_32x32;
+    int bands;
 } registers;
 
 #if STORAGE_MODE == 1
@@ -221,7 +243,9 @@ void main()
 {
     uint local_index = gl_SubgroupID * gl_SubgroupSize + gl_SubgroupInvocationID;
 
+    int output_layer = registers.output_layer + int(gl_WorkGroupID.z % registers.bands) + 4 * int(gl_WorkGroupID.z / registers.bands);
     int block_index_32x32 = int(registers.block_offset_32x32 +
+        gl_WorkGroupID.z * registers.block_count_32x32 +
         gl_WorkGroupID.y * registers.block_stride_32x32 +
         gl_WorkGroupID.x);
 
@@ -241,9 +265,7 @@ void main()
 
     if (offset_u32 == ~0u)
     {
-        for (int j = 0; j < 2; j++)
-            for (int i = 0; i < 4; i++)
-                imageStore(uDequantImg, ivec3(coord + ivec2(i, j), registers.output_layer), vec4(0.0));
+        store_values(coord, output_layer, mat2x4(vec4(0), vec4(0)));
         return;
     }
 
@@ -385,7 +407,5 @@ void main()
     }
 
     // Write output.
-    for (int j = 0; j < 2; j++)
-        for (int i = 0; i < 4; i++)
-            imageStore(uDequantImg, ivec3(coord + ivec2(i, j), registers.output_layer), vec4(v[j][i]));
+    store_values(coord, output_layer, v);
 }

@@ -57,93 +57,24 @@ pyrowave_decoder::pyrowave_decoder(
         std::weak_ptr<scenes::stream> scene,
         shard_accumulator * accumulator) :
         extent{description.width, stream_index == 2 ? description.height / 2u : description.height},
-        ycbcr_conversion(device, {
-                                         .format = vk::Format::eG8B8R83Plane420Unorm,
-                                         .ycbcrModel = vk::SamplerYcbcrModelConversion::eYcbcr709,
-                                         .ycbcrRange = vk::SamplerYcbcrRange::eItuFull,
-                                         .chromaFilter = vk::Filter::eNearest,
-                                 }),
-        sampler_(device, vk::StructureChain{
-                                 vk::SamplerCreateInfo{
-                                         .magFilter = vk::Filter::eNearest,
-                                         .minFilter = vk::Filter::eNearest,
-                                         .mipmapMode = vk::SamplerMipmapMode::eNearest,
-                                         .addressModeU = vk::SamplerAddressMode::eClampToEdge,
-                                         .addressModeV = vk::SamplerAddressMode::eClampToEdge,
-                                         .addressModeW = vk::SamplerAddressMode::eClampToEdge,
-                                         .maxAnisotropy = 1,
-                                 },
-                                 vk::SamplerYcbcrConversionInfo{
-                                         .conversion = *ycbcr_conversion,
-                                 },
-                         }
-                                 .get()),
+        conversion(device, extent),
+        sampler_(device, {.magFilter = vk::Filter::eNearest, .minFilter = vk::Filter::eNearest,
+            .addressModeU = vk::SamplerAddressMode::eClampToEdge, .addressModeV = vk::SamplerAddressMode::eClampToEdge,
+            .addressModeW = vk::SamplerAddressMode::eClampToEdge}),
         weak_scene(scene),
         accumulator(accumulator),
-        dec(physical_device, device, extent.width, extent.height, PyroWave::ChromaSubsampling::Chroma420, false)
+        dec(physical_device, device, extent.width, extent.height, PyroWave::ChromaSubsampling::Chroma444, false, true, application::pyrowave_native_fp16)
 {
-	std::array formats = {
-	        vk::Format::eR8Unorm,
-	        vk::Format::eG8B8R83Plane420Unorm,
-	};
-	vk::ImageFormatListCreateInfo formats_info{
-	        .viewFormatCount = formats.size(),
-	        .pViewFormats = formats.data(),
-	};
-	size_t i = 0;
-	for (auto & item: image_pool)
-	{
-		item.image = image_allocation(
-		        device,
-		        vk::ImageCreateInfo{
-		                .pNext = &formats_info,
-		                .flags = vk::ImageCreateFlagBits::eExtendedUsage | vk::ImageCreateFlagBits::eMutableFormat,
-		                .imageType = vk::ImageType::e2D,
-		                .format = formats.back(),
-		                .extent = {
-		                        .width = extent.width,
-		                        .height = extent.height,
-		                        .depth = 1,
-		                },
-		                .mipLevels = 1,
-		                .arrayLayers = 1,
-		                .tiling = vk::ImageTiling::eOptimal,
-		                .usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eColorAttachment,
-		        },
-		        {
-		                .usage = VMA_MEMORY_USAGE_AUTO,
-		        },
-		        std::format("pyrowave decoder {} image {}", stream_index, i));
-
-		vk::SamplerYcbcrConversionInfo conv{
-		        .conversion = *ycbcr_conversion,
-		};
-		vk::ImageViewUsageCreateInfo usage{
-		        .pNext = &conv,
-		        .usage = vk::ImageUsageFlagBits::eSampled,
-		};
-		vk::ImageViewCreateInfo view_info{
-		        .pNext = &usage,
-		        .image = item.image,
-		        .viewType = vk::ImageViewType::e2D,
-		        .format = formats.back(),
-		        .subresourceRange = {
-		                .aspectMask = vk::ImageAspectFlagBits::eColor,
-		                .levelCount = 1,
-		                .layerCount = 1,
-		        },
-		};
-		item.view_full = vk::raii::ImageView(device, view_info);
-
-		usage.pNext = nullptr;
-		usage.usage |= vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eColorAttachment;
-		view_info.format = formats[0];
-		view_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::ePlane0;
-		item.view_y = vk::raii::ImageView(device, view_info);
-		view_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::ePlane1;
-		item.view_cb = vk::raii::ImageView(device, view_info);
-		view_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::ePlane2;
-		item.view_cr = vk::raii::ImageView(device, view_info);
+    if (description.pyrowave_chroma != 1 || description.pyrowave_wavelet != 2)
+        throw std::runtime_error("Unsupported PyroWave chroma/wavelet configuration");
+    for (auto & item : image_pool) {
+        item.image = image_allocation(device, {.imageType = vk::ImageType::e2D, .format = vk::Format::eR8G8B8A8Unorm,
+            .extent = {extent.width, extent.height, 1}, .mipLevels = 1, .arrayLayers = 1,
+            .usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage},
+            {.usage = VMA_MEMORY_USAGE_AUTO}, "PyroWave RGBA output");
+        item.view_full = device.createImageView({.image = item.image, .viewType = vk::ImageViewType::e2D,
+            .format = vk::Format::eR8G8B8A8Unorm,
+            .subresourceRange = {.aspectMask = vk::ImageAspectFlagBits::eColor, .levelCount = 1, .layerCount = 1}});
 
 		item.semaphore = vk::raii::Semaphore(
 		        device,
@@ -155,7 +86,6 @@ pyrowave_decoder::pyrowave_decoder(
 		        }
 		                .get());
 
-		++i;
 	}
 
 	pending.lock()->input = std::make_unique<PyroWave::DecoderInput>(dec);
@@ -174,6 +104,7 @@ pyrowave_decoder::~pyrowave_decoder()
 
 void pyrowave_decoder::push_data(std::span<std::span<const uint8_t>> data, uint64_t frame_index, bool partial)
 {
+    // partial marks incremental shard delivery; retain it until frame_completed.
     if (input_frame != frame_index) { input_acc->clear(); input_frame = frame_index; }
 	for (auto & item: data)
 		if (!input_acc->push_data(item)) throw std::runtime_error("Invalid PyroWave packet");
@@ -184,6 +115,7 @@ void pyrowave_decoder::frame_completed(
         const to_headset::video_stream_data_shard::view_info_t & view_info)
 {
 	{
+        if (!input_acc->complete()) { input_acc->clear(); return; }
 		auto locked = pending.lock();
 		std::swap(input_acc, locked->input);
 		locked->ready = true;
@@ -231,8 +163,8 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
 
 	auto input = std::make_unique<PyroWave::DecoderInput>(dec);
 
-	// Record the encode duration for the previous frame, that's the best we can do
-	XrDuration last_encode = 0;
+	// Timestamp completed GPU decoding; feedback is stamped at actual delivery.
+	uint64_t decoded_count = 0;
 	float timestamp_period = application::get_physical_device_properties().limits.timestampPeriod;
 
 	while (not exiting)
@@ -252,7 +184,7 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
 				locked->input->clear();
 				locked->ready = false;
 			}
-			feedback.received_from_decoder = feedback.sent_to_decoder + last_encode;
+
 
 			auto item = get_free();
 			if (not item)
@@ -260,7 +192,7 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
 				spdlog::warn("No image available in pool, discard frame");
 				continue;
 			}
-			std::array views{*item->view_y, *item->view_cb, *item->view_cr};
+
 			auto handle = std::make_shared<pyrowave_blit_handle>(
 			        feedback,
 			        view_info,
@@ -300,7 +232,9 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
 				        {},
 				        barrier);
 			}
-			dec.decode(cmd_buf, *input, views);
+            auto planes = conversion.begin(cmd_buf);
+            if (!dec.decode(cmd_buf, *input, planes)) throw std::runtime_error("PyroWave GPU decode failed");
+            conversion.convert(cmd_buf, *item->view_full);
 			{
 				vk::ImageMemoryBarrier barrier{
 				        .srcAccessMask = vk::AccessFlagBits::eMemoryWrite,
@@ -341,18 +275,18 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
 			                .get(),
 			        *fence);
 
-			if (auto scene = weak_scene.lock())
-				scene->push_blit_handle(accumulator, std::move(handle));
-
-			auto res = dec.device.waitForFences(*fence, true, UINT64_MAX);
-			if (res != vk::Result::eSuccess)
-				spdlog::warn("waitForFences failed");
+            auto res = dec.device.waitForFences(*fence, true, UINT64_MAX);
+            if (res != vk::Result::eSuccess) throw std::runtime_error("PyroWave completion fence failed");
+            if (auto scene = weak_scene.lock()) scene->push_blit_handle(accumulator, std::move(handle));
 
 			std::array<uint64_t, 2> times;
 			res = (*device).getQueryPoolResults(
 			        *qp, 0, 2, sizeof(uint64_t) * 2, times.data(), sizeof(uint64_t), vk::QueryResultFlagBits::eWait | vk::QueryResultFlagBits::e64);
 			if (res == vk::Result::eSuccess)
-				last_encode = (times[1] - times[0]) * timestamp_period;
+				{
+                    const double gpu_ms = (times[1] - times[0]) * timestamp_period / 1e6;
+                    if (++decoded_count % 90 == 0) spdlog::info("PYROWAVE_GPU frame={} gpu_ms={} chroma=444 wavelet=haar complete=true", feedback.frame_index, gpu_ms);
+                }
 		}
 		catch (std::exception & e)
 		{

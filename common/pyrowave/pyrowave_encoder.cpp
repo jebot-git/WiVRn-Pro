@@ -155,8 +155,9 @@ static vk::raii::DescriptorPool make_descriptor_pool(vk::raii::Device & device)
 	        }};
 }
 
-Encoder::Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device, int width, int height, ChromaSubsampling chroma) :
+Encoder::Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device, int width, int height, ChromaSubsampling chroma, bool haar) :
         WaveletBuffers(device, width, height, chroma),
+        haar(haar),
         ds_pool(make_descriptor_pool(device))
 {
 	auto [prop, prop11, prop13] = phys_dev.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan11Properties, vk::PhysicalDeviceVulkan13Properties>();
@@ -210,8 +211,8 @@ Encoder::Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device,
 		meta_buffer = buffer_allocation(device, info, {.usage = VMA_MEMORY_USAGE_AUTO}, "meta_buffer");
 		// device->set_name(*meta_buffer, "meta-buffer");
 
-		// Worst case estimate.
-		info.size = aligned_width * aligned_height * 2;
+		// Allow all three full-resolution planes, including sign and quality bit planes.
+		info.size = size_t(aligned_width) * aligned_height * (chroma == ChromaSubsampling::Chroma444 ? 8 : 4) + 8;
 		payload_data = buffer_allocation(device, info, {.usage = VMA_MEMORY_USAGE_AUTO}, "payload_data");
 		// device->set_name(*payload_data, "payload-data");
 
@@ -305,7 +306,10 @@ Encoder::Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device,
 		        .layout = *block_packing_.layout,
 		};
 		pipeline_subgroup_info psi;
-		psi.set_subgroup_size(prop13, info, 4, 6);
+		if (supports_subgroup_size_log2(prop13, true, 5, 5))
+			psi.set_subgroup_size(prop13, info, 5, 5);
+		else
+			psi.set_subgroup_size(prop13, info, 4, 6);
 		block_packing_.pipeline = device.createComputePipeline(
 		        nullptr, // FIXME: cache
 		        info);
@@ -501,7 +505,10 @@ Encoder::Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device,
 		pipeline_subgroup_info psi;
 		if (supports_subgroup_size_log2(prop13, true, 4, 6))
 		{
-			psi.set_subgroup_size(prop13, info, 4, 6);
+			if (supports_subgroup_size_log2(prop13, true, 5, 5))
+				psi.set_subgroup_size(prop13, info, 5, 5);
+			else
+				psi.set_subgroup_size(prop13, info, 4, 6);
 		}
 		else
 		{
@@ -617,7 +624,10 @@ Encoder::Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device,
 		};
 		assert(supports_subgroup_size_log2(prop13, true, 3, 7));
 		pipeline_subgroup_info psi;
-		psi.set_subgroup_size(prop13, info, 3, 7);
+		if (supports_subgroup_size_log2(prop13, true, 5, 5))
+			psi.set_subgroup_size(prop13, info, 5, 5);
+		else
+			psi.set_subgroup_size(prop13, info, 3, 7);
 		quant_.pipeline = device.createComputePipeline(
 		        nullptr, // FIXME: cache
 		        info);
@@ -707,19 +717,15 @@ Encoder::Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device,
 		        .pushConstantRangeCount = 1,
 		        .pPushConstantRanges = &pc,
 		});
-		VkBool32 dc_shift = false;
-		vk::SpecializationMapEntry sp_entry{
-		        .constantID = 0,
-		        .size = sizeof(dc_shift),
-		};
-		vk::SpecializationInfo sp{
-		        .mapEntryCount = 1,
-		        .pMapEntries = &sp_entry,
-		        .dataSize = sizeof(dc_shift),
-		        .pData = &dc_shift,
-		};
 
-		auto shader = load_shader(device, std::string("dwt_" XSTR(PYROWAVE_PRECISION)) + (feat12.shaderFloat16 ? "_fp16" : ""));
+        std::array<VkBool32, 2> values{false, VkBool32(haar)};
+        std::array<vk::SpecializationMapEntry, 2> entries{{
+            {.constantID = 0, .offset = 0, .size = sizeof(VkBool32)},
+            {.constantID = 2, .offset = sizeof(VkBool32), .size = sizeof(VkBool32)}}};
+        vk::SpecializationInfo sp{.mapEntryCount = entries.size(), .pMapEntries = entries.data(),
+            .dataSize = sizeof(values), .pData = values.data()};
+
+		auto shader = load_shader(device, haar ? "dwt_haar_forward" : std::string("dwt_" XSTR(PYROWAVE_PRECISION)) + (feat12.shaderFloat16 ? "_fp16" : ""));
 		vk::ComputePipelineCreateInfo info{
 		        .stage = {
 		                .flags = vk::PipelineShaderStageCreateFlagBits::eRequireFullSubgroups,
@@ -732,12 +738,15 @@ Encoder::Encoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device,
 		};
 		pipeline_subgroup_info psi;
 		// Only need simple 2-lane swaps.
-		psi.set_subgroup_size(prop13, info, 2, 7);
+		if (supports_subgroup_size_log2(prop13, true, 5, 5))
+			psi.set_subgroup_size(prop13, info, 5, 5);
+		else
+			psi.set_subgroup_size(prop13, info, 2, 7);
 		dwt_.pipeline = device.createComputePipeline(
 		        nullptr, // FIXME: cache
 		        info);
 
-		dc_shift = true;
+		values[0] = true;
 		dwt_dcshift = device.createComputePipeline(
 		        nullptr, // FIXME: cache
 		        info);
@@ -866,7 +875,14 @@ float Encoder::get_noise_power_normalized_quant_resolution(int level, int compon
 	if (component != 0)
 		bits--;
 
-	return float(1 << bits);
+	float resolution = float(1 << bits);
+    if (haar) {
+        constexpr float hl[5] = {0.989f, 1.002f, 0.956f, 0.937f, 0.932f};
+        constexpr float hh[5] = {0.961f, 1.034f, 0.962f, 0.930f, 0.921f};
+        const int l = std::clamp(level, 0, 4);
+        resolution *= band == 0 ? 0.943f : band < 3 ? hl[l] : hh[l];
+    }
+    return resolution;
 }
 
 bool Encoder::block_packing(vk::raii::CommandBuffer & cmd, const BitstreamBuffers & buffers, float quant_scale)
@@ -1200,7 +1216,7 @@ bool Encoder::dwt(vk::raii::CommandBuffer & cmd, const ViewBuffers & views)
 					device.updateDescriptorSets(descriptor_write, {});
 					cmd.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *dwt_.layout, 0, dwt_ds[c][0], {});
 					begin_label(cmd, std::format("DWT level 0, component {}", c).c_str());
-					cmd.dispatch((push.aligned_resolution[0] + 31) / 32, (push.aligned_resolution[1] + 31) / 32, 1);
+					cmd.dispatch((push.aligned_resolution[0] + (haar ? 15 : 31)) / (haar ? 16 : 32), (push.aligned_resolution[1] + (haar ? 15 : 31)) / (haar ? 16 : 32), 1);
 					end_label(cmd);
 				}
 			}
@@ -1221,7 +1237,7 @@ bool Encoder::dwt(vk::raii::CommandBuffer & cmd, const ViewBuffers & views)
 				};
 				device.updateDescriptorSets(descriptor_write, {});
 				cmd.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *dwt_.layout, 0, dwt_ds[0][0], {});
-				cmd.dispatch((push.aligned_resolution[0] + 31) / 32, (push.aligned_resolution[1] + 31) / 32, 1);
+				cmd.dispatch((push.aligned_resolution[0] + (haar ? 15 : 31)) / (haar ? 16 : 32), (push.aligned_resolution[1] + (haar ? 15 : 31)) / (haar ? 16 : 32), 1);
 				end_label(cmd);
 			}
 		}
@@ -1263,7 +1279,7 @@ bool Encoder::dwt(vk::raii::CommandBuffer & cmd, const ViewBuffers & views)
 					cmd.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *dwt_.layout, 0, dwt_ds[c][output_level], {});
 					cmd.bindPipeline(vk::PipelineBindPoint::eCompute, *dwt_.pipeline);
 				}
-				cmd.dispatch((push.aligned_resolution[0] + 31) / 32, (push.aligned_resolution[1] + 31) / 32, 1);
+				cmd.dispatch((push.aligned_resolution[0] + (haar ? 15 : 31)) / (haar ? 16 : 32), (push.aligned_resolution[1] + (haar ? 15 : 31)) / (haar ? 16 : 32), 1);
 				end_label(cmd);
 			}
 		}
@@ -1427,7 +1443,7 @@ size_t Encoder::packetize(Packet * packets, size_t packet_boundary, void * outpu
 	header.height_minus_1 = height - 1;
 	header.sequence = reinterpret_cast<const BitstreamHeader *>(input_bitstream + meta[0].offset_u32)->sequence;
 	header.extended = 1;
-	header.code = BITSTREAM_EXTENDED_CODE_START_OF_FRAME;
+	header.code = haar ? 2 : BITSTREAM_EXTENDED_CODE_START_OF_FRAME;
 	header.total_blocks = num_non_zero_blocks;
 	header.chroma_resolution = chroma == ChromaSubsampling::Chroma444 ? CHROMA_RESOLUTION_444 : CHROMA_RESOLUTION_420;
 

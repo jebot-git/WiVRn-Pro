@@ -120,7 +120,7 @@ struct BlockMeta
 };
 
 static constexpr int DecompositionLevels = 5;
-static constexpr int Alignment = 1 << DecompositionLevels;
+static constexpr int Alignment = 1 << (DecompositionLevels + 1);
 // If the final decomposition band is too small, the mirroring will break since it starts double mirroring.
 static constexpr int MinimumImageSize = 4 << DecompositionLevels;
 static constexpr int NumComponents = 3;
@@ -170,14 +170,24 @@ bool supports_subgroup_size_log2(
         uint8_t subgroup_maximum_size_log2,
         vk::ShaderStageFlagBits stage = vk::ShaderStageFlagBits::eCompute);
 
+inline bool supports_subgroup_size_log2(const vk::PhysicalDeviceSubgroupSizeControlProperties & p,
+        bool full, uint8_t min, uint8_t max, vk::ShaderStageFlagBits stage = vk::ShaderStageFlagBits::eCompute)
+{
+    vk::PhysicalDeviceVulkan13Properties compat{.minSubgroupSize = p.minSubgroupSize,
+        .maxSubgroupSize = p.maxSubgroupSize, .maxComputeWorkgroupSubgroups = p.maxComputeWorkgroupSubgroups,
+        .requiredSubgroupSizeStages = p.requiredSubgroupSizeStages};
+    return supports_subgroup_size_log2(compat, full, min, max, stage);
+}
+
 vk::raii::ShaderModule load_shader(vk::raii::Device & device, const std::string & name);
 
 struct pipeline_subgroup_info
 {
 	vk::PipelineShaderStageRequiredSubgroupSizeCreateInfo info{};
 
+	template <typename Properties>
 	void set_subgroup_size(
-	        vk::PhysicalDeviceVulkan13Properties const & prop13,
+	        Properties const & prop13,
 	        vk::ComputePipelineCreateInfo & pipeline_info,
 	        uint8_t subgroup_minimum_size_log2,
 	        uint8_t subgroup_maximum_size_log2)
@@ -214,7 +224,7 @@ private:
 
 struct WaveletBuffers
 {
-	WaveletBuffers(vk::raii::Device & device, int width, int height, ChromaSubsampling chroma);
+	WaveletBuffers(vk::raii::Device & device, int width, int height, ChromaSubsampling chroma, bool packed = false);
 
 	vk::raii::Device & device;
 	image_allocation wavelet_img_low_res;
@@ -247,6 +257,7 @@ struct WaveletBuffers
 	int block_count_8x8 = 0;
 	int block_count_32x32 = 0;
 
+	bool packed = false;
 	int width = 0;
 	int height = 0;
 	uint32_t aligned_width = 0;

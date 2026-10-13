@@ -59,7 +59,7 @@ video_encoder_pyrowave::video_encoder_pyrowave(vk_bundle & vk, const encoder_set
     for (auto & slot : state)
     {
         slot.encoder = std::make_unique<PyroWave::Encoder>(vk.physical_device, vk.device,
-            settings.width, settings.height, PyroWave::ChromaSubsampling::Chroma420);
+            settings.width, settings.height, PyroWave::ChromaSubsampling::Chroma444, true);
         slot.pool = vk.device.createCommandPool({.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                                                 .queueFamilyIndex = vk.queue.family_index});
         slot.command = std::move(vk.device.allocateCommandBuffers({.commandPool = *slot.pool, .commandBufferCount = 1})[0]);
@@ -88,9 +88,9 @@ void video_encoder_pyrowave::present_image(vk::Image input, vk::SemaphoreSubmitI
     for (uint32_t plane = 0; plane < 3; ++plane)
         slot.views[plane] = bundle.device.createImageView({
             .image = input, .viewType = vk::ImageViewType::e2D,
-            .format = plane == 0 ? vk::Format::eR8Unorm : vk::Format::eR8G8Unorm,
-            .components = {.r = plane == 2 ? vk::ComponentSwizzle::eG : vk::ComponentSwizzle::eIdentity},
-            .subresourceRange = {.aspectMask = plane == 0 ? vk::ImageAspectFlagBits::ePlane0 : vk::ImageAspectFlagBits::ePlane1,
+            .format = vk::Format::eR8G8B8A8Unorm,
+            .components = {.r = plane == 0 ? vk::ComponentSwizzle::eR : plane == 1 ? vk::ComponentSwizzle::eG : vk::ComponentSwizzle::eB},
+            .subresourceRange = {.aspectMask = vk::ImageAspectFlagBits::eColor,
                                 .levelCount = 1, .baseArrayLayer = stream_idx, .layerCount = 1}});
     slot.command.reset();
     slot.command.begin({.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit});

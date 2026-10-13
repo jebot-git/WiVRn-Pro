@@ -422,6 +422,7 @@ public:
 	}
 
 	static inline bool pyrowave_available = false;
+    static inline bool pyrowave_native_fp16 = false;
 	static const hmd_traits & get_hmd_traits()
 	{
 		assert(instance().runtime_hmd_traits.is_initialized());

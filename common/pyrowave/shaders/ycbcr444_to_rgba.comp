@@ -1,0 +1,17 @@
+#version 450
+// SPDX-License-Identifier: GPL-3.0-or-later
+layout(local_size_x = 8, local_size_y = 8) in;
+layout(set = 0, binding = 0) uniform sampler2D y;
+layout(set = 0, binding = 1) uniform sampler2D cb;
+layout(set = 0, binding = 2) uniform sampler2D cr;
+layout(set = 0, binding = 3, rgba8) writeonly uniform image2D rgba;
+void main() {
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (any(greaterThanEqual(p, imageSize(rgba)))) return;
+    int channel = (p.x & 1) | ((p.y & 1) << 1);
+    float l = texelFetch(y, p >> 1, 0)[channel];
+    float b = texelFetch(cb, p >> 1, 0)[channel] - 0.5;
+    float r = texelFetch(cr, p >> 1, 0)[channel] - 0.5;
+    // Full-range BT.709, with full-resolution chroma. Reprojection performs the sRGB EOTF.
+    imageStore(rgba, p, vec4(clamp(vec3(l + 1.5748*r, l - 0.187324*b - 0.468124*r, l + 1.8556*b), 0.0, 1.0), 1));
+}

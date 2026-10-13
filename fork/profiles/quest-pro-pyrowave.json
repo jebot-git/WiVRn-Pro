@@ -1,0 +1,15 @@
+{
+  "hostname": "WiVRn Pro PyroWave Test",
+  "port": 9758,
+  "encoder": {
+    "name": "pyrowave",
+    "codec": "pyrowave"
+  },
+  "bit-depth": 8,
+  "headset-profile": "quest-pro",
+  "wayvr": {
+    "enabled": false
+  },
+  "publish-service": "none",
+  "application": []
+}

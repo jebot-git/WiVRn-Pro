@@ -54,6 +54,7 @@ public:
 	DecoderInput(const Decoder &);
 	bool push_data(std::span<const uint8_t> data);
 	void clear();
+    bool complete() const { return last_seq != UINT32_MAX && header_size == 0 && packet_size == 0 && decoded_blocks == total_blocks_in_sequence; }
 
 private:
 	void push_raw(const void * data, size_t size);
@@ -64,8 +65,15 @@ class Decoder : public WaveletBuffers
 {
 	friend class DecoderInput;
 
+    vk::raii::DescriptorPool haar_pool = nullptr;
+    vk::raii::DescriptorSetLayout haar_ds_layout = nullptr;
+    vk::raii::PipelineLayout haar_layout = nullptr;
+    std::array<vk::raii::Pipeline, 2> haar_pipelines{nullptr, nullptr};
+    vk::DescriptorSet haar_sets[2][3]{};
 	bool use_readonly_texel_buffer = false;
 	bool fragment_path;
+	bool haar;
+
 	vk::raii::PhysicalDevice & phys_dev;
 	vk::raii::DescriptorPool ds_pool;
 
@@ -124,6 +132,7 @@ class Decoder : public WaveletBuffers
 		vk::raii::Pipeline pipeline = nullptr;
 	};
 
+	std::array<vk::raii::ImageView, DecompositionLevels> all_component_views{nullptr, nullptr, nullptr, nullptr, nullptr};
 	pipeline dequant_[3];
 	pipeline idwt_;
 	vk::raii::Pipeline idwt_dcshift = nullptr;
@@ -131,13 +140,14 @@ class Decoder : public WaveletBuffers
 public:
 	using ViewBuffers = std::array<vk::ImageView, 3>;
 
-	Decoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device, int width, int height, ChromaSubsampling chroma, bool fragment_path = false);
+	Decoder(vk::raii::PhysicalDevice & phys_dev, vk::raii::Device & device, int width, int height, ChromaSubsampling chroma, bool fragment_path = false, bool haar = false, bool native_fp16 = false);
 	~Decoder();
 
 	bool decode(vk::raii::CommandBuffer & cmd, DecoderInput & input, const ViewBuffers & views);
 
 private:
 	bool dequant(vk::raii::CommandBuffer & cmd, size_t storage_mode);
+	bool idwt_haar32(vk::raii::CommandBuffer &, const ViewBuffers &);
 	bool idwt(vk::raii::CommandBuffer & cmd, const ViewBuffers & views);
 	bool idwt_fragment(vk::raii::CommandBuffer & cmd, const ViewBuffers & views);
 	vk::DescriptorSet allocate_descriptor_set(vk::DescriptorSetLayout);

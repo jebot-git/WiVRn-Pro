@@ -23,6 +23,8 @@ struct DequantizerPushData
 	int32_t output_layer;
 	int32_t block_offset_32x32;
 	int32_t block_stride_32x32;
+	int32_t block_count_32x32;
+	int32_t bands;
 };
 struct IDwtPushData
 {
@@ -384,7 +386,7 @@ bool DecoderInput::push_data(std::span<const uint8_t> data)
 				last_seq = header.sequence;
 			}
 
-			if (seq.code == BITSTREAM_EXTENDED_CODE_START_OF_FRAME)
+			if (seq.code == (decoder.haar ? 2u : BITSTREAM_EXTENDED_CODE_START_OF_FRAME))
 			{
 				if (seq.width_minus_1 + 1 != decoder.width || seq.height_minus_1 + 1 != decoder.height)
 				{
@@ -392,6 +394,8 @@ bool DecoderInput::push_data(std::span<const uint8_t> data)
 					return false;
 				}
 
+				if (seq.total_blocks > uint32_t(decoder.block_count_32x32))
+                    return false;
 				total_blocks_in_sequence = int(seq.total_blocks);
 			}
 			else
@@ -421,14 +425,15 @@ Decoder::Decoder(
         int width,
         int height,
         ChromaSubsampling chroma,
-        bool fragment_path) :
-        WaveletBuffers(device, width, height, chroma),
+        bool fragment_path, bool haar, bool native_fp16) :
+        WaveletBuffers(device, width, height, chroma, haar),
         fragment_path(fragment_path),
+        haar(haar),
         phys_dev(phys_dev),
         ds_pool(nullptr)
 {
-	auto [prop, prop11, prop13] = phys_dev.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceVulkan11Properties, vk::PhysicalDeviceVulkan13Properties>();
-	auto ops = prop11.subgroupSupportedOperations;
+	auto [prop, prop11, prop13] = phys_dev.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceSubgroupProperties, vk::PhysicalDeviceSubgroupSizeControlProperties>();
+	auto ops = prop11.supportedOperations;
 	constexpr auto required_features =
 	        vk::SubgroupFeatureFlagBits::eVote |
 	        vk::SubgroupFeatureFlagBits::eBallot |
@@ -442,7 +447,9 @@ Decoder::Decoder(
 		throw std::runtime_error("There are missing subgroup features. Device supports " + vk::to_string(ops) + ", but requires " + vk::to_string(required_features) + ".");
 	}
 
-	auto [feat, feat12, feat13] = phys_dev.getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan12Features, vk::PhysicalDeviceVulkan13Features>();
+	auto feat = phys_dev.getFeatures();
+	vk::PhysicalDevice8BitStorageFeatures feat8{};
+	vk::PhysicalDeviceShaderFloat16Int8Features feat12{};
 
 	// The decoder is more lenient.
 	if (!supports_subgroup_size_log2(prop13, true, 2, 7))
@@ -453,7 +460,7 @@ Decoder::Decoder(
 	{
 		auto vendor_id = prop.properties.vendorID;
 
-		if (not feat12.storageBuffer8BitAccess or
+		if (not feat8.storageBuffer8BitAccess or
 		    (vendor_id != 0x1002 /*AMD*/ and
 		     vendor_id != 0x8086 /*Intel*/ and
 		     vendor_id != 0x10de /*NVIDIA*/))
@@ -462,7 +469,7 @@ Decoder::Decoder(
 		}
 	}
 
-	if (not(feat12.storageBuffer8BitAccess or use_readonly_texel_buffer))
+	if (not(feat8.storageBuffer8BitAccess or use_readonly_texel_buffer))
 		throw std::runtime_error("Missing storageBuffer8BitAccess feature");
 
 	ds_pool = make_descriptor_pool(device, use_readonly_texel_buffer, fragment_path);
@@ -583,7 +590,14 @@ Decoder::Decoder(
 
 	init_block_meta();
 
-	// dequant pipeline
+	if (haar) {
+        for (uint32_t level = 0; level < DecompositionLevels; ++level) {
+            auto info = component_layer_views_info[0][level];
+            info.subresourceRange.layerCount = 4 * NumComponents;
+            all_component_views[level] = device.createImageView(info);
+        }
+    }
+    // dequant pipeline
 	for (size_t i = 0; i < std::size(dequant_); ++i)
 	{
 		if (i > 0 and not use_readonly_texel_buffer)
@@ -683,7 +697,12 @@ Decoder::Decoder(
 		        },
 		        .layout = *p.layout,
 		};
-		pipeline_subgroup_info psi;
+		VkBool32 packed_output = haar;
+        vk::SpecializationMapEntry packed_entry{.constantID = 1, .size = sizeof(packed_output)};
+        vk::SpecializationInfo packed_sp{.mapEntryCount = 1, .pMapEntries = &packed_entry,
+            .dataSize = sizeof(packed_output), .pData = &packed_output};
+        info.stage.pSpecializationInfo = &packed_sp;
+        pipeline_subgroup_info psi;
 		if (supports_subgroup_size_log2(prop13, true, 4, 7))
 			psi.set_subgroup_size(prop13, info, 4, 7);
 		else
@@ -699,7 +718,7 @@ Decoder::Decoder(
 				p.ds[component][level] = allocate_descriptor_set(*p.ds_layout);
 				vk::DescriptorImageInfo image_info{
 				        .sampler = *border_sampler,
-				        .imageView = *component_layer_views[component][level],
+				        .imageView = haar ? *all_component_views[level] : *component_layer_views[component][level],
 				        .imageLayout = vk::ImageLayout::eGeneral,
 				};
 
@@ -1371,6 +1390,34 @@ Decoder::Decoder(
 			}
 		}
 	}
+    if (haar) {
+        if (fragment_path || chroma != ChromaSubsampling::Chroma444 || Configuration::get().get_precision() != 1)
+            throw std::runtime_error("The multilevel Haar path requires compute and 4:4:4");
+        std::array<vk::DescriptorSetLayoutBinding, 4> bindings{};
+        for (uint32_t i = 0; i < bindings.size(); ++i)
+            bindings[i] = {.binding = i, .descriptorType = i == 3 ? vk::DescriptorType::eStorageImage : vk::DescriptorType::eCombinedImageSampler,
+                .descriptorCount = 1, .stageFlags = vk::ShaderStageFlagBits::eCompute};
+        haar_ds_layout = device.createDescriptorSetLayout({.bindingCount = bindings.size(), .pBindings = bindings.data()});
+        vk::PushConstantRange pc{.stageFlags = vk::ShaderStageFlagBits::eCompute, .size = 24};
+        haar_layout = device.createPipelineLayout({.setLayoutCount = 1, .pSetLayouts = &*haar_ds_layout,
+            .pushConstantRangeCount = 1, .pPushConstantRanges = &pc});
+        std::array<vk::DescriptorPoolSize, 2> sizes{{{.type = vk::DescriptorType::eCombinedImageSampler, .descriptorCount = 18},
+            {.type = vk::DescriptorType::eStorageImage, .descriptorCount = 6}}};
+        haar_pool = device.createDescriptorPool({.maxSets = 6, .poolSizeCount = sizes.size(), .pPoolSizes = sizes.data()});
+        auto shader = load_shader(device, native_fp16 ? "idwt_haar32_fp16" : "idwt_haar32");
+        for (uint32_t pass = 0; pass < 2; ++pass) {
+            std::array<uint32_t, 5> values{pass == 0 ? 2u : 3u, pass == 1, pass == 1, 7u, true};
+            std::array<vk::SpecializationMapEntry, 5> entries{};
+            for (uint32_t i = 0; i < 5; ++i) entries[i] = vk::SpecializationMapEntry{.constantID = i < 3 ? i : i + 1, .offset = i * 4, .size = 4};
+            vk::SpecializationInfo sp{.mapEntryCount = 5, .pMapEntries = entries.data(), .dataSize = sizeof(values), .pData = values.data()};
+            haar_pipelines[pass] = device.createComputePipeline(nullptr, {.stage = {.stage = vk::ShaderStageFlagBits::eCompute,
+                .module = *shader, .pName = "main", .pSpecializationInfo = &sp}, .layout = *haar_layout});
+            for (uint32_t c = 0; c < 3; ++c)
+                haar_sets[pass][c] = device.allocateDescriptorSets({.descriptorPool = *haar_pool,
+                    .descriptorSetCount = 1, .pSetLayouts = &*haar_ds_layout})[0].release();
+        }
+    }
+
 }
 
 Decoder::~Decoder()
@@ -1437,7 +1484,7 @@ bool Decoder::dequant(vk::raii::CommandBuffer & cmd, size_t storage_mode)
 	// De-quantize
 	for (int level = 0; level < DecompositionLevels; level++)
 	{
-		for (int component = 0; component < NumComponents; component++)
+		for (int component = 0; component < (haar ? 1 : NumComponents); component++)
 		{
 			// Ignore top-level CbCr when doing 420 subsampling.
 			if (level == 0 && component != 0 && chroma == ChromaSubsampling::Chroma420)
@@ -1445,17 +1492,19 @@ bool Decoder::dequant(vk::raii::CommandBuffer & cmd, size_t storage_mode)
 
 			begin_label(cmd, std::format("level {} - component {}", level, component).c_str());
 
-			for (int band = (level == DecompositionLevels - 1 ? 0 : 1); band < 4; band++)
+			for (int band = (level == DecompositionLevels - 1 ? 0 : 1); band < (haar ? (level == DecompositionLevels - 1 ? 1 : 2) : 4); band++)
 			{
-				push.resolution[0] = get_width(wavelet_img_high_res, level);
-				push.resolution[1] = get_height(wavelet_img_high_res, level);
+				push.resolution[0] = aligned_width >> (level + 1);
+				push.resolution[1] = aligned_height >> (level + 1);
 				push.output_layer = band;
 				push.block_offset_32x32 = block_meta[component][level][band].block_offset_32x32;
 				push.block_stride_32x32 = block_meta[component][level][band].block_stride_32x32;
-				cmd.pushConstants<DequantizerPushData>(*p.layout, vk::ShaderStageFlagBits::eCompute, 0, push);
+				push.block_count_32x32 = ((push.resolution[0] + 31) / 32) * ((push.resolution[1] + 31) / 32);
+                push.bands = haar ? (level == DecompositionLevels - 1 ? 4 : 3) : 1;
+                cmd.pushConstants<DequantizerPushData>(*p.layout, vk::ShaderStageFlagBits::eCompute, 0, push);
 
 				cmd.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *p.layout, 0, p.ds[component][level], {});
-				cmd.dispatch((push.resolution[0] + 31) / 32, (push.resolution[1] + 31) / 32, 1);
+				cmd.dispatch((push.resolution[0] + 31) / 32, (push.resolution[1] + 31) / 32, haar ? NumComponents * push.bands : 1);
 			}
 
 			end_label(cmd);
@@ -1623,6 +1672,39 @@ bool Decoder::idwt(vk::raii::CommandBuffer & cmd, const ViewBuffers & views)
 	// auto end_idwt = cmd.write_timestamp(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 	// device->register_time_interval("GPU", std::move(start_idwt), std::move(end_idwt), "iDWT");
 	return true;
+}
+
+bool Decoder::idwt_haar32(vk::raii::CommandBuffer & cmd, const ViewBuffers & views)
+{
+    struct Push { ivec2 root_size; ivec2 output_size; ivec2 output_offset; };
+    for (uint32_t pass = 0; pass < 2; ++pass) {
+        const int top = pass == 0 ? 4 : 2;
+        const int root = pass == 0 ? 4 : 1;
+        for (uint32_t c = 0; c < 3; ++c) {
+            std::array<vk::DescriptorImageInfo, 4> info{};
+            std::array<vk::WriteDescriptorSet, 4> writes{};
+            for (uint32_t i = 0; i < 4; ++i) {
+                info[i] = {.sampler = i == 3 ? vk::Sampler{} : *mirror_repeat_sampler,
+                    .imageView = i == 3 ? (pass == 0 ? *component_ll_views[c][2] : views[c]) :
+                        *component_layer_views[c][std::max(top - int(i), pass == 0 ? 3 : 0)],
+                    .imageLayout = vk::ImageLayout::eGeneral};
+                writes[i] = {.dstSet = haar_sets[pass][c], .dstBinding = i, .descriptorCount = 1,
+                    .descriptorType = i == 3 ? vk::DescriptorType::eStorageImage : vk::DescriptorType::eCombinedImageSampler,
+                    .pImageInfo = &info[i]};
+            }
+            device.updateDescriptorSets(writes, {});
+            // All components are full resolution; crop padded coefficients on final stores.
+            Push push{{int32_t(aligned_width >> (root + 1)), int32_t(aligned_height >> (root + 1))},
+                pass == 0 ? ivec2{int32_t(aligned_width >> 4), int32_t(aligned_height >> 4)} : ivec2{(width + 1) / 2, (height + 1) / 2}, {0, 0}};
+            cmd.bindPipeline(vk::PipelineBindPoint::eCompute, *haar_pipelines[pass]);
+            cmd.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *haar_layout, 0, haar_sets[pass][c], {});
+            cmd.pushConstants<Push>(*haar_layout, vk::ShaderStageFlagBits::eCompute, 0, push);
+            cmd.dispatch((push.root_size[0] + 7) / 8, (push.root_size[1] + 7) / 8, 1);
+        }
+        vk::MemoryBarrier barrier{.srcAccessMask = vk::AccessFlagBits::eShaderWrite, .dstAccessMask = vk::AccessFlagBits::eShaderRead};
+        cmd.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader, vk::PipelineStageFlagBits::eComputeShader, {}, barrier, {}, {});
+    }
+    return true;
 }
 
 bool Decoder::idwt_fragment(vk::raii::CommandBuffer & cmd, const ViewBuffers & views)
@@ -2172,7 +2254,7 @@ bool Decoder::decode(vk::raii::CommandBuffer & cmd, DecoderInput & input, const 
 	}
 	else
 	{
-		if (!idwt(cmd, views))
+		if (!(haar ? idwt_haar32(cmd, views) : idwt(cmd, views)))
 			return false;
 	}
 

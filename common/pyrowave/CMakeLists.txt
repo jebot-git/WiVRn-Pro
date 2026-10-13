@@ -4,6 +4,7 @@ add_library(pyrowave STATIC
 	pyrowave_common.cpp
 	pyrowave_encoder.cpp
 	pyrowave_decoder.cpp
+    color_conversion.cpp
 )
 
 file(GLOB_RECURSE VULKAN_SHADERS CONFIGURE_DEPENDS "shaders/*.comp" "shaders/*.glsl")
@@ -15,7 +16,5 @@ target_link_libraries(pyrowave PRIVATE wivrn-common)
 target_include_directories(pyrowave PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Explicit hardware test; does not run during normal builds or install.
-if(NOT ANDROID)
     add_executable(pyrowave-gpu-test EXCLUDE_FROM_ALL ../../fork/tests/pyrowave_gpu_test.cpp)
     target_link_libraries(pyrowave-gpu-test PRIVATE pyrowave wivrn-common Vulkan::Vulkan)
-endif()

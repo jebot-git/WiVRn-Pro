@@ -1,4 +1,5 @@
 #version 450
+#extension GL_GOOGLE_include_directive : require
 // Copyright (c) 2025 Hans-Kristian Arntzen
 // SPDX-License-Identifier: MIT
 #extension GL_KHR_shader_subgroup_basic : require
@@ -11,7 +12,6 @@
 #extension GL_EXT_shader_explicit_arithmetic_types_float16 : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int16 : require
 #extension GL_EXT_shader_8bit_storage : require
-#extension GL_ARB_shading_language_include : require
 
 #include "constants.inc"
 
@@ -270,7 +270,7 @@ void main()
 
     uvec4 code_word_ballot = subgroupBallot(active_code_word);
     uint local_ballot = gl_SubgroupSize >= 64 && linear_block_32x32_index >= 2 ? code_word_ballot.y : code_word_ballot.x;
-    local_ballot = bitfieldExtract(local_ballot, int(16u * (linear_block_32x32_index & 1u)), 16);
+    local_ballot = gl_SubgroupSize >= 32 ? bitfieldExtract(local_ballot, int(16u * (linear_block_32x32_index & 1u)), 16) : local_ballot;
 
     uint required_plane_bytes = compute_required_8x8_size(code_word);
     uint required_sign_bits = num_bits_for_q - required_plane_bytes * 8;

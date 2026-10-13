@@ -343,7 +343,7 @@ void settings_streaming(const settings_context & ctx)
 		switch (*codec)
 		{
 			case wivrn::pyrowave:
-                return "PyroWave (experimental)";
+                return "PyroWave 4:4:4 Haar (experimental)";
 			case wivrn::h264:
 				return _C("Codec", "H.264");
 			case wivrn::h265:

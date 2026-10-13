@@ -1,4 +1,5 @@
 #version 450
+#extension GL_GOOGLE_include_directive : require
 // Copyright (c) 2025 Hans-Kristian Arntzen
 // SPDX-License-Identifier: MIT
 #extension GL_KHR_shader_subgroup_basic : require
@@ -11,7 +12,6 @@
 #extension GL_EXT_shader_8bit_storage : require
 #extension GL_EXT_shader_explicit_arithmetic_types_float16 : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int16 : require
-#extension GL_ARB_shading_language_include : require
 
 #include "dwt_quant_scale.inc"
 #include "constants.inc"
@@ -68,6 +68,7 @@ layout(push_constant) uniform Registers
     int block_offset;
     int block_stride;
     float rdo_distortion_scale;
+    float rdo_discard_scale;
 } registers;
 
 float max4(vec4 v)
@@ -251,8 +252,10 @@ void encode_payload(ivec2 block_index_8x8, mat2x4 texels)
         }
     }
 
-    // Record distortion for throwing away everything.
-    float square_error = subgroupClusteredAdd((dot(texels[0], texels[0]) + dot(texels[1], texels[1])) * inv_quant_squared, 8);
+    // Record distortion for throwing away everything. Quest3-Pyrowave: rdo_discard_scale applies the
+    // band weight the kept-plane errors above carry (docs/ENCODER-CSF.md).
+    float square_error = subgroupClusteredAdd((dot(texels[0], texels[0]) + dot(texels[1], texels[1])) * inv_quant_squared, 8) *
+        registers.rdo_discard_scale;
     if ((gl_SubgroupInvocationID & 7u) == 0)
         block_stats.stats[block_index].errors[msb + 1] = QuantStats(float16_t(min(60000.0, square_error)), uint16_t(0));
 

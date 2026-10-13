@@ -1169,6 +1169,7 @@ void scenes::lobby::on_focused()
 	stream_view = application::get_hmd_traits().override_view(views[0]);
 	width = views[0].recommendedImageRectWidth;
 	height = views[0].recommendedImageRectHeight;
+	spdlog::info("OpenXR recommended per-eye resolution: {}x{}", width, height);
 
 	// assert(std::ranges::all_of(views, [width](const XrViewConfigurationView & view) { return view.recommendedImageRectWidth == width; }));
 	// assert(std::ranges::all_of(views, [height](const XrViewConfigurationView & view) { return view.recommendedImageRectHeight == height; }));

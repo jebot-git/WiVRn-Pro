@@ -1,0 +1,13 @@
+{
+  "quest3_pyrowave_revision": "1b529ef54b4f7b34a44c28ad9a54c6c4ac6887a7",
+  "pyrowave_base": "d2997ac172bdc00e29c58e3f2938acb7e94580bf",
+  "source_url": "https://github.com/JMS1717/Quest3-Pyrowave",
+  "imports": {
+    "shaders/dwt.comp": "f58c3f95d68a90f4621fc1999bcf9a95e1a263b80d20355b0ac20002828a90b1",
+    "shaders/idwt_haar32.comp": "5064d39ece7ca888377f475ee1cb7cd98cebe0c60d3c5ae9b177b6925581ed53",
+    "shaders/wavelet_dequant.comp": "df3293c50464cd663ca6521172cdf494c7f7061a4f8ebfde018e5c8133f9dddb",
+    "shaders/block_packing.comp": "ccd720032f4fbeef826516fc79a89b9f5f7340a4dcd89de4a8f2db8bdae23c32",
+    "shaders/wavelet_quant.comp": "b16fd1325d82756ea5d1b73ee3799c92c62016ab999723a8134ca37242f5441e"
+  },
+  "adaptation": "Vulkan-Hpp/VMA per-eye Haar444; quad-packed coefficients and full-chroma planes; batched dequantization; two inverse dispatches per plane; optional native FP16; GPU BT.709 RGBA conversion; WiVRn transport; no Granite or ALVR runtime"
+}

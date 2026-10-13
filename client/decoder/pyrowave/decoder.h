@@ -20,6 +20,7 @@
 
 #include "decoder/decoder.h"
 #include "pyrowave/pyrowave_decoder.h"
+#include "pyrowave/color_conversion.h"
 #include "utils/thread_safe.h"
 #include "vk/allocation.h"
 #include "wivrn_packets.h"
@@ -60,7 +61,7 @@ private:
 		uint64_t semaphore_val = 0;
 	};
 
-	vk::raii::SamplerYcbcrConversion ycbcr_conversion;
+	PyroWave::ColorConversion conversion;
 	vk::raii::Sampler sampler_;
 
 	std::array<image, image_count> image_pool;

@@ -21,7 +21,7 @@ int main()
 	f.times_displayed = 1;
 	s.update(f, 100);
 	s.update(f, 101);
-	assert(s.frames == 1 && s.repeats == 0);
+	assert(s.frames == 1 && s.presented_frames == 1 && s.repeats == 0);
 	f.times_displayed = 3;
 	s.update(f, 102);
 	s.update(f, 103);
@@ -55,6 +55,20 @@ int main()
 	f.times_displayed = 100;
 	s.update(f, 109);
 	assert(s.frames == count && s.seen.size() == 256 && s.repeats == 2);
+	// Received-only feedback is not proof of presentation; a late first display
+	// counts exactly once even if receive feedback is duplicated afterwards.
+	stream_performance received;
+	f = {};
+	f.frame_index = 1;
+	received.update(f, 110);
+	received.update(f, 111);
+	assert(received.frames == 1 && received.presented_frames == 0);
+	f.times_displayed = 1;
+	received.update(f, 112);
+	received.update(f, 113);
+	f.times_displayed = 0;
+	received.update(f, 114);
+	assert(received.presented_frames == 1 && received.repeats == 0);
 	char directory[] = "/tmp/wivrn-perf-native-XXXXXX";
 	assert(mkdtemp(directory));
 	pacing_app_factory pacers;
@@ -84,6 +98,7 @@ int main()
 		assert(data.at("streams")[0].at("encode_ms") == 2.0);
 		assert(data.at("streams")[0].at("decode_ms").is_null());
 		assert(data.at("streams")[0].at("repeats") == 1);
+		assert(data.at("streams")[0].at("presented_frames") == 1);
 		struct stat st{};
 		assert(!stat((std::string(directory) + "/performance.json").c_str(), &st));
 		assert((st.st_mode & 0777) == 0600);

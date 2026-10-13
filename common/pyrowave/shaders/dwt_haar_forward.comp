@@ -1,0 +1,24 @@
+#version 450
+// SPDX-License-Identifier: MIT
+// Pair-local lifting Haar from Quest3-Pyrowave, with exact integer sampling.
+layout(local_size_x = 8, local_size_y = 8) in;
+layout(set = 0, binding = 0) uniform sampler2D uTexture;
+layout(set = 0, binding = 1) writeonly uniform image2DArray uOutput;
+layout(constant_id = 0) const bool DCShift = false;
+layout(push_constant) uniform Registers { ivec2 resolution; vec2 inv_resolution; ivec2 aligned_resolution; };
+float rounded(float v) { return unpackHalf2x16(packHalf2x16(vec2(v, 0))).x; }
+ivec2 mirrored(ivec2 p) { ivec2 r = p % (2 * resolution); return min(r, 2 * resolution - 1 - r); }
+void main() {
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (any(greaterThanEqual(p, aligned_resolution / 2))) return;
+    float a = rounded(texelFetch(uTexture, mirrored(2*p), 0).r - (DCShift ? 0.5 : 0));
+    float b = rounded(texelFetch(uTexture, mirrored(2*p + ivec2(1,0)), 0).r - (DCShift ? 0.5 : 0));
+    float c = rounded(texelFetch(uTexture, mirrored(2*p + ivec2(0,1)), 0).r - (DCShift ? 0.5 : 0));
+    float d = rounded(texelFetch(uTexture, mirrored(2*p + ivec2(1,1)), 0).r - (DCShift ? 0.5 : 0));
+    float h0 = rounded(b-a), h1 = rounded(d-c);
+    float l0 = rounded(a + 0.5*(b-a)), l1 = rounded(c + 0.5*(d-c));
+    imageStore(uOutput, ivec3(p,0), vec4(rounded(l0 + 0.5*(l1-l0))));
+    imageStore(uOutput, ivec3(p,1), vec4(rounded(h0 + 0.5*(h1-h0))));
+    imageStore(uOutput, ivec3(p,2), vec4(rounded(l1-l0)));
+    imageStore(uOutput, ivec3(p,3), vec4(rounded(h1-h0)));
+}
