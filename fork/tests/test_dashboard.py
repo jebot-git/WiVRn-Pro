@@ -80,8 +80,8 @@ class DashboardTests(unittest.TestCase):
     def test_pyrowave_foveation_preset_and_override_round_trip(self):
         self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
         self.panel.load_preset.click()
-        self.assertEqual(self.panel.pyrowave_foveation.value(), 0)
-        self.assertEqual(self.panel.configuration()['pyrowave-foveation'], 0)
+        self.assertEqual(self.panel.pyrowave_foveation.value(), -1)
+        self.assertIsNone(self.panel.configuration().get('pyrowave-foveation'))
         self.panel.pyrowave_foveation.setValue(30)
         self.panel.save()
         value = self.server.calls[-1][1]
@@ -93,6 +93,19 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.panel.pyrowave_foveation.value(), 30)
         self.panel.pyrowave_foveation.setValue(-1)
         self.assertNotIn('pyrowave-foveation', self.panel.configuration())
+
+    def test_pyrowave_preset_restores_client_foveation_from_host_override(self):
+        config = {**self.config, 'pyrowave-foveation': 0}
+        self.server.state.emit({'JsonConfiguration': json.dumps(config)})
+        self.assertEqual(self.panel.pyrowave_foveation.value(), 0)
+        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
+        self.panel.load_preset.click()
+        self.assertEqual(self.panel.pyrowave_foveation.value(), -1)
+        value = self.panel.configuration()
+        self.assertIsNone(value.get('pyrowave-foveation'))
+        self.assertEqual(value['scale'], config['scale'])
+        self.panel.save()
+        self.assertIsNone(self.server.calls[-1][1].get('pyrowave-foveation'))
 
     def test_noop_is_lossless(self): self.assertEqual(self.panel.configuration(), self.config)
     def test_preset_load_preserves_draft_and_only_saves_explicitly(self):

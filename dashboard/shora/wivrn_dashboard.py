@@ -221,7 +221,7 @@ class StreamingPanel(QWidget):
         self.pyrowave_bitrate.setToolTip('Aggregate PyroWave target across both eyes and alpha. A desktop value overrides the headset bitrate; actual traffic can vary. Other codecs are unchanged.')
         self.pyrowave_foveation = QSpinBox(); self.pyrowave_foveation.setRange(-1, 80)
         self.pyrowave_foveation.setSuffix(' %'); self.pyrowave_foveation.setSpecialValueText('Use headset setting')
-        self.pyrowave_foveation.setToolTip('Experimental spatial foveation: 0% disables it; higher values reduce peripheral detail and encoded pixels. Uses gaze when available and the headset manual center override is off. Save and restart WiVRn to apply; 64-pixel blocks round dimensions up.')
+        self.pyrowave_foveation.setToolTip('Use headset setting follows client stream scale, gaze and center settings (preset default). An explicit desktop percentage overrides client stream scale: 0% disables spatial foveation; higher values reduce peripheral detail and encoded pixels. Uses gaze when available and the headset manual center override is off. Save and restart WiVRn to apply; 64-pixel blocks round dimensions up.')
         self.depth = QComboBox()
         self.depth.addItems(['Use default', '8', '10'])
         self.tcp = QCheckBox('Use TCP for streaming')

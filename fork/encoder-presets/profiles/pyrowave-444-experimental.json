@@ -11,25 +11,26 @@
     "bit-depth": 8,
     "tcp-only": false,
     "pyrowave-bitrate": 400000000,
-    "pyrowave-foveation": 0
+    "pyrowave-foveation": null
   },
   "headset_settings": {
     "instructions_only": true,
     "bitrate_mbps": 400,
     "refresh_rate_hz": 90,
-    "foveation_percent": 0,
+    "foveation_percent": null,
     "codec": "PyroWave 4:4:4 Haar (experimental)",
     "ten_bit_color": false,
     "low_latency_decoding": true,
     "application_spacewarp": false,
-    "render_resolution": "OpenXR recommended, resolution/stream scales 1.0"
+    "render_resolution": "OpenXR recommended; stream scale and foveation from client"
   },
-  "notice": "Experimental GPU Haar 4:4:4. Desktop bitrate: 400 Mbit/s (editable below). Headset: PyroWave, 90 Hz, 8-bit, resolution/stream scales 1.0, desktop foveation 0% by default (editable; WiVRn restart required). Measured 85–88 fresh frames/s on 5 GHz; sustained 90 Hz and Wi-Fi 6E remain unqualified. Save and reconnect to apply.",
+  "notice": "Experimental GPU Haar 4:4:4. Desktop bitrate: 400 Mbit/s (editable below). Headset: PyroWave, 90 Hz, 8-bit. Foveation and stream scale follow the client, including gaze tracking and its center settings. The desktop foveation override is optional and requires a WiVRn restart. Measured 85–88 fresh frames/s on 5 GHz without foveation; sustained 90 Hz and Wi-Fi 6E remain unqualified.",
   "notes": [
     "Matching client/server required. GPU compute decoding; preserves full chroma.",
-    "Quest Pro OpenXR recommendation 1440x1584 per eye; encoded padding 1472x1600.",
+    "Quest Pro OpenXR recommendation 1440x1584 per eye; encoded dimensions follow client foveation and are rounded to 64-pixel blocks.",
     "Keeps existing host application, tracking, hostname and service port.",
-    "Experimental spatial foveation retains center detail; gaze follows eye tracking unless headset manual center override is enabled. GPU defoveation restores the render extent; 4:4:4 is retained at encoded sample positions."
+    "Experimental spatial foveation retains center detail; gaze follows eye tracking unless headset manual center override is enabled. GPU defoveation restores the render extent; 4:4:4 is retained at encoded sample positions.",
+    "Loading this preset clears a previous desktop foveation override and restores client control."
   ],
   "expected_target_mbps": {
     "left_eye": 197.530864,

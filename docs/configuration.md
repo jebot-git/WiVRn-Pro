@@ -298,4 +298,7 @@ sampling. The existing GPU defoveator restores the original render dimensions.
 Full chroma is retained at encoded sample positions; peripheral spatial detail
 is reduced. The existing eye-gaze path moves the center when eye tracking is
 enabled and the headset manual foveation-center override is off; otherwise the
-existing fixed center is used. The preset defaults to 0%, pending headset QA.
+existing fixed center is used. The preset defaults to **Use headset setting** and clears a previous desktop
+override. The server then uses the client-reported stream dimensions and gaze
+updates, so client foveation and manual-center choices remain authoritative.
+An explicit desktop percentage is an optional override; visual QA is pending.

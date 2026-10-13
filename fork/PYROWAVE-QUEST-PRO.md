@@ -119,11 +119,13 @@ isolated `/run/user/$(id -u)/wivrn-pyrowave-test` directory (or
 ## Experimental desktop foveation
 
 The main preset now supports `pyrowave-foveation` (0–80%) and exposes it in the
-desktop dashboard. Start at 30%, save, and restart WiVRn. It overrides the headset
-stream scale using the reported render extent; no additional stream-scale
-reduction is compounded. Gaze centering uses WiVRn's existing tracking and
+desktop dashboard. The preset defaults to Use headset setting, clearing any old desktop override.
+The server uses client-reported stream dimensions and gaze/center updates.
+An explicit desktop percentage overrides the headset stream scale using the
+reported render extent; no additional stream-scale reduction is compounded.
+Save and restart WiVRn when changing the desktop override. Gaze centering uses WiVRn's existing tracking and
 manual-center settings. Codec frames and chroma layout are unchanged, so the
 existing native GPU decoder and GPU defoveator handle the smaller input.
-Default remains 0%. Geometry regression and native codec round trips cover
+Client-controlled foveation is the default. Geometry regression and native codec round trips cover
 aligned sizes; visual reconstruction and performance on Quest Pro remain to be
 qualified with a live session.
