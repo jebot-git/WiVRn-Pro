@@ -2,7 +2,7 @@
 
 Build each Linux package on its target distribution; do not convert Fedora
 binaries to DEB or Arch archives. The package includes the server, OpenXR runtime,
-Qt dashboard, integrated Shora bridge, WayVR, Motoc and eight encoder profiles.
+Qt dashboard, integrated Shora bridge, WayVR, Motoc and the encoder profiles present in the source tree.
 GPU drivers, SteamVR's Lighthouse driver and xrizer remain external installations.
 The packages conflict with stock WiVRn packages that share runtime files.
 
@@ -70,3 +70,8 @@ Locally signed APKs are sideload builds, not Meta Store releases. A development
 signature cannot update an installation signed with a different release key.
 Uninstalling that installation deletes its local application data, so keep it
 until you are ready to switch builds. No headset installation is part of packaging.
+
+Use `--allow-partial-encoders` to package a deliberate encoder subset (for example
+an Intel Arc experimental build without NVENC). The package description and
+`build-info.json` record the enabled encoders; the default requires all standard
+backends. PyroWave is included only when its build option is enabled.

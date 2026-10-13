@@ -29,15 +29,22 @@ def main():
     parser.add_argument('--version', default='26.9.1')
     parser.add_argument('--release', default='1')
     parser.add_argument('--commit', required=True)
+    parser.add_argument('--allow-partial-encoders', action='store_true',
+                        help='Package the enabled encoder subset and record it in build metadata')
     args = parser.parse_args()
     source = Path(__file__).resolve().parents[2]
     build, output = args.build.resolve(), args.output.resolve()
     cache = (build / 'CMakeCache.txt').read_text()
     assert 'CMAKE_INSTALL_PREFIX:PATH=/usr\n' in cache, 'Configure with install prefix /usr'
     assert 'CMAKE_BUILD_TYPE:STRING=Release\n' in cache, 'Use a Release build'
-    for flag in ['WIVRN_USE_NVENC', 'WIVRN_USE_VAAPI', 'WIVRN_USE_QSV',
-                 'WIVRN_FEATURE_STEAMVR_LIGHTHOUSE', 'WIVRN_BUILD_DASHBOARD']:
+    required = ['WIVRN_USE_VAAPI', 'WIVRN_USE_QSV',
+                'WIVRN_FEATURE_STEAMVR_LIGHTHOUSE', 'WIVRN_BUILD_DASHBOARD']
+    if not args.allow_partial_encoders:
+        required.append('WIVRN_USE_NVENC')
+    for flag in required:
         assert f'{flag}:BOOL=ON\n' in cache, f'{flag} must be enabled'
+    encoders = [name for name in ['nvenc', 'vaapi', 'qsv', 'vulkan', 'pyrowave']
+                if f"WIVRN_USE_{'VULKAN_ENCODE' if name == 'vulkan' else name.upper()}:BOOL=ON\n" in cache]
     output.mkdir(parents=True, exist_ok=True)
     work = build.parent / f'packaging-{args.format}'
     work.mkdir(exist_ok=True)
@@ -64,7 +71,7 @@ def main():
     (docs / 'build-info.json').write_text(json.dumps({
         'commit': args.commit, 'version': args.version, 'release': args.release,
         'os_release': Path('/etc/os-release').read_text(),
-        'encoders': ['nvenc', 'vaapi', 'qsv', 'vulkan'],
+        'encoders': encoders,
         'tracking_modes': ['slimevr', 'motoc'],
     }, indent=2) + '\n')
     # CMake's PROGRAMS installation does not strip the Rust executables.
@@ -80,7 +87,8 @@ def main():
                      'usr/bin/wivrn-pro-wayvrctl', 'usr/libexec/wivrn-pro/wayvr',
                      'usr/libexec/wivrn-pro/motoc', 'usr/lib/systemd/user/wivrn-pro.service']:
         assert (stage / relative).is_file(), f'Missing {relative}'
-    assert len(list((stage / 'usr/share/wivrn-pro/encoder-presets/profiles').glob('*.json'))) == 8
+    expected_profiles = {p.name for p in (source / 'fork/encoder-presets/profiles').glob('*.json')}
+    assert {p.name for p in (stage / 'usr/share/wivrn-pro/encoder-presets/profiles').glob('*.json')} == expected_profiles
     assert not (stage / 'usr/local').exists()
     if args.format == 'arch':
         # makepkg records .PKGINFO, .BUILDINFO and .MTREE using native tools.
@@ -120,7 +128,7 @@ package() {{
             'CPACK_PACKAGE_CONTACT': 'WiVRn Pro contributors <noreply@localhost>',
             'CPACK_PACKAGE_HOMEPAGE_URL': 'https://github.com/jebot-git/WiVRn-Pro',
             'CPACK_PACKAGE_DESCRIPTION_SUMMARY': 'WiVRn Pro standalone VR server with tracking bridge, Motoc and WayVR',
-            'CPACK_PACKAGE_DESCRIPTION': 'Quest Pro streaming with NVENC, VAAPI, QSV and Vulkan encoding; spatial anchors, exclusive SlimeVR or Motoc tracking, and a unified Qt dashboard.',
+            'CPACK_PACKAGE_DESCRIPTION': 'Quest Pro streaming with ' + ', '.join(encoders) + ' encoding; spatial anchors, exclusive SlimeVR or Motoc tracking, and a unified Qt dashboard.',
             'CPACK_PACKAGE_DIRECTORY': str(output),
             'CPACK_INSTALLED_DIRECTORIES': f'{stage};/',
             'CPACK_PACKAGING_INSTALL_PREFIX': '/',
