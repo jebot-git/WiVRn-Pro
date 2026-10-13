@@ -57,6 +57,9 @@ class PortabilityDashboardTests(unittest.TestCase):
         for name, preset in presets.items():
             for backend in ['qsv', 'nvenc', 'vaapi']:
                 host = portable_preset(preset, backend)
+                if preset['host_config']['encoder'].get('codec') == 'pyrowave':
+                    self.assertEqual(host, preset['host_config'])
+                    continue
                 self.assertEqual(host['encoder']['encoder'], backend)
                 if backend != 'qsv':
                     self.assertFalse(set(host['encoder']['options']) - {'rate_control', 'qp'})

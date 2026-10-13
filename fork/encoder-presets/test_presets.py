@@ -93,7 +93,7 @@ class PresetTests(unittest.TestCase):
             profile = json.loads(path.read_text())
             encoder = profile['host_config']['encoder']
             codec = 'hevc' if encoder['codec'] == 'h265' else 'h264'
-            for option, value in encoder['options'].items():
+            for option, value in encoder.get('options', {}).items():
                 self.assertIsInstance(value, str)
                 if option not in ('rate_control', 'qp'):
                     self.assertIn('-' + option + ' ', help_text[codec], str(path))
