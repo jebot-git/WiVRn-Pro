@@ -284,8 +284,8 @@ traffic can vary with content; this target is not a network throughput guarantee
 
 ### Experimental PyroWave foveation
 
-**PyroWave foveation (reconnect)** in the desktop streaming panel overrides the
-headset stream scale for this codec. Save and reconnect to change dimensions.
+**PyroWave foveation (restart)** in the desktop streaming panel overrides the
+headset stream scale for this codec. Save and restart WiVRn to change dimensions.
 `pyrowave-foveation` accepts an integer from 0 to 80: 0 disables spatial
 foveation, while 30 requests 70% of each render axis before 64-pixel alignment.
 **Use headset setting** removes the override. Other codecs are unchanged.

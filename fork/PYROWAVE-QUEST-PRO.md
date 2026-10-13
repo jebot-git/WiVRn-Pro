@@ -119,7 +119,7 @@ isolated `/run/user/$(id -u)/wivrn-pyrowave-test` directory (or
 ## Experimental desktop foveation
 
 The main preset now supports `pyrowave-foveation` (0–80%) and exposes it in the
-desktop dashboard. Start at 30%, save, and reconnect. It overrides the headset
+desktop dashboard. Start at 30%, save, and restart WiVRn. It overrides the headset
 stream scale using the reported render extent; no additional stream-scale
 reduction is compounded. Gaze centering uses WiVRn's existing tracking and
 manual-center settings. Codec frames and chroma layout are unchanged, so the

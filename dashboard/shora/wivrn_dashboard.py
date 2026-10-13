@@ -221,7 +221,7 @@ class StreamingPanel(QWidget):
         self.pyrowave_bitrate.setToolTip('Aggregate PyroWave target across both eyes and alpha. A desktop value overrides the headset bitrate; actual traffic can vary. Other codecs are unchanged.')
         self.pyrowave_foveation = QSpinBox(); self.pyrowave_foveation.setRange(-1, 80)
         self.pyrowave_foveation.setSuffix(' %'); self.pyrowave_foveation.setSpecialValueText('Use headset setting')
-        self.pyrowave_foveation.setToolTip('Experimental spatial foveation: 0% disables it; higher values reduce peripheral detail and encoded pixels. Uses gaze when available and the headset manual center override is off. Save and reconnect to apply; 64-pixel blocks round dimensions up.')
+        self.pyrowave_foveation.setToolTip('Experimental spatial foveation: 0% disables it; higher values reduce peripheral detail and encoded pixels. Uses gaze when available and the headset manual center override is off. Save and restart WiVRn to apply; 64-pixel blocks round dimensions up.')
         self.depth = QComboBox()
         self.depth.addItems(['Use default', '8', '10'])
         self.tcp = QCheckBox('Use TCP for streaming')
@@ -239,7 +239,7 @@ class StreamingPanel(QWidget):
         self.wayvr_dashboard = QCheckBox('Open this dashboard inside WayVR')
         self.hostname = QLineEdit()
         self.port = QSpinBox(); self.port.setRange(1, 65535); self.port.setValue(9757)
-        for label, control in [('Headset profile', self.headset_profile), ('Encoder', self.encoder), ('Codec', self.codec), ('Bit depth', self.depth), ('PyroWave bitrate', self.pyrowave_bitrate), ('PyroWave foveation (reconnect)', self.pyrowave_foveation),
+        for label, control in [('Headset profile', self.headset_profile), ('Encoder', self.encoder), ('Codec', self.codec), ('Bit depth', self.depth), ('PyroWave bitrate', self.pyrowave_bitrate), ('PyroWave foveation (restart)', self.pyrowave_foveation),
                                ('Tracking bridge mode (restart required)', self.lighthouse), ('OpenVR runtime', self.xrizer), ('Manual runtime path', self.xrizer_path), ('Hostname', self.hostname), ('Port', self.port), ('', self.tcp), ('', self.hid), ('', self.debug), ('', self.wayvr), ('', self.wayvr_dashboard)]:
             form.addRow(label, control)
         layout.addLayout(form)
