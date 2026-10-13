@@ -27,6 +27,7 @@
 #include "util/u_logging.h"
 #include "utils/xdg_base_directory.h"
 
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
@@ -57,6 +58,9 @@ bool enabled = false;
 ::vk_bundle * calibration = nullptr;
 
 perfetto::Track g_encoder_track(1);
+// Concurrent eye encoders and GPU work must not overlap on one slice track.
+std::array<perfetto::Track, 3> g_stream_encoders{perfetto::Track(10), perfetto::Track(11), perfetto::Track(12)};
+std::array<perfetto::Track, 3> g_stream_gpu{perfetto::Track(20), perfetto::Track(21), perfetto::Track(22)};
 perfetto::Track g_compositor_track(2);
 perfetto::Track g_network_track(3);
 perfetto::Track g_feedback_track(4);
@@ -223,12 +227,12 @@ void start_inprocess_session()
 	U_LOG_I("wivrn::trace: in-process session started, %u KiB buffer", buffer_kb);
 }
 
-perfetto::Track & cpu_track_obj(cpu_track d)
+perfetto::Track & cpu_track_obj(cpu_track d, uint8_t stream)
 {
 	switch (d)
 	{
 		case cpu_track::encoder:
-			return g_encoder_track;
+			return stream < g_stream_encoders.size() ? g_stream_encoders[stream] : g_encoder_track;
 		case cpu_track::compositor:
 			return g_compositor_track;
 		case cpu_track::network:
@@ -292,6 +296,11 @@ void init()
 		perfetto::TrackEvent::SetTrackDescriptor(trk, desc);
 	};
 	set_track_name(g_encoder_track, "WiVRn encoder");
+	for (size_t i = 0; i < g_stream_encoders.size(); ++i)
+	{
+		set_track_name(g_stream_encoders[i], ("WiVRn encoder " + std::to_string(i)).c_str());
+		set_track_name(g_stream_gpu[i], ("WiVRn GPU " + std::to_string(i)).c_str());
+	}
 	set_track_name(g_compositor_track, "WiVRn compositor");
 	set_track_name(g_network_track, "WiVRn network");
 	set_track_name(g_feedback_track, "WiVRn feedback");
@@ -347,9 +356,11 @@ void gpu_slice(gpu_track, const char * slice_name, int64_t begin_ns, int64_t end
 {
 	if (!initialized)
 		return;
-	// gpu_track is unused today (all slices share the encoder track); kept for future GPU lanes.
-	TRACE_EVENT_BEGIN("wivrn_encoder_gpu", perfetto::DynamicString(slice_name), g_encoder_track, static_cast<uint64_t>(begin_ns), "frame", frame, "stream", static_cast<uint32_t>(stream));
-	TRACE_EVENT_END("wivrn_encoder_gpu", g_encoder_track, static_cast<uint64_t>(end_ns));
+	if (begin_ns <= 0 || end_ns < begin_ns)
+		return;
+	auto & track = stream < g_stream_gpu.size() ? g_stream_gpu[stream] : g_encoder_track;
+	TRACE_EVENT_BEGIN("wivrn_encoder_gpu", perfetto::DynamicString(slice_name), track, static_cast<uint64_t>(begin_ns), "frame", frame, "stream", static_cast<uint32_t>(stream));
+	TRACE_EVENT_END("wivrn_encoder_gpu", track, static_cast<uint64_t>(end_ns));
 }
 
 #define WIVRN_CPU_BEGIN(CAT, trk, name, ts, frame, stream) \
@@ -384,7 +395,7 @@ scope::~scope()
 	if (!active)
 		return;
 	const int64_t end_ns = os_monotonic_get_ns();
-	perfetto::Track & trk = cpu_track_obj(which);
+	perfetto::Track & trk = cpu_track_obj(which, stream);
 	switch (which)
 	{
 		case cpu_track::encoder:
@@ -407,7 +418,7 @@ void cpu_instant(cpu_track which, const char * name, uint64_t frame, uint8_t str
 	if (!initialized)
 		return;
 	const int64_t ts = os_monotonic_get_ns();
-	perfetto::Track & trk = cpu_track_obj(which);
+	perfetto::Track & trk = cpu_track_obj(which, stream);
 	switch (which)
 	{
 		case cpu_track::encoder:
@@ -427,7 +438,7 @@ void cpu_begin(cpu_track which, uint8_t stream, uint64_t frame, const char * nam
 	if (!initialized)
 		return;
 	const int64_t ts = os_monotonic_get_ns();
-	perfetto::Track & trk = cpu_track_obj(which);
+	perfetto::Track & trk = cpu_track_obj(which, stream);
 	switch (which)
 	{
 		case cpu_track::encoder:
@@ -442,12 +453,12 @@ void cpu_begin(cpu_track which, uint8_t stream, uint64_t frame, const char * nam
 	}
 }
 
-void cpu_end(cpu_track which, uint8_t, uint64_t, const char *)
+void cpu_end(cpu_track which, uint8_t stream, uint64_t, const char *)
 {
 	if (!initialized)
 		return;
 	const int64_t ts = os_monotonic_get_ns();
-	perfetto::Track & trk = cpu_track_obj(which);
+	perfetto::Track & trk = cpu_track_obj(which, stream);
 	switch (which)
 	{
 		case cpu_track::encoder:

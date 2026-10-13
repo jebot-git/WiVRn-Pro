@@ -140,8 +140,7 @@ decoder::decoder(
 	{
 		AMediaFormat_ptr format(AMediaFormat_new());
 		AMediaFormat_setString(format.get(), AMEDIAFORMAT_KEY_MIME, mime(description.codec[stream_index]));
-		// AMediaFormat_setInt32(format.get(), "vendor.qti-ext-dec-low-latency.enable", 1); // Qualcomm low
-		// latency mode
+
 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_WIDTH, width);
 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_HEIGHT, height);
 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_OPERATING_RATE, std::ceil(description.frame_rate));
@@ -155,7 +154,17 @@ decoder::decoder(
 		char * codec_name;
 		check(AMediaCodec_getName(media_codec.get(), &codec_name), "AMediaCodec_getName");
 		spdlog::info("Created MediaCodec decoder \"{}\"", codec_name);
+		const bool low_latency = application::get_config().decoder_low_latency;
+		const bool qualcomm = std::string_view(codec_name).find("qti") != std::string_view::npos || std::string_view(codec_name).find("qcom") != std::string_view::npos;
 		AMediaCodec_releaseName(media_codec.get(), codec_name);
+		if (low_latency)
+		{
+			// Literal keeps compatibility with the API 29 minimum. Older codecs
+			// ignore unknown standard keys; Qualcomm gets its vendor key too.
+			AMediaFormat_setInt32(format.get(), "low-latency", 1);
+			if (qualcomm)
+				AMediaFormat_setInt32(format.get(), "vendor.qti-ext-dec-low-latency.enable", 1);
+		}
 
 		ANativeWindow * window;
 
@@ -170,8 +179,26 @@ decoder::decoder(
 		check(AMediaCodec_setAsyncNotifyCallback(media_codec.get(), callback, this),
 		      "AMediaCodec_setAsyncNotifyCallback");
 
-		check(AMediaCodec_configure(media_codec.get(), format.get(), window, nullptr /* crypto */, 0 /* flags */),
-		      "AMediaCodec_configure");
+		auto status = AMediaCodec_configure(media_codec.get(), format.get(), window, nullptr, 0);
+		if (status != AMEDIA_OK && low_latency)
+		{
+			spdlog::warn("Decoder {} rejected low-latency configuration ({}), retrying without hints", stream_index, int(status));
+			// Start with a fresh codec after a failed configure.
+			media_codec.reset();
+			media_codec.reset(AMediaCodec_createDecoderByType(mime(description.codec[stream_index])));
+			if (!media_codec)
+				throw std::runtime_error("Cannot recreate decoder");
+			check(AMediaCodec_setAsyncNotifyCallback(media_codec.get(), callback, this), "AMediaCodec_setAsyncNotifyCallback");
+			AMediaFormat_clear(format.get());
+			AMediaFormat_setString(format.get(), AMEDIAFORMAT_KEY_MIME, mime(description.codec[stream_index]));
+			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_WIDTH, width);
+			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_HEIGHT, height);
+			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_OPERATING_RATE, std::ceil(description.frame_rate));
+			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_PRIORITY, 0);
+			status = AMediaCodec_configure(media_codec.get(), format.get(), window, nullptr, 0);
+		}
+		check(status, "AMediaCodec_configure");
+		spdlog::info("Decoder {} low-latency requested: {}", stream_index, low_latency);
 
 		check(AMediaCodec_start(media_codec.get()), "AMediaCodec_start");
 	}
@@ -290,7 +317,8 @@ void decoder::on_image_available(void * context, AImageReader * reader)
 			if (state.owner)
 			{
 				scene = state.owner->weak_scene.lock();
-				if (scene) state.owner->on_image_available(reader);
+				if (scene)
+					state.owner->on_image_available(reader);
 			}
 		}
 	}
@@ -317,7 +345,8 @@ void decoder::on_image_available(AImageReader * reader)
 	AImage * tmp;
 	auto status = AImageReader_acquireLatestImage(image_reader.get(), &tmp);
 	// acquireLatestImage can consume images belonging to already queued callbacks.
-	if (status == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE) return;
+	if (status == AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE)
+		return;
 	check(status, "AImageReader_acquireLatestImage");
 	image.reset(tmp);
 

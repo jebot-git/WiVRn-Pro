@@ -434,7 +434,7 @@ void scenes::stream::gui_settings(float)
 			{
 				auto & portal = spatial->portal;
 				ImGui::SeparatorText("Anchored passthrough cutout");
-				ImGui::TextWrapped("Place your controllers or hands at opposite diagonal corners of an upright window. Its plane faces you when drawing begins. Release, pull apart, then hold both triggers or pinch both hands to confirm.");
+				ImGui::TextWrapped("Place your controllers or hands at opposite diagonal corners of a window. Release both inputs. Move both hands together to pan in any direction, turn the pair to yaw, and pull apart to resize. Hold one trigger or pinch to grab the window, then move or rotate that hand to pan, tilt, or roll it without resizing. Release to resize again. Hold both triggers or pinch both hands to confirm.");
 				if (portal.designing)
 				{
 					if (ImGui::Button("Cancel cutout design")) portal.cancel();
@@ -471,6 +471,9 @@ void scenes::stream::gui_settings(float)
 		{
 			wivrn::gui::settings_audio(ctx);
 #ifdef __ANDROID__
+#if WIVRN_AUDIO_AB_STOCK
+			ImGui::TextWrapped("Audio test A: stock WiVRn 26.9. Microphone capture follows PC application demand.");
+#else
 			ImGui::Spacing();
 			ImGui::BeginDisabled(!ctx.config.check_feature(feature::microphone));
 			bool capture = mic_capture_enabled;
@@ -482,6 +485,7 @@ void scenes::stream::gui_settings(float)
 			ImGui::TextWrapped("Release capture for one second, then reopen in compatibility mode. Voice processing may sound different. The VR session stays connected.");
 			ImGui::EndDisabled();
 			ImGui::EndDisabled();
+#endif
 #endif
 			break;
 		}

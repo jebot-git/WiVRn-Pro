@@ -81,6 +81,7 @@ pub struct InputState {
     pub joysticks_enabled: bool,
     pub head_yaw_total: f64,
     head_last_yaw: Option<f64>,
+    two_hand_grab: Option<(OverlayID, crate::hand_resize::HandResize)>,
 }
 
 impl InputState {
@@ -100,6 +101,7 @@ impl InputState {
             joysticks_enabled: false,
             head_yaw_total: 0.0,
             head_last_yaw: None,
+            two_hand_grab: None,
         }
     }
 
@@ -366,6 +368,7 @@ pub struct Pointer {
     touch_press: crate::hand_touch::TouchPress,
     touch_needs_neutral: bool,
     pub cancel_interaction: bool,
+    hand_grab_needs_release: bool,
     /// distance of the most recent ray hit on a wayland client window, used for drag n drop
     pub last_wvr_hit_distance: Option<f32>,
 }
@@ -394,6 +397,7 @@ impl Pointer {
             touch_press: Default::default(),
             touch_needs_neutral: false,
             cancel_interaction: false,
+            hand_grab_needs_release: false,
             last_wvr_hit_distance: None,
         }
     }
@@ -546,6 +550,7 @@ pub fn interact<O>(
 where
     O: Default,
 {
+    if update_two_hand_grab(overlays, app) { return [None, None]; }
     let hits = if app.input_state.pointers[1].last_click > app.input_state.pointers[0].last_click {
         let right = interact_hand(1, overlays, app);
         let left = interact_hand(0, overlays, app);
@@ -1316,6 +1321,95 @@ where
     }
 }
 
+// Both hands manipulate one existing fist grab. Controller grabs and two
+// different windows retain their ordinary, independent interaction paths.
+fn hand_grip(pointer: &Pointer) -> bool {
+    pointer.hand_tracking && pointer.tracked && pointer.now.grab
+        && !pointer.cancel_interaction && !pointer.joystick_owned
+        && pointer.wrist_pose.is_some_and(|p| p.is_finite())
+}
+fn two_hand_target(pointers: &[Pointer; 2]) -> Option<OverlayID> {
+    if !pointers.iter().all(hand_grip) { return None; }
+    let left = pointers[0].interaction.grabbed;
+    let right = pointers[1].interaction.grabbed;
+    match (left, right) {
+        (Some(a), Some(b)) if !a.grab_anchor && !b.grab_anchor && a.grabbed_id == b.grabbed_id => Some(a.grabbed_id),
+        (Some(a), None) | (None, Some(a)) if !a.grab_anchor => Some(a.grabbed_id),
+        _ => None,
+    }
+}
+fn update_two_hand_grab<O: Default>(overlays: &mut OverlayWindowManager<O>, app: &mut AppState) -> bool {
+    for pointer in &mut app.input_state.pointers {
+        if pointer.hand_grab_needs_release {
+            if !pointer.now.grab { pointer.hand_grab_needs_release = false; }
+            pointer.now.grab = false;
+        }
+    }
+    let mut interrupted = app.input_state.mouse_priority.active()
+        || app.input_state.pointers.iter().any(|p| !p.tracked || !p.hand_tracking
+            || p.cancel_interaction || p.joystick_owned || p.wrist_pose.is_none_or(|pose| !pose.is_finite()));
+    if let Some((id, resize)) = app.input_state.two_hand_grab {
+        let both = !interrupted && app.input_state.pointers.iter().all(hand_grip);
+        let transform = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform));
+        if both && transform.is_some() {
+            let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
+            let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
+            if let Some(value) = resize.update(left, right) {
+                let overlay = overlays.mut_by_id(id).unwrap();
+                overlay.config.active_state.as_mut().unwrap().transform = value;
+                overlay.config.pause_movement = true;
+                overlay.config.dirty = true;
+                return true;
+            }
+            interrupted = true;
+        }
+        // Rebase the surviving fist at the final resized transform. Tracking
+        // loss/ownership changes cancel both instead and require opening them.
+        app.input_state.two_hand_grab = None;
+        let surviving = !interrupted && transform.is_some() && app.input_state.pointers.iter().any(hand_grip);
+        let mut dropped = false;
+        for idx in 0..2 {
+            if !interrupted && transform.is_some() && hand_grip(&app.input_state.pointers[idx]) {
+                let pointer = &mut app.input_state.pointers[idx];
+                pointer.interaction.grabbed = Some(GrabData {
+                    grabbed_id: id, grab_anchor: false, offset: pointer.pose.inverse() * transform.unwrap(),
+                });
+            } else {
+                // A handoff is not a drop; only save/hide grab helpers once
+                // when the last hand lets go.
+                if surviving || dropped { app.input_state.pointers[idx].interaction.grabbed = None; }
+                release_pointer(idx, overlays, app);
+                dropped = true;
+                if interrupted || transform.is_none() { app.input_state.pointers[idx].hand_grab_needs_release = true; }
+            }
+        }
+        return false;
+    }
+    if interrupted { return false; }
+    let Some(id) = two_hand_target(&app.input_state.pointers) else { return false; };
+    let Some(transform) = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform)) else { return false; };
+    let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
+    let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
+    let Some(resize) = crate::hand_resize::HandResize::start(transform, left, right) else {
+        return true; // Freeze until the fists have a usable separation.
+    };
+    for idx in 0..2 {
+        let now = app.input_state.pointers[idx].now;
+        let before = app.input_state.pointers[idx].before;
+        // Clear any click/hover ownership without ending the existing grab.
+        app.input_state.pointers[idx].interaction.grabbed = None;
+        release_pointer(idx, overlays, app);
+        let pointer = &mut app.input_state.pointers[idx];
+        pointer.now = now; pointer.before = before; pointer.tracked = true;
+        pointer.interaction.grabbed = Some(GrabData {
+            grabbed_id: id, grab_anchor: false, offset: pointer.pose.inverse() * transform,
+        });
+    }
+    app.input_state.two_hand_grab = Some((id, resize));
+    if let Some(overlay) = overlays.mut_by_id(id) { overlay.config.pause_movement = true; }
+    true
+}
+
 fn ray_test(
     ray_origin: &Affine3A,
     overlay: OverlayID,
@@ -1340,6 +1434,34 @@ fn ray_test(
 #[cfg(test)]
 mod hand_attachment_tests {
     use super::*;
+    #[test]
+    fn resizing_requires_two_tracked_fists_and_one_target() {
+        let mut ids = slotmap::SlotMap::<OverlayID, ()>::with_key();
+        let first = ids.insert(());
+        let second = ids.insert(());
+        let mut pointers = [Pointer::new(0), Pointer::new(1)];
+        for p in &mut pointers {
+            p.tracked = true; p.hand_tracking = true; p.now.grab = true;
+            p.wrist_pose = Some(Affine3A::IDENTITY);
+        }
+        assert!(two_hand_target(&pointers).is_none());
+        pointers[0].interaction.grabbed = Some(GrabData { grabbed_id: first, ..Default::default() });
+        assert_eq!(two_hand_target(&pointers), Some(first));
+        pointers[1].interaction.grabbed = Some(GrabData { grabbed_id: second, ..Default::default() });
+        assert!(two_hand_target(&pointers).is_none());
+        pointers[1].interaction.grabbed = pointers[0].interaction.grabbed;
+        assert_eq!(two_hand_target(&pointers), Some(first));
+        pointers[1].tracked = false; assert!(two_hand_target(&pointers).is_none());
+        pointers[1].tracked = true; pointers[1].hand_tracking = false;
+        assert!(two_hand_target(&pointers).is_none());
+        pointers[1].hand_tracking = true; pointers[1].cancel_interaction = true;
+        assert!(two_hand_target(&pointers).is_none());
+        pointers[1].cancel_interaction = false; pointers[1].joystick_owned = true;
+        assert!(two_hand_target(&pointers).is_none());
+        pointers[1].joystick_owned = false;
+        pointers[0].interaction.grabbed.as_mut().unwrap().grab_anchor = true;
+        assert!(two_hand_target(&pointers).is_none());
+    }
     #[test]
     fn wrist_attachment_preserves_controller_frame_and_faces_back_of_hand() {
         let mut pointer = Pointer::new(0);

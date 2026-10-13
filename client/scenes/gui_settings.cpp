@@ -307,6 +307,24 @@ void settings_streaming(const settings_context & ctx)
 	std::vector<setting> list;
 
 	list.push_back({
+	        .id = "##stream_quality",
+	        .label = _("Stream quality preset"),
+	        .description = _("Performance: 30% per-axis resolution; balanced: 40%; quality: 50%. Selecting a preset fixes the size independently of eye-tracking permission."),
+	        .ui = ui_kind::combo,
+	        .get_int = [&config] {
+            const float scale = config.get_stream_scale();
+            if (std::abs(scale - 0.3f) < 0.001f) return 1;
+            if (std::abs(scale - 0.4f) < 0.001f) return 2;
+            if (std::abs(scale - 0.5f) < 0.001f) return 3;
+            return 0; },
+	        .set_int = [&config](int v) {
+            if (v >= 1 && v <= 3) { config.set_stream_scale(0.2f + v * 0.1f); config.save(); } },
+	        .options = [] { return std::vector<std::string>{_("Custom"), _("Performance"), _("Balanced"), _("Quality")}; },
+	        .default_int = default_config.get_stream_scale() < 0.4f ? 1 : 3,
+	        .enabled = [&ctx] { return not ctx.in_game; },
+	        .disabled_tooltip = disconnect_tip,
+	});
+	list.push_back({
 	        .id = "##foveation",
 	        .label = _("Foveated encoding"),
 	        .description = config.check_feature(feature::eye_gaze)
@@ -323,6 +341,18 @@ void settings_streaming(const settings_context & ctx)
 	        .v_max = 80,
 	        .fmt = "%d%%",
 	        .default_int = int(std::lround((1 - default_config.get_stream_scale()) * 100)),
+	        .enabled = [&ctx] { return not ctx.in_game; },
+	        .disabled_tooltip = disconnect_tip,
+	});
+
+	list.push_back({
+	        .id = "##decoder_low_latency",
+	        .label = _("Low-latency decoding"),
+	        .description = _("Ask the headset decoder to minimise buffering. Reconnect to apply."),
+	        .ui = ui_kind::toggle,
+	        .get_bool = [&config] { return config.decoder_low_latency; },
+	        .set_bool = [&config](bool v) { config.decoder_low_latency = v; config.save(); },
+	        .default_bool = default_config.decoder_low_latency,
 	        .enabled = [&ctx] { return not ctx.in_game; },
 	        .disabled_tooltip = disconnect_tip,
 	});

@@ -1,0 +1,42 @@
+Experimental QSV CQP support for WiVRn-Pro
+
+Configuration
+Each encoder can opt in through its existing string-valued options map:
+  {"encoder":"qsv", "codec":"h265", "options":{"rate_control":"cqp", "qp":"24", "preset":"veryfast", "async_depth":"1", "low_power":"1", "low_delay_brc":"0", "look_ahead_depth":"0", "gpb":"0"}}
+Use codec h264 and look_ahead=0 instead of gpb for AVC. The actual configuration's
+encoder entries use the same encoder/codec/options schema as the bundled selector.
+See fork/encoder-presets/README.txt for presets and reversible config selection.
+
+Omitting rate_control retains the existing CBR path. Explicit cbr is accepted.
+CQP currently accepts only QSV AVC/HEVC and integer QP 1..51. No VP9, AV1,
+VAAPI CQP, or ICQ implementation is claimed. Mode/quantizer are selected at
+session creation, so changing them requires a subsequent session.
+
+CQP uses AV_CODEC_FLAG_QSCALE, global_quality=QP*FF_QP2LAMBDA, identical I/P QP,
+and zero bitrate, max/min rate, VBV size and initial occupancy. Conflicting
+FFmpeg/BRC options are rejected. low_delay_brc is disabled in this mode.
+
+Unconstrained quality has no target bitrate. Startup logs explicitly say CQP,
+the quantizer and uncapped status. The existing headset bitrate control and
+saved bitrate value remain visible but do not limit CQP streams; their changes
+are consumed without changing the active context or scheduling an IDR.
+Other streams can remain CBR. A session with mixed modes has no aggregate cap.
+The bundled CQP presets apply the same QP to both eyes and alpha. CQP does not
+retain CBR's 1:1:0.025 bitrate weighting: alpha traffic depends on mask complexity.
+Earlier per-eye-to-total projections are not measured total CQP network rates.
+The preset selector labels this and requires --cqp-capable for CQP presets.
+
+Frame-rate changes retain the existing QSV reconfigure/recovery mechanism and
+reopen with the same CQP settings. CQP recovery retries QSV; it does not silently
+fall back to VAAPI/CBR. Existing CBR recovery/fallback behavior is unchanged.
+
+Validation
+Run fork/test-cqp.sh for configuration and AVCodecContext regression checks plus
+preset selector tests. Optional fork/test-cqp.sh --hardware additionally runs
+90 frames each of AVC/HEVC CQP24 at 90 and 72 fps on renderD129. This intentionally
+hardcodes the A770 node used for this experiment; verify it before reuse.
+The smoke uses the actual configuration helper with NV12 system-memory input;
+it is not an end-to-end WiVRn Vulkan-surface, network or headset test.
+
+This branch was built separately from the active installation. Do not interpret
+successful compilation/hardware smoke as a headset latency measurement.

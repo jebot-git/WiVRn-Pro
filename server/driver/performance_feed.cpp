@@ -50,6 +50,19 @@ void stream_performance::update(const from_headset::feedback & f, int64_t now)
 		    (!t.updated_ns || f.frame_index >= t.frame))
 			t = {f.frame_index, start, end, now};
 	}
+	// All intervals below telescope to encode -> predicted display for ONE
+	// frame. Never replace its first-presentation result with a repeat.
+	const std::array<int64_t, 8> chain{f.encode_begin, f.encode_end, f.send_begin,
+	                                 f.received_last_packet, f.sent_to_decoder,
+	                                 f.received_from_decoder, f.blitted, f.displayed};
+	if (f.times_displayed == 1 && chain.front() > 0 &&
+	    std::is_sorted(chain.begin(), chain.end()) &&
+	    chain.back() - chain.front() <= 2'000'000'000 &&
+	    (!first_display_updated_ns || f.frame_index > first_display.frame_index))
+	{
+		first_display = f;
+		first_display_updated_ns = now;
+	}
 	if (!updated_ns || f.frame_index >= last.frame_index)
 	{
 		last = f;
@@ -149,7 +162,28 @@ void performance_feed::run()
 						return nullptr;
 					return duration_ms(t.start, t.end);
 				};
-				video.push_back({{"id", i}, {"updated_ns", s.updated_ns}, {"frames", s.frames}, {"repeats", s.repeats}, {"encode_ms", latency(0)}, {"delivery_ms", latency(1)}, {"decode_ms", latency(2)}, {"encode_display_ms", latency(3)}});
+				auto stage_frame = [&](unsigned i) -> nlohmann::json {
+					const auto & t = s.timings[i];
+					if (!t.updated_ns || monotonic_ns() - t.updated_ns > 2'000'000'000)
+						return nullptr;
+					return t.frame;
+				};
+				nlohmann::json first = nullptr;
+				if (s.first_display_updated_ns && monotonic_ns() - s.first_display_updated_ns <= 2'000'000'000)
+				{
+					const auto & f = s.first_display;
+					first = {{"frame_index", f.frame_index}, {"updated_ns", s.first_display_updated_ns},
+					         {"encode_ms", duration_ms(f.encode_begin, f.encode_end)},
+					         {"encode_to_send_ms", duration_ms(f.encode_end, f.send_begin)},
+					         {"delivery_ms", duration_ms(f.send_begin, f.received_last_packet)},
+					         {"decoder_queue_ms", duration_ms(f.received_last_packet, f.sent_to_decoder)},
+					         {"decode_ms", duration_ms(f.sent_to_decoder, f.received_from_decoder)},
+					         {"decoded_to_blit_ms", duration_ms(f.received_from_decoder, f.blitted)},
+					         {"blit_to_predicted_display_ms", duration_ms(f.blitted, f.displayed)},
+					         {"encode_to_predicted_display_ms", duration_ms(f.encode_begin, f.displayed)}};
+				}
+				video.push_back({{"id", i}, {"updated_ns", s.updated_ns}, {"frames", s.frames}, {"repeats", s.repeats}, {"encode_ms", latency(0)}, {"delivery_ms", latency(1)}, {"decode_ms", latency(2)}, {"encode_display_ms", latency(3)},
+				                 {"stage_frames", {{"encode", stage_frame(0)}, {"delivery", stage_frame(1)}, {"decode", stage_frame(2)}, {"encode_display", stage_frame(3)}}}, {"first_display", first}});
 			}
 			auto data = nlohmann::json({{"version", 1}, {"pid", getpid()}, {"session", session}, {"updated_ns", monotonic_ns()}, {"target_hz", target}, {"apps", apps}, {"streams", video}}).dump();
 			// Exclusive temporary file, replaced atomically; never follow a symlink.

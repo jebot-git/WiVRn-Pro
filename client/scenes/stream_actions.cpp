@@ -111,7 +111,7 @@ void scenes::stream::update_cutout(XrTime time)
         auto space = application::space(spaces[i]);
         if (space && value && XR_SUCCEEDED(xrLocateSpace(space, application::space(xr::spaces::world), time, &location))
             && wivrn::room_calibration::tracked({location.pose, location.locationFlags}))
-            hands[i] = {location.pose.position, value->second, 1, true};
+            hands[i] = {location.pose.position, value->second, 1, true, location.pose.orientation};
     }
     if ((!hands[0].valid || !hands[1].valid) && system.hand_tracking_supported())
     {
@@ -125,12 +125,14 @@ void scenes::stream::update_cutout(XrTime time)
             {
                 const auto & a = (*joints)[XR_HAND_JOINT_THUMB_TIP_EXT].first;
                 const auto & b = (*joints)[XR_HAND_JOINT_INDEX_TIP_EXT].first;
+                const auto & wrist = (*joints)[XR_HAND_JOINT_WRIST_EXT].first;
                 constexpr auto flags = XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_POSITION_TRACKED_BIT;
-                if ((a.locationFlags & flags) == flags && (b.locationFlags & flags) == flags)
+                if ((a.locationFlags & flags) == flags && (b.locationFlags & flags) == flags
+                    && wivrn::room_calibration::tracked({wrist.pose, wrist.locationFlags}))
                 {
                     auto p = a.pose.position, q = b.pose.position;
                     float distance = std::sqrt((p.x-q.x)*(p.x-q.x) + (p.y-q.y)*(p.y-q.y) + (p.z-q.z)*(p.z-q.z));
-                    hands[i] = {{(p.x+q.x)/2, (p.y+q.y)/2, (p.z+q.z)/2}, std::clamp((.05f-distance)/.03f, 0.f, 1.f), 2, true};
+                    hands[i] = {{(p.x+q.x)/2, (p.y+q.y)/2, (p.z+q.z)/2}, std::clamp((.05f-distance)/.03f, 0.f, 1.f), 2, true, wrist.pose.orientation};
                 }
             }
     }

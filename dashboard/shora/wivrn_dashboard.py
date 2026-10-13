@@ -9,11 +9,11 @@ import sys
 import tomllib
 
 from PySide6.QtCore import QObject, QProcess, QTimer, Signal, QSaveFile, QIODevice, QFileDevice, QEvent, Qt
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QTextCursor
 from PySide6.QtDBus import QDBusConnection, QDBusMessage, QDBusPendingCallWatcher, QDBusVariant
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QFormLayout, QHBoxLayout,
     QLabel, QPushButton, QComboBox, QCheckBox, QLineEdit, QPlainTextEdit, QSpinBox, QInputDialog,
-    QMenu, QSystemTrayIcon, QScrollArea)
+    QMenu, QSystemTrayIcon, QScrollArea, QFrame)
 from shora_qt import HubWindow, STYLE
 from tracking_panel import DEFAULTS
 
@@ -22,6 +22,14 @@ OBJECT = '/io/github/wivrn/Server'
 CONFIG_HOME = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
 PROFILE = CONFIG_HOME / 'wivrn-pro' / 'shora.toml'
 SOCKET = Path(os.environ.get('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}')) / 'wivrn-pro' / 'ShoraControl'
+
+
+def encoder_presets():
+    here = Path(__file__).resolve()
+    for directory in (here.parents[1] / 'encoder-presets', here.parents[2] / 'fork/encoder-presets'):
+        if (directory / 'profiles').is_dir():
+            return {p.stem: json.loads(p.read_text()) for p in sorted((directory / 'profiles').glob('*.json'))}
+    return {}
 
 
 def atomic_save(path, text, expected):
@@ -165,6 +173,23 @@ class StreamingPanel(QWidget):
         self.status = QLabel('WiVRn service is stopped')
         self.status.setWordWrap(True)
         layout.addWidget(self.status)
+        self.presets = encoder_presets()
+        self.preset = QComboBox()
+        self.preset.addItem('Choose an encoder preset', None)
+        for name, profile in self.presets.items():
+            self.preset.addItem(profile['title'], name)
+        self.preset_qp = QSpinBox(); self.preset_qp.setRange(1, 51); self.preset_qp.setValue(24)
+        self.preset_qp.setPrefix('QP '); self.preset_qp.setEnabled(False)
+        self.preset_qp.setToolTip('CQP quantizer: lower values improve quality and increase uncapped traffic.')
+        self.load_preset = QPushButton('Load preset')
+        self.load_preset.setEnabled(False)
+        preset_row = QHBoxLayout()
+        preset_row.addWidget(self.preset, 1); preset_row.addWidget(self.preset_qp); preset_row.addWidget(self.load_preset)
+        layout.addLayout(preset_row)
+        self.preset_notice = QLabel('Load a preset into the editor, then save for the next streaming session.')
+        self.preset_notice.setWordWrap(True); layout.addWidget(self.preset_notice)
+        self.preset.currentIndexChanged.connect(self.preset_selected)
+        self.load_preset.clicked.connect(self.load_encoder_preset)
         form = QFormLayout()
         self.encoder = QComboBox()
         self.encoder.addItems(['Preserve current layout', 'auto', 'vaapi', 'vulkan', 'qsv'])
@@ -186,6 +211,7 @@ class StreamingPanel(QWidget):
         layout.addLayout(form)
         layout.addWidget(QLabel('Full configuration JSON (application, OpenVR, custom encoder layouts and other options)'))
         self.raw = QPlainTextEdit()
+        self.raw.setMinimumHeight(180)
         layout.addWidget(self.raw, 1)
         row = QHBoxLayout()
         self.apply = QPushButton('Save WiVRn settings')
@@ -206,6 +232,14 @@ class StreamingPanel(QWidget):
             button = QPushButton(text); button.clicked.connect(lambda _, m=method, a=args: backend.method(m, *a)); pair.addWidget(button)
         layout.addLayout(pair)
         self.keys = QComboBox(); layout.addWidget(self.keys)
+        # Keep the selected text and padded edit area readable. The enclosing
+        # tab scrolls when space is tight instead of crushing these controls.
+        for control in (self.preset, self.encoder, self.codec, self.depth, self.keys,
+                        self.preset_qp, self.port, self.hostname):
+            control.setMinimumHeight(max(36, control.fontMetrics().height() + 18))
+        for combo in (self.preset, self.encoder, self.codec, self.depth):
+            combo.setMinimumWidth(max(combo.fontMetrics().horizontalAdvance(combo.itemText(i))
+                                      for i in range(combo.count())) + 48)
         keyrow = QHBoxLayout()
         rename = QPushButton('Rename headset'); rename.clicked.connect(self.rename_key); keyrow.addWidget(rename)
         revoke = QPushButton('Forget selected headset'); revoke.clicked.connect(self.revoke_key); keyrow.addWidget(revoke)
@@ -220,6 +254,46 @@ class StreamingPanel(QWidget):
 
     def changed(self, *_):
         if not self.loading: self.dirty = True
+
+    def preset_selected(self, *_):
+        profile = self.presets.get(self.preset.currentData())
+        self.load_preset.setEnabled(profile is not None)
+        cqp = bool(profile and profile['requires_cqp_branch'])
+        self.preset_qp.setEnabled(cqp)
+        if not profile:
+            self.preset_notice.setText('Load a preset into the editor, then save for the next streaming session.')
+            return
+        if cqp:
+            self.preset_qp.setValue(int(profile['host_config']['encoder']['options']['qp']))
+        client = profile['headset_settings']
+        rate = ('CQP is uncapped; the headset bitrate slider has no effect.' if cqp else
+                f"Set the headset bitrate to {client['bitrate_mbps']} Mbit/s; this host preset cannot set it.")
+        self.preset_notice.setText(f"{rate} Headset: {client['refresh_rate_hz']} Hz, {client['foveation_percent']}% foveation, "
+                                  f"{client['codec']}, 8-bit, low-latency decoding on, SpaceWarp off. Keep render resolution unchanged. "
+                                  'Save and reconnect to apply.')
+
+    def load_encoder_preset(self):
+        profile = self.presets.get(self.preset.currentData())
+        if not profile: return
+        try:
+            # Fold unsaved controls into the draft before replacing encoder options.
+            value = self.configuration()
+            host = copy.deepcopy(profile['host_config'])
+            if profile['requires_cqp_branch']:
+                host['encoder']['options']['qp'] = str(self.preset_qp.value())
+            value.update(host)
+            self.loading = True
+            self.raw.setPlainText(json.dumps(value, indent=2))
+            self.encoder.setCurrentIndex(0); self.codec.setCurrentIndex(0)
+            self.depth.setCurrentIndex({8: 1, 10: 2}.get(value.get('bit-depth'), 0))
+            self.tcp.setChecked(value.get('tcp-only', False))
+            self.initial_controls = self.controls()
+            self.loading = False
+            self.dirty = True
+            self.notice.setText('Preset loaded into the editor. Save WiVRn settings, then reconnect the headset.')
+        except (ValueError, TypeError, KeyError) as error:
+            self.loading = False
+            self.notice.setText(str(error))
 
     def saved(self):
         self.dirty = False
@@ -246,11 +320,16 @@ class StreamingPanel(QWidget):
             self.latest = json.loads(state.get('JsonConfiguration') or '{}')
             if self.latest is None: self.latest = {}
             if not isinstance(self.latest, dict): raise ValueError('Configuration must be an object')
-            if not self.dirty: self.reload()
+            if not self.dirty and self.latest != self.original:
+                self.reload(preserve_view=True)
         except (ValueError, TypeError) as error: self.notice.setText(str(error))
 
-    def reload(self):
+    def reload(self, preserve_view=False):
         if self.latest is None: return
+        cursor = self.raw.textCursor()
+        position, anchor = cursor.position(), cursor.anchor()
+        vertical = self.raw.verticalScrollBar().value()
+        horizontal = self.raw.horizontalScrollBar().value()
         self.loading = True
         self.original = copy.deepcopy(self.latest)
         self.raw.setPlainText(json.dumps(self.original, indent=2))
@@ -266,6 +345,14 @@ class StreamingPanel(QWidget):
         self.wayvr.setChecked(overlay.get('enabled', True))
         self.wayvr_dashboard.setChecked(overlay.get('dashboard', True))
         self.initial_controls = self.controls()
+        if preserve_view:
+            cursor = self.raw.textCursor()
+            last = self.raw.document().characterCount() - 1
+            cursor.setPosition(min(anchor, last))
+            cursor.setPosition(min(position, last), QTextCursor.MoveMode.KeepAnchor)
+            self.raw.setTextCursor(cursor)
+            self.raw.verticalScrollBar().setValue(vertical)
+            self.raw.horizontalScrollBar().setValue(horizontal)
         self.loading = False; self.dirty = False
 
     def controls(self):
@@ -335,7 +422,11 @@ class Dashboard(HubWindow):
         self.detach_button.setText('Restart WiVRn')
         self.detach_button.clicked.disconnect()
         self.detach_button.clicked.connect(lambda: self.backend.service('restart'))
-        self.tabs.insertTab(0, StreamingPanel(self.backend), 'WiVRn streaming')
+        streaming_scroll = QScrollArea()
+        streaming_scroll.setWidgetResizable(True)
+        streaming_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        streaming_scroll.setWidget(StreamingPanel(self.backend))
+        self.tabs.insertTab(0, streaming_scroll, 'WiVRn streaming')
         self.tabs.setCurrentIndex(0)
         self.logs.setPlaceholderText('Service logs: journalctl --user -u wivrn-pro.service\nTracking diagnostics and calibration messages appear below.')
         self.backend.failure.connect(self.show_error)

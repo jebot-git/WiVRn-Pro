@@ -111,6 +111,7 @@ public:
 	float override_foveation_pitch = -10 * M_PI / 180;
 	float override_foveation_distance = 3;
 
+	bool decoder_low_latency = true;
 	bool high_power_mode = true;
 	uint32_t fps_divider = 1;
 

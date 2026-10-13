@@ -1,0 +1,19 @@
+{
+  "tag": "v26.9",
+  "commit": "bbc6e4cc36c355fa6180980abd231673dc15115d",
+  "repository": "https://github.com/WiVRn/WiVRn",
+  "files": {
+    "client/audio/android/stock/audio.cpp": {
+      "upstream_path": "client/audio/android/audio.cpp",
+      "sha256": "9f2d756004e1429a5c1a875a9e8b02a1592310eb25d1f7822c7b454325c81e58"
+    },
+    "client/audio/android/stock/audio.h": {
+      "upstream_path": "client/audio/android/audio.h",
+      "sha256": "4eb1c36efc4030bccd244121b9a549f11213d7c2129ea8b619e22b039c4b9db9"
+    },
+    "server/audio/stock/audio_pipewire.cpp": {
+      "upstream_path": "server/audio/audio_pipewire.cpp",
+      "sha256": "8e4282a1084ec58c4c114024515a5e0227fc0365967e02245de229fc9e03bae0"
+    }
+  }
+}

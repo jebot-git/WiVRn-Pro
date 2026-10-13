@@ -18,6 +18,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "encoder_settings.h"
+#include "rate_control.h"
 
 #include "driver/configuration.h"
 #include "driver/wivrn_session.h"
@@ -79,8 +80,12 @@ void print_encoders(const std::array<wivrn::encoder_settings, 3> & encoders)
 	for (auto & encoder: encoders)
 	{
 		str << "\n\t* " << encoder.encoder_name << " (" << magic_enum::enum_name(encoder.codec) << " " << encoder.bit_depth << "-bit)"
-		    << "\n\t  size: " << encoder.width << "x" << encoder.height
-		    << "\n\t  bitrate: " << int(encoder.bitrate / 100'000) / 10. << "Mbit/s";
+		    << "\n\t  size: " << encoder.width << "x" << encoder.height;
+		const auto qp = cqp_quantizer(encoder.options, encoder.encoder_name == encoder_qsv && (encoder.codec == video_codec::h264 || encoder.codec == video_codec::h265));
+		if (qp)
+			str << "\n\t  rate control: CQP " << *qp << " (uncapped; bitrate slider ignored)";
+		else
+			str << "\n\t  bitrate: " << int(encoder.bitrate / 100'000) / 10. << "Mbit/s";
 	}
 	U_LOG_I("%s", str.str().c_str());
 }
@@ -230,6 +235,7 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 		dst.device = src.device;
 
 		std::tie(dst.encoder_name, dst.codec) = prober.select_encoder(src);
+		cqp_quantizer(dst.options, dst.encoder_name == encoder_qsv && (dst.codec == video_codec::h264 || dst.codec == video_codec::h265));
 	}
 
 	auto width = align(info.stream_eye_width, 64);

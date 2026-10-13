@@ -728,7 +728,7 @@
   },
   "fork_sha256": {
     "wayvr/build.rs": "6f496da15871563c86c10a9d44f2e82f2cf33c895a571f26eb2ececaf55cf4c1",
-    "wayvr/src/main.rs": "0ee70f009f79fd43e9bb069b1b8f72ca9e0ee685b51a89d885af9808319f158e",
+    "wayvr/src/main.rs": "95d775ae177037c230c12ace99fffb37045ac98e745097fd021daab5ca99f30f",
     "wayvr/src/overlays/dashboard.rs": "d45c4b52033e399e0c03c287d0a79f27ec7225591458fdb37ef7fe68141a8101",
     "dash-frontend/assets/gui/tab/home.xml": "897cf5fecaa7ed770791e6526ca6fd084a2e0e270ed75a3369604bc4aac6e44c",
     "dash-frontend/src/tab/home.rs": "fa35db9373957459f68c05e4748537bd70c11aba67f1ef86380245e45a6d79c0",
@@ -736,9 +736,9 @@
     "wayvr/src/gui/panel/label.rs": "121757db6c03087035238191880fbf968977c0488ee8dcb6126d9fd71c495693",
     "wayvr/src/state.rs": "180a5ac669ad15789c39270b9861aadefefc0e3ae666417eb8af297c39eb6539",
     "wlx-common/src/dash_interface.rs": "49dbe44ff105eb3c22e9da7e741f1d2a1529d13d892f2b77f0e052d44cc5ee8b",
-    "wayvr/src/backend/input.rs": "81b9a4fadb1e82265d77202d8f8a7c067b81eea72f06af50dad7f87fe187d3e0",
+    "wayvr/src/backend/input.rs": "48abd963c350a964002c89b93e8eb890e9ff610b602bb96dda08456699005904",
     "wayvr/src/backend/openxr/helpers.rs": "9308c0b3546434e11f76b2a524e6eaecf91c13943e7d5f4265ae2e6defbb6bbc",
-    "wayvr/src/backend/openxr/input.rs": "75b32824e9859d6d687fa4130e098cf21117bce65e4533b9f099cf786e35c364",
+    "wayvr/src/backend/openxr/input.rs": "54280dafd7adaa0e19fc18feafb022ba692e14cbcde941ba72b0935bd455a1da",
     "wayvr/src/backend/openxr/mod.rs": "8b1c811f69886af7426bf286f04e78e300f3292e48d3643812734bc43ac58764",
     "wayvr/src/windowing/window.rs": "1a58e01d0c66528ece83c19bf50cfc40f9198c71c15a391ee06f1ab21d27adfe",
     "wayvr/src/overlays/screen/backend.rs": "340a53906ed31e482849de8067711043849aaae96af0904e99923d5d5f69677e",
@@ -750,6 +750,7 @@
     "wayvr/src/subsystem/input.rs": "5bb25ba69e88aa4dea52b8d367b25f46aba583b9990299bb0b5bde4814dbe7b7",
     "wayvr/src/gui/asset.rs": "44d34b8346d45e69d6fd6990ecae504fb5cec6b0ff6e83c6c4fe1f65a0429db3",
     "wayvr/src/gui/panel/device_list.rs": "5e15deb9a9377cc45bdc15d2d069bb940b856e3ae511ea60bf97ffe03aa6a2c7",
-    "wayvr/src/graphics/dmabuf.rs": "107d0416590aee6e2209d50020d891238d7801848ee7fc1b9663720ff7576e3a"
+    "wayvr/src/graphics/dmabuf.rs": "107d0416590aee6e2209d50020d891238d7801848ee7fc1b9663720ff7576e3a",
+    "dash-frontend/assets/lang/en.json": "c811211af457e73da4cddda0897c3915156d81c75ba93b33e09da9625aa9d345"
   }
 }

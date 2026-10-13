@@ -1265,7 +1265,15 @@ void scenes::stream::exit()
 void scenes::stream::setup(const to_headset::video_stream_description & description)
 {
 	spdlog::info("Video stream (re)initialization, refresh rate {}", description.refresh_rate);
-	session.set_refresh_rate(description.refresh_rate);
+	// A description is a snapshot of the server's last observed display rate,
+	// not a new request. Echoing it during recovery can undo a newer rate change
+	// and trigger another encoder/decoder rebuild indefinitely. Only bootstrap
+	// the display once; explicit rate commands and the settings UI own changes.
+	if (!initial_refresh_rate_applied)
+	{
+		initial_refresh_rate_applied = true;
+		session.set_refresh_rate(description.refresh_rate);
+	}
 	// An unchanged description is also a restart boundary. Retire both eyes
 	// together; do not destroy codecs while holding the lock used by callbacks.
 	decltype(decoders) retired;
@@ -1310,7 +1318,6 @@ void scenes::stream::setup_reprojection_swapchain(uint32_t swapchain_width, uint
 	assert(swapchain_height);
 	device.waitIdle();
 	spdlog::info("swapchain setup, refresh rate {}", video_stream_description->refresh_rate);
-	session.set_refresh_rate(video_stream_description->refresh_rate);
 
 	auto views = system.view_configuration_views(viewconfig);
 

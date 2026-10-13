@@ -20,7 +20,12 @@
 #pragma once
 
 #ifdef __ANDROID__
+#include "audio_ab_config.h"
+#if WIVRN_AUDIO_AB_STOCK
+#include "android/stock/audio.h"
+#else
 #include "android/audio.h"
+#endif
 namespace wivrn
 {
 using audio = ::wivrn::android::audio;

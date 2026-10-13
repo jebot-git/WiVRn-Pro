@@ -12,6 +12,8 @@ cxx=${CXX:-c++}
 build/native-tests/audio-recovery-test
 "$cxx" -std=c++23 -Wall -Wextra -Werror -pthread -Iserver fork/tests/video_recovery_test.cpp -o build/native-tests/video-recovery-test
 build/native-tests/video-recovery-test
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/refresh_rate_test.cpp -o build/native-tests/refresh-rate-test
+build/native-tests/refresh-rate-test
 spdlog_flags=()
 if pkg-config --exists spdlog; then
   read -r -a spdlog_flags <<< "$(pkg-config --cflags --libs spdlog)"

@@ -22,6 +22,7 @@
 #include "encoder/encoder_settings.h"
 #include "ffmpeg_helper.h"
 #include "utils/gpu_timestamp_pool.h"
+#include "utils/performance.h"
 #include "video_encoder_ffmpeg.h"
 
 #include <array>
@@ -65,6 +66,7 @@ class video_encoder_va : public video_encoder_ffmpeg
 	std::array<in_t, num_slots> in;
 
 	gpu_timestamp_pool ts_pool;
+	latency_samples copy_latency, fence_latency;
 
 public:
 	video_encoder_va(wivrn::vk_bundle &, const wivrn::encoder_settings & settings, uint8_t stream_index);

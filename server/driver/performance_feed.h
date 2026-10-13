@@ -24,6 +24,10 @@ struct stream_performance
 	uint64_t frames = 0, repeats = 0;
 	int64_t updated_ns = 0;
 	from_headset::feedback last{};
+	// A coherent first presentation; legacy stage measurements can refer to
+	// different frames and can include later presentations of a repeated frame.
+	from_headset::feedback first_display{};
+	int64_t first_display_updated_ns = 0;
 	struct timing
 	{
 		uint64_t frame = 0;

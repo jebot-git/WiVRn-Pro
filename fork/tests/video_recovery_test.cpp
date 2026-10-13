@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include "compositor/gaze_state.h"
 #include "encoder/encode_batch.h"
 #include "encoder/recovery_policy.h"
 #include "encoder/slot_ring.h"
 #include <array>
+#include <barrier>
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -102,6 +104,56 @@ int main()
 		wivrn::encode_batch(streams, std::array{true, true, true}, [](fake & f) { auto lease = f.slots.consume(); }, [](fake &, const std::exception &) { assert(false); });
 		for (auto & f: streams)
 			assert(f->committed);
+	}
+	{
+		wivrn::batch_executor executor;
+		std::array<std::unique_ptr<fake>, 3> streams;
+		for (unsigned i = 0; i < 3; ++i)
+		{
+			streams[i] = std::make_unique<fake>();
+			streams[i]->stream_idx = i;
+		}
+		std::barrier rendezvous(3);
+		for (unsigned batch = 0; batch < 100; ++batch)
+		{
+			unsigned failures = 0;
+			for (auto & f: streams)
+			{
+				f->committed = false;
+				assert(f->slots.reserve());
+			}
+			wivrn::encode_batch(streams, std::array{true, true, true}, [&](fake & f) {
+                auto lease = f.slots.consume();
+                rendezvous.arrive_and_wait(); // cannot pass if workers serialize
+                assert(!f.committed); // commit must wait for all streams
+                if (batch % 2 == 0 && f.stream_idx == batch % 3) throw std::runtime_error("injected"); }, [&](fake &, const std::exception &) { ++failures; }, &executor);
+			assert(failures == (batch % 2 == 0 ? 1u : 0u));
+			for (auto & f: streams)
+				assert(f->committed == (batch % 2 != 0));
+		}
+		unsigned called = 0;
+		wivrn::encode_batch(streams, std::array{true, false, false}, [&](fake &) { ++called; }, [](fake &, const std::exception &) { assert(false); }, &executor);
+		assert(called == 1);
+		for (auto & f: streams)
+			assert(!f->committed);
+	}
+	{
+		struct quat
+		{
+			float x = 0, y = 0, z = 0, w = 0;
+		};
+		wivrn::gaze_state<quat> gaze;
+		const auto now = std::chrono::steady_clock::now();
+		gaze.update({0, 0, 0, 1}, true, now);
+		assert(gaze.get(now + std::chrono::milliseconds(99)).w == 1);
+		assert(gaze.get(now + std::chrono::milliseconds(101)).w == 0);
+		gaze.update({0, 0, 0, 1}, true, now);
+		gaze.update({0, 0, 0, 1}, false, now);
+		assert(gaze.get(now).w == 0);
+		gaze.update({0, 0, 0, 10}, true, now);
+		assert(gaze.get(now).w == 0);
+		gaze.update({0, 0, 0, std::bit_cast<float>(0x7fc00000u)}, true, now);
+		assert(gaze.get(now).w == 0);
 	}
 	// Exercise the production ring with concurrent producer/consumer ownership.
 	wivrn::slot_ring<2> concurrent;

@@ -10,7 +10,7 @@ struct rectangle {
     float width=0, height=0;
     bool valid() const { return room_calibration::valid(pose) && std::isfinite(width) && std::isfinite(height) && width>=.1f && height>=.1f && width<=3 && height<=3; }
 };
-struct hand { XrVector3f position{}; float press=0; int source=0; bool valid=false; };
+struct hand { XrVector3f position{}; float press=0; int source=0; bool valid=false; XrQuaternionf orientation{0,0,0,1}; };
 inline XrVector3f cross(XrVector3f a, XrVector3f b) { return {a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x}; }
 inline float dot(XrVector3f a, XrVector3f b) { return a.x*b.x+a.y*b.y+a.z*b.z; }
 // Homogeneous ray-to-rectangle transform. 48 bytes, within Vulkan's minimum
@@ -59,21 +59,26 @@ class editor {
     std::optional<spot> anchor;
     std::optional<rectangle> saved, draft;
     std::optional<XrPosef> plane;
+    struct grab_state { size_t index; XrPosef hand_pose; rectangle rect; };
+    struct resize_origin { std::array<XrVector3f,2> hands, corners; };
+    std::optional<grab_state> grab;
+    std::optional<resize_origin> resize;
     bool armed=false;
     XrTime pressed_since=0, last_time=0;
     uint64_t generation=0;
     std::array<int,2> sources{};
-    void reset_gesture() { armed=false; pressed_since=0; plane.reset(); draft.reset(); sources={}; }
+    void reset_gesture() { armed=false; pressed_since=0; plane.reset(); draft.reset(); grab.reset(); resize.reset(); sources={}; }
 public:
     bool designing=false, enabled=true;
     std::string message;
     explicit editor(std::filesystem::path path = {}) : file(std::move(path)) { load(); }
+    bool manipulating() const { return grab.has_value(); }
     bool has_saved() const { return saved.has_value(); }
     bool available(const spatial::snapshot & s) const { return capture_anchor(s).has_value(); }
     void begin(const spatial::snapshot & s) {
         if (!available(s)) { message="Localize a saved room marker before designing a cutout."; return; }
         designing=true; generation=s.generation; reset_gesture();
-        message="Release both triggers/pinches. Pull your hands to opposite diagonal corners, then hold both triggers or pinches to confirm.";
+        message="Release both triggers/pinches. Place your hands at opposite diagonal corners. Move both to pan, turn the pair to yaw, and pull apart to resize. Hold one trigger/pinch to grab and tilt; hold both to save.";
     }
     void cancel() { designing=false; reset_gesture(); }
     std::optional<rectangle> locate(const spatial::snapshot & s) const {
@@ -91,25 +96,65 @@ public:
         }
         if (now<=last_time || (last_time && now-last_time>250'000'000)) reset_gesture();
         last_time=now;
-        for (const auto & h:hands) if (!h.valid || !room_calibration::valid({{0,0,0,1},h.position}) || !std::isfinite(h.press)) {
+        for (const auto & h:hands) if (!h.valid || !room_calibration::valid({h.orientation,h.position}) || !std::isfinite(h.press)) {
             reset_gesture(); message="Both controllers or both hands must be tracked. Release to resume."; return;
         }
         std::array current_sources{hands[0].source,hands[1].source};
         if (sources!=current_sources) { reset_gesture(); sources=current_sources; }
-        if (!plane) {
-            auto forward=rotate(s.head.pose.orientation,{0,0,-1});
-            if (std::hypot(forward.x,forward.z)<.2f) return;
-            float yaw=std::atan2(-forward.x,-forward.z);
-            auto a=hands[0].position,b=hands[1].position;
-            plane=XrPosef{{0,std::sin(yaw/2),0,std::cos(yaw/2)},{(a.x+b.x)/2,(a.y+b.y)/2,(a.z+b.z)/2}};
+        if (grab && hands[grab->index].press<.25f) {
+            // Rebase both corners on release so returning to resize preserves
+            // the tilted pose and dimensions, even if the other hand stayed put.
+            auto local=inverse(draft->pose);
+            auto a=compose(local,{hands[0].orientation,hands[0].position}).position;
+            auto b=compose(local,{hands[1].orientation,hands[1].position}).position;
+            float x=std::copysign(draft->width/2,b.x-a.x);
+            float y=std::copysign(draft->height/2,b.y-a.y);
+            resize=resize_origin{{hands[0].position,hands[1].position},
+                {compose(draft->pose,{{0,0,0,1},{-x,-y,0}}).position,
+                 compose(draft->pose,{{0,0,0,1},{x,y,0}}).position}};
+            grab.reset();
         }
-        auto a=compose(inverse(*plane),{{0,0,0,1},hands[0].position}).position;
-        auto b=compose(inverse(*plane),{{0,0,0,1},hands[1].position}).position;
-        rectangle next{compose(*plane,{{0,0,0,1},{(a.x+b.x)/2,(a.y+b.y)/2,(a.z+b.z)/2}}),std::abs(a.x-b.x),std::abs(a.y-b.y)};
-        draft=next.valid()?std::optional(next):std::nullopt;
+        if (!grab && armed && draft) {
+            for (size_t i=0;i<2;++i) if (hands[i].press>=.75f && hands[1-i].press<.25f) {
+                grab=grab_state{i,{hands[i].orientation,hands[i].position},*draft};
+                resize.reset(); break;
+            }
+        }
+        if (grab) {
+            auto & h=hands[grab->index];
+            auto motion=compose(XrPosef{h.orientation,h.position},inverse(grab->hand_pose));
+            draft=rectangle{compose(motion,grab->rect.pose),grab->rect.width,grab->rect.height};
+            plane=draft->pose;
+        } else {
+            std::array positions{hands[0].position,hands[1].position};
+            if (resize) for (size_t i=0;i<2;++i) {
+                auto p=positions[i],h=resize->hands[i],c=resize->corners[i];
+                positions[i]={c.x+p.x-h.x,c.y+p.y-h.y,c.z+p.z-h.z};
+            }
+            // Resize/yaw within the current tilted frame instead of snapping
+            // back to world-up. The midpoint still pans freely in all axes.
+            auto base=plane.value_or(XrPosef{{0,0,0,1},{}});
+            auto a=compose(inverse(base),{{0,0,0,1},positions[0]}).position;
+            auto b=compose(inverse(base),{{0,0,0,1},positions[1]}).position;
+            XrVector3f across{b.x-a.x,0,b.z-a.z};
+            float width=std::hypot(across.x,across.z);
+            if (width>=.1f) {
+                auto right=plane ? XrVector3f{1,0,0} : rotate(s.head.pose.orientation,{1,0,0});
+                if (dot(across,right)<0) { across.x=-across.x; across.z=-across.z; }
+                float yaw=std::atan2(-across.z,across.x);
+                auto p=positions[0],q=positions[1];
+                auto orientation=multiply(base.orientation,{0,std::sin(yaw/2),0,std::cos(yaw/2)});
+                float length=std::sqrt(orientation.x*orientation.x+orientation.y*orientation.y+orientation.z*orientation.z+orientation.w*orientation.w);
+                orientation={orientation.x/length,orientation.y/length,orientation.z/length,orientation.w/length};
+                plane=XrPosef{orientation,
+                    {(p.x+q.x)/2,(p.y+q.y)/2,(p.z+q.z)/2}};
+            }
+            rectangle next{plane.value_or(XrPosef{{0,0,0,1},{}}),width,std::abs(a.y-b.y)};
+            draft=next.valid()?std::optional(next):std::nullopt;
+        }
         if (hands[0].press<.25f && hands[1].press<.25f) armed=true;
         if (!draft) { pressed_since=0; message="Separate diagonal corners: width and height must each be 10 cm to 3 m."; return; }
-        message="Preview: hold BOTH triggers or BOTH pinches to save. Cancel keeps the previous cutout.";
+        message="Preview: hold ONE trigger/pinch and move or rotate that hand to pan/tilt. Release to resize. Hold BOTH triggers or BOTH pinches to save.";
         if (!armed || hands[0].press<.75f || hands[1].press<.75f) { pressed_since=0; return; }
         if (!pressed_since) pressed_since=now;
         if (now-pressed_since<200'000'000) return;

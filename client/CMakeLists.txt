@@ -80,6 +80,12 @@ if(ANDROID)
         "audio/android/*.cpp"
         "decoder/android/*.cpp"
         )
+    configure_file(audio/ab_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/audio_ab_config.h)
+    target_include_directories(wivrn PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    if(WIVRN_AUDIO_AB_STOCK)
+        list(REMOVE_ITEM PLATFORM_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/audio/android/audio.cpp")
+        list(APPEND PLATFORM_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/audio/android/stock/audio.cpp")
+    endif()
     target_sources(wivrn PRIVATE ${PLATFORM_SOURCE})
 
     if (WIVRN_ADDRESS_SANITIZER)

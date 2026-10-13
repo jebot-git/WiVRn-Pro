@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "title": "HEVC CBR latency starting point \u2014 headset 50 Mbit/s",
+  "requires_cqp_branch": false,
+  "host_config": {
+    "encoder": {
+      "encoder": "qsv",
+      "codec": "h265",
+      "options": {
+        "async_depth": "1",
+        "preset": "veryfast",
+        "look_ahead_depth": "0",
+        "forced_idr": "1",
+        "low_power": "1",
+        "low_delay_brc": "1",
+        "gpb": "0"
+      }
+    },
+    "bit-depth": 8,
+    "tcp-only": false
+  },
+  "headset_settings": {
+    "instructions_only": true,
+    "bitrate_mbps": 50,
+    "refresh_rate_hz": 90,
+    "foveation_percent": 75,
+    "codec": "HEVC (H.265)",
+    "ten_bit_color": false,
+    "low_latency_decoding": true,
+    "application_spacewarp": false,
+    "render_resolution": "Keep current; expected baseline 576x640 encoded pixels per eye"
+  },
+  "notes": [
+    "Lowest tested CBR budget. Subjective scene quality must be checked.",
+    "Host options apply equally to left eye, right eye and alpha. Host CBR configurations are identical across bitrate profiles; the actual difference is the required headset bitrate setting.",
+    "Host currently supplies max_b_frames=0 and GOP=240. Preset does not change either.",
+    "Encoder profile: HEVC Main or H.264 Main; pixel format 8-bit 4:2:0. Target is the selected Intel Arc A770; no brittle render-node override."
+  ],
+  "expected_target_mbps": {
+    "left_eye": 24.691358,
+    "right_eye": 24.691358,
+    "alpha": 0.617284,
+    "assumption": "Equal eye dimensions and alpha at half eye height; all three streams same codec."
+  }
+}

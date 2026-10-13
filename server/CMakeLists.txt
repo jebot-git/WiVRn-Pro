@@ -209,9 +209,14 @@ if (WIVRN_BUILD_SERVER)
 	endif()
 
 	if(WIVRN_USE_PIPEWIRE)
+		set(WIVRN_PIPEWIRE_SOURCE audio/audio_pipewire.cpp)
+		if(WIVRN_AUDIO_AB_STOCK)
+			set(WIVRN_PIPEWIRE_SOURCE audio/stock/audio_pipewire.cpp)
+			target_include_directories(wivrn-server PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/audio")
+		endif()
 		target_sources(
 			wivrn-server
-			PRIVATE audio/audio_pipewire.cpp
+			PRIVATE ${WIVRN_PIPEWIRE_SOURCE}
 			)
 		target_link_libraries(wivrn-server PRIVATE PkgConfig::libpipewire)
 	endif()
@@ -288,6 +293,11 @@ if (WIVRN_BUILD_SERVER)
     install(DIRECTORY shora/backend/licenses/ DESTINATION share/licenses/wivrn-pro/shora COMPONENT ShoraNotices)
     install(FILES shora/vendor/solarxr-protocol/LICENSE-APACHE shora/vendor/solarxr-protocol/LICENSE-MIT DESTINATION share/licenses/wivrn-pro/shora/solarxr COMPONENT ShoraNotices)
     install(PROGRAMS ../fork/subscribe.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME wivrn-pro-spatial)
+    configure_file(../fork/encoder-presets/wivrn-pro-encoder-preset.in wivrn-pro-encoder-preset @ONLY)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/wivrn-pro-encoder-preset DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(PROGRAMS ../fork/encoder-presets/wivrn-host-preset DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets)
+    install(FILES ../fork/encoder-presets/README.txt DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets)
+    install(DIRECTORY ../fork/encoder-presets/profiles DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets FILES_MATCHING PATTERN "*.json")
     install(FILES shora/LICENSE-APACHE shora/LICENSE-MIT shora/backend/THIRD_PARTY.md DESTINATION share/licenses/wivrn-pro/shora)
 
 	install(FILES dist/firewalld-wivrn.xml

@@ -135,7 +135,7 @@ and headset runtime support remain prerequisites.
 
 ## Implemented client prototype
 
-The branch now implements **one upright, two-sided rectangular cutout** in the
+The branch now implements **one freely oriented, two-sided rectangular cutout** in the
 streaming client. It removes all streamed PC content inside the aperture; local
 WiVRn menus/controllers remain separate layers. No Monado key configuration or
 application MR support is needed.
@@ -145,7 +145,14 @@ application MR support is needed.
    capture → Anchored passthrough cutout → Design cutout**.
 3. Release both triggers/pinches. Put the controllers or tracked hands at opposite
    diagonal corners and pull them apart horizontally and vertically. The upright
-   plane's heading is fixed when the gesture begins; its center follows the pair.
+   plane follows the horizontal line between your hands: turn the pair around its
+   midpoint to yaw the window, or move both hands together to pan it left/right,
+   up/down, or nearer/further away. Keep their separation unchanged to preserve
+   size while moving. The window starts upright and does not turn with your head.
+   Hold **one trigger or one pinch** to grab a corner, then move or rotate that
+   controller/hand to pan, pitch, or roll the entire window without changing its
+   size. Press the other trigger/pinch while holding to save, or release to resume
+   resizing in the tilted plane. Releasing does not snap the window back upright.
    Width and height must each be 10 cm–3 m. A teal outline surrounds the live
    passthrough preview.
 4. Hold **both triggers** or **both thumb/index pinches** together for 0.2 seconds

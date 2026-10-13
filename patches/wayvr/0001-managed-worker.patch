@@ -9,6 +9,17 @@
        <!-- main button list -->
        <div flex_direction="row" gap="8" margin_top="32">
          <MenuButton id="btn_apps" icon="@/dashboard/apps.svg" translation="APPLICATIONS" />
+--- a/dash-frontend/assets/lang/en.json
++++ b/dash-frontend/assets/lang/en.json
+@@ -136,7 +136,7 @@
+ 		"FEATURES": "Features",
+ 		"FOCUS_FOLLOWS_MOUSE_MODE": "Mouse move on trigger touch",
+ 		"HANDSFREE_POINTER": "Handsfree mode",
+-		"HANDSFREE_POINTER_HELP": "Input to use when motion\ncontrollers are unavailable.\nLeft pinch is grab, right is click.",
++		"HANDSFREE_POINTER_HELP": "Input when controllers are unavailable.\nTracked hands: thumb + index = left mouse,\nthumb + middle = middle mouse,\nthumb + ring = right mouse.\nFist = move; two fists apart/together = resize.\nWithout joint tracking: left pinch grabs, right clicks.",
+ 		"HANDSFREE_ALT_TAB": "App switcher aim",
+ 		"HANDSFREE_ALT_TAB_HELP": "Hold Super+X, aim at the desired window, then release to switch focus.",
+ 		"DIAGNOSTICS": "Diagnostics",
 --- a/dash-frontend/src/tab/home.rs
 +++ b/dash-frontend/src/tab/home.rs
 @@ -27,7 +27,18 @@
@@ -97,24 +108,24 @@
 -}
 --- a/wayvr/src/assets/gui/watch.xml
 +++ b/wayvr/src/assets/gui/watch.xml
-@@ -31,6 +31,13 @@
-   </template>
-   <template name="Tracker">
+@@ -33,6 +33,13 @@
      <Device idx="${idx}" src="@/watch/track.svg" />
-+  </template>
-+
+   </template>
+ 
 +  <template name="ShoraTracker">
 +    <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
 +      <sprite width="32" height="32" src_builtin="@/watch/track.svg" color="on_background" />
 +      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
 +    </rectangle>
-   </template>
-
++  </template>
++
    <template name="Screen">
-@@ -127,14 +134,20 @@
+     <Button macro="button_style" id="overlay_${idx}" tooltip_str="${name}" _press="::OverlayToggle ${name}">
+       <sprite width="38" height="38" src_builtin="@/edit/screen.svg" />
+@@ -127,8 +134,8 @@
              <Clock />
            </div>
-
+ 
 -          <!-- Four buttons -->
 -          <div flex_direction="column" gap="8">
 +          <!-- Four columns, two rows; tracking resets occupy the last column. -->
@@ -122,19 +133,20 @@
              <div gap="8">
                <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
                  <sprite src_builtin="@/watch/keyboard.svg" width="40" height="40" />
-               </Button>
+@@ -136,6 +143,12 @@
                <Button id="btn_edit_mode" macro="button_style" _press="::EditToggle" tooltip="WATCH.EDIT_MODE" tooltip_side="left">
                  <sprite width="40" height="40" src="@/watch/edit.svg" />
-+              </Button>
+               </Button>
 +              <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
 +                <sprite width="40" height="40" src_builtin="@/watch/sticks.svg" />
 +              </Button>
 +              <Button id="btn_full_reset" macro="button_style" _press="::TrackingFullReset" tooltip_str="Full reset: stand upright and face forward. Three-second countdown; press again to cancel." tooltip_side="left">
 +                <sprite width="40" height="40" src_builtin="@/watch/full-reset.svg" />
-               </Button>
++              </Button>
              </div>
              <div gap="8">
-@@ -144,9 +157,17 @@
+               <Button macro="button_style" _press="::PlayspaceRecenter" tooltip="WATCH.RECENTER" tooltip_side="left">
+@@ -144,10 +157,18 @@
                <Button macro="button_style" _press="::PlayspaceFixFloor" tooltip="WATCH.FIX_FLOOR" tooltip_side="left">
                  <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
                </Button>
@@ -147,14 +159,15 @@
              </div>
            </div>
          </rectangle>
-+
+ 
 +        <label id="tracking_reset_status" _source="tracking_reset" size="16" width="440" color="on_background" />
-
++
          <!-- Bottom buttons -->
          <div flex_direction="row" gap="8">
+           <div gap="4">
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
-@@ -75,6 +75,10 @@
+@@ -75,8 +75,13 @@
      pub picking_focus: FocusPickState,
      processes: Vec<Child>,
      disable_lerp_until: Instant,
@@ -164,8 +177,11 @@
 +    pub joysticks_enabled: bool,
      pub head_yaw_total: f64,
      head_last_yaw: Option<f64>,
++    two_hand_grab: Option<(OverlayID, crate::hand_resize::HandResize)>,
  }
-@@ -91,6 +95,9 @@
+ 
+ impl InputState {
+@@ -91,8 +96,12 @@
              handsfree_state: PointerState::default(),
              picking_focus: FocusPickState::None,
              disable_lerp_until: Instant::now(),
@@ -174,8 +190,11 @@
 +            joysticks_enabled: false,
              head_yaw_total: 0.0,
              head_last_yaw: None,
++            two_hand_grab: None,
          }
-@@ -349,6 +356,16 @@
+     }
+ 
+@@ -349,6 +358,17 @@
      pub(super) interaction: InteractionState,
      pub tracked: bool,
      pub handsfree: bool,
@@ -189,10 +208,11 @@
 +    touch_press: crate::hand_touch::TouchPress,
 +    touch_needs_neutral: bool,
 +    pub cancel_interaction: bool,
++    hand_grab_needs_release: bool,
      /// distance of the most recent ray hit on a wayland client window, used for drag n drop
      pub last_wvr_hit_distance: Option<f32>,
  }
-@@ -367,8 +384,35 @@
+@@ -367,10 +387,38 @@
              interaction: InteractionState::default(),
              tracked: false,
              handsfree: false,
@@ -206,10 +226,11 @@
 +            touch_press: Default::default(),
 +            touch_needs_neutral: false,
 +            cancel_interaction: false,
++            hand_grab_needs_release: false,
              last_wvr_hit_distance: None,
          }
-+    }
-+
+     }
+ 
 +    pub fn attachment_pose(&self) -> Affine3A {
 +        self.wrist_pose.map_or(self.pose, |wrist| {
 +            // Map the existing controller attachment frame onto the back of
@@ -225,10 +246,12 @@
 +            );
 +            wrist * on_wrist * watch.inverse()
 +        })
-     }
- 
++    }
++
      pub const fn hand(&self) -> Option<LeftRight> {
-@@ -451,6 +495,9 @@
+         match self.idx {
+             0 => Some(LeftRight::Left),
+@@ -451,6 +499,9 @@
      maybe_hit: Option<(PointerHit, RayHit)>,
      hmd: &Affine3A,
  ) {
@@ -238,7 +261,15 @@
      let Some((hit, raw_hit)) = maybe_hit else {
          return;
      };
-@@ -523,6 +570,129 @@
+@@ -499,6 +550,7 @@
+ where
+     O: Default,
+ {
++    if update_two_hand_grab(overlays, app) { return [None, None]; }
+     let hits = if app.input_state.pointers[1].last_click > app.input_state.pointers[0].last_click {
+         let right = interact_hand(1, overlays, app);
+         let left = interact_hand(0, overlays, app);
+@@ -523,6 +575,129 @@
      [hits[0].1, hits[1].1]
  }
  
@@ -368,7 +399,7 @@
  fn interact_hand<O>(
      idx: usize,
      overlays: &mut OverlayWindowManager<O>,
-@@ -531,15 +701,30 @@
+@@ -531,16 +706,31 @@
  where
      O: Default,
  {
@@ -396,17 +427,18 @@
 +    }
      let mut pointer = &mut app.input_state.pointers[idx];
      let pending_haptics = pointer.pending_haptics.take();
--
+ 
 -    if !pointer.tracked {
 -        pointer.interaction.should_block_input = false;
 -        pointer.interaction.should_block_poses = false;
 -        pointer.interaction.kbd_block_activated = false;
 -        return (None, pending_haptics); // no hit
 -    }
- 
+-
      // already grabbing, ignore everything else
      if let Some(grab_data) = pointer.interaction.grabbed {
-@@ -689,6 +874,9 @@
+         if let Some(grabbed) = overlays.mut_by_id(grab_data.grabbed_id) {
+@@ -689,6 +879,9 @@
      if let Some(hovered_id) = hovered_id
          && let Some(hovered) = overlays.mut_by_id(hovered_id)
      {
@@ -416,7 +448,7 @@
          log::debug!("{} on_left (no hit)", hovered.config.name);
          hovered.config.backend.on_left(app, pointer_idx);
          hovered.hover_pointers[pointer_idx] = false;
-@@ -799,9 +987,19 @@
+@@ -799,9 +992,19 @@
      let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
  
      for (id, overlay) in overlays.iter() {
@@ -436,7 +468,7 @@
          if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
              continue;
          }
-@@ -817,6 +1015,9 @@
+@@ -817,6 +1020,9 @@
          }
      }
  
@@ -446,7 +478,103 @@
      hits.sort_by(|a, b| a.dist.total_cmp(&b.dist));
  
      for hit in hits {
-@@ -1135,3 +1336,77 @@
+@@ -1115,6 +1321,95 @@
+     }
+ }
+ 
++// Both hands manipulate one existing fist grab. Controller grabs and two
++// different windows retain their ordinary, independent interaction paths.
++fn hand_grip(pointer: &Pointer) -> bool {
++    pointer.hand_tracking && pointer.tracked && pointer.now.grab
++        && !pointer.cancel_interaction && !pointer.joystick_owned
++        && pointer.wrist_pose.is_some_and(|p| p.is_finite())
++}
++fn two_hand_target(pointers: &[Pointer; 2]) -> Option<OverlayID> {
++    if !pointers.iter().all(hand_grip) { return None; }
++    let left = pointers[0].interaction.grabbed;
++    let right = pointers[1].interaction.grabbed;
++    match (left, right) {
++        (Some(a), Some(b)) if !a.grab_anchor && !b.grab_anchor && a.grabbed_id == b.grabbed_id => Some(a.grabbed_id),
++        (Some(a), None) | (None, Some(a)) if !a.grab_anchor => Some(a.grabbed_id),
++        _ => None,
++    }
++}
++fn update_two_hand_grab<O: Default>(overlays: &mut OverlayWindowManager<O>, app: &mut AppState) -> bool {
++    for pointer in &mut app.input_state.pointers {
++        if pointer.hand_grab_needs_release {
++            if !pointer.now.grab { pointer.hand_grab_needs_release = false; }
++            pointer.now.grab = false;
++        }
++    }
++    let mut interrupted = app.input_state.mouse_priority.active()
++        || app.input_state.pointers.iter().any(|p| !p.tracked || !p.hand_tracking
++            || p.cancel_interaction || p.joystick_owned || p.wrist_pose.is_none_or(|pose| !pose.is_finite()));
++    if let Some((id, resize)) = app.input_state.two_hand_grab {
++        let both = !interrupted && app.input_state.pointers.iter().all(hand_grip);
++        let transform = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform));
++        if both && transform.is_some() {
++            let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
++            let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
++            if let Some(value) = resize.update(left, right) {
++                let overlay = overlays.mut_by_id(id).unwrap();
++                overlay.config.active_state.as_mut().unwrap().transform = value;
++                overlay.config.pause_movement = true;
++                overlay.config.dirty = true;
++                return true;
++            }
++            interrupted = true;
++        }
++        // Rebase the surviving fist at the final resized transform. Tracking
++        // loss/ownership changes cancel both instead and require opening them.
++        app.input_state.two_hand_grab = None;
++        let surviving = !interrupted && transform.is_some() && app.input_state.pointers.iter().any(hand_grip);
++        let mut dropped = false;
++        for idx in 0..2 {
++            if !interrupted && transform.is_some() && hand_grip(&app.input_state.pointers[idx]) {
++                let pointer = &mut app.input_state.pointers[idx];
++                pointer.interaction.grabbed = Some(GrabData {
++                    grabbed_id: id, grab_anchor: false, offset: pointer.pose.inverse() * transform.unwrap(),
++                });
++            } else {
++                // A handoff is not a drop; only save/hide grab helpers once
++                // when the last hand lets go.
++                if surviving || dropped { app.input_state.pointers[idx].interaction.grabbed = None; }
++                release_pointer(idx, overlays, app);
++                dropped = true;
++                if interrupted || transform.is_none() { app.input_state.pointers[idx].hand_grab_needs_release = true; }
++            }
++        }
++        return false;
++    }
++    if interrupted { return false; }
++    let Some(id) = two_hand_target(&app.input_state.pointers) else { return false; };
++    let Some(transform) = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform)) else { return false; };
++    let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
++    let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
++    let Some(resize) = crate::hand_resize::HandResize::start(transform, left, right) else {
++        return true; // Freeze until the fists have a usable separation.
++    };
++    for idx in 0..2 {
++        let now = app.input_state.pointers[idx].now;
++        let before = app.input_state.pointers[idx].before;
++        // Clear any click/hover ownership without ending the existing grab.
++        app.input_state.pointers[idx].interaction.grabbed = None;
++        release_pointer(idx, overlays, app);
++        let pointer = &mut app.input_state.pointers[idx];
++        pointer.now = now; pointer.before = before; pointer.tracked = true;
++        pointer.interaction.grabbed = Some(GrabData {
++            grabbed_id: id, grab_anchor: false, offset: pointer.pose.inverse() * transform,
++        });
++    }
++    app.input_state.two_hand_grab = Some((id, resize));
++    if let Some(overlay) = overlays.mut_by_id(id) { overlay.config.pause_movement = true; }
++    true
++}
++
+ fn ray_test(
+     ray_origin: &Affine3A,
+     overlay: OverlayID,
+@@ -1135,3 +1430,105 @@
          dist,
      })
  }
@@ -454,6 +582,34 @@
 +#[cfg(test)]
 +mod hand_attachment_tests {
 +    use super::*;
++    #[test]
++    fn resizing_requires_two_tracked_fists_and_one_target() {
++        let mut ids = slotmap::SlotMap::<OverlayID, ()>::with_key();
++        let first = ids.insert(());
++        let second = ids.insert(());
++        let mut pointers = [Pointer::new(0), Pointer::new(1)];
++        for p in &mut pointers {
++            p.tracked = true; p.hand_tracking = true; p.now.grab = true;
++            p.wrist_pose = Some(Affine3A::IDENTITY);
++        }
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[0].interaction.grabbed = Some(GrabData { grabbed_id: first, ..Default::default() });
++        assert_eq!(two_hand_target(&pointers), Some(first));
++        pointers[1].interaction.grabbed = Some(GrabData { grabbed_id: second, ..Default::default() });
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[1].interaction.grabbed = pointers[0].interaction.grabbed;
++        assert_eq!(two_hand_target(&pointers), Some(first));
++        pointers[1].tracked = false; assert!(two_hand_target(&pointers).is_none());
++        pointers[1].tracked = true; pointers[1].hand_tracking = false;
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[1].hand_tracking = true; pointers[1].cancel_interaction = true;
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[1].cancel_interaction = false; pointers[1].joystick_owned = true;
++        assert!(two_hand_target(&pointers).is_none());
++        pointers[1].joystick_owned = false;
++        pointers[0].interaction.grabbed.as_mut().unwrap().grab_anchor = true;
++        assert!(two_hand_target(&pointers).is_none());
++    }
 +    #[test]
 +    fn wrist_attachment_preserves_controller_frame_and_faces_back_of_hand() {
 +        let mut pointer = Pointer::new(0);
@@ -585,7 +741,7 @@
          let (physical_inputs, physical_input_map) =
              create_physical_inputs(&action_set, &xr.instance, &profiles)?;
  
-@@ -288,7 +312,40 @@
+@@ -288,9 +312,42 @@
                  OpenXrPointer::new(xr, right_source)?,
              ],
              handsfree_pointer: OpenXrPointer::new(xr, fallback_source)?,
@@ -613,8 +769,8 @@
 +            ],
 +            started: Instant::now(),
          })
-+    }
-+
+     }
+ 
 +    pub fn reset_hands(&mut self) {
 +        self.joystick_link.disconnect();
 +        for pad in &mut self.thumb_pads {
@@ -623,9 +779,11 @@
 +        for hand in &mut self.hand_input {
 +            hand.reset();
 +        }
-     }
- 
++    }
++
      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
+         let action = &self.pointers[hand].source.haptics;
+ 
 @@ -348,6 +405,7 @@
          if picking_focus.is_none() {
              let should_disable_lerp = app.input_state.should_disable_lerp();
@@ -634,7 +792,7 @@
                  let pointer = &mut app.input_state.pointers[i];
                  self.pointers[i].update(
                      pointer,
-@@ -356,6 +414,138 @@
+@@ -356,6 +414,139 @@
                      !should_disable_lerp,
                      physical_inputs,
                  )?;
@@ -750,8 +908,9 @@
 +                            pointer.now.move_mouse = true;
 +                            pointer.now.click_modifier_middle =
 +                                sample.gesture == Gesture::MiddleClick;
++                            // A fist follows wrist rotation instead of reorienting toward the head.
 +                            pointer.now.click_modifier_right =
-+                                sample.gesture == Gesture::RightClick;
++                                matches!(sample.gesture, Gesture::RightClick | Gesture::Grab);
 +                        }
 +                    }
 +                }
@@ -773,14 +932,10 @@
                  any_tracked |= pointer.tracked;
              }
          } else {
-@@ -371,10 +561,27 @@
+@@ -371,10 +562,27 @@
                  pointer.now = PointerState::default();
                  pointer.tracked = false;
                  pointer.handsfree = false;
--            }
--        }
--
--        if !picking_focus.is_none() || !any_tracked {
 +                pointer.wrist_pose = None;
 +                pointer.index_tip = None;
 +                pointer.joystick_pad = None;
@@ -788,9 +943,10 @@
 +            }
 +            for hand in &mut self.hand_input {
 +                hand.reset();
-+            }
-+        }
-+
+             }
+         }
+ 
+-        if !picking_focus.is_none() || !any_tracked {
 +        // Joint gestures own hand mode, including loss/rearming; do not reintroduce
 +        // the old handsfree native pinch bindings as a duplicate input source.
 +        if xr.focused
@@ -805,7 +961,7 @@
              self.handsfree_pointer.update_handsfree(
                  &mut app.input_state.pointers[0],
                  xr,
-@@ -386,6 +593,13 @@
+@@ -386,6 +594,13 @@
              )?;
          }
  
@@ -1091,7 +1247,7 @@
                  }
                  Ok(Command::SetPointerAccel { accel, speed }) => {
                      pointer_accel = PointerAccelConfig { accel, speed };
-@@ -460,17 +451,9 @@
+@@ -460,19 +451,11 @@
              continue;
          }
  
@@ -1102,13 +1258,15 @@
          if poll_fd.revents & (libc::POLLERR | libc::POLLHUP | libc::POLLNVAL) != 0 {
              log::error!("libinput poll fd became invalid; input worker is exiting");
              break 'worker;
--        }
--
--        if poll_fd.revents & libc::POLLIN == 0 {
--            continue;
          }
  
+-        if poll_fd.revents & libc::POLLIN == 0 {
+-            continue;
+-        }
+-
          if let Err(error) = libinput.dispatch() {
+             if error.kind() != io::ErrorKind::WouldBlock {
+                 log::warn!("libinput dispatch failed: {error}");
 @@ -500,7 +483,7 @@
              }
          }
@@ -1163,7 +1321,6 @@
 -    runtime_devices
 -        .values()
 -        .all(|state| state.pressed_keys.is_empty())
--}
 +fn all_inputs_released(runtime_devices: &HashMap<LibinputDevice, RuntimeDeviceState>) -> bool {
 +    runtime_devices.values().all(RuntimeDeviceState::released)
 +}
@@ -1241,7 +1398,7 @@
 +        state.pressed_buttons.clear();
 +        assert!(state.released());
 +    }
-+}
+ }
 --- a/wayvr/src/backend/wayvr/mod.rs
 +++ b/wayvr/src/backend/wayvr/mod.rs
 @@ -518,6 +518,7 @@
@@ -1252,7 +1409,7 @@
                      for client in &wvr_server.manager.clients {
                          if client.client.id() != client_id {
                              continue;
-@@ -557,7 +558,19 @@
+@@ -557,8 +558,20 @@
                              }
                          }
  
@@ -1263,15 +1420,16 @@
 +                                .as_ref()
 +                                .is_some_and(|m| m.hover_window == window_handle);
                          wvr_server.wm.remove_window(window_handle);
-+                    }
+                     }
 +                    if release_input || wvr_server.wm.windows.is_empty() {
 +                        app.hid_provider.set_input_focus(
 +                            Some(wvr_server),
 +                            crate::subsystem::input::InputFocus::PhysicalScreen,
 +                        );
-                     }
++                    }
                  }
                  WayVRTask::VisibilityChange(window_handle, visible) => {
+                     if let Some(oid) = wvr_server.window_to_overlay.get(&window_handle) {
 @@ -692,6 +705,17 @@
              wvr_server.manager.cleanup_handles();
          }
@@ -1389,10 +1547,21 @@
              self.wm.mouse = None;
          }
      }
+--- a/wayvr/src/graphics/dmabuf.rs
++++ b/wayvr/src/graphics/dmabuf.rs
+@@ -26,7 +26,7 @@
+             anyhow::bail!("DMA-buf plane has no FD");
+         };
+ 
+-        log::info!(
++        log::debug!(
+             "DMA-buf import start: {}x{}, format={:?}, modifier={:?}, planes={}",
+             frame.format.width,
+             frame.format.height,
 --- a/wayvr/src/gui/asset.rs
 +++ b/wayvr/src/gui/asset.rs
 @@ -4,6 +4,21 @@
-
+ 
  impl wgui::assets::AssetProvider for GuiAsset {
      fn load_from_path(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
 +        if path == "watch/full-reset.svg" {
@@ -1472,7 +1641,7 @@
 +++ b/wayvr/src/gui/panel/label.rs
 @@ -52,6 +52,43 @@
      };
-
+ 
      let callback: EventCallback<AppState, S> = match source {
 +        "tracking_reset" => Box::new(|common, data, app, _| {
 +            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(
@@ -1516,7 +1685,7 @@
                  log_missing_attrib(parser_state, TAG, "_device");
 --- a/wayvr/src/main.rs
 +++ b/wayvr/src/main.rs
-@@ -23,13 +23,35 @@
+@@ -23,13 +23,37 @@
  mod config;
  mod graphics;
  mod gui;
@@ -1526,6 +1695,8 @@
 +#[cfg(feature = "openxr")]
 +#[path = "../../../hand_input.rs"]
 +mod hand_input;
++#[path = "../../../hand_resize.rs"]
++mod hand_resize;
 +#[cfg(feature = "openxr")]
 +#[path = "../../../hand_joystick.rs"]
 +mod hand_joystick;
@@ -1552,7 +1723,7 @@
  
  use std::{
      path::PathBuf,
-@@ -184,6 +206,9 @@
+@@ -184,6 +208,9 @@
  
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
@@ -1613,17 +1784,6 @@
  
          if pressed {
 -            set_next_move(app.session.config.click_freeze_time_ms as _);
--        }
--
--        app.hid_provider.inner.send_button(btn, pressed);
--
--        if !pressed {
--            return;
--        }
--        let pos = self.mouse_transform.transform_point2(hit.uv);
--        app.hid_provider
--            .inner
--            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
 +            if !app.input_state.pointers[hit.pointer].hand_tracking {
 +                set_next_move(app.session.config.click_freeze_time_ms as _);
 +            }
@@ -1632,12 +1792,21 @@
 +            app.hid_provider
 +                .inner
 +                .mouse_move(DVec2::new(pos.x as _, pos.y as _));
-+        }
+         }
+-
+-        app.hid_provider.inner.send_button(btn, pressed);
+-
+-        if !pressed {
+-            return;
 +        // Captured physical events share this virtual device. An ordinary
 +        // physical mouse has its own device, so always release our own button.
 +        if pressed || !app.input_state.mouse_priority.captured_button_held(btn) {
 +            app.hid_provider.inner.send_button(btn, pressed);
-+        }
+         }
+-        let pos = self.mouse_transform.transform_point2(hit.uv);
+-        app.hid_provider
+-            .inner
+-            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
      }
  
      fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {
@@ -1709,10 +1878,17 @@
                  wvr_server.send_mouse_button(
 --- a/wayvr/src/shaders/mod.rs
 +++ b/wayvr/src/shaders/mod.rs
-@@ -31,6 +31,24 @@
-         super::load(
-             gfx,
-             include_bytes!(concat!(env!("OUT_DIR"), "/color.frag.spv")),
+@@ -42,6 +42,24 @@
+     }
+ }
+ 
++pub mod frag_hand_pad {
++    use super::{Arc, DescriptorBinding, DescriptorType, ShaderModule, ShaderStage, WGfx};
++
++    pub fn load(gfx: &WGfx) -> anyhow::Result<Arc<ShaderModule>> {
++        super::load(
++            gfx,
++            include_bytes!(concat!(env!("OUT_DIR"), "/hand_pad.frag.spv")),
 +            ShaderStage::Fragment,
 +            &[DescriptorBinding::new(
 +                0,
@@ -1724,16 +1900,9 @@
 +    }
 +}
 +
-+pub mod frag_hand_pad {
-+    use super::{Arc, DescriptorBinding, DescriptorType, ShaderModule, ShaderStage, WGfx};
-+
-+    pub fn load(gfx: &WGfx) -> anyhow::Result<Arc<ShaderModule>> {
-+        super::load(
-+            gfx,
-+            include_bytes!(concat!(env!("OUT_DIR"), "/hand_pad.frag.spv")),
-             ShaderStage::Fragment,
-             &[DescriptorBinding::new(
-                 0,
+ pub mod frag_grid {
+     use super::{Arc, ShaderModule, ShaderStage, WGfx};
+ 
 --- a/wayvr/src/state.rs
 +++ b/wayvr/src/state.rs
 @@ -55,6 +55,8 @@
@@ -1756,7 +1925,7 @@
              anchor_grabbed: false,
 --- a/wayvr/src/subsystem/input.rs
 +++ b/wayvr/src/subsystem/input.rs
-@@ -46,14 +46,14 @@
+@@ -46,15 +46,15 @@
          wvr_server: Option<&mut WvrServerState>,
          value: InputFocus,
      ) -> bool {
@@ -1768,13 +1937,14 @@
              false
          } else {
              self.input_focus = value;
--
+ 
 -            if let Some(wvr_server) = wvr_server {
 -                wvr_server.set_input_focus(matches!(value, InputFocus::WayVR));
 -            }
- 
+-
              true
          }
+     }
 --- a/wayvr/src/windowing/window.rs
 +++ b/wayvr/src/windowing/window.rs
 @@ -270,7 +270,7 @@
@@ -1841,14 +2011,3 @@
  	fn window_list(&mut self, data: &mut T) -> anyhow::Result<Vec<WvrWindow>>;
  	fn window_set_visible(&mut self, data: &mut T, handle: WvrWindowHandle, visible: bool) -> anyhow::Result<()>;
  	fn window_request_close(&mut self, data: &mut T, handle: WvrWindowHandle) -> anyhow::Result<()>;
---- a/wayvr/src/graphics/dmabuf.rs
-+++ b/wayvr/src/graphics/dmabuf.rs
-@@ -26,7 +26,7 @@
-             anyhow::bail!("DMA-buf plane has no FD");
-         };
-
--        log::info!(
-+        log::debug!(
-             "DMA-buf import start: {}x{}, format={:?}, modifier={:?}, planes={}",
-             frame.format.width,
-             frame.format.height,

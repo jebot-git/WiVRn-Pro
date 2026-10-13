@@ -444,10 +444,9 @@ void foveation::update_tracking(const from_headset::tracking & tracking)
 		if (pose.device != device_id::EYE_GAZE)
 			continue;
 
-		if ((pose.flags & orientation_ok) != orientation_ok)
-			return;
-
-		gaze = xrt_cast(pose.pose.orientation);
+		tracked_gaze.update(xrt_cast(pose.pose.orientation),
+		                    (pose.flags & orientation_ok) == orientation_ok,
+		                    std::chrono::steady_clock::now());
 		return;
 	}
 }
@@ -511,6 +510,7 @@ void foveation::update_ubo(
 {
 	// Check if the last value is still valid
 	std::lock_guard lock(mutex);
+	gaze = tracked_gaze.get(std::chrono::steady_clock::now());
 	if (last.flip_y == flip_y and
 	    last.src[0] == src_rect[0] and
 	    last.src[1] == src_rect[1] and

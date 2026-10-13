@@ -91,6 +91,8 @@ private:
 	std::optional<std::thread> tracking_thread;
 
 	std::shared_mutex decoder_mutex;
+	// Network-thread state: decoder recovery must not replay an old display rate.
+	bool initial_refresh_rate_applied = false;
 	std::optional<to_headset::video_stream_description> video_stream_description;
 	std::array<accumulator_images, decoder_count> decoders; // Locked by decoder_mutex
 

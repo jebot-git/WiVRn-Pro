@@ -23,6 +23,8 @@
 #include "video_encoder_va.h"
 
 #include "encoder/encoder_settings.h"
+#include "encoder/rate_control.h"
+#include "rate_control.h"
 
 #include "os/os_time.h"
 #include "util/u_logging.h"
@@ -511,11 +513,15 @@ void video_encoder_va::present_image(vk::Image y_cbcr, vk::SemaphoreSubmitInfo, 
 
 void video_encoder_va::push_frame(bool idr, uint8_t slot)
 {
+	const auto start = profile_enabled() ? performance_clock::now() : performance_clock::time_point{};
 	if (vk.device.waitForFences(*in[slot].fence, true, 1'000'000'000) == vk::Result::eTimeout)
 		throw std::runtime_error("timeout");
 
+	if (profile_enabled())
+		fence_latency.add(elapsed_ms(start), "copy-fence-wait", stream_idx);
 	if (auto s = ts_pool.collect(slot))
 	{
+		copy_latency.add(s->duration_ns / 1e6, "gpu-copy", stream_idx);
 		wivrn::trace::gpu_slice(wivrn::trace::gpu_track::va_copy,
 		                        "vk_copy_luma_chroma",
 		                        s->begin_ns,
@@ -579,6 +585,7 @@ void video_encoder_va::open_codec()
 		throw std::runtime_error("failed to allocate VAAPI encoder");
 	}
 
+	const auto qp = cqp_quantizer(codec_settings.options, use_qsv && (codec_settings.codec == video_codec::h264 || codec_settings.codec == video_codec::h265));
 	AVDictionary * opts = nullptr;
 	av_dict_set(&opts, "async_depth", "1", 0);
 	switch (codec_settings.codec)
@@ -607,10 +614,12 @@ void video_encoder_va::open_codec()
 			av_dict_set(&opts, "look_ahead", "0", 0);
 		av_dict_set(&opts, "forced_idr", "1", 0);
 		av_dict_set(&opts, "preset", "veryfast", 0);
-		av_dict_set(&opts, "low_delay_brc", "1", 0);
+		av_dict_set(&opts, "low_delay_brc", qp ? "0" : "1", 0);
 	}
 	for (auto option: codec_settings.options)
 	{
+		if (option.first == "rate_control" || option.first == "qp")
+			continue;
 		av_dict_set(&opts, option.first.c_str(), option.second.c_str(), 0);
 	}
 
@@ -626,11 +635,9 @@ void video_encoder_va::open_codec()
 	encoder_ctx->color_trc = AVCOL_TRC_BT709;
 	encoder_ctx->color_primaries = AVCOL_PRI_BT709;
 	encoder_ctx->max_b_frames = 0;
-	encoder_ctx->bit_rate = codec_settings.bitrate;
 	encoder_ctx->gop_size = use_qsv ? 240 : std::numeric_limits<decltype(encoder_ctx->gop_size)>::max();
 	encoder_ctx->hw_frames_ctx = av_buffer_ref(use_qsv ? qsv_frames.get() : vaapi_frame_ctx.get());
-	encoder_ctx->rc_max_rate = codec_settings.bitrate;
-	encoder_ctx->rc_buffer_size = int(codec_settings.bitrate / codec_settings.fps);
+	configure_rate_control(*encoder_ctx, qp, codec_settings.bitrate, codec_settings.fps);
 
 	err = avcodec_open2(encoder_ctx.get(), codec, &opts);
 	av_dict_free(&opts);
@@ -659,7 +666,8 @@ bool video_encoder_va::recover(unsigned attempt)
 	qsv_device.reset();
 #if WIVRN_USE_VAAPI
 	// Stay on VAAPI for the rest of this runtime session after fallback.
-	if (use_qsv && attempt >= 2)
+	// CQP is QSV-only: retry QSV instead of silently changing to CBR.
+	if (use_qsv && attempt >= 2 && !cqp_quantizer(codec_settings.options, true))
 	{
 		use_qsv = false;
 		codec_settings.encoder_name = encoder_vaapi;
@@ -679,7 +687,8 @@ bool video_encoder_va::apply_pending_settings()
 {
 	const auto bitrate = pending_bitrate.exchange(0);
 	const auto fps = pending_framerate.exchange(0);
-	const bool changed = (bitrate && bitrate != codec_settings.bitrate) || (fps && fps != codec_settings.fps);
+	const auto qp = cqp_quantizer(codec_settings.options, use_qsv && (codec_settings.codec == video_codec::h264 || codec_settings.codec == video_codec::h265));
+	const bool changed = (!qp && bitrate && bitrate != codec_settings.bitrate) || (fps && fps != codec_settings.fps);
 	if (!changed)
 		return true;
 	if (bitrate)
@@ -693,8 +702,11 @@ bool video_encoder_va::apply_pending_settings()
 		request_reconfigure();
 		throw encoder_reconfiguration{};
 	}
-	encoder_ctx->bit_rate = codec_settings.bitrate;
-	encoder_ctx->rc_max_rate = codec_settings.bitrate;
+	if (!qp)
+	{
+		encoder_ctx->bit_rate = codec_settings.bitrate;
+		encoder_ctx->rc_max_rate = codec_settings.bitrate;
+	}
 	encoder_ctx->framerate = AVRational{.num = int(codec_settings.fps * 1000), .den = 1000};
 	idr->reset();
 	return true;

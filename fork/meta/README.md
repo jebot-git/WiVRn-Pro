@@ -2,6 +2,13 @@
 
 Meta app: `3443645619141564`. Release channel: `ALPHA`.
 
+Normal Android and host builds use the pinned upstream v26.9 audio subsystem.
+The experimental keep-alive backend is opt-in only (`WIVRN_AUDIO_AB_STOCK=OFF`
+on CMake, `-Pwivrn_audio_ab_stock=OFF` on Gradle). The October 7 A/B runs
+recorded persistent digital silence with keep-alive; upstream audio recovered
+after sleep/wake, although both implementations were initially silent.
+The default audio selection retains the video blackout fixes and other Pro features.
+
 Build a non-debuggable APK with an externally stored release key:
 
 ```sh

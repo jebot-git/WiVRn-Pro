@@ -24,6 +24,7 @@
 #include "application.h"
 #include "configuration.h"
 #include "driver/app_pacer.h"
+#include "driver/refresh_rate_policy.h"
 #include "driver/xrt_cast.h"
 #include "server/ipc_server.h"
 #include "utils/load_icon.h"
@@ -1078,14 +1079,7 @@ struct refresh_rate_adjuster
 
 		// Maximum refresh rate the application can reach
 		auto app_rate = float(U_TIME_1S_IN_NS) / pacers.get_frame_time();
-		// Get the highest rate reachable by the application
-		// If none can be reached, set it to the maximum
-		auto requested = info.available_refresh_rates.back();
-		for (auto rate: info.available_refresh_rates)
-		{
-			if (rate > locked->minimum_refresh_rate and rate < app_rate * (rate == last ? 1. : 0.9))
-				requested = rate;
-		}
+		auto requested = select_refresh_rate(info.available_refresh_rates, locked->minimum_refresh_rate, app_rate, last);
 		if (requested != last)
 		{
 			U_LOG_I("requesting refresh rate: %.0f (app rate %.1f)", requested, app_rate);

@@ -36,6 +36,7 @@ void scenes::stream::process_packets()
 		try
 		{
 #ifdef __ANDROID__
+			#if !WIVRN_AUDIO_AB_STOCK
 			if (audio_handle)
 			{
 				audio_handle->set_capture_enabled(mic_capture_enabled);
@@ -43,6 +44,7 @@ void scenes::stream::process_packets()
 					audio_handle->restart_microphone();
 				audio_handle->send_microphone_data();
 			}
+			#endif
 			network_session->poll(*this, std::chrono::milliseconds(audio_handle ? 10 : 500));
 #else
 			network_session->poll(*this, std::chrono::milliseconds(500));
@@ -112,6 +114,11 @@ void scenes::stream::operator()(to_headset::feature_control && control)
 
 void scenes::stream::operator()(to_headset::audio_stream_description && desc)
 {
+#if defined(__ANDROID__) && WIVRN_AUDIO_AB_STOCK
+	spdlog::info("Audio backend: upstream v26.9 (default)");
+#else
+	spdlog::info("Audio backend: experimental session keep-alive");
+#endif
 	audio_handle.emplace(desc, *network_session, instance);
 }
 
@@ -128,8 +135,9 @@ void scenes::stream::operator()(to_headset::video_stream_description && desc)
 void scenes::stream::operator()(to_headset::refresh_rate_change && rate)
 {
 	spdlog::info("refresh rate change request: {}", rate.hz);
+	initial_refresh_rate_applied = true;
 	session.set_refresh_rate(rate.hz);
-	std::shared_lock lock(decoder_mutex);
+	std::unique_lock lock(decoder_mutex);
 	if (video_stream_description)
 		video_stream_description->refresh_rate = rate.hz;
 }

@@ -21,6 +21,7 @@
 
 #include "compositor.h"
 #include "encoder/encode_batch.h"
+#include "utils/performance.h"
 #include "wivrn_ipc.h"
 #include <cmath>
 
@@ -639,6 +640,25 @@ int compositor::acquire_image()
 
 void compositor::encoder_work(std::stop_token tok)
 {
+	const char * parallel_env = std::getenv("WIVRN_PARALLEL_QSV");
+	const bool parallel = (!parallel_env || std::string_view(parallel_env) != "0") &&
+	                      std::ranges::all_of(settings, [](const auto & s) { return s.encoder_name == "qsv"; });
+	std::unique_ptr<batch_executor> executor;
+	if (parallel)
+	{
+		try
+		{
+			executor = std::make_unique<batch_executor>();
+		}
+		catch (const std::exception & e)
+		{
+			U_LOG_W("Cannot start QSV workers, using serial encoding: %s", e.what());
+		}
+	}
+	U_LOG_I("QSV parallel stream encoding: %s", executor ? "enabled" : "disabled");
+	latency_samples batch_latency;
+	std::array<latency_samples, 3> encode_latency;
+
 	while (!tok.stop_requested())
 	{
 		std::unique_lock video_lock(video_mutex);
@@ -689,12 +709,17 @@ void compositor::encoder_work(std::stop_token tok)
 			continue;
 		}
 		auto & image = images[req];
+		const auto batch_start = profile_enabled() ? performance_clock::now() : performance_clock::time_point{};
 		encode_batch(encoders, image.submitted, [&](video_encoder & encoder) {
+    const auto start = profile_enabled() ? performance_clock::now() : performance_clock::time_point{};
     encoder.encode(session, image.view_info, image.frame_index);
+    if (profile_enabled()) encode_latency[encoder.stream_idx].add(elapsed_ms(start), "encode", encoder.stream_idx);
     if (description_requested || image.frame_index < video_frame_floor) throw encoder_reconfiguration{}; }, [&](video_encoder & encoder, const std::exception & e) {
     if (dynamic_cast<const encoder_reconfiguration *>(&e)) return;
     encoder.request_recovery();
-    U_LOG_W("Encode error on stream %u: %s", encoder.stream_idx, e.what()); });
+    U_LOG_W("Encode error on stream %u: %s", encoder.stream_idx, e.what()); }, executor.get());
+		if (profile_enabled())
+			batch_latency.add(elapsed_ms(batch_start), "stereo-batch");
 		image.busy = false;
 	}
 }

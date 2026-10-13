@@ -136,7 +136,7 @@
 		"FEATURES": "Features",
 		"FOCUS_FOLLOWS_MOUSE_MODE": "Mouse move on trigger touch",
 		"HANDSFREE_POINTER": "Handsfree mode",
-		"HANDSFREE_POINTER_HELP": "Input to use when motion\ncontrollers are unavailable.\nLeft pinch is grab, right is click.",
+		"HANDSFREE_POINTER_HELP": "Input when controllers are unavailable.\nTracked hands: thumb + index = left mouse,\nthumb + middle = middle mouse,\nthumb + ring = right mouse.\nFist = move; two fists apart/together = resize.\nWithout joint tracking: left pinch grabs, right clicks.",
 		"HANDSFREE_ALT_TAB": "App switcher aim",
 		"HANDSFREE_ALT_TAB_HELP": "Hold Super+X, aim at the desired window, then release to switch focus.",
 		"DIAGNOSTICS": "Diagnostics",

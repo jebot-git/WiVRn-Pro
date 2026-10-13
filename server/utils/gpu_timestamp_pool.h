@@ -32,14 +32,18 @@ struct vk_bundle;
 // copy durations for tracing. Conversion to host monotonic ns goes through
 // monado's vk_convert_timestamps_to_host_ns (via wivrn::trace::calibration_source)
 // so the calibration cache is shared with any future monado-side perfetto
-// producer. If runtime tracing is off, the calibration source is missing, or
+// producer. WIVRN_PROFILE also enables raw duration measurements without Perfetto. If both
+// profiling and tracing are off, or
 // the queue family doesn't support timestamps, the pool stays disabled and
-// every method is a no-op. Default-constructed instances are also disabled,
+// every method is a no-op. Host timestamps are zero without trace calibration.
+// Default-constructed instances are also disabled,
 // so members can be declared before being assigned.
 class gpu_timestamp_pool
 {
 	vk::raii::QueryPool pool = nullptr;
 	std::vector<uint64_t> frame_indices;
+	double timestamp_period = 0;
+	uint32_t timestamp_bits = 0;
 
 public:
 	gpu_timestamp_pool() = default;
@@ -50,6 +54,7 @@ public:
 
 	struct sample
 	{
+		double duration_ns;
 		int64_t begin_ns;
 		int64_t end_ns;
 		uint64_t frame_index;

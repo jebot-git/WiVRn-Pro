@@ -526,8 +526,9 @@ impl OpenXrInputSource {
                             pointer.now.move_mouse = true;
                             pointer.now.click_modifier_middle =
                                 sample.gesture == Gesture::MiddleClick;
+                            // A fist follows wrist rotation instead of reorienting toward the head.
                             pointer.now.click_modifier_right =
-                                sample.gesture == Gesture::RightClick;
+                                matches!(sample.gesture, Gesture::RightClick | Gesture::Grab);
                         }
                     }
                 }

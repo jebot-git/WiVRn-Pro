@@ -27,25 +27,20 @@
 
 #include "gpu_timestamp_pool.h"
 
+#include "performance.h"
 #include "wivrn_trace.h"
 #include "wivrn_vk_bundle.h"
-
-#ifdef WIVRN_USE_PERFETTO
 #include <array>
-#include <cassert>
-#endif
 
 namespace wivrn
 {
-// No tracing build ⇒ no timestamp consumer; keep the pool disabled.
-gpu_timestamp_pool::gpu_timestamp_pool([[maybe_unused]] wivrn::vk_bundle & vk,
-                                       [[maybe_unused]] uint32_t queue_family_index,
-                                       [[maybe_unused]] uint32_t slot_count,
-                                       [[maybe_unused]] const std::string & name)
+// Timestamp allocation is opt-in through tracing or lightweight profiling.
+gpu_timestamp_pool::gpu_timestamp_pool(wivrn::vk_bundle & vk,
+                                       uint32_t queue_family_index,
+                                       uint32_t slot_count,
+                                       const std::string & name)
 {
-#ifdef WIVRN_USE_PERFETTO
-	// Runtime tracing off: skip the pool instead of recording timestamps we'd drop.
-	if (!wivrn::trace::is_enabled())
+	if (!wivrn::trace::is_enabled() && !profile_enabled())
 		return;
 	auto qprops = vk.physical_device.getQueueFamilyProperties();
 	if (queue_family_index >= qprops.size() or qprops[queue_family_index].timestampValidBits == 0)
@@ -57,12 +52,13 @@ gpu_timestamp_pool::gpu_timestamp_pool([[maybe_unused]] wivrn::vk_bundle & vk,
 	});
 	vk.name(pool, name);
 	frame_indices.assign(slot_count, 0);
-#endif
+	timestamp_period = vk.physical_device.getProperties().limits.timestampPeriod;
+	timestamp_bits = qprops[queue_family_index].timestampValidBits;
 }
 
 void gpu_timestamp_pool::cmd_begin(const vk::raii::CommandBuffer & cmd, uint8_t slot, uint64_t frame_index, vk::PipelineStageFlagBits2 stage)
 {
-	if (not *pool)
+	if (not*pool)
 		return;
 	cmd.resetQueryPool(*pool, slot * 2, 2);
 	cmd.writeTimestamp2(stage, *pool, slot * 2);
@@ -71,32 +67,29 @@ void gpu_timestamp_pool::cmd_begin(const vk::raii::CommandBuffer & cmd, uint8_t 
 
 void gpu_timestamp_pool::cmd_end(const vk::raii::CommandBuffer & cmd, uint8_t slot, vk::PipelineStageFlagBits2 stage) const
 {
-	if (not *pool)
+	if (not*pool)
 		return;
 	cmd.writeTimestamp2(stage, *pool, slot * 2 + 1);
 }
 
 std::optional<gpu_timestamp_pool::sample> gpu_timestamp_pool::collect(uint8_t slot)
 {
-#ifdef WIVRN_USE_PERFETTO
-	if (not *pool)
+	if (not*pool)
 		return std::nullopt;
-	::vk_bundle * cal = wivrn::trace::calibration_source();
-	assert(cal != nullptr);
-	// Read both queries into a stack array, no allocation.
 	auto [res, times] = pool.getResult<std::array<uint64_t, 2>>(slot * 2, 2, sizeof(uint64_t), vk::QueryResultFlagBits::e64 | vk::QueryResultFlagBits::eWait);
-	if (res != vk::Result::eSuccess or times[1] < times[0])
+	if (res != vk::Result::eSuccess)
 		return std::nullopt;
-	if (vk_convert_timestamps_to_host_ns(cal, times.size(), times.data()) != VK_SUCCESS)
-		return std::nullopt;
-	return sample{
-	        .begin_ns = static_cast<int64_t>(times[0]),
-	        .end_ns = static_cast<int64_t>(times[1]),
-	        .frame_index = frame_indices[slot],
-	};
-#else
-	(void)slot;
-	return std::nullopt;
+	const uint64_t mask = timestamp_bits == 64 ? ~uint64_t{0} : (uint64_t{1} << timestamp_bits) - 1;
+	const double duration = ((times[1] - times[0]) & mask) * timestamp_period;
+	int64_t begin = 0, end = 0;
+#ifdef WIVRN_USE_PERFETTO
+	if (auto cal = wivrn::trace::calibration_source(); cal && trace::is_enabled())
+		if (vk_convert_timestamps_to_host_ns(cal, times.size(), times.data()) == VK_SUCCESS)
+		{
+			begin = times[0];
+			end = times[1];
+		}
 #endif
+	return sample{duration, begin, end, frame_indices[slot]};
 }
 } // namespace wivrn

@@ -345,6 +345,7 @@ const std::vector<config_field> & configuration::config_fields()
 	        scalar("minimum_refresh_rate", &configuration::minimum_refresh_rate),
 	        scalar("stream_scale", &configuration::stream_scale),
 	        scalar("codec", &configuration::codec),
+	        scalar("decoder_low_latency", &configuration::decoder_low_latency),
 	        scalar("bit_depth", &configuration::bit_depth),
 	};
 	return fields;

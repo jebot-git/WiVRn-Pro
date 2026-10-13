@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "gaze_state.h"
 #include "vk/allocation.h"
 #include "wivrn_packets.h"
 #include "xrt/xrt_defines.h"
@@ -47,6 +48,7 @@ class foveation
 
 	float eye_x[2] = {}; // eye x position
 	xrt_quat gaze = {};
+	gaze_state<xrt_quat> tracked_gaze;
 	from_headset::override_foveation_center manual_foveation = {};
 	std::array<to_headset::foveation_parameter, 2> params;
 
