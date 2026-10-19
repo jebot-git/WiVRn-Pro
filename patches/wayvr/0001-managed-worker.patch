@@ -1291,12 +1291,12 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +    hand_paths: [xr::Path; 2],
 +    started: Instant,
  }
- 
+
  pub(super) struct OpenXrPointer {
 @@ -264,7 +270,25 @@
          let mut right_source = OpenXrHandSource::new(&mut action_set, "right")?;
          let mut fallback_source = OpenXrHandSource::new(&mut action_set, "handsfree")?;
- 
+
 -        let profiles = load_xr_input_profiles();
 +        let mut profiles = load_xr_input_profiles();
 +        // Keep saved mappings, filling missing hand aim bindings in memory only.
@@ -1319,7 +1319,7 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +        }
          let (physical_inputs, physical_input_map) =
              create_physical_inputs(&action_set, &xr.instance, &profiles)?;
- 
+
 @@ -288,7 +312,40 @@
                  OpenXrPointer::new(xr, right_source)?,
              ],
@@ -1359,7 +1359,7 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +            hand.reset();
 +        }
      }
- 
+
      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
 @@ -348,6 +405,7 @@
          if picking_focus.is_none() {
@@ -1548,19 +1548,23 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
              self.handsfree_pointer.update_handsfree(
                  &mut app.input_state.pointers[0],
                  xr,
-@@ -386,6 +601,41 @@
+@@ -386,6 +601,45 @@
              )?;
          }
- 
+
 +        if !picking_focus.is_none() {
 +            self.reset_hands();
 +        }
 +        self.joystick_link.exchange(
 +            app.input_state.joysticks_enabled && xr.focused && picking_focus.is_none(),
 +            app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
-+            app.input_state.hand_controllers_enabled && xr.focused && picking_focus.is_none(),
++            // Keep the advertised device mode stable while focus/picking reserves
++            // gestures; only the per-hand input ownership changes.
++            app.input_state.hand_controllers_enabled,
 +            app.input_state.pointers.each_ref().map(|p| {
-+                p.joystick_owned
++                !xr.focused
++                    || !picking_focus.is_none()
++                    || p.joystick_owned
 +                    || p.cancel_interaction
 +                    || p.keyboard_hover
 +                    || p.interaction.hovered_id.is_some()
@@ -1588,7 +1592,7 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +                }),
 +        );
          app.session.config.handsfree_pointer = old_handsfree;
- 
+
          Ok(())
 diff --git a/wayvr/src/backend/openxr/mod.rs b/wayvr/src/backend/openxr/mod.rs
 --- a/wayvr/src/backend/openxr/mod.rs

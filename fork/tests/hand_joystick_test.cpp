@@ -119,13 +119,19 @@ int main()
 		endpoint.poll(now, 3);
 		assert(endpoint.controller(0, now).has_value());
 		assert(endpoint.get(0, now)->clicked);
-		put(packet, 4, 9, 4); // Explicitly disabling controller mode restores hand tracking.
+		put(packet, 4, 32 | 64 | 128, 4); // Focus loss reserves gestures without changing mode.
 		put(packet, 32, 9, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now, 3);
+		assert(endpoint.controllers_enabled());
+		assert(endpoint.controller(0, now).value() && endpoint.controller(1, now).value());
+		put(packet, 4, 9, 4); // Explicitly disabling controller mode restores hand tracking.
+		put(packet, 32, 10, 8);
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
 		assert(!endpoint.controllers_enabled());
 		put(packet, 4, 32 | 9, 4);
-		put(packet, 32, 10, 8);
+		put(packet, 32, 11, 8);
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
 		assert(endpoint.controllers_enabled());

@@ -738,7 +738,7 @@
     "wayvr/src/backend/openvr/overlay.rs": "616a48d77d45d02acec9c21bcf9eaafed7df6b14762e01c8b850ad7c9f65dd0e",
     "wayvr/src/backend/openvr/playspace.rs": "8dffafc448ecfa991529face8a1aa389bdab47e3e0986e8585ffa195df3dfb2b",
     "wayvr/src/backend/openxr/helpers.rs": "9308c0b3546434e11f76b2a524e6eaecf91c13943e7d5f4265ae2e6defbb6bbc",
-    "wayvr/src/backend/openxr/input.rs": "d0f1fab488a1a8230f92207dae140b95043a286a97b4e8e922c27a4d40910e4d",
+    "wayvr/src/backend/openxr/input.rs": "8f97c767a37d09d34fef09e5d654f23b814019e0eed96c4a2bd571b288c2b420",
     "wayvr/src/backend/openxr/mod.rs": "6723e075ec227e1c4c1c10e3c8ccf7a425a12fc31b623c982cf997562e0ce887",
     "wayvr/src/backend/openxr/playspace.rs": "330f09e72529ae6a9f263ca10e38b79c9518952d818bbf3cf41e934a6c0feabd",
     "wayvr/src/backend/playspace_common.rs": "31e26eaca7d479558bb004a714a0c87bcb6dd034e8d0d3fca5548494e797d087",
