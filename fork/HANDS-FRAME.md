@@ -41,7 +41,9 @@ in front of the user. Bookmarks are session-local, as in a temporary panel shelf
 Automatic scanning checks an active frame at most twice per second. A recognized
 code closes framing and presents its contents; links open **only** after choosing
 Open. HTTP/HTTPS are accepted as web links; arbitrary URI handlers are not invoked
-from scanned text. Copy uses the local Wayland clipboard. Open also plays a saved
+from scanned text. Copy uses the local Wayland clipboard: photos as PNG, selected
+text as text, and completed recordings as the actual WebM video (`video/webm`).
+Copy is unavailable until recording/encoding finishes. Open also plays a saved
 WebM with the desktop's configured player. The vendor-specific Steam-friend/PIN
 sharing, social uploads, AI-comment accounts and Workshop integrations are not
 reproduced. Capture and OCR stay local; optional DeepL translation sends only the recognized text.

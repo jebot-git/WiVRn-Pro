@@ -392,9 +392,18 @@ class Worker:
                 else: self.current = (self.current+(1 if kind=='next' else -1)) % len(self.results)
                 self.revision += 1
             elif kind == 'copy':
+                if (self.recording and item['preview'] == self.record_preview
+                    or any(job[0]=='video' and job[2]==item['preview'] for job in self.jobs)):
+                    raise ValueError('Wait for the WebM encoder to finish before copying')
                 text = item.get('original' if item.get('show_original') else 'text', '')
-                command = ['wl-copy','--type','text/plain;charset=utf-8'] if text else ['wl-copy','--type','image/png']
-                subprocess.run(command,input=text.encode() if text else (self.cache/item['preview']).read_bytes(),check=True,timeout=3)
+                source = Path(item['path'])
+                if source.suffix.lower() == '.webm':
+                    mime, data = 'video/webm', source.read_bytes()
+                elif text:
+                    mime, data = 'text/plain;charset=utf-8', text.encode()
+                else:
+                    mime, data = 'image/png', (self.cache/item['preview']).read_bytes()
+                subprocess.run(['wl-copy','--type',mime],input=data,check=True,timeout=3)
                 self.notice = 'Copied to clipboard'
             elif kind == 'open':
                 text = item.get('text','').strip()

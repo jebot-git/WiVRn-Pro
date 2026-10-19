@@ -70,6 +70,33 @@ class CaptureReliabilityTests(unittest.TestCase):
             try: yield root,instance
             finally:
                 instance.recording=None;instance.pool.shutdown();instance.encoders.shutdown();os.close(instance.lock)
+    def test_clipboard_copies_webm_bytes_from_current_capture_path(self):
+        with self.instance() as (root,instance), mock.patch.object(worker.subprocess,'run') as copy:
+            instance.add_result(Image.new('RGB',(16,16)))
+            # Cover both the unsaved recording and a saved file outside the cache.
+            for directory in (instance.cache,root):
+                video=directory/'capture.webm';video.write_bytes(b'\x1aE\xdf\xa3video payload')
+                instance.results[0]['path']=str(video)
+                instance.command({'op':'copy'})
+                copy.assert_called_with(['wl-copy','--type','video/webm'],input=video.read_bytes(),check=True,timeout=3)
+    def test_clipboard_waits_for_recording_and_encoder_instead_of_copying_preview(self):
+        with self.instance() as (root,instance), mock.patch.object(worker.subprocess,'run') as copy:
+            instance.add_result(Image.new('RGB',(16,16)))
+            instance.record_preview=instance.results[0]['preview'];instance.recording=object()
+            with self.assertRaisesRegex(ValueError,'finish before copying'):instance.command({'op':'copy'})
+            instance.recording=None;instance.jobs=[('video',None,instance.record_preview)]
+            with self.assertRaisesRegex(ValueError,'finish before copying'):instance.command({'op':'copy'})
+            copy.assert_not_called()
+    def test_clipboard_preserves_photo_and_selected_text(self):
+        with self.instance() as (root,instance), mock.patch.object(worker.subprocess,'run') as copy:
+            instance.add_result(Image.new('RGB',(16,16)))
+            instance.command({'op':'copy'})
+            copy.assert_called_with(['wl-copy','--type','image/png'],input=(instance.cache/instance.results[0]['preview']).read_bytes(),check=True,timeout=3)
+            instance.add_result(Image.new('RGB',(16,16)),'translation','original')
+            for original,text in ((False,'translation'),(True,'original')):
+                instance.results[instance.current]['show_original']=original
+                instance.command({'op':'copy'})
+                copy.assert_called_with(['wl-copy','--type','text/plain;charset=utf-8'],input=text.encode(),check=True,timeout=3)
     def test_busy_frame_retries_photo_without_errno(self):
         with self.instance() as (root,instance):
             path=self.frame(root)
