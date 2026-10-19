@@ -14,7 +14,7 @@
   <macro name="button_style" padding="8" border="2" round="8" align_items="center" justify_content="center" />
 
   <template name="TrackingControls">
-    <div id="fan_controls" position="absolute" width="1000" height="840" interactable="0" />
+    <div id="fan_controls" position="absolute" width="1000" height="760" interactable="0" />
   </template>
 
   <template name="FanButton">
@@ -128,23 +128,21 @@
 
   <elements>
     <!-- Fixed transparent canvas keeps physical button size/position unchanged on expansion. -->
-    <div width="1000" height="840" interactable="0">
-      <div id="watch_base" position="absolute" width="1000" height="840" interactable="0">
-        <rectangle position="absolute" margin_left="56" margin_top="396" width="752" height="340"
+    <div width="1000" height="760" interactable="0">
+      <div id="watch_base" position="absolute" width="1000" height="760" interactable="0">
+        <rectangle position="absolute" margin_left="56" margin_top="396" width="752" height="284"
           color="background" border="2" border_color="outline" round="28" interactable="0" />
         <div id="devices_root" position="absolute" margin_left="80" margin_top="416"
           interactable="0" gap="6" height="92" overflow="hidden" width="700" max_width="700" flex_direction="row" flex_wrap="wrap">
           <Hmd idx="0" /><LeftHand idx="1" /><RightHand idx="2" /><Tracker idx="3" />
         </div>
         <div id="clock_root" position="absolute" margin_left="80" margin_top="508" width="232"><Clock /></div>
-        <label id="tracking_reset_status" position="absolute" margin_left="80" margin_top="660"
-          _source="tracking_reset" size="14" width="700" color="on_background" />
-        <label position="absolute" margin_left="80" margin_top="684" _source="room_floor"
-          text="Remembered floor: off" size="14" color="on_background" />
-        <div id="sets_root" position="absolute" margin_left="56" margin_top="752" gap="8">
+        <label id="tracking_reset_status" position="absolute" margin_left="80" margin_top="652"
+          _source="watch_status" size="12" width="700" height="20" wrap="0" overflow="hidden" color="on_background" />
+        <div id="sets_root" position="absolute" margin_left="56" margin_top="688" gap="8">
           <Set idx="0" display="1" /><Set idx="1" display="2" />
         </div>
-        <div id="panels_root" position="absolute" margin_left="56" margin_top="752" gap="8" display="none">
+        <div id="panels_root" position="absolute" margin_left="56" margin_top="688" gap="8" display="none">
           <Screen idx="0" display="H1" name="HDMI-A-1" /><Screen idx="1" display="D2" name="DP-2" />
         </div>
       </div>
@@ -153,7 +151,7 @@
         <label id="fan_title" text="Calibration" size="32" weight="bold" align="center" />
         <label text="Choose an action · tap the group again to close" size="18" align="center" color="on_background_variant" />
       </div>
-      <div id="interaction_buttons" position="absolute" width="1000" height="840" interactable="0">
+      <div id="interaction_buttons" position="absolute" width="1000" height="760" interactable="0">
         <TrackingControls />
       </div>
     </div>

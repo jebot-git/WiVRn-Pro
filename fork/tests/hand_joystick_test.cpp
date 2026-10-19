@@ -61,6 +61,7 @@ int main()
 		assert(endpoint.get(0, now)->axes[0] == 0.6f);
 		assert(endpoint.get(1, now)->axes[1] == -0.4f);
 		assert(!endpoint.get(0, now + 151'000'000));
+		assert(!endpoint.controllers_enabled());
 		endpoint.poll(now, 1);
 		assert(!endpoint.get(1, now));
 		assert(endpoint.get(0, now));
@@ -104,6 +105,11 @@ int main()
 		assert(endpoint.controller(0, now).value());
 		assert(!endpoint.controller(1, now).value());
 		assert(!endpoint.controller(0, now + 151'000'000));
+		assert(endpoint.controllers_enabled());
+		assert(endpoint.controllers_enabled());
+		endpoint.poll(now, 0); // Mode still suppresses advertising without a tracked hand.
+		assert(endpoint.controllers_enabled());
+		assert(!endpoint.controller(0, now));
 		endpoint.poll(now, 2);
 		assert(!endpoint.controller(0, now));
 		// Both features can be enabled together, without changing axes/clicks.
@@ -113,9 +119,20 @@ int main()
 		endpoint.poll(now, 3);
 		assert(endpoint.controller(0, now).has_value());
 		assert(endpoint.get(0, now)->clicked);
+		put(packet, 4, 9, 4); // Explicitly disabling controller mode restores hand tracking.
+		put(packet, 32, 9, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now, 3);
+		assert(!endpoint.controllers_enabled());
+		put(packet, 4, 32 | 9, 4);
+		put(packet, 32, 10, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now, 3);
+		assert(endpoint.controllers_enabled());
 		close(fd);
 		endpoint.poll(now, 3);
 		assert(!endpoint.controller(0, now));
+		assert(!endpoint.controllers_enabled());
 		assert(!endpoint.get(0, now));
 	}
 	std::filesystem::remove_all(directory);

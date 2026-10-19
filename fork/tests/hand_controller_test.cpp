@@ -14,6 +14,11 @@ static std::array<Gestures::point, 26> open_hand()
 }
 int main()
 {
+	for (const char *app : std::array<const char *, 4>{nullptr, "game", "SteamVR", "wayvr-other"}) {
+		assert(wivrn::application_hand_tracking_allowed(false, app));
+		assert(!wivrn::application_hand_tracking_allowed(true, app));
+	}
+	assert(wivrn::application_hand_tracking_allowed(true, "wayvr"));
 	int64_t now = 1'000'000'000;
 	Gestures g;
 	auto j = open_hand();

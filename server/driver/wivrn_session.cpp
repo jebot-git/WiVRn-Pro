@@ -90,6 +90,7 @@ wivrn::wivrn_session::wivrn_session(std::unique_ptr<wivrn_connection> connection
                 .create_body_tracker = b_body_tracker_create,
                 .create_hand_tracker = b_hand_tracker_create,
                 .feature_inc = method_pointer<&wivrn_session::feature_inc>,
+                .hand_tracking_allowed = method_pointer<&wivrn_session::hand_tracking_allowed>,
                 .feature_dec = method_pointer<&wivrn_session::feature_dec>,
                 .destroy = method_pointer<&wivrn_session::destroy>,
         },

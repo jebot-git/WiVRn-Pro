@@ -4,9 +4,15 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
-
+#include <string_view>
 namespace wivrn
 {
+// WayVR consumes joints for its own UI even while applications use Touch emulation.
+inline bool application_hand_tracking_allowed(bool controllers_enabled, const char *application_name)
+{
+	return !controllers_enabled || (application_name && std::string_view(application_name) == "wayvr");
+}
+
 // OpenXR joint order. Kept independent of the transport and runtime for testing.
 class hand_controller_gestures
 {

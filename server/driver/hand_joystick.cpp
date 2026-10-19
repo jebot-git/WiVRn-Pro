@@ -296,4 +296,11 @@ std::optional<bool> hand_joystick::controller(unsigned hand, int64_t now) const
 		return {};
 	return bool(command.suppressed & (1u << hand));
 }
+bool hand_joystick::controllers_enabled() const
+{
+	std::lock_guard lock(mutex);
+	// Capability exposure follows the selected mode even while gesture samples
+	// pause. The controller() input path retains its independent freshness guard.
+	return client >= 0 && command.controllers;
+}
 } // namespace wivrn

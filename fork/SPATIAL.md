@@ -261,6 +261,8 @@ clicks/touches and new grabs are blocked while the group is open. Hiding the
 watch, losing XR focus or canceling interaction clears the modal state.
 
 The existing reset countdowns and floor procedure are shared with custom panels.
+The lower watch canvas is compacted to 760 pixels without moving or shrinking
+the 128-pixel action targets. Reset/walking and floor status share one line.
 Battery/clock/status information and set/display controls return when the fan is
 closed. No headset session is needed to test or preview the layout:
 
@@ -283,9 +285,11 @@ fan spacing. Hand comfort and tracking reliability still need headset validation
 ## Hands as controllers
 
 In the watch, open **Input → Hands as controllers**. This opt-in, session-scoped
-switch presents native hand interaction devices as Touch controllers while keeping
-the existing complete 26-joint skeletal stream. It applies only to WiVRn tracked
-hands; physical and externally owned controllers retain their normal roles.
+switch presents native hand interaction devices as Touch controllers. While it is
+enabled, applications report hand tracking as unsupported and receive no hand
+joints. WayVR retains the complete 26-joint stream for its UI and the emulation
+gestures. It applies only to WiVRn tracked hands; physical and externally owned
+controllers retain their normal roles.
 
 | Gesture | Controller input |
 | --- | --- |
@@ -299,7 +303,9 @@ does not squeeze; a fist suppresses accidental face-button pinches. Pinch distan
 are scaled by palm width; click hysteresis reduces jitter. Tracking gaps over
 150 ms, invalid joints, disable, focus loss and socket disconnect release synthetic
 inputs. A held gesture must return to neutral before it can activate after a mode
-or ownership change. Skeleton delivery remains independent of button emulation.
+or ownership change. Raw skeleton collection remains available internally. Applications that already
+created hand trackers receive inactive results until controller mode is disabled.
+Applications that cache capabilities may need restarting after changing the mode.
 
 Virtual D-pads can be enabled independently or together with this mode. They keep
 the existing axes, touch and click transport. A hand owned by a D-pad suppresses

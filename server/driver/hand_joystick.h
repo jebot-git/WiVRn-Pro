@@ -53,5 +53,6 @@ public:
 	bool walking_enabled(unsigned hand, int64_t now) const;
 	// Present means controller emulation is enabled; value means gestures are blocked.
 	std::optional<bool> controller(unsigned hand, int64_t now) const;
+	bool controllers_enabled() const;
 };
 } // namespace wivrn

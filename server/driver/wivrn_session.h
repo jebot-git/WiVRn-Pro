@@ -144,6 +144,10 @@ public:
 	{
 		return joystick_emulation.controller(hand, os_monotonic_get_ns());
 	}
+	bool hand_tracking_allowed(const char *application_name)
+	{
+		return application_hand_tracking_allowed(joystick_emulation.controllers_enabled(), application_name);
+	}
 	bool walking_enabled(unsigned hand) const { return joystick_emulation.walking_enabled(hand, os_monotonic_get_ns()); }
 	using base_t = xrt_system_devices;
 	~wivrn_session();

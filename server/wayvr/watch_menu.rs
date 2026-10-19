@@ -3,8 +3,17 @@
 use serde::Serialize;
 
 pub const WIDTH: f32 = 1000.0;
-pub const HEIGHT: f32 = 840.0;
+pub const HEIGHT: f32 = 760.0;
 pub const BUTTON: f32 = 128.0;
+
+pub fn status_line(message: &str, floor: &str) -> String {
+    let message = message.split_whitespace().collect::<Vec<_>>().join(" ")
+        .replace("Press either reset button to cancel", "Tap reset to cancel");
+    let floor = floor.split_whitespace().collect::<Vec<_>>().join(" ")
+        .replace("Remembered floor:", "Floor:");
+    if message.is_empty() { floor } else { format!("{message} · {floor}") }
+}
+
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum Group {
@@ -289,6 +298,13 @@ mod tests {
     fn click(menu: &mut Menu, pointer: usize, id: ButtonId) -> Option<Action> {
         menu.press(pointer, Some(id));
         menu.release(pointer, Some(id))
+    }
+    #[test]
+    fn status_messages_share_one_compact_line() {
+        let text = status_line("Full reset in 3…\nStand upright\nPress either reset button to cancel", "Remembered floor: off");
+        assert_eq!(text, "Full reset in 3… Stand upright Tap reset to cancel · Floor: off");
+        assert!(!text.contains('\n'));
+        assert_eq!(status_line("", "Remembered floor: on"), "Floor: on");
     }
     #[test]
     fn fans_fit_and_equal_sized_buttons_never_overlap() {

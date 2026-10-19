@@ -164,11 +164,11 @@ diff --git a/wayvr/src/assets/gui/watch.xml b/wayvr/src/assets/gui/watch.xml
 +++ b/wayvr/src/assets/gui/watch.xml
 @@ -12,6 +12,21 @@
      border="2" border_color="outline" round="8" />
- 
+
    <macro name="button_style" padding="8" border="2" round="8" align_items="center" justify_content="center" />
 +
 +  <template name="TrackingControls">
-+    <div id="fan_controls" position="absolute" width="1000" height="840" interactable="0" />
++    <div id="fan_controls" position="absolute" width="1000" height="760" interactable="0" />
 +  </template>
 +
 +  <template name="FanButton">
@@ -181,7 +181,7 @@ diff --git a/wayvr/src/assets/gui/watch.xml b/wayvr/src/assets/gui/watch.xml
 +      <label text="${title}" size="18" weight="bold" align="center" wrap="1" width="104" />
 +    </Button>
 +  </template>
- 
+
    <template name="Device">
      <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
 @@ -31,6 +46,13 @@
@@ -196,11 +196,11 @@ diff --git a/wayvr/src/assets/gui/watch.xml b/wayvr/src/assets/gui/watch.xml
 +      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
 +    </rectangle>
    </template>
- 
+
    <template name="Screen">
-@@ -105,70 +127,34 @@
+@@ -105,70 +127,32 @@
    </template>
- 
+
    <elements>
 -    <!-- padding="32" is required there (to make room for tooltips) -->
 -    <div
@@ -215,23 +215,21 @@ diff --git a/wayvr/src/assets/gui/watch.xml b/wayvr/src/assets/gui/watch.xml
 -        <RightHand idx="2" />
 -        <Tracker idx="3" />
 +    <!-- Fixed transparent canvas keeps physical button size/position unchanged on expansion. -->
-+    <div width="1000" height="840" interactable="0">
-+      <div id="watch_base" position="absolute" width="1000" height="840" interactable="0">
-+        <rectangle position="absolute" margin_left="56" margin_top="396" width="752" height="340"
++    <div width="1000" height="760" interactable="0">
++      <div id="watch_base" position="absolute" width="1000" height="760" interactable="0">
++        <rectangle position="absolute" margin_left="56" margin_top="396" width="752" height="284"
 +          color="background" border="2" border_color="outline" round="28" interactable="0" />
 +        <div id="devices_root" position="absolute" margin_left="80" margin_top="416"
 +          interactable="0" gap="6" height="92" overflow="hidden" width="700" max_width="700" flex_direction="row" flex_wrap="wrap">
 +          <Hmd idx="0" /><LeftHand idx="1" /><RightHand idx="2" /><Tracker idx="3" />
 +        </div>
 +        <div id="clock_root" position="absolute" margin_left="80" margin_top="508" width="232"><Clock /></div>
-+        <label id="tracking_reset_status" position="absolute" margin_left="80" margin_top="660"
-+          _source="tracking_reset" size="14" width="700" color="on_background" />
-+        <label position="absolute" margin_left="80" margin_top="684" _source="room_floor"
-+          text="Remembered floor: off" size="14" color="on_background" />
-+        <div id="sets_root" position="absolute" margin_left="56" margin_top="752" gap="8">
++        <label id="tracking_reset_status" position="absolute" margin_left="80" margin_top="652"
++          _source="watch_status" size="12" width="700" height="20" wrap="0" overflow="hidden" color="on_background" />
++        <div id="sets_root" position="absolute" margin_left="56" margin_top="688" gap="8">
 +          <Set idx="0" display="1" /><Set idx="1" display="2" />
 +        </div>
-+        <div id="panels_root" position="absolute" margin_left="56" margin_top="752" gap="8" display="none">
++        <div id="panels_root" position="absolute" margin_left="56" margin_top="688" gap="8" display="none">
 +          <Screen idx="0" display="H1" name="HDMI-A-1" /><Screen idx="1" display="D2" name="DP-2" />
 +        </div>
        </div>
@@ -291,7 +289,7 @@ diff --git a/wayvr/src/assets/gui/watch.xml b/wayvr/src/assets/gui/watch.xml
 +        <label id="fan_title" text="Calibration" size="32" weight="bold" align="center" />
 +        <label text="Choose an action · tap the group again to close" size="18" align="center" color="on_background_variant" />
 +      </div>
-+      <div id="interaction_buttons" position="absolute" width="1000" height="840" interactable="0">
++      <div id="interaction_buttons" position="absolute" width="1000" height="760" interactable="0">
 +        <TrackingControls />
        </div>
      </div>
@@ -2615,13 +2613,22 @@ diff --git a/wayvr/src/gui/panel/device_list.rs b/wayvr/src/gui/panel/device_lis
 diff --git a/wayvr/src/gui/panel/label.rs b/wayvr/src/gui/panel/label.rs
 --- a/wayvr/src/gui/panel/label.rs
 +++ b/wayvr/src/gui/panel/label.rs
-@@ -52,6 +52,48 @@
+@@ -52,6 +52,57 @@
      };
- 
+
      let callback: EventCallback<AppState, S> = match source {
 +        "room_floor" => Box::new(|common, data, app, _| {
 +            let text = if app.room.floor_status.is_empty() { "Remembered floor: off" } else { app.room.floor_status };
 +            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(common, Translation::from_raw_text(text));
++            Ok(EventResult::Pass)
++        }),
++        "watch_status" => Box::new(|common, data, app, _| {
++            let message = if app.input_state.walking_enabled && !app.shora_battery.reset_busy() {
++                app.shora_battery.walking_text()
++            } else { app.shora_battery.reset_text() };
++            let floor = if app.room.floor_status.is_empty() { "Remembered floor: off" } else { app.room.floor_status };
++            let text = crate::watch_menu::status_line(&message, floor);
++            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(common, Translation::from_raw_text(&text));
 +            Ok(EventResult::Pass)
 +        }),
 +        "tracking_reset" => Box::new(|common, data, app, _| {
