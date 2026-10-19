@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-import contextlib, errno, fcntl, importlib.util, io, json, os, shutil, struct, subprocess, tempfile, time, unittest
+import contextlib, errno, fcntl, importlib.util, io, json, os, shutil, struct, subprocess, tempfile, time, types, unittest
 from pathlib import Path
 from PIL import Image
 from unittest import mock
@@ -30,7 +30,7 @@ class HandsFrameTests(unittest.TestCase):
             with self.assertRaises(OSError):worker.read_frame(root)
     def test_panels_bookmark_pagination_and_close_keep_saved_files(self):
         with tempfile.TemporaryDirectory() as path, contextlib.redirect_stdout(io.StringIO()):
-            root=Path(path);instance=worker.Worker(root)
+            root=Path(path);instance=worker.Worker(root, root/'config.json')
             instance.add_result(Image.new('RGB',(16,16)),'x'*900,'original')
             instance.command({'op':'next'});self.assertEqual(instance.results[0]['page'],1)
             instance.command({'op':'bookmark'});self.assertTrue(instance.results[0]['bookmark'])
@@ -53,7 +53,7 @@ class HandsFrameTests(unittest.TestCase):
             self.assertIn('webm',result['format']['format_name'])
     def test_stop_does_not_require_a_new_frame(self):
         with tempfile.TemporaryDirectory() as path, contextlib.redirect_stdout(io.StringIO()):
-            instance=worker.Worker(Path(path))
+            instance=worker.Worker(Path(path), Path(path)/'config.json')
             instance.command({'op':'frame','time':time.monotonic(),'active':True,'crop':None,'event':'stop'})
             instance.pool.shutdown();os.close(instance.lock)
 
@@ -66,7 +66,7 @@ class CaptureReliabilityTests(unittest.TestCase):
     @contextlib.contextmanager
     def instance(self):
         with tempfile.TemporaryDirectory() as path, contextlib.redirect_stdout(io.StringIO()):
-            root=Path(path); instance=worker.Worker(root);instance.auto_scan=False
+            root=Path(path); instance=worker.Worker(root, root/'config.json');instance.auto_scan=False
             try: yield root,instance
             finally:
                 instance.recording=None;instance.pool.shutdown();instance.encoders.shutdown();os.close(instance.lock)
@@ -140,10 +140,50 @@ class CaptureReliabilityTests(unittest.TestCase):
                 instance.read_source()
 
 
+class TranslationProviderTests(unittest.TestCase):
+    instance = CaptureReliabilityTests.instance
+    def test_provider_selection_is_private_persistent_and_preserves_ocr_settings(self):
+        with self.instance() as (root,instance):
+            self.assertEqual(instance.translation_provider,'DeepL API Free')
+            instance.config_path.write_text(json.dumps({'translation_provider':'DeepL API Free','ocr_backend':'CUDA'}));instance.config_path.chmod(0o600)
+            instance.command({'op':'translation_provider'})
+            self.assertEqual(instance.translation_provider,'Google Cloud Translation')
+            self.assertEqual(worker.load_provider(instance.config_path),'Google Cloud Translation')
+            self.assertEqual(json.loads(instance.config_path.read_text())['ocr_backend'],'CUDA')
+            self.assertEqual(instance.config_path.stat().st_mode&0o077,0)
+            with contextlib.redirect_stdout(io.StringIO()) as output: instance.emit()
+            self.assertEqual(json.loads(output.getvalue())['translation_provider'],'Google Cloud Translation')
+    def test_missing_package_disables_text_but_preserves_photo_capture(self):
+        with self.instance() as (root,instance),mock.patch.object(worker,'ocr_available',return_value=False):
+            instance.mode='text';instance.capture(Image.new('RGB',(16,16)))
+            self.assertEqual(instance.jobs,[]);self.assertIn('optional Hands Frame OCR package',instance.notice)
+            with self.assertRaisesRegex(ValueError,'optional Hands Frame OCR package'):
+                worker.recognize(Image.new('RGB',(16,16)),'Original')
+            instance.mode='photo';instance.capture(Image.new('RGB',(16,16)))
+            self.assertEqual(len(instance.results),1)
+    def test_provider_cannot_change_during_text_work(self):
+        with self.instance() as (root,instance):
+            instance.jobs=[('text',mock.Mock(),None)]
+            with self.assertRaisesRegex(ValueError,'current text capture'):instance.command({'op':'translation_provider'})
+            self.assertFalse(instance.config_path.exists())
+    def test_optional_backend_pipe_protocol_and_process_reuse(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'python').mkdir();(root/'venv/bin').mkdir(parents=True)
+            (root/'venv/bin/python').symlink_to(worker.sys.executable)
+            (root/'python/backend.py').write_text("import sys,json\nfor line in sys.stdin:\n r=json.loads(line);print(json.dumps({'original':'OCR text','text':r['provider']}),flush=True)\n")
+            worker.stop_ocr()
+            with mock.patch.dict(os.environ,{'WIVRN_HANDS_FRAME_OCR_PACKAGE':str(root)}):
+                try:
+                    for provider in worker.TRANSLATION_PROVIDERS:
+                        self.assertEqual(worker.recognize(Image.new('RGB',(16,16)),'English',provider),('OCR text',provider))
+                    self.assertIsNone(worker._vision_cache['process'].poll())
+                finally:worker.stop_ocr()
+
+
 class RecognitionTests(unittest.TestCase):
     def test_bookmark_shelf_uses_a_bookmarked_image_after_new_capture(self):
         with tempfile.TemporaryDirectory() as path, contextlib.redirect_stdout(io.StringIO()) as output:
-            instance=worker.Worker(Path(path))
+            instance=worker.Worker(Path(path), Path(path)/'config.json')
             instance.add_result(Image.new('RGB',(16,16)), 'first')
             first=instance.results[0]['preview']
             instance.command({'op':'bookmark'})

@@ -101,10 +101,11 @@ fn create(app: &mut AppState, guide: bool) -> anyhow::Result<OverlayWindowConfig
             } else {
                 let status = app.hands_frame.status.lock().unwrap();
                 format!(
-                    "{}\n{}\n{} · {}{}\n{}",
+                    "{}\n{}\n{} · {} · {}{}\n{}",
                     status.source,
                     status.status,
                     status.language,
+                    if status.ocr_available { status.translation_provider.as_str() } else { "Translation unavailable: install OCR package" },
                     status.page,
                     if status.bookmarked {
                         " · bookmarked"
@@ -136,6 +137,8 @@ fn create(app: &mut AppState, guide: bool) -> anyhow::Result<OverlayWindowConfig
             "language",
             "source",
             "mirror_fov",
+            "translation_provider",
+            "ocr_settings",
         ] {
             let button = panel
                 .parser_state

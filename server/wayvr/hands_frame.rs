@@ -257,6 +257,10 @@ pub struct Status {
     #[serde(default)]
     pub language: String,
     #[serde(default)]
+    pub translation_provider: String,
+    #[serde(default)]
+    pub ocr_available: bool,
+    #[serde(default)]
     pub page: String,
     #[serde(default)]
     pub bookmarked: bool,
@@ -423,7 +427,7 @@ fn worker(
         .unwrap_or_else(|| {
             PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".local/share")
         });
-    let local = data.join("spatial-subtitles/venv/bin/python");
+    let local = data.join("wivrn-pro/hands-frame/venv/bin/python");
     let python = std::env::var_os("WIVRN_HANDS_FRAME_PYTHON")
         .map(PathBuf::from)
         .unwrap_or_else(|| {

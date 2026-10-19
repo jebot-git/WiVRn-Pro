@@ -72,7 +72,7 @@ build/native-tests/hand-controller-test
   fork/tests/walking_input_test.cpp server/driver/hand_joystick.cpp -o build/native-tests/walking-input-test
 build/native-tests/walking-input-test
 
-python3 -m unittest discover -s apps/spatial-subtitles/tests -p "test_*.py"
+python3 -m unittest discover -s apps/hands-frame/tests -p "test_*.py"
 
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/xrizer_discovery_test.cpp -o build/native-tests/xrizer-discovery-test
 build/native-tests/xrizer-discovery-test

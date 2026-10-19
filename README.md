@@ -72,6 +72,12 @@ establish hardware encoding performance, capture accuracy or on-device UX.
 WiVRn and the integration are GPL-3.0-or-later; Shora bridge sources retain their
 MIT/Apache-2.0 licenses. Original author and bundled dependency notices remain.
 
-## Optional speech and scene translation
+## Hands Frame text translation
 
-Speech subtitles, voice colours, and scene OCR are now an independent [Spatial Subtitles OpenXR overlay](apps/spatial-subtitles/README.md). Recognition uses local OpenVINO models on the Intel GPU; translation can use local models or DeepL API Free, with English and Serbian output and Japanese, Korean, Chinese, and Thai support. Configure and disable them in the separate application; WiVRn no longer owns their pipeline or GUI.
+Hands Frame photo, silent video and barcode scanning are built into WayVR.
+Text recognition and translation require the separate optional
+[Hands Frame OCR package](apps/hands-frame/README.md). OCR supports OpenVINO,
+CUDA and ROCm GPU backends; recognized text can be translated with Google Cloud
+Translation or DeepL API Free. Images stay on the PC. Without that package,
+Hands Frame shows OCR translation as unavailable. Speech recognition and the
+standalone subtitle application have been removed.

@@ -44,7 +44,7 @@ Open. HTTP/HTTPS are accepted as web links; arbitrary URI handlers are not invok
 from scanned text. Copy uses the local Wayland clipboard. Open also plays a saved
 WebM with the desktop's configured player. The vendor-specific Steam-friend/PIN
 sharing, social uploads, AI-comment accounts and Workshop integrations are not
-reproduced: this implementation keeps capture and recognition local.
+reproduced. Capture and OCR stay local; optional DeepL translation sends only the recognized text.
 
 ## Headset view and passthrough
 
@@ -70,20 +70,43 @@ normal frame contention is retried instead of surfacing `Errno 11` or aborting a
 recording. The new control/frame packets change the wire hash: update the host
 and headset client together.
 
+## Optional OCR and translation package
+
+Text mode requires the separate [Hands Frame OCR package](../apps/hands-frame/README.md).
+The main app does not include its model weights, GPU inference libraries or API
+adapters. Without the package, OCR translation is marked unavailable while photo,
+video and code scanning remain usable.
+
+OCR uses **RapidOCR / PP-OCR**, with **OpenVINO**, **CUDA** or **ROCm** selected in
+**OCR settings**. OpenVINO runs on an Intel GPU; CUDA uses ONNX Runtime on NVIDIA;
+ROCm uses MIGraphX (or the legacy ROCm provider) on AMD. Missing GPU support is an
+error and never silently falls back to the CPU. The detector is PP-OCRv6;
+recognition uses a CJK head plus Korean, Cyrillic and Thai specialist heads.
+
+Choose **Translation provider** to cycle between **DeepL API Free** and **Google
+Cloud Translation**. Both receive recognized text only, over HTTPS; images stay
+on the PC. Configure credentials and OCR models in **OCR settings**. Choose output
+language **Original** for OCR without any translation API call. There is no local
+translation backend or speech recognition.
+
+Settings live in `$XDG_CONFIG_HOME/wivrn-pro/hands-frame.json`; API keys are stored
+separately in private files. Changing the provider applies to subsequent text
+captures; finish a pending capture first. Missing credentials produce an error
+rather than switching providers.
+
 ## Setup
 
 The worker needs Python/Pillow, FFmpeg built with `libvpx-vp9`, and optionally
 `wl-copy` for clipboard actions. Run `fork/setup-hands-frame.sh` to install the
-capture/scanning Python libraries into the existing Spatial Subtitles environment.
+capture/scanning Python libraries into the base Hands Frame environment.
 This installs **no model weights**. The utility automatically selects that local
 environment; `WIVRN_HANDS_FRAME_PYTHON` can select another interpreter.
 
-OCR/translation reuse Spatial Subtitles' installed local models and device
-settings. Install/configure those models using its existing setup workflow first.
-Missing models or dependencies are shown as errors in the utility; there is no
-implicit download, microphone capture or cloud fallback. `zxing-cpp` supports QR,
-Data Matrix and other 2D/barcodes; an existing OpenCV installation can provide a
-QR-only fallback. Target language cycles through the locally supported languages.
+Install/configure the optional OCR package separately for Text mode. Missing
+models or GPU dependencies are shown as errors; there is no implicit model
+download or microphone capture. `zxing-cpp` supports QR, Data Matrix and other
+2D/barcodes; an existing OpenCV installation can provide a QR-only fallback.
+
 
 Still images are bounded to 2048 pixels per side. Unsaved captures live in the
 private runtime directory, and Save copies them into
@@ -111,8 +134,8 @@ launch-layer changes are required for the integrated WiVRn compositor.
 
 The CPU transport is `hands-frame.rgba` in the owner-only `wivrn-pro` runtime
 directory: `WVRHF001`, little-endian width/height, monotonic capture nanoseconds,
-four left-eye FOV angles and tightly packed RGBA. Nonblocking file locks prevent
-torn reads. Readers validate ownership, permissions, dimensions, byte length,
+four left-eye FOV angles and tightly packed RGBA. Immutable atomic snapshots
+prevent torn reads; readers retry transient locks from older writers. Readers validate ownership, permissions, dimensions, byte length,
 finite projection, and a 250 ms age limit. Capture files are removed on normal
 runtime shutdown; stale files cannot be consumed after a crash.
 

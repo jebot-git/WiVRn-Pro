@@ -1,10 +1,48 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Private local capture worker. No microphone, uploads or automatic URL opening."""
-import concurrent.futures, errno, fcntl, io, json, math, os, queue, select, shutil, stat, struct, subprocess, sys, threading, time, uuid
+"""Private capture worker; OCR/Google/DeepL require a separate optional package."""
+import atexit, base64, concurrent.futures, errno, fcntl, io, json, math, os, queue, select, selectors, shutil, stat, struct, subprocess, sys, tempfile, threading, time, uuid
 from pathlib import Path
 from PIL import Image
 HEADER = struct.Struct('<8sIIQ4f')
+TRANSLATION_PROVIDERS = ('DeepL API Free', 'Google Cloud Translation')
+
+
+def provider_config_path():
+    return Path(os.environ.get('XDG_CONFIG_HOME', Path.home()/'.config'))/'wivrn-pro/hands-frame.json'
+
+
+def load_provider(path):
+    try:
+        fd = os.open(path, os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
+    except FileNotFoundError:
+        return TRANSLATION_PROVIDERS[0]
+    with os.fdopen(fd) as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_mode&0o077 or info.st_size>32768:
+            raise ValueError('Hands Frame settings must be a private file (mode 0600)')
+        value = json.load(stream)
+    if not isinstance(value, dict) or value.get('translation_provider') not in TRANSLATION_PROVIDERS:
+        raise ValueError('Unknown Hands Frame translation provider')
+    return value['translation_provider']
+
+
+def save_provider(path, provider):
+    if provider not in TRANSLATION_PROVIDERS:
+        raise ValueError('Unknown Hands Frame translation provider')
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    value={}
+    if path.exists():
+        load_provider(path)
+        with os.fdopen(os.open(path,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)) as stream:value=json.load(stream)
+    value['translation_provider']=provider
+    fd, temporary = tempfile.mkstemp(prefix='.hands-frame-', dir=path.parent)
+    try:
+        with os.fdopen(fd, 'w') as stream:
+            json.dump(value, stream)
+        os.replace(temporary, path)
+    finally:
+        Path(temporary).unlink(missing_ok=True)
 
 
 class FrameUnavailable(Exception):
@@ -128,43 +166,68 @@ def scan(image):
 _vision_lock = threading.Lock()
 _vision_cache = {}
 
-def recognize(image, language):
-    with _vision_lock:
-        return _recognize(image, language)
 
-def _recognize(image, language):
-    # Reuse the installed local-only OCR/translation stack, never fetch models.
-    here = Path(__file__).resolve()
-    paths = [here.parents[2] / 'apps/spatial-subtitles/python', Path.home()/'.local/share/spatial-subtitles', Path('/usr/share/spatial-subtitles')]
-    for path in paths:
-        if (path/'local_recognition.py').is_file(): sys.path.insert(0, str(path)); break
-    import contextlib
-    with contextlib.redirect_stdout(sys.stderr):
-        from settings import Settings
-        from local_recognition import LocalRecognizer
-        import numpy as np
-        settings = Settings.load()
-        key=(settings.local_device, settings.local_ocr_model)
-        if _vision_cache.get('key') != key:
-            _vision_cache.clear()
-            _vision_cache['reader']=LocalRecognizer(device=settings.local_device, ocr_model=settings.local_ocr_model, download=False)
-            _vision_cache['key']=key
-        reader=_vision_cache['reader']
-        result = reader.image(np.asarray(image))
-        original = '\n'.join(region['text'] for region in result['regions'])
-        translated = original
-        if language != 'Original' and original:
-            from translation import Translator
-            target=(settings.local_translation_model,reader.device)
-            if _vision_cache.get('translation_key')!=target:
-                _vision_cache['translator']=Translator(target[0],target[1],reader.root/'cache')
-                _vision_cache['translation_key']=target
-            translated = _vision_cache['translator'].translate(original, language)
-    return original, translated
+def ocr_package():
+    return Path(os.environ.get('WIVRN_HANDS_FRAME_OCR_PACKAGE',Path(__file__).resolve().parent/'hands-frame-ocr'))
+
+
+def ocr_available():
+    package=ocr_package()
+    return (package/'python/backend.py').is_file() and os.access(package/'venv/bin/python',os.X_OK)
+
+
+def stop_ocr():
+    process=_vision_cache.pop('process',None)
+    if process is not None:
+        process.terminate()
+        try:process.wait(timeout=3)
+        except subprocess.TimeoutExpired:process.kill();process.wait()
+        process.stdin.close();process.stdout.close()
+
+
+atexit.register(stop_ocr)
+
+
+def recognize(image, language, provider=TRANSLATION_PROVIDERS[0]):
+    if provider not in TRANSLATION_PROVIDERS:raise ValueError('Choose Google Cloud Translation or DeepL API Free')
+    if not ocr_available():raise ValueError('OCR translation unavailable: install the optional Hands Frame OCR package')
+    with _vision_lock:
+        package=ocr_package()
+        process=_vision_cache.get('process')
+        if process is None or process.poll() is not None or _vision_cache.get('package')!=package:
+            stop_ocr()
+            process=subprocess.Popen([str(package/'venv/bin/python'),'-u',str(package/'python/backend.py')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=sys.stderr)
+            _vision_cache.update(process=process,package=package)
+        encoded=io.BytesIO();image.save(encoded,format='PNG')
+        data=json.dumps({'png':base64.b64encode(encoded.getvalue()).decode('ascii'),'language':language,'provider':provider}).encode()+b'\n'
+        if len(data)>16*1024*1024:raise ValueError('OCR request too large')
+        reply=bytearray();deadline=time.monotonic()+60
+        try:
+            os.set_blocking(process.stdin.fileno(),False);os.set_blocking(process.stdout.fileno(),False)
+            with selectors.DefaultSelector() as events:
+                events.register(process.stdin,selectors.EVENT_WRITE);events.register(process.stdout,selectors.EVENT_READ)
+                while b'\n' not in reply:
+                    remaining=deadline-time.monotonic()
+                    if remaining<=0:raise TimeoutError('OCR timed out')
+                    for key,_ in events.select(remaining):
+                        if key.fileobj is process.stdin:
+                            sent=os.write(process.stdin.fileno(),data[:65536]);data=data[sent:]
+                            if not data:events.unregister(process.stdin)
+                        else:
+                            block=os.read(process.stdout.fileno(),65536)
+                            if not block:raise OSError('OCR package stopped')
+                            reply.extend(block)
+                            if len(reply)>128*1024:raise ValueError('OCR reply too large')
+            result=json.loads(reply)
+            if 'error' in result:raise ValueError(result['error'])
+            if not isinstance(result.get('original'),str) or not isinstance(result.get('text'),str):raise ValueError('Invalid OCR reply')
+            return result['original'],result['text']
+        except (OSError,ValueError):
+            stop_ocr();raise
 
 
 class Worker:
-    def __init__(self, root):
+    def __init__(self, root, config_path=None):
         self.root = root
         private(root, True)
         self.cache = root / 'hands-frame'
@@ -182,6 +245,12 @@ class Worker:
         self.last_scan, self.last_capture = 0., 0.
         self.open_id = 0
         self.notice, self.revision, self.finish_id = 'Both grips to frame; left trigger changes mode; right trigger captures', 0, 0
+        self.config_path = Path(config_path) if config_path is not None else provider_config_path()
+        self.config_stamp = None
+        try: self.translation_provider = load_provider(self.config_path)
+        except (OSError, ValueError) as error:
+            self.translation_provider = TRANSLATION_PROVIDERS[0]
+            self.notice = f'{error}; select a translation provider in Hands Frame settings'
         self.pending_capture = None
         self.source, self.mirror_fov, self.sharing = 'pc', 82, False
         self.closed = False
@@ -196,7 +265,7 @@ class Worker:
         print(json.dumps(dict(status=self.notice, source=('Headset view · mirror FOV '+str(self.mirror_fov)+'°' if self.source=='headset' else 'PC scene (passthrough is added by the headset)'), revision=self.revision, preview=preview,
             bookmark_preview=bookmarked.get('preview',''), text=pages[min(page, len(pages)-1)], page=f'{page+1}/{len(pages)}', count=len(self.results),
             selected=self.current, bookmarked=item.get('bookmark', False), finish_id=self.finish_id,
-            bookmarks=sum(r['bookmark'] for r in self.results), open_id=self.open_id, mode=self.mode, repeat=self.repeat, auto_scan=self.auto_scan, language=self.language)), flush=True)
+            bookmarks=sum(r['bookmark'] for r in self.results), open_id=self.open_id, mode=self.mode, repeat=self.repeat, auto_scan=self.auto_scan, language=self.language, translation_provider=self.translation_provider, ocr_available=ocr_available())), flush=True)
     def add_result(self, image, text='', original='', path=None):
         key = uuid.uuid4().hex
         preview = self.cache/(key+'.png')
@@ -218,10 +287,20 @@ class Worker:
             if value.parent == self.cache: value.unlink(missing_ok=True)
         self.current = min(index, len(self.results)-1)
         self.revision += 1
+    def refresh_provider(self):
+        try:
+            info=self.config_path.lstat();stamp=(info.st_ino,info.st_mtime_ns)
+        except FileNotFoundError:stamp=()
+        if stamp != self.config_stamp:
+            try:self.translation_provider=load_provider(self.config_path)
+            except (OSError,ValueError) as error:self.notice=str(error)
+            self.config_stamp=stamp
     def capture(self, image):
+        self.refresh_provider()
         if self.mode == 'photo': self.add_result(image)
+        elif self.mode == 'text' and not ocr_available(): self.notice='OCR translation unavailable: install the optional Hands Frame OCR package'
         elif len(self.jobs) < 2:
-            if self.mode == 'text': self.jobs.append(('text', self.pool.submit(recognize, image.copy(), self.language), image.copy()))
+            if self.mode == 'text': self.jobs.append(('text', self.pool.submit(recognize, image.copy(), self.language, self.translation_provider), image.copy()))
             else: self.jobs.append(('scan', self.pool.submit(scan, image.copy()), image.copy()))
             self.notice = 'Recognizing locally…'
         else: self.notice = 'Recognition is busy; retry shortly'
@@ -272,6 +351,17 @@ class Worker:
             values=[70,76,82,88,94]; self.mirror_fov=values[(values.index(self.mirror_fov)+1)%len(values)]
             self.notice=f'Mirror FOV {self.mirror_fov}° · adjust until the captured crop matches the guide'
 
+        elif kind == 'translation_provider':
+            self.refresh_provider()
+            if any(job[0]=='text' for job in self.jobs) or self.pending_capture:
+                raise ValueError('Wait for the current text capture before changing translation provider')
+            provider=TRANSLATION_PROVIDERS[(TRANSLATION_PROVIDERS.index(self.translation_provider)+1)%len(TRANSLATION_PROVIDERS)]
+            save_provider(self.config_path, provider)
+            self.translation_provider=provider
+            self.notice=f'{provider}: recognized text is sent for translation; images stay local. Configure the key in Hands Frame settings.'
+        elif kind == 'ocr_settings':
+            if not ocr_available():raise ValueError('Install the optional Hands Frame OCR package to configure OCR and translation')
+            subprocess.Popen(['/usr/bin/python3',str(ocr_package()/'python/gui.py')],stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=sys.stderr)
         elif kind == 'auto_scan': self.auto_scan = not self.auto_scan
         elif kind == 'language':
             languages = ['English','Japanese','Korean','Chinese','Thai','Serbian','Russian','Original']
@@ -344,6 +434,7 @@ class Worker:
         self.last_stamp = stamp
         return crop_frame(image,fov,self.crop)
     def tick(self):
+        self.refresh_provider()
         now = time.monotonic()
         lease=self.root/'hands-frame-headset.lease'
         if self.source=='headset' and self.sharing and not self.closed:
@@ -431,6 +522,7 @@ def main():
         worker.stop_recording()
         worker.encoders.shutdown(wait=True, cancel_futures=True)
         worker.pool.shutdown(wait=True, cancel_futures=True)
+        stop_ocr()
         for item in list(worker.results):
             for path in [worker.cache/item['preview'],Path(item['path'])]:
                 if path.parent==worker.cache: path.unlink(missing_ok=True)

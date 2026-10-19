@@ -120,7 +120,7 @@ fn hands_frame_native_panels_parse_and_have_all_controls() {
         layout.update(&mut LayoutUpdateParams{size:Vec2::splat(1200.),timestep_alpha:1.}).unwrap();
         assert!(layout.content_size.x>0. && layout.content_size.y>0.);
         if name=="gui/hands-frame.xml" {
-            for action in ["save","copy","bookmark","bookmarks","previous","next","original","open","close","auto_scan","language"] {
+            for action in ["save","copy","bookmark","bookmarks","previous","next","original","open","close","auto_scan","language","source","mirror_fov","translation_provider","ocr_settings"] {
                 parser.fetch_component_as::<wgui::components::button::ComponentButton>(action).unwrap();
             }
         }

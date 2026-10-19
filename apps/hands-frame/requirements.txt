@@ -1,0 +1,5 @@
+# Capture, local GPU OCR and text-only HTTPS translation. No speech models/runtime.
+pillow==12.3.0
+numpy==2.4.6
+zxing-cpp==2.3.0
+rapidocr==3.9.2

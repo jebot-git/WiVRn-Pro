@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://ba7ko0popnkbh"]
-
-[ext_resource type="Script" uid="uid://capi2bnvgt1em" path="res://translation_lab.gd" id="1_jvhwn"]
-
-[node name="TranslationLab" type="Node3D" unique_id=1618858846]
-script = ExtResource("1_jvhwn")
