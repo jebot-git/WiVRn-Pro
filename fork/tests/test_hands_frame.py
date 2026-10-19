@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-import contextlib, importlib.util, io, json, os, shutil, struct, subprocess, tempfile, time, unittest
+import contextlib, errno, fcntl, importlib.util, io, json, os, shutil, struct, subprocess, tempfile, time, unittest
 from pathlib import Path
 from PIL import Image
+from unittest import mock
 SOURCE=Path(__file__).resolve().parents[2]/'server/wayvr/hands-frame-worker.py'
 spec=importlib.util.spec_from_file_location('hands_frame_worker',SOURCE)
 worker=importlib.util.module_from_spec(spec);spec.loader.exec_module(worker)
@@ -22,9 +23,9 @@ class HandsFrameTests(unittest.TestCase):
             write(time.monotonic_ns())
             self.assertEqual(worker.read_frame(root)[0].size,(16,16))
             write(time.monotonic_ns()-300_000_000)
-            with self.assertRaises(ValueError):worker.read_frame(root)
+            with self.assertRaises(worker.FrameUnavailable):worker.read_frame(root)
             write(time.monotonic_ns());frame.write_bytes(frame.read_bytes()[:-1])
-            with self.assertRaises(ValueError):worker.read_frame(root)
+            with self.assertRaises(worker.FrameUnavailable):worker.read_frame(root)
             frame.unlink();frame.symlink_to(root/'outside')
             with self.assertRaises(OSError):worker.read_frame(root)
     def test_panels_bookmark_pagination_and_close_keep_saved_files(self):
@@ -55,6 +56,89 @@ class HandsFrameTests(unittest.TestCase):
             instance=worker.Worker(Path(path))
             instance.command({'op':'frame','time':time.monotonic(),'active':True,'crop':None,'event':'stop'})
             instance.pool.shutdown();os.close(instance.lock)
+
+class CaptureReliabilityTests(unittest.TestCase):
+    def frame(self, root, name='hands-frame.rgba'):
+        path=root/name
+        path.write_bytes(worker.HEADER.pack(b'WVRHF001',16,16,time.monotonic_ns(),-.7,.7,.7,-.7)+bytes([40,80,120,255])*256)
+        path.chmod(0o600)
+        return path
+    @contextlib.contextmanager
+    def instance(self):
+        with tempfile.TemporaryDirectory() as path, contextlib.redirect_stdout(io.StringIO()):
+            root=Path(path); instance=worker.Worker(root);instance.auto_scan=False
+            try: yield root,instance
+            finally:
+                instance.recording=None;instance.pool.shutdown();instance.encoders.shutdown();os.close(instance.lock)
+    def test_busy_frame_retries_photo_without_errno(self):
+        with self.instance() as (root,instance):
+            path=self.frame(root)
+            with path.open('rb') as stream:
+                fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+                instance.command({'op':'frame','enabled':True,'active':True,'time':time.monotonic(),'crop':[-.7,-.7,.7,.7],'event':'capture'})
+                self.assertIsNotNone(instance.pending_capture)
+                instance.tick()
+                self.assertNotIn('Errno',instance.notice)
+                self.assertEqual(len(instance.results),0)
+            self.frame(root);instance.tick()
+            self.assertIsNone(instance.pending_capture)
+            self.assertEqual(len(instance.results),1)
+    def test_busy_frame_does_not_abort_recording(self):
+        with self.instance() as (root,instance):
+            instance.active=True;instance.sample=time.monotonic();instance.crop=[-.7,-.7,.7,.7]
+            recording=mock.Mock(started=time.monotonic());instance.recording=recording
+            with mock.patch.object(instance,'image',side_effect=BlockingIOError(errno.EAGAIN,'busy')):
+                instance.tick()
+            self.assertIs(instance.recording,recording)
+            self.assertEqual(instance.finish_id,0)
+            recording.finish.assert_not_called()
+    def test_recording_start_waits_for_busy_first_frame(self):
+        with self.instance() as (root,instance):
+            path=self.frame(root)
+            with path.open('rb') as stream, mock.patch.object(worker,'Recording') as recording:
+                recording.return_value.started=time.monotonic()
+                fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+                instance.command({'op':'frame','active':True,'time':time.monotonic(),'crop':[-.7,-.7,.7,.7],'event':'record'})
+                self.assertIsNotNone(instance.pending_capture)
+                fcntl.flock(stream,fcntl.LOCK_UN)
+                instance.tick()
+                recording.assert_called_once()
+                self.assertIs(instance.recording,recording.return_value)
+    def test_stop_cancels_a_recording_waiting_for_its_first_frame(self):
+        with self.instance() as (root,instance):
+            instance.command({'op':'frame','active':True,'time':time.monotonic(),'crop':[-.7,-.7,.7,.7],'event':'record'})
+            self.assertIsNotNone(instance.pending_capture)
+            instance.command({'op':'frame','active':True,'time':time.monotonic(),'crop':[-.7,-.7,.7,.7],'event':'stop'})
+            self.assertIsNone(instance.pending_capture)
+            self.frame(root)
+            with mock.patch.object(worker,'Recording') as recording:
+                instance.tick()
+                recording.assert_not_called()
+    def test_headset_source_reads_jpeg_and_stops_lease_on_source_change(self):
+        with self.instance() as (root,instance):
+            import io
+            encoded=io.BytesIO();Image.new('RGB',(1024,1024),(40,80,120)).save(encoded,format='JPEG')
+            path=root/'hands-frame-headset.jpg'
+            path.write_bytes(worker.HEADER.pack(b'WVRHFJ01',1024,1024,time.monotonic_ns(),-.7,.7,.7,-.7)+encoded.getvalue());path.chmod(0o600)
+            instance.command({'op':'source'})
+            instance.command({'op':'frame','enabled':True,'active':False,'time':time.monotonic()})
+            instance.tick()
+            lease=root/'hands-frame-headset.lease'
+            self.assertEqual(lease.stat().st_mode&0o077,0)
+            self.assertEqual(len(lease.read_bytes()),9)
+            self.assertEqual(lease.read_bytes()[-1],0)
+            image,fov,_=instance.read_source()
+            self.assertEqual(image.size,(1024,1024))
+            self.assertAlmostEqual(fov[1],worker.math.radians(41))
+            instance.command({'op':'source'});instance.tick()
+            self.assertFalse(lease.exists())
+    def test_permission_status_is_shown_instead_of_missing_file_errno(self):
+        with self.instance() as (root,instance):
+            path=root/'hands-frame-headset.status';path.write_text('Accept screen-sharing permission in the headset');path.chmod(0o600)
+            instance.source='headset'
+            with self.assertRaisesRegex(worker.FrameUnavailable,'Accept screen-sharing'):
+                instance.read_source()
+
 
 class RecognitionTests(unittest.TestCase):
     def test_bookmark_shelf_uses_a_bookmarked_image_after_new_capture(self):

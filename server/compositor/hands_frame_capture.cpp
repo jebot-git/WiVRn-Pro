@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "hands_frame_capture.h"
+#include "hands_frame_transport.h"
 #include "os/os_time.h"
 #include <array>
 #include <bit>
@@ -29,19 +30,6 @@ bool lease(const std::filesystem::path & path)
 	bool valid = !fstat(fd, &s) && S_ISREG(s.st_mode) && s.st_uid == getuid() && !(s.st_mode & 077) && s.st_size == 8 && read(fd, &stamp, 8) == 8 && stamp <= uint64_t(now) && uint64_t(now) - stamp < 1'000'000'000;
 	close(fd);
 	return valid;
-}
-bool write_all(int fd, const void * data, size_t size)
-{
-	auto p = static_cast<const char *>(data);
-	while (size)
-	{
-		auto n = write(fd, p, size);
-		if (n <= 0)
-			return false;
-		p += n;
-		size -= size_t(n);
-	}
-	return true;
 }
 } // namespace
 hands_frame_capture::hands_frame_capture()
@@ -162,33 +150,20 @@ void hands_frame_capture::run()
 		requested = !directory.empty() && private_directory(directory) && lease(directory / "hands-frame.lease");
 		if (!ready)
 			continue;
-		int fd = -1;
-		if (private_directory(directory))
-			fd = open((directory / "hands-frame.rgba").c_str(), O_CREAT | O_RDWR | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK, 0600);
-		if (fd >= 0)
-		{
-			struct stat info{};
-			if (!fstat(fd, &info) && S_ISREG(info.st_mode) && info.st_uid == getuid() && !(info.st_mode & 077) && !flock(fd, LOCK_EX | LOCK_NB))
-			{
-				std::array<uint8_t, 40> header{};
-				std::memcpy(header.data(), "WVRHF001", 8);
-				auto put = [&](unsigned at, uint64_t value, unsigned count) {for(unsigned i=0;i<count;i++)header[at+i]=uint8_t(value>>(i*8)); };
-				put(8, width, 4);
-				put(12, height, 4);
-				put(16, timestamp, 8);
-				for (auto [at, value]: {std::pair{24u, fov.angle_left}, {28u, fov.angle_right}, {32u, fov.angle_up}, {36u, fov.angle_down}})
-					put(at, std::bit_cast<uint32_t>(value), 4);
-				auto size = size_t(width) * height * 4;
-				if (!ftruncate(fd, off_t(header.size() + size)))
-				{
-					bool good = lseek(fd, off_t(header.size()), SEEK_SET) >= 0 && write_all(fd, buffer.map(), size) && lseek(fd, 0, SEEK_SET) >= 0 && write_all(fd, header.data(), header.size());
-					if (!good)
-						ftruncate(fd, 0);
-				}
-				flock(fd, LOCK_UN);
-			}
-			close(fd);
-		}
+        if (private_directory(directory))
+        {
+			std::array<uint8_t, 40> header{};
+			std::memcpy(header.data(), "WVRHF001", 8);
+			auto put = [&](unsigned at, uint64_t value, unsigned count) {for(unsigned i=0;i<count;i++)header[at+i]=uint8_t(value>>(i*8)); };
+			put(8, width, 4);
+			put(12, height, 4);
+			put(16, timestamp, 8);
+			for (auto [at, value]: {std::pair{24u, fov.angle_left}, {28u, fov.angle_right}, {32u, fov.angle_up}, {36u, fov.angle_down}})
+				put(at, std::bit_cast<uint32_t>(value), 4);
+            publish_hands_frame(directory / "hands-frame.rgba",
+                std::as_bytes(std::span(header)),
+                std::span(static_cast<const std::byte *>(buffer.map()), size_t(width) * height * 4));
+        }
 		busy = false;
 	}
 }

@@ -5,6 +5,7 @@
   <label id="status" text="Both grips close together, then spread hands. Hand tracking: curl the three lower fingers; index pinch confirms." size="18" height="190" />
   <div gap="8"><Button id="save" text="Save" width="110" height="64"/><Button id="copy" text="Copy" width="110" height="64"/><Button id="bookmark" text="Bookmark" width="140" height="64"/><Button id="bookmarks" text="Bookmarks" width="150" height="64"/><Button id="open" text="Open" width="110" height="64"/><Button id="close" text="Close panel" width="160" height="64"/></div>
   <div gap="8"><Button id="previous" text="Previous" width="130" height="64"/><Button id="next" text="Next" width="110" height="64"/><Button id="original" text="Original / translated" width="210" height="64"/><Button id="auto_scan" text="Auto scan" width="150" height="64"/><Button id="language" text="Language" width="150" height="64"/></div>
+  <div gap="8"><Button id="source" text="Capture source" width="210" height="64"/><Button id="mirror_fov" text="Align mirror FOV" width="230" height="64"/></div>
   <label text="Left trigger: mode · hold: repeat · Right trigger: photo / hold 1s for silent VP9 WebM · Both: 3s timer" size="16"/>
  </rectangle>
 </elements></layout>

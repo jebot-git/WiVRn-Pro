@@ -241,6 +241,8 @@ impl Model {
 #[derive(Clone, Default, Deserialize)]
 pub struct Status {
     #[serde(default)]
+    pub source: String,
+    #[serde(default)]
     pub status: String,
     #[serde(default)]
     pub text: String,
@@ -369,7 +371,7 @@ impl Feed {
                         || self
                             .tail
                             .is_some_and(|t| t.elapsed() < Duration::from_millis(500)));
-                let _=tx.try_send(serde_json::json!({"op":"frame","time":time,"active":active,"crop":self.model.rect.map(|r|r.bounds),"mode":(["photo","text","scan"][self.model.mode]),"repeat":self.model.repeat,"event":output.event}));
+                let _=tx.try_send(serde_json::json!({"op":"frame","time":time,"enabled":self.enabled,"active":active,"crop":self.model.rect.map(|r|r.bounds),"mode":(["photo","text","scan"][self.model.mode]),"repeat":self.model.repeat,"event":output.event}));
             }
         }
         output.owned

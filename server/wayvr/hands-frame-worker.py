@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Private local capture worker. No microphone, uploads or automatic URL opening."""
-import concurrent.futures, fcntl, json, math, os, queue, select, shutil, stat, struct, subprocess, sys, threading, time, uuid
+import concurrent.futures, errno, fcntl, io, json, math, os, queue, select, shutil, stat, struct, subprocess, sys, threading, time, uuid
 from pathlib import Path
 from PIL import Image
 HEADER = struct.Struct('<8sIIQ4f')
+
+
+class FrameUnavailable(Exception):
+    """A missing/busy/stale frame is retried without aborting a capture."""
+
+
+def frame_unavailable(error):
+    return isinstance(error, FrameUnavailable) or isinstance(error, OSError) and error.errno in (errno.EAGAIN, errno.EINTR, errno.ENOENT)
+
 
 
 def private(path, directory=False):
@@ -27,7 +36,7 @@ def read_frame(root):
         if magic != b'WVRHF001' or not 0 < width <= 8192 or not 0 < height <= 8192 or width * height * 4 > 128 * 1024**2:
             raise ValueError('Invalid frame size')
         if info.st_size != HEADER.size + width * height * 4 or not 0 <= time.monotonic_ns() - stamp < 250_000_000:
-            raise ValueError('Stale or incomplete frame')
+            raise FrameUnavailable('Waiting for a fresh frame…')
         if not all(math.isfinite(x) and abs(x) < 1.57 for x in fov) or not fov[0] < fov[1] or not fov[3] < fov[2]:
             raise ValueError('Invalid projection')
         pixels = stream.read(width * height * 4)
@@ -174,6 +183,7 @@ class Worker:
         self.open_id = 0
         self.notice, self.revision, self.finish_id = 'Both grips to frame; left trigger changes mode; right trigger captures', 0, 0
         self.pending_capture = None
+        self.source, self.mirror_fov, self.sharing = 'pc', 82, False
         self.closed = False
     def emit(self):
         item = self.results[self.current] if 0 <= self.current < len(self.results) else {}
@@ -183,7 +193,7 @@ class Worker:
         preview = item.get('preview', '')
         bookmarked = next((r for r in reversed(self.results) if r['bookmark']), {})
         if item.get('bookmark'): bookmarked=item
-        print(json.dumps(dict(status=self.notice, revision=self.revision, preview=preview,
+        print(json.dumps(dict(status=self.notice, source=('Headset view · mirror FOV '+str(self.mirror_fov)+'°' if self.source=='headset' else 'PC scene (passthrough is added by the headset)'), revision=self.revision, preview=preview,
             bookmark_preview=bookmarked.get('preview',''), text=pages[min(page, len(pages)-1)], page=f'{page+1}/{len(pages)}', count=len(self.results),
             selected=self.current, bookmarked=item.get('bookmark', False), finish_id=self.finish_id,
             bookmarks=sum(r['bookmark'] for r in self.results), open_id=self.open_id, mode=self.mode, repeat=self.repeat, auto_scan=self.auto_scan, language=self.language)), flush=True)
@@ -220,10 +230,20 @@ class Worker:
             recording, self.recording = self.recording, None
             self.jobs.append(('video', self.encoders.submit(recording.finish), self.record_preview))
             self.notice = 'Finishing silent VP9 WebM…'
+    def take(self, image, event):
+        if event == 'record':
+            if self.mode != 'photo' or self.recording is not None: return
+            if any(job[0]=='video' for job in self.jobs): raise ValueError('Previous recording is still finishing')
+            self.add_result(image); self.record_preview = self.results[self.current]['preview']
+            self.recording = Recording(self.cache/(uuid.uuid4().hex+'.webm'), image.copy())
+            self.recording.add(image)
+        elif event == 'capture': self.capture(image)
+        elif event == 'stop': self.stop_recording()
     def command(self, value):
         kind = value.get('op')
         if kind == 'frame':
             self.sample = value.get('time', 0.)
+            self.sharing = bool(value.get('enabled', False))
             self.active = bool(value.get('active')) and 0 <= time.monotonic()-self.sample < .25
             self.crop = value.get('crop')
             self.mode = value.get('mode', 'photo')
@@ -231,22 +251,27 @@ class Worker:
             self.repeat = bool(value.get('repeat'))
             if not self.active: self.stop_recording()
             if self.active and value.get('event'):
-                if value['event'] == 'stop': self.stop_recording(); return
+                if value['event'] == 'stop': self.pending_capture=None; self.stop_recording(); return
                 try:
                     image = self.image()
-                except (OSError,ValueError):
-                    if value['event']=='capture': self.pending_capture=(time.monotonic()+.6,list(self.crop),self.mode);self.notice='Waiting for a fresh VR frame…';return
+                except (OSError, ValueError, FrameUnavailable) as error:
+                    if frame_unavailable(error):
+                        self.pending_capture=(time.monotonic()+2.,list(self.crop),self.mode,value['event'])
+                        self.notice='Waiting for a fresh frame…'; return
                     raise
-                if value['event'] == 'record':
-                    if self.mode != 'photo' or self.recording is not None: return
-                    if any(job[0]=='video' for job in self.jobs): raise ValueError('Previous recording is still finishing')
-                    self.add_result(image); self.record_preview = self.results[self.current]['preview']
-                    self.recording = Recording(self.cache/(uuid.uuid4().hex+'.webm'), image.copy())
-                    self.recording.add(image)
-                elif value['event'] == 'capture': self.capture(image)
-                elif value['event'] == 'stop': self.stop_recording()
-        elif kind == 'cancel': self.active = False; self.pending_capture=None; self.stop_recording()
-        elif kind == 'quit': self.closed = True; self.active = False; self.stop_recording()
+                self.take(image, value['event'])
+        elif kind == 'cancel': self.active = False; self.sharing=False; self.pending_capture=None; self.stop_recording()
+        elif kind == 'quit': self.closed = True; self.active = False; self.sharing=False; self.stop_recording()
+        elif kind == 'source':
+            if self.recording: raise ValueError('Finish recording before changing the capture source')
+            self.source = 'headset' if self.source == 'pc' else 'pc'
+            self.pending_capture=None; self.last_stamp=0
+            self.notice = ('Headset view: accept screen sharing in the headset; includes passthrough and virtual overlays' if self.source=='headset' else 'PC scene: headset passthrough is not present in this source')
+        elif kind == 'mirror_fov':
+            if self.source != 'headset': raise ValueError('Mirror FOV applies to the Headset view source')
+            values=[70,76,82,88,94]; self.mirror_fov=values[(values.index(self.mirror_fov)+1)%len(values)]
+            self.notice=f'Mirror FOV {self.mirror_fov}° · adjust until the captured crop matches the guide'
+
         elif kind == 'auto_scan': self.auto_scan = not self.auto_scan
         elif kind == 'language':
             languages = ['English','Japanese','Korean','Chinese','Thai','Serbian','Russian','Original']
@@ -288,24 +313,65 @@ class Worker:
                 subprocess.Popen(['xdg-open',target],stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             self.revision += 1
         self.emit()
+    def read_source(self):
+        if self.source == 'pc': return read_frame(self.root)
+        path = self.root/'hands-frame-headset.jpg'
+        try:
+            with os.fdopen(os.open(path,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW),'rb') as stream:
+                info=os.fstat(stream.fileno())
+                if not stat.S_ISREG(info.st_mode) or info.st_uid!=os.getuid() or info.st_mode&0o077 or not HEADER.size<info.st_size<=HEADER.size+256*1024: raise ValueError('Unsafe headset frame')
+                magic,width,height,stamp,*_=HEADER.unpack(stream.read(HEADER.size))
+                if magic!=b'WVRHFJ01' or width!=1024 or height!=1024: raise ValueError('Invalid headset frame')
+                if not 0<=time.monotonic_ns()-stamp<250_000_000: raise FrameUnavailable('Waiting for a fresh headset view…')
+                encoded=stream.read(256*1024+1)
+            with Image.open(io.BytesIO(encoded)) as image:
+                if image.size!=(1024,1024) or image.format!='JPEG': raise ValueError('Invalid headset JPEG')
+                image=image.convert('RGB')
+            half=math.radians(self.mirror_fov/2)
+            return image,[-half,half,half,-half],stamp
+        except FileNotFoundError:
+            notice='Waiting for headset screen-sharing permission and a fresh view…'
+            status_path=self.root/'hands-frame-headset.status'
+            try:
+                with os.fdopen(os.open(status_path,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW),'rb') as stream:
+                    info=os.fstat(stream.fileno())
+                    if stat.S_ISREG(info.st_mode) and info.st_uid==os.getuid() and not info.st_mode&0o077 and info.st_size<=160:
+                        notice=stream.read(160).decode(errors='replace') or notice
+            except FileNotFoundError: pass
+            raise FrameUnavailable(notice) from None
     def image(self):
-        image, fov, stamp = read_frame(self.root)
+        image, fov, stamp = self.read_source()
         self.last_stamp = stamp
         return crop_frame(image,fov,self.crop)
     def tick(self):
         now = time.monotonic()
+        lease=self.root/'hands-frame-headset.lease'
+        if self.source=='headset' and self.sharing and not self.closed:
+            temporary=self.root/('.headset-lease-'+uuid.uuid4().hex)
+            try:
+                with os.fdopen(os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC,0o600),'wb') as stream:
+                    stream.write(struct.pack('<QB',time.monotonic_ns(),int(self.active and 0<=now-self.sample<.25)))
+                os.replace(temporary,lease)
+            finally: temporary.unlink(missing_ok=True)
+        else: lease.unlink(missing_ok=True)
+        if self.recording and now-self.recording.started>=10:
+            self.stop_recording(); self.finish_id+=1; self.active=False
         if not 0 <= now-self.sample < .25:
             self.active = False; self.stop_recording()
         if self.pending_capture:
-            deadline,bounds,mode=self.pending_capture
+            deadline,bounds,mode,event=self.pending_capture
             if now>deadline or not self.active:
-                self.pending_capture=None; self.notice='No fresh VR frame; retry while the game is visible'
+                self.pending_capture=None; self.notice='No fresh frame; check the capture source and retry'
             else:
                 try:
-                    image,fov,_=read_frame(self.root)
-                    old_mode=self.mode;self.mode=mode;self.capture(crop_frame(image,fov,bounds));self.mode=old_mode
+                    image,fov,_=self.read_source()
+                    old_mode=self.mode;self.mode=mode
+                    try: self.take(crop_frame(image,fov,bounds),event)
+                    finally: self.mode=old_mode
                     self.pending_capture=None
-                except (OSError,ValueError): pass
+                except (OSError, ValueError, FrameUnavailable) as error:
+                    if not frame_unavailable(error):
+                        self.pending_capture=None; self.notice=str(error)
         if self.active:
             try:
                 image = self.image()
@@ -315,9 +381,12 @@ class Worker:
                     if now-self.recording.started >= 10: self.stop_recording(); self.finish_id += 1; self.active = False
                 elif self.auto_scan and now-self.last_scan >= .5 and len(self.jobs)<2:
                     self.last_scan = now; self.jobs.append(('auto',self.pool.submit(scan,image.copy()),image.copy()))
-            except (OSError, ValueError) as error:
-                self.notice = str(error)
-                if self.recording: self.stop_recording(); self.finish_id += 1
+            except (OSError, ValueError, FrameUnavailable) as error:
+                if frame_unavailable(error):
+                    if not self.recording: self.notice = str(error) if isinstance(error,FrameUnavailable) else 'Waiting for a fresh frame…'
+                else:
+                    self.notice = str(error)
+                    if self.recording: self.stop_recording(); self.finish_id += 1
         for kind, future, image in self.jobs[:]:
             if not future.done(): continue
             self.jobs.remove((kind,future,image))
@@ -358,6 +427,7 @@ def main():
             if time.monotonic()>=deadline:
                 worker.tick(); deadline=time.monotonic()+1/15
     finally:
+        (root/'hands-frame-headset.lease').unlink(missing_ok=True)
         worker.stop_recording()
         worker.encoders.shutdown(wait=True, cancel_futures=True)
         worker.pool.shutdown(wait=True, cancel_futures=True)

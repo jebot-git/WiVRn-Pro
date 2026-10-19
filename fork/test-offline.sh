@@ -83,3 +83,7 @@ python3 fork/check-motoc-source.py
 "$cxx" -std=c++23 -Wall -Wextra -Werror -UNDEBUG -Iserver \
   fork/tests/pyrowave_foveation_test.cpp -o build/native-tests/pyrowave-foveation-test
 build/native-tests/pyrowave-foveation-test
+
+"$cxx" -std=c++23 -O1 -Wall -Wextra -Werror -pthread -Iserver -Icommon -Iexternal \
+  fork/tests/hands_frame_transport_test.cpp common/crypto.cpp common/smp.cpp -lcrypto -o build/native-tests/hands-frame-transport-test
+build/native-tests/hands-frame-transport-test

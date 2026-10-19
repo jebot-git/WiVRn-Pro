@@ -3,8 +3,11 @@
 Hands Frame is a native WayVR utility inspired by the interaction workflow in
 [VRHandsFrame's manual](https://vrhandsframe.eurekaworks.jp/docs/manual/).
 It uses WiVRn's local compositor and existing WayVR pointer/overlay system.
-It captures the PC-composited scene; Quest passthrough and headset-private overlays
-are outside this capture source.
+The capture panel has two sources: **PC scene**, which captures the PC compositor,
+and **Headset view**, which shares the headset display with the paired PC. Headset
+view can include passthrough and virtual overlays; it is display capture, not raw
+camera access. It requires a matching updated Android client and the headset's
+screen-sharing consent. PC scene remains available without screen-sharing permission.
 It does not embed VRHandsFrame or connect to Eureka Works' account services.
 
 ## Controls
@@ -42,6 +45,30 @@ from scanned text. Copy uses the local Wayland clipboard. Open also plays a save
 WebM with the desktop's configured player. The vendor-specific Steam-friend/PIN
 sharing, social uploads, AI-comment accounts and Workshop integrations are not
 reproduced: this implementation keeps capture and recognition local.
+
+## Headset view and passthrough
+
+Choose **Capture source** on the result panel to switch between PC scene and
+Headset view. Accept the system screen-sharing prompt inside the headset, then
+frame and capture normally. No audio capture is requested. A foreground sharing
+notification remains visible. Switching back to PC scene, disabling Hands Frame,
+disconnecting the client, or revoking system consent stops display sharing.
+A missing renewal also stops the client within two seconds.
+
+Display capture includes virtual content that obscures passthrough, including
+headset UI; it cannot recover the environment hidden behind those overlays. Meta
+controls mirror scaling, which is not the OpenXR eye projection. **Align mirror
+FOV** cycles the assumed mirror field of view (default 82°) so the capture crop can
+be aligned with the framing guide on the specific headset/OS. Device testing is
+required for crop alignment and passthrough availability.
+
+Headset frames are bounded 1024×1024 JPEGs, at most ten per second and 256 KiB,
+sent through the existing authenticated encrypted WiVRn control connection only
+while framing. The host accepts frames for the current request only and rejects
+stale/oversized payloads. Capture workers publish immutable private snapshots;
+normal frame contention is retried instead of surfacing `Errno 11` or aborting a
+recording. The new control/frame packets change the wire hash: update the host
+and headset client together.
 
 ## Setup
 

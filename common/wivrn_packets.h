@@ -706,6 +706,15 @@ struct get_application_list
 	std::string variant;
 };
 
+// User-consented headset display sharing; one bounded JPEG snapshot per packet.
+struct headset_capture
+{
+    uint64_t request_id;
+    uint32_t age_ms;
+    std::string status;
+    std::vector<std::byte> jpeg;
+};
+
 struct start_app
 {
 	std::string app_id;
@@ -756,7 +765,8 @@ using packets = std::variant<
         set_active_application,
         hid::input,
         stop_application,
-        spatial::snapshot>;
+        spatial::snapshot,
+        headset_capture>;
 } // namespace from_headset
 
 namespace to_headset
@@ -922,6 +932,13 @@ struct tracking_control
 	XrDuration motions_to_photons;
 };
 
+struct headset_capture_control
+{
+    uint64_t request_id;
+    bool enabled;
+    bool frames;
+};
+
 struct feature_control
 {
 	enum feature
@@ -993,7 +1010,8 @@ using packets = std::variant<
         application_list,
         application_icon,
         running_applications,
-        legacy_subtitles::packet>;
+        legacy_subtitles::packet,
+        headset_capture_control>;
 } // namespace to_headset
 } // namespace wivrn
 

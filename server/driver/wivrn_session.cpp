@@ -1113,6 +1113,7 @@ void wivrn_session::run_net(std::stop_token stop)
 		try
 		{
 			connection->poll(*this, 20);
+            if (auto capture = headset_capture.control()) send_control(std::move(*capture));
 
 			if (uinput_handler)
 			{
@@ -1130,6 +1131,7 @@ void wivrn_session::run_net(std::stop_token stop)
 		catch (const std::exception & e)
 		{
 			U_LOG_W("Network exception: %s, Session paused.", e.what());
+			headset_capture.reset();
 			pause_session();
 
 			reconnect(stop);

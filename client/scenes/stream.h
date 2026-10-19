@@ -79,6 +79,11 @@ private:
 	wivrn::spatial_source * spatial = nullptr; // Owned by application, not the stream.
 	std::unique_ptr<wivrn_session> network_session;
 	std::thread network_thread;
+    uint64_t headset_capture_id = 0;
+    std::chrono::steady_clock::time_point headset_capture_deadline{}, headset_capture_poll{};
+    std::string headset_capture_status;
+    void poll_headset_capture();
+    void stop_headset_capture();
 	thread_safe<to_headset::tracking_control> tracking_control{};
 	std::array<std::atomic<interaction_profile>, 3> interaction_profiles; // left hand, right hand, gamepad
 	std::atomic<bool> interaction_profile_changed = false;
@@ -249,6 +254,7 @@ public:
 	void operator()(to_headset::timesync_query &&);
 	void operator()(to_headset::tracking_control &&);
 	void operator()(to_headset::feature_control &&);
+    void operator()(to_headset::headset_capture_control &&);
 	void operator()(to_headset::audio_stream_description &&);
 	void operator()(to_headset::video_stream_description &&);
 	void operator()(to_headset::refresh_rate_change &&);

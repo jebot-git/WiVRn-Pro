@@ -65,6 +65,25 @@ int main()
 	};
 	static_assert(wivrn::serialization_type_hash<legacy_video_description>(0) !=
 	              wivrn::serialization_type_hash<wivrn::to_headset::video_stream_description>(0));
+	// Exercise the complete capture variants, including a maximum-size JPEG.
+	auto round_trip = []<typename T>(const T & value) {
+		wivrn::serialization_packet serialized;
+		serialized.serialize(value);
+		std::vector<uint8_t> bytes;
+		for (auto span : static_cast<std::vector<std::span<uint8_t>> &>(serialized))
+			bytes.insert(bytes.end(), span.begin(), span.end());
+		wivrn::deserialization_packet input({}, bytes);
+		auto output = input.deserialize<T>();
+		assert(input.empty());
+		return output;
+	};
+	wivrn::to_headset::packets control = wivrn::to_headset::headset_capture_control{.request_id = (uint64_t(1) << 48) + 37, .enabled = true, .frames = false};
+	auto control_copy = std::get<wivrn::to_headset::headset_capture_control>(round_trip(control));
+	assert(control_copy.request_id == (uint64_t(1) << 48) + 37 && control_copy.enabled && !control_copy.frames);
+	wivrn::from_headset::packets capture = wivrn::from_headset::headset_capture{.request_id = control_copy.request_id, .age_ms = 123, .status = "ready", .jpeg = std::vector<std::byte>(256 * 1024, std::byte{0xd8})};
+	auto capture_copy = std::get<wivrn::from_headset::headset_capture>(round_trip(capture));
+	assert(capture_copy.request_id == control_copy.request_id && capture_copy.age_ms == 123 && capture_copy.status == "ready");
+	assert(capture_copy.jpeg == std::get<wivrn::from_headset::headset_capture>(capture).jpeg);
 	std::cout << "Protocol hash: " << std::hex << wivrn::protocol_version << std::dec << "\n";
 	std::cout << "Native wire round trip: " << wire.size() << " bytes, " << spans.size() << " spans; truncation rejected\n";
 }

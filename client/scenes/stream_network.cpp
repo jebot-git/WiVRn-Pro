@@ -45,7 +45,8 @@ void scenes::stream::process_packets()
 				audio_handle->send_microphone_data();
 			}
 			#endif
-			network_session->poll(*this, std::chrono::milliseconds(audio_handle ? 10 : 500));
+			network_session->poll(*this, std::chrono::milliseconds(audio_handle || headset_capture_id ? 10 : 500));
+            poll_headset_capture();
 #else
 			network_session->poll(*this, std::chrono::milliseconds(500));
 #endif
@@ -56,6 +57,70 @@ void scenes::stream::process_packets()
 			exit();
 		}
 	}
+    stop_headset_capture();
+}
+
+void scenes::stream::stop_headset_capture() {
+#ifdef __ANDROID__
+    auto & env = jni::jni_thread::env(); auto activity = application::native_app()->activity->clazz;
+    auto cls = env.GetObjectClass(activity); auto method = env.GetMethodID(cls, "stopHeadsetCapture", "()V");
+    if (method) env.CallVoidMethod(activity,method);
+    if (env.ExceptionCheck()) env.ExceptionClear();
+    env.DeleteLocalRef(cls);
+#endif
+    headset_capture_id=0; headset_capture_status.clear();
+}
+void scenes::stream::operator()(to_headset::headset_capture_control && value) {
+    if (!value.enabled || !value.request_id) { if (headset_capture_id) stop_headset_capture(); return; }
+    headset_capture_id=value.request_id; headset_capture_deadline=std::chrono::steady_clock::now()+std::chrono::seconds(2);
+#ifdef __ANDROID__
+    auto & env = jni::jni_thread::env(); auto activity = application::native_app()->activity->clazz;
+    auto cls = env.GetObjectClass(activity); auto method = env.GetMethodID(cls,"renewHeadsetCapture","(JZ)V");
+    if (method) env.CallVoidMethod(activity,method,jlong(value.request_id),jboolean(value.frames));
+    if (env.ExceptionCheck()) env.ExceptionClear();
+    env.DeleteLocalRef(cls);
+#else
+    network_session->send_control(from_headset::headset_capture{.request_id=value.request_id,.age_ms=0,.status="Headset view requires an Android client",.jpeg={}});
+#endif
+}
+void scenes::stream::poll_headset_capture() {
+    auto now=std::chrono::steady_clock::now();
+    if (!headset_capture_id) return;
+    if (now>headset_capture_deadline) { stop_headset_capture(); return; }
+    if (now<headset_capture_poll) return;
+    headset_capture_poll=now+std::chrono::milliseconds(100);
+#ifdef __ANDROID__
+    auto & env = jni::jni_thread::env(); auto activity = application::native_app()->activity->clazz;
+    auto cls = env.GetObjectClass(activity);
+    auto status_method=env.GetMethodID(cls,"getHeadsetCaptureStatus","()Ljava/lang/String;");
+    auto image_method=env.GetMethodID(cls,"pollHeadsetCapture","()[B");
+    std::string status;
+    if (status_method) {
+        auto text=static_cast<jstring>(env.CallObjectMethod(activity,status_method));
+        if (text) { const char * chars=env.GetStringUTFChars(text,nullptr); if(chars) { status=chars; env.ReleaseStringUTFChars(text,chars); } env.DeleteLocalRef(text); }
+    }
+    from_headset::headset_capture packet{.request_id=headset_capture_id,.age_ms=0,.status=status.substr(0,160),.jpeg={}};
+    if (image_method) {
+        auto data=static_cast<jbyteArray>(env.CallObjectMethod(activity,image_method));
+        if(data) {
+            auto size=env.GetArrayLength(data);
+            if(size>8 && size<=256*1024+8) {
+                uint64_t stamp=0; env.GetByteArrayRegion(data,0,8,reinterpret_cast<jbyte *>(&stamp));
+                uint64_t clock=std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+                // The JPEG worker timestamps before compression; drop stale frames.
+                if(clock>=stamp && clock-stamp<=250000000) {
+                    packet.age_ms=uint32_t((clock-stamp)/1000000); packet.jpeg.resize(size-8);
+                    env.GetByteArrayRegion(data,8,size-8,reinterpret_cast<jbyte *>(packet.jpeg.data()));
+                }
+            }
+            env.DeleteLocalRef(data);
+        }
+    }
+    bool failed=env.ExceptionCheck(); if(failed) env.ExceptionClear(); env.DeleteLocalRef(cls);
+    if(!failed && (!packet.jpeg.empty() || status!=headset_capture_status)) {
+        network_session->send_control(std::move(packet)); headset_capture_status=status;
+    }
+#endif
 }
 
 void scenes::stream::operator()(to_headset::server_message && message)

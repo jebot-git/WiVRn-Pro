@@ -101,7 +101,8 @@ fn create(app: &mut AppState, guide: bool) -> anyhow::Result<OverlayWindowConfig
             } else {
                 let status = app.hands_frame.status.lock().unwrap();
                 format!(
-                    "{}\n{} · {}{}\n{}",
+                    "{}\n{}\n{} · {}{}\n{}",
+                    status.source,
                     status.status,
                     status.language,
                     status.page,
@@ -133,6 +134,8 @@ fn create(app: &mut AppState, guide: bool) -> anyhow::Result<OverlayWindowConfig
             "close",
             "auto_scan",
             "language",
+            "source",
+            "mirror_fov",
         ] {
             let button = panel
                 .parser_state

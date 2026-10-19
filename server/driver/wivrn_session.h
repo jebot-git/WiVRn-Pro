@@ -23,6 +23,7 @@
 #include "clock_offset.h"
 #include "compositor/compositor.h"
 #include "hand_joystick.h"
+#include "headset_capture.h"
 #include "inplace_vector.hpp"
 #include "performance_feed.h"
 #include "shora_bridge.h"
@@ -98,6 +99,7 @@ private:
 	};
 
 	tracking_control control;
+	headset_capture_bridge headset_capture;
 
 	wivrn_hmd hmd;
 	wivrn_controller left_controller;
@@ -210,6 +212,7 @@ public:
 	void operator()(const from_headset::set_active_application &);
 	void operator()(const from_headset::stop_application &);
 	void operator()(audio_data &&);
+	void operator()(from_headset::headset_capture && value) { headset_capture.submit(std::move(value)); }
 	void operator()(const spatial::snapshot &);
 
 	void operator()(to_monado::stop &&);
