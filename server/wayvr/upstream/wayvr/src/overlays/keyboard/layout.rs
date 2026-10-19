@@ -34,6 +34,40 @@ impl Layout {
         layout
     }
 
+    /// Compact split QWERTY. Keep the system keymap and custom key labels.
+    pub(super) fn for_hands(&self) -> Self {
+        let mut layout = self.clone();
+        layout.row_size = 13.;
+        let rows = [
+            "Escape N1 N2 N3 N4 N5 _ N6 N7 N8 N9 N0 Delete",
+            "Tab Q W E R T _ Y U I O P BackSpace",
+            "LShift A S D F G _ H J K L Oem1 Return",
+            "LCtrl Z X C V AltGr _ B N M Comma Period Oem2",
+        ];
+        layout.main_layout = rows
+            .iter()
+            .map(|row| {
+                row.split_whitespace()
+                    .map(|key| (key != "_").then(|| key.to_owned()))
+                    .collect()
+            })
+            .collect();
+        layout.key_sizes = vec![vec![1.; 13]; rows.len()];
+        // Wide space bars, with the same six-unit width on either side.
+        layout.main_layout.push(vec![
+            Some("LSuper".into()),
+            Some("LAlt".into()),
+            Some("Space".into()),
+            None,
+            Some("Space".into()),
+            Some("KEYMAP_CYCLE".into()),
+            Some("Return".into()),
+        ]);
+        layout.key_sizes.push(vec![1., 1., 4., 1., 3., 2., 1.]);
+        layout.post_load();
+        layout
+    }
+
     fn post_load(&mut self) {
         for i in 0..self.key_sizes.len() {
             let row = &self.key_sizes[i];
@@ -264,4 +298,42 @@ pub enum KeyCapType {
     SymbolAltGr,
     /// Label has text in the center, e.g. Home
     Other,
+}
+
+#[cfg(test)]
+mod hand_layout_tests {
+    use super::*;
+
+    #[test]
+    fn split_layout_has_equal_halves_and_all_letters() {
+        let base: Layout = serde_yaml::from_str(include_str!("../../res/keyboard.yaml")).unwrap();
+        let layout = base.for_hands();
+        for (keys, sizes) in layout.main_layout.iter().zip(&layout.key_sizes) {
+            let gap = keys.iter().position(Option::is_none).unwrap();
+            assert_eq!(sizes[..gap].iter().sum::<f32>(), 6.);
+            assert_eq!(sizes[gap], 1.);
+            assert_eq!(sizes[gap + 1..].iter().sum::<f32>(), 6.);
+        }
+        for letter in 'A'..='Z' {
+            assert_eq!(
+                layout
+                    .main_layout
+                    .iter()
+                    .flatten()
+                    .filter(|k| k.as_deref() == Some(&letter.to_string()))
+                    .count(),
+                1
+            );
+        }
+        for key in ["Space", "Return", "BackSpace", "LShift", "KEYMAP_CYCLE"] {
+            assert!(
+                layout
+                    .main_layout
+                    .iter()
+                    .flatten()
+                    .any(|k| k.as_deref() == Some(key))
+            );
+        }
+        assert_eq!(base.row_size, 23.);
+    }
 }

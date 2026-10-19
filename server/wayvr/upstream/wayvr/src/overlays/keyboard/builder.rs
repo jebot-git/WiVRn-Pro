@@ -56,8 +56,15 @@ pub(super) fn create_keyboard_panel(
     keymap: Option<&XkbKeymap>,
     state: KeyboardState,
     layout: &layout::Layout,
+    hand_tracking: bool,
 ) -> anyhow::Result<GuiPanel<KeyboardState>> {
     let mut params = NewGuiPanelParams::default();
+    params
+        .extra_vars
+        .insert("hand_keyboard".into(), bool_to_rc_str(hand_tracking));
+    params
+        .extra_vars
+        .insert("standard_keyboard".into(), bool_to_rc_str(!hand_tracking));
     params.extra_vars.insert(
         "openvr".into(),
         bool_to_rc_str(app.feats.xr_backend.is_open_vr()),
@@ -535,4 +542,73 @@ fn on_release_anim(
     rect.params.border_color = key_state.cur_border_color.get();
     common.alterables.mark_redraw();
     key_state.drawn_state.set(false);
+}
+
+#[cfg(test)]
+mod hand_keyboard_tests {
+    use super::*;
+
+    #[test]
+    fn both_keyboard_templates_parse_and_hand_mode_hides_the_desktop_tray() {
+        let globals = wgui::globals::WguiGlobals::new(
+            Box::new(crate::gui::asset::GuiAsset {}),
+            &wlx_common::locale::WayVRLangProvider::default(),
+            &wgui::font_config::WguiFontConfig::default(),
+            std::path::PathBuf::from("/nonexistent"),
+            wgui::palette::PALETTES[0].1.clone(),
+        )
+        .unwrap();
+        for hands in [false, true] {
+            let mut extra = wgui::parser::ParseDocumentExtra::default();
+            extra
+                .extra_vars
+                .insert("hand_keyboard".into(), bool_to_rc_str(hands));
+            extra
+                .extra_vars
+                .insert("standard_keyboard".into(), bool_to_rc_str(!hands));
+            for key in ["openvr", "not_wayland", "not_passthru"] {
+                extra.extra_vars.insert(key.into(), "0".into());
+            }
+            let doc = ParseDocumentParams {
+                globals: globals.clone(),
+                path: AssetPathRef::BuiltIn("gui/keyboard.xml"),
+                extra,
+            };
+            let (mut layout, mut parser) = wgui::parser::new_layout_from_assets(
+                &doc,
+                wgui::layout::LayoutParams {
+                    resize_to_parent: false,
+                    theme: Default::default(),
+                },
+            )
+            .unwrap();
+            let root = parser.get_widget_id("keyboard_root").unwrap();
+            assert_eq!(parser.get_widget_id("tray_root").is_err(), hands);
+            for (template, text) in [
+                ("KeyLetter", "Q"),
+                ("KeySpecial", "shift"),
+                ("KeyOther", "Space"),
+            ] {
+                let mut params = TemplateParams::new();
+                for (key, value) in [
+                    ("id", template),
+                    ("text", text),
+                    ("width", "60"),
+                    ("height", "60"),
+                ] {
+                    params.insert_rc(key, value.into());
+                }
+                parser
+                    .instantiate_template(&doc, template, &mut layout, root, params)
+                    .unwrap();
+            }
+            layout
+                .update(&mut LayoutUpdateParams {
+                    size: vec2(2048., 2048.),
+                    timestep_alpha: 1.,
+                })
+                .unwrap();
+            assert!(layout.content_size.x > 0. && layout.content_size.y > 0.);
+        }
+    }
 }

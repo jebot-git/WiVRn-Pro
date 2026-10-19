@@ -41,6 +41,15 @@ in the last column. Both use a three-second countdown; press either reset button
 again to cancel. The wrist panel displays the result or the tracking worker's error.
 Motoc mode replaces these with Calibrate and Resume. See [portability and Motoc setup](fork/PORTABILITY.md).
 
+WayVR automatically uses a compact split QWERTY keyboard while tracked hands are active.
+Move each index fingertip over its half, pinch thumb to middle to type, and pinch thumb
+to index to backspace. Ring pinch applies Shift to the selected key. Selection projects
+along the keyboard surface normal, so wrist rotation does not steer the cursor. Controller
+input restores the standard keyboard; saved placement and scale are preserved.
+Close one hand into a fist over the keyboard to drag it. While holding it, close the
+other hand and move the fists apart or together to resize, as with other WayVR panels.
+The interaction is inspired by [Danny Yaroslavski's hand-tracking keyboard prototypes](https://medium.com/@dannyyaroslavski/designing-the-perfect-vr-keyboard-for-hand-tracking-9bd019c31ad8).
+
 See [build and service setup](docs/building.md), [encoder configuration](docs/configuration.md),
 [spatial API and capture](fork/SPATIAL.md), [Shora integration](fork/SHORA.md),
 [upstream updates](fork/UPSTREAM.md) and [source licenses](fork/PROVENANCE.md).

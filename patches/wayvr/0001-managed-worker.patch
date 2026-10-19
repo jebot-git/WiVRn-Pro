@@ -120,6 +120,28 @@ index 1b49bff..a4ff8fe 100644
 diff --git a/wayvr/flatpak/sources-wayvr.json b/wayvr/flatpak/sources-wayvr.json
 old mode 100644
 new mode 100755
+diff --git a/wayvr/src/assets/gui/keyboard.xml b/wayvr/src/assets/gui/keyboard.xml
+--- a/wayvr/src/assets/gui/keyboard.xml
++++ b/wayvr/src/assets/gui/keyboard.xml
+@@ -217,7 +217,7 @@
+
+   <elements>
+     <div flex_direction="column" interactable="0">
+-      <rectangle macro="bg_rect" padding="10" align_items="center" justify_content="space_between">
++      <rectangle macro="bg_rect" padding="10" align_items="center" justify_content="space_between" skip="~hand_keyboard">
+         <div gap="10">
+           <Button macro="button_style" id="btn_dashboard" _press="::DashToggle">
+             <sprite width="38" height="38" src="@/watch/wayvr_dashboard_mono.svg"  />
+@@ -246,7 +246,8 @@
+           </div>
+         </div>
+       </rectangle>
+-      <div width="100%" height="13" interactable="0" />
++      <div width="100%" height="13" interactable="0" skip="~hand_keyboard" />
++      <label text="Middle pinch: type · Index pinch: delete" size="20" skip="~standard_keyboard" />
+       <rectangle id="keyboard_root" macro="bg_rect" flex_direction="column" padding="10">
+       </rectangle>
+     </div>
 diff --git a/wayvr/src/assets/gui/watch.xml b/wayvr/src/assets/gui/watch.xml
 index ee94fe2..fcab0af 100644
 --- a/wayvr/src/assets/gui/watch.xml
@@ -210,10 +232,9 @@ index ee94fe2..fcab0af 100644
          <div flex_direction="row" gap="8">
            <div gap="4">
 diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
-index ab073da..4cdfda2 100644
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
-@@ -75,8 +75,13 @@ pub struct InputState {
+@@ -75,8 +75,13 @@
      pub picking_focus: FocusPickState,
      processes: Vec<Child>,
      disable_lerp_until: Instant,
@@ -225,9 +246,9 @@ index ab073da..4cdfda2 100644
      head_last_yaw: Option<f64>,
 +    two_hand_grab: Option<(OverlayID, crate::hand_resize::HandResize)>,
  }
- 
+
  impl InputState {
-@@ -91,8 +96,12 @@ impl InputState {
+@@ -91,8 +96,12 @@
              handsfree_state: PointerState::default(),
              picking_focus: FocusPickState::None,
              disable_lerp_until: Instant::now(),
@@ -239,14 +260,17 @@ index ab073da..4cdfda2 100644
 +            two_hand_grab: None,
          }
      }
- 
-@@ -349,6 +358,17 @@ pub struct Pointer {
+
+@@ -349,6 +358,20 @@
      pub(super) interaction: InteractionState,
      pub tracked: bool,
      pub handsfree: bool,
 +    pub hand_tracking: bool,
 +    pub wrist_pose: Option<Affine3A>,
 +    pub index_tip: Option<Vec3A>,
++    pub keyboard_hover: bool,
++    keyboard_projection_only: bool,
++    keyboard_grab_target: Option<(RayHit, Instant)>,
 +    #[cfg(feature = "openxr")]
 +    pub joystick_pad: Option<crate::hand_joystick::Pad>,
 +    pub joystick_owned: bool,
@@ -258,13 +282,16 @@ index ab073da..4cdfda2 100644
      /// distance of the most recent ray hit on a wayland client window, used for drag n drop
      pub last_wvr_hit_distance: Option<f32>,
  }
-@@ -367,10 +387,38 @@ impl Pointer {
+@@ -367,8 +390,39 @@
              interaction: InteractionState::default(),
              tracked: false,
              handsfree: false,
 +            hand_tracking: false,
 +            wrist_pose: None,
 +            index_tip: None,
++            keyboard_hover: false,
++            keyboard_projection_only: false,
++            keyboard_grab_target: None,
 +            #[cfg(feature = "openxr")]
 +            joystick_pad: None,
 +            joystick_owned: false,
@@ -275,8 +302,8 @@ index ab073da..4cdfda2 100644
 +            hand_grab_needs_release: false,
              last_wvr_hit_distance: None,
          }
-     }
- 
++    }
++
 +    pub fn attachment_pose(&self) -> Affine3A {
 +        self.wrist_pose.map_or(self.pose, |wrist| {
 +            // Map the existing controller attachment frame onto the back of
@@ -292,12 +319,10 @@ index ab073da..4cdfda2 100644
 +            );
 +            wrist * on_wrist * watch.inverse()
 +        })
-+    }
-+
+     }
+
      pub const fn hand(&self) -> Option<LeftRight> {
-         match self.idx {
-             0 => Some(LeftRight::Left),
-@@ -451,6 +499,9 @@ fn populate_lines(
+@@ -451,6 +505,9 @@
      maybe_hit: Option<(PointerHit, RayHit)>,
      hmd: &Affine3A,
  ) {
@@ -307,18 +332,89 @@ index ab073da..4cdfda2 100644
      let Some((hit, raw_hit)) = maybe_hit else {
          return;
      };
-@@ -499,6 +550,7 @@ pub fn interact<O>(
+@@ -499,6 +556,9 @@
  where
      O: Default,
  {
-+    if update_two_hand_grab(overlays, app) { return [None, None]; }
++    if update_two_hand_grab(overlays, app) {
++        return [None, None];
++    }
      let hits = if app.input_state.pointers[1].last_click > app.input_state.pointers[0].last_click {
          let right = interact_hand(1, overlays, app);
          let left = interact_hand(0, overlays, app);
-@@ -523,6 +575,129 @@ where
+@@ -523,6 +583,254 @@
      [hits[0].1, hits[1].1]
  }
- 
+
++// Middle pinch leaves the selecting index fingertip free, as in the reference.
++fn keyboard_pointer_mode(now: PointerState, before: PointerState) -> PointerMode {
++    if now.click_modifier_middle || (!now.click && before.click_modifier_middle) {
++        PointerMode::Left
++    } else if now.click_modifier_right || (!now.click && before.click_modifier_right) {
++        PointerMode::Right
++    } else if now.click || before.click {
++        PointerMode::Middle
++    } else {
++        PointerMode::Left
++    }
++}
++
++/// A fist moves the selecting fingertip; retain its last keyboard target only
++/// through the short gesture debounce. Tracking/source loss clears this cache.
++fn keyboard_grab_candidate(pointer: &Pointer, now: Instant) -> Option<RayHit> {
++    let (mut hit, at) = pointer.keyboard_grab_target?;
++    if now.saturating_duration_since(at) > Duration::from_millis(250) {
++        return None;
++    }
++    hit.dist = 0.;
++    Some(hit)
++}
++
++fn keyboard_hit(
++    pointer: &Pointer,
++    id: OverlayID,
++    transform: &Affine3A,
++    curvature: Option<&f32>,
++    grabbable: bool,
++    edit_mode: bool,
++) -> Option<RayHit> {
++    if pointer.hand_tracking
++        && pointer.now.grab
++        && !pointer.before.grab
++        && grabbable
++        && let Some(hit) = keyboard_grab_candidate(pointer, Instant::now())
++        && hit.overlay == id
++    {
++        return Some(hit);
++    }
++    if pointer.hand_tracking && !pointer.now.grab && !edit_mode {
++        pointer
++            .index_tip
++            .and_then(|tip| keyboard_projection(tip, id, transform, curvature))
++    } else {
++        ray_test(&pointer.pose, id, transform, curvature)
++    }
++}
++
++/// Position-only selection: hand rotation cannot move the keyboard cursor.
++fn keyboard_projection(
++    tip: Vec3A,
++    id: OverlayID,
++    transform: &Affine3A,
++    curvature: Option<&f32>,
++) -> Option<RayHit> {
++    let (_, rotation, _) = transform.to_scale_rotation_translation();
++    let normal = transform.z_axis.try_normalize()?;
++    let origin = Affine3A::from_rotation_translation(rotation, (tip + normal * 0.3).into());
++    let mut hit = ray_test(&origin, id, transform, curvature)?;
++    let clearance = hit.dist - 0.3;
++    if !(-0.08..=0.25).contains(&clearance) {
++        return None;
++    }
++    hit.dist = clearance.abs();
++    Some(hit)
++}
++
 +/// Project an index fingertip onto the same flat/curved surface used by rays.
 +fn touch_projection(
 +    tip: Vec3A,
@@ -343,6 +439,60 @@ index ab073da..4cdfda2 100644
 +) {
 +    let pointer = &app.input_state.pointers[idx];
 +    let old = pointer.touch_hit;
++    let mut keyboard_hover = false;
++    let mut keyboard_target = None;
++    if pointer.hand_tracking
++        && !pointer.now.grab
++        && pointer.interaction.grabbed.is_none()
++        && let Some(tip) = pointer.index_tip
++    {
++        let ids: Vec<_> = overlays
++            .iter()
++            .filter_map(|(id, overlay)| {
++                (overlay.config.category == OverlayCategory::Keyboard).then_some(id)
++            })
++            .collect();
++        for id in ids {
++            let overlay = overlays.mut_by_id(id).unwrap();
++            let Some(state) = overlay.config.active_state.as_ref() else {
++                continue;
++            };
++            if !state.interactable || state.alpha < 0.025 {
++                continue;
++            }
++            let transform = state.transform
++                * overlay
++                    .config
++                    .backend
++                    .frame_meta()
++                    .map(|meta| meta.transform)
++                    .unwrap_or_default();
++            if let Some(hit) = keyboard_projection(tip, id, &transform, state.curvature.as_ref())
++                && let Some(t) = overlay.config.backend.get_interaction_transform()
++            {
++                let uv = t.transform_point2(hit.local_pos);
++                let inside = (0.0..=1.0).contains(&uv.x)
++                    && (0.0..=1.0).contains(&uv.y)
++                    && ((idx == 0 && uv.x <= 0.5) || (idx == 1 && uv.x >= 0.5));
++                keyboard_hover |= inside;
++                if inside {
++                    keyboard_target = Some((hit, Instant::now()));
++                }
++            }
++        }
++    }
++    let pointer = &mut app.input_state.pointers[idx];
++    if let Some(target) = keyboard_target {
++        pointer.keyboard_grab_target = Some(target);
++    }
++    // Keep the low-hand gesture detector alive while the fingertip curls into a fist.
++    let closing_fist = pointer.hand_tracking
++        && pointer.index_tip.is_some()
++        && pointer.wrist_pose.is_some()
++        && keyboard_grab_candidate(pointer, Instant::now()).is_some();
++    pointer.keyboard_hover = keyboard_hover || closing_fist;
++    pointer.keyboard_projection_only = pointer.keyboard_hover && !pointer.tracked;
++    pointer.tracked |= pointer.keyboard_hover;
 +    let mut candidates = Vec::new();
 +    if pointer.hand_tracking
 +        && !pointer.now.grab
@@ -350,9 +500,8 @@ index ab073da..4cdfda2 100644
 +        && let Some(tip) = pointer.index_tip
 +    {
 +        for (id, overlay) in overlays.iter() {
-+            if overlay.config.name.as_ref() != WATCH_NAME
-+                && overlay.config.category != OverlayCategory::Keyboard
-+            {
++            // The hand keyboard uses hover plus pinch, never depth presses.
++            if overlay.config.name.as_ref() != WATCH_NAME {
 +                continue;
 +            }
 +            let Some(state) = overlay.config.active_state.as_ref() else {
@@ -423,6 +572,9 @@ index ab073da..4cdfda2 100644
 +    // A lowered hand can still have a valid wrist attachment.
 +    pointer.pending_haptics = None;
 +    pointer.touch_hit = None;
++    pointer.keyboard_hover = false;
++    pointer.keyboard_projection_only = false;
++    pointer.keyboard_grab_target = None;
 +    pointer.touch_press = Default::default();
 +    let grabbed = pointer.interaction.grabbed.map(|g| g.grabbed_id);
 +    let hovered = pointer.interaction.hovered_id.take();
@@ -445,7 +597,7 @@ index ab073da..4cdfda2 100644
  fn interact_hand<O>(
      idx: usize,
      overlays: &mut OverlayWindowManager<O>,
-@@ -531,16 +706,31 @@ fn interact_hand<O>(
+@@ -531,15 +839,30 @@
  where
      O: Default,
  {
@@ -473,18 +625,17 @@ index ab073da..4cdfda2 100644
 +    }
      let mut pointer = &mut app.input_state.pointers[idx];
      let pending_haptics = pointer.pending_haptics.take();
- 
+-
 -    if !pointer.tracked {
 -        pointer.interaction.should_block_input = false;
 -        pointer.interaction.should_block_poses = false;
 -        pointer.interaction.kbd_block_activated = false;
 -        return (None, pending_haptics); // no hit
 -    }
--
+
      // already grabbing, ignore everything else
      if let Some(grab_data) = pointer.interaction.grabbed {
-         if let Some(grabbed) = overlays.mut_by_id(grab_data.grabbed_id) {
-@@ -689,6 +879,9 @@ fn handle_no_hit<O>(
+@@ -689,6 +1012,9 @@
      if let Some(hovered_id) = hovered_id
          && let Some(hovered) = overlays.mut_by_id(hovered_id)
      {
@@ -494,12 +645,20 @@ index ab073da..4cdfda2 100644
          log::debug!("{} on_left (no hit)", hovered.config.name);
          hovered.config.backend.on_left(app, pointer_idx);
          hovered.hover_pointers[pointer_idx] = false;
-@@ -799,9 +992,19 @@ where
+@@ -798,26 +1124,72 @@
+
      let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
- 
-     for (id, overlay) in overlays.iter() {
+
+-    for (id, overlay) in overlays.iter() {
++    let ids: Vec<_> = overlays.iter().map(|(id, _)| id).collect();
++    for id in ids {
++        let overlay = overlays.mut_by_id(id).unwrap();
 +        if pointer.touch_hit.is_some() {
 +            break;
++        }
++        if pointer.keyboard_projection_only && overlay.config.category != OverlayCategory::Keyboard
++        {
++            continue;
 +        }
          let Some(overlay_state) = overlay.config.active_state.as_ref() else {
              continue;
@@ -514,20 +673,100 @@ index ab073da..4cdfda2 100644
          if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
              continue;
          }
-@@ -817,6 +1020,9 @@ where
+
+-        if let Some(hit) = ray_test(
+-            &ray_origin,
+-            id,
+-            &overlay_state.transform,
+-            overlay_state.curvature.as_ref(),
+-        ) && hit.dist.is_finite()
++        let transform = if overlay.config.category == OverlayCategory::Keyboard {
++            overlay_state.transform
++                * overlay
++                    .config
++                    .backend
++                    .frame_meta()
++                    .map(|meta| meta.transform)
++                    .unwrap_or_default()
++        } else {
++            overlay_state.transform
++        };
++        let hit = if overlay.config.category == OverlayCategory::Keyboard {
++            keyboard_hit(
++                pointer,
++                id,
++                &transform,
++                overlay_state.curvature.as_ref(),
++                overlay_state.grabbable,
++                edit_mode,
++            )
++        } else {
++            ray_test(
++                &ray_origin,
++                id,
++                &transform,
++                overlay_state.curvature.as_ref(),
++            )
++        };
++        if let Some(hit) = hit
++            && hit.dist.is_finite()
+         {
+             hits.push(hit);
          }
      }
- 
+
 +    if let Some(hit) = pointer.touch_hit {
 +        hits.push(hit);
 +    }
      hits.sort_by(|a, b| a.dist.total_cmp(&b.dist));
- 
++    let hand_tracking = pointer.hand_tracking;
++    let manipulating = pointer.now.grab || edit_mode;
++    let keyboard_mode = keyboard_pointer_mode(pointer.now, pointer.before);
+
      for hit in hits {
-@@ -1115,6 +1321,95 @@ where
+         let overlay = overlays.mut_by_id(hit.overlay).unwrap(); // safe because we just got the id from the overlay
+@@ -836,6 +1208,20 @@
+             continue;
+         }
+
++        // Each hand operates its own half, keeping the hands apart.
++        if hand_tracking
++            && !manipulating
++            && overlay.config.category == OverlayCategory::Keyboard
++            && ((pointer_idx == 0 && uv.x > 0.5) || (pointer_idx == 1 && uv.x < 0.5))
++        {
++            continue;
++        }
++        let mode = if hand_tracking && overlay.config.category == OverlayCategory::Keyboard {
++            // Use explicit pinch gestures, independent of wrist orientation.
++            keyboard_mode
++        } else {
++            mode
++        };
+         let pointer_hit = PointerHit {
+             pointer: pointer_idx,
+             overlay: hit.overlay,
+@@ -845,7 +1231,15 @@
+         };
+
+         let result = overlay.config.backend.on_hover(app, &pointer_hit);
+-        if result.consume || overlay.config.editing {
++        let keyboard_grab = hand_tracking
++            && manipulating
++            && overlay.config.category == OverlayCategory::Keyboard
++            && overlay
++                .config
++                .active_state
++                .as_ref()
++                .is_some_and(|s| s.grabbable);
++        if result.consume || overlay.config.editing || keyboard_grab {
+             return (Some((pointer_hit, hit)), result.haptics);
+         }
+     }
+@@ -1115,6 +1509,95 @@
      }
  }
- 
+
 +// Both hands manipulate one existing fist grab. Controller grabs and two
 +// different windows retain their ordinary, independent interaction paths.
 +fn hand_grip(pointer: &Pointer) -> bool {
@@ -620,7 +859,7 @@ index ab073da..4cdfda2 100644
  fn ray_test(
      ray_origin: &Affine3A,
      overlay: OverlayID,
-@@ -1135,3 +1430,105 @@ fn ray_test(
+@@ -1135,3 +1618,226 @@
          dist,
      })
  }
@@ -688,6 +927,127 @@ index ab073da..4cdfda2 100644
 +        );
 +    }
 +    #[test]
++    fn keyboard_middle_pinch_types_and_index_pinch_deletes_on_press_and_release() {
++        for (pinch, mode) in [
++            (
++                PointerState {
++                    click: true,
++                    click_modifier_middle: true,
++                    ..Default::default()
++                },
++                PointerMode::Left,
++            ),
++            (
++                PointerState {
++                    click: true,
++                    ..Default::default()
++                },
++                PointerMode::Middle,
++            ),
++            (
++                PointerState {
++                    click: true,
++                    click_modifier_right: true,
++                    ..Default::default()
++                },
++                PointerMode::Right,
++            ),
++        ] {
++            assert_eq!(keyboard_pointer_mode(pinch, PointerState::default()), mode);
++            assert_eq!(keyboard_pointer_mode(PointerState::default(), pinch), mode);
++        }
++    }
++
++    #[test]
++    fn keyboard_fist_target_survives_curling_but_expires_after_debounce() {
++        let mut ids = slotmap::SlotMap::<OverlayID, ()>::with_key();
++        let id = ids.insert(());
++        let mut pointer = Pointer::new(0);
++        let now = Instant::now();
++        assert!(keyboard_grab_candidate(&pointer, now).is_none());
++        pointer.keyboard_grab_target = Some((
++            RayHit {
++                overlay: id,
++                dist: 0.2,
++                ..Default::default()
++            },
++            now,
++        ));
++        // The selecting index tip can leave the keyboard while the fist closes.
++        pointer.index_tip = Some(Vec3A::new(2., -1., 0.));
++        let hit = keyboard_grab_candidate(&pointer, now + Duration::from_millis(100)).unwrap();
++        assert_eq!(hit.overlay, id);
++        assert_eq!(hit.dist, 0.);
++        assert!(keyboard_grab_candidate(&pointer, now + Duration::from_millis(251)).is_none());
++    }
++
++    #[test]
++    fn keyboard_grab_and_edit_use_normal_ui_rays_when_the_index_is_curled() {
++        let mut ids = slotmap::SlotMap::<OverlayID, ()>::with_key();
++        let id = ids.insert(());
++        let other = ids.insert(());
++        let mut pointer = Pointer::new(0);
++        pointer.hand_tracking = true;
++        pointer.index_tip = Some(Vec3A::new(2., -1., 1.));
++        pointer.pose = Affine3A::from_translation(glam::Vec3::Z);
++        assert!(keyboard_hit(&pointer, id, &Affine3A::IDENTITY, None, true, false).is_none());
++        pointer.now.grab = true;
++        assert!(
++            keyboard_hit(&pointer, id, &Affine3A::IDENTITY, None, true, false)
++                .unwrap()
++                .local_pos
++                .abs_diff_eq(Vec2::ZERO, 1e-5)
++        );
++        pointer.pose = Affine3A::from_rotation_translation(
++            Quat::from_rotation_y(std::f32::consts::PI),
++            glam::Vec3::Z,
++        );
++        pointer.keyboard_grab_target = Some((
++            RayHit {
++                overlay: id,
++                ..Default::default()
++            },
++            Instant::now(),
++        ));
++        assert!(keyboard_hit(&pointer, id, &Affine3A::IDENTITY, None, true, false).is_some());
++        assert!(keyboard_hit(&pointer, other, &Affine3A::IDENTITY, None, true, false).is_none());
++        pointer.keyboard_grab_target = None;
++        pointer.now.grab = false;
++        pointer.pose = Affine3A::from_translation(glam::Vec3::Z);
++        assert!(keyboard_hit(&pointer, id, &Affine3A::IDENTITY, None, true, true).is_some());
++    }
++
++    #[test]
++    fn keyboard_hover_accepts_depth_without_pressing_and_rejects_distant_hands() {
++        let transform = Affine3A::from_scale_rotation_translation(
++            glam::Vec3::splat(0.65),
++            Quat::from_rotation_x(-0.3),
++            glam::Vec3::new(0., 1., -0.5),
++        );
++        let surface = transform.transform_point3a(Vec3A::new(0.2, -0.1, 0.));
++        let normal = transform.z_axis.normalize();
++        for depth in [-0.04, 0., 0.15] {
++            let hit = keyboard_projection(
++                surface + normal * depth,
++                OverlayID::default(),
++                &transform,
++                None,
++            )
++            .unwrap();
++            assert!(hit.local_pos.abs_diff_eq(Vec2::new(0.2, -0.1), 1e-5));
++        }
++        assert!(
++            keyboard_projection(
++                surface + normal * 0.4,
++                OverlayID::default(),
++                &transform,
++                None
++            )
++            .is_none()
++        );
++    }
++
++    #[test]
 +    fn touch_projection_uses_surface_coordinates_after_rotation_and_scaling() {
 +        let transform = Affine3A::from_scale_rotation_translation(
 +            glam::Vec3::splat(0.7),
@@ -748,10 +1108,9 @@ index 7594acf..6d98e50 100644
          enabled_extensions.ext_hand_interaction = true;
      } else {
 diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.rs
-index 9925664..794a1db 100644
 --- a/wayvr/src/backend/openxr/input.rs
 +++ b/wayvr/src/backend/openxr/input.rs
-@@ -36,6 +36,12 @@ pub(super) struct OpenXrInputSource {
+@@ -36,6 +36,12 @@
      physical_inputs: Vec<PhysicalInput>,
      pointers: [OpenXrPointer; 2],
      handsfree_pointer: OpenXrPointer,
@@ -762,12 +1121,12 @@ index 9925664..794a1db 100644
 +    hand_paths: [xr::Path; 2],
 +    started: Instant,
  }
- 
+
  pub(super) struct OpenXrPointer {
-@@ -264,7 +270,25 @@ impl OpenXrInputSource {
+@@ -264,7 +270,25 @@
          let mut right_source = OpenXrHandSource::new(&mut action_set, "right")?;
          let mut fallback_source = OpenXrHandSource::new(&mut action_set, "handsfree")?;
- 
+
 -        let profiles = load_xr_input_profiles();
 +        let mut profiles = load_xr_input_profiles();
 +        // Keep saved mappings, filling missing hand aim bindings in memory only.
@@ -790,8 +1149,8 @@ index 9925664..794a1db 100644
 +        }
          let (physical_inputs, physical_input_map) =
              create_physical_inputs(&action_set, &xr.instance, &profiles)?;
- 
-@@ -288,9 +312,42 @@ impl OpenXrInputSource {
+
+@@ -288,7 +312,40 @@
                  OpenXrPointer::new(xr, right_source)?,
              ],
              handsfree_pointer: OpenXrPointer::new(xr, fallback_source)?,
@@ -819,8 +1178,8 @@ index 9925664..794a1db 100644
 +            ],
 +            started: Instant::now(),
          })
-     }
- 
++    }
++
 +    pub fn reset_hands(&mut self) {
 +        self.joystick_link.disconnect();
 +        for pad in &mut self.thumb_pads {
@@ -829,12 +1188,10 @@ index 9925664..794a1db 100644
 +        for hand in &mut self.hand_input {
 +            hand.reset();
 +        }
-+    }
-+
+     }
+
      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
-         let action = &self.pointers[hand].source.haptics;
- 
-@@ -348,6 +405,7 @@ impl OpenXrInputSource {
+@@ -348,6 +405,7 @@
          if picking_focus.is_none() {
              let should_disable_lerp = app.input_state.should_disable_lerp();
              for i in 0..2 {
@@ -842,7 +1199,7 @@ index 9925664..794a1db 100644
                  let pointer = &mut app.input_state.pointers[i];
                  self.pointers[i].update(
                      pointer,
-@@ -356,6 +414,139 @@ impl OpenXrInputSource {
+@@ -356,6 +414,140 @@
                      !should_disable_lerp,
                      physical_inputs,
                  )?;
@@ -916,6 +1273,7 @@ index 9925664..794a1db 100644
 +                    if pointer.joystick_owned {
 +                        self.hand_input[i].reset();
 +                    }
++                    self.hand_input[i].set_keyboard_active(pointer.keyboard_hover);
 +                    let sample = self.hand_input[i].update(
 +                        self.started.elapsed(),
 +                        joints.as_ref(),
@@ -982,10 +1340,14 @@ index 9925664..794a1db 100644
                  any_tracked |= pointer.tracked;
              }
          } else {
-@@ -371,10 +562,27 @@ impl OpenXrInputSource {
+@@ -371,10 +563,27 @@
                  pointer.now = PointerState::default();
                  pointer.tracked = false;
                  pointer.handsfree = false;
+-            }
+-        }
+-
+-        if !picking_focus.is_none() || !any_tracked {
 +                pointer.wrist_pose = None;
 +                pointer.index_tip = None;
 +                pointer.joystick_pad = None;
@@ -993,10 +1355,9 @@ index 9925664..794a1db 100644
 +            }
 +            for hand in &mut self.hand_input {
 +                hand.reset();
-             }
-         }
- 
--        if !picking_focus.is_none() || !any_tracked {
++            }
++        }
++
 +        // Joint gestures own hand mode, including loss/rearming; do not reintroduce
 +        // the old handsfree native pinch bindings as a duplicate input source.
 +        if xr.focused
@@ -1011,10 +1372,10 @@ index 9925664..794a1db 100644
              self.handsfree_pointer.update_handsfree(
                  &mut app.input_state.pointers[0],
                  xr,
-@@ -386,6 +594,13 @@ impl OpenXrInputSource {
+@@ -386,6 +595,13 @@
              )?;
          }
- 
+
 +        if !picking_focus.is_none() {
 +            self.reset_hands();
 +        }
@@ -1023,7 +1384,7 @@ index 9925664..794a1db 100644
 +            app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
 +        );
          app.session.config.handsfree_pointer = old_handsfree;
- 
+
          Ok(())
 diff --git a/wayvr/src/backend/openxr/mod.rs b/wayvr/src/backend/openxr/mod.rs
 index 9850137..e2c51bf 100644
@@ -1846,6 +2207,438 @@ index 451460c..181f3af 100644
      fn window_list(&mut self, app: &mut AppState) -> anyhow::Result<Vec<WvrWindow>> {
          let wvr_server = app.wvr_server.as_mut().unwrap();
          Ok(wvr_server
+diff --git a/wayvr/src/overlays/keyboard/builder.rs b/wayvr/src/overlays/keyboard/builder.rs
+--- a/wayvr/src/overlays/keyboard/builder.rs
++++ b/wayvr/src/overlays/keyboard/builder.rs
+@@ -56,8 +56,15 @@
+     keymap: Option<&XkbKeymap>,
+     state: KeyboardState,
+     layout: &layout::Layout,
++    hand_tracking: bool,
+ ) -> anyhow::Result<GuiPanel<KeyboardState>> {
+     let mut params = NewGuiPanelParams::default();
++    params
++        .extra_vars
++        .insert("hand_keyboard".into(), bool_to_rc_str(hand_tracking));
++    params
++        .extra_vars
++        .insert("standard_keyboard".into(), bool_to_rc_str(!hand_tracking));
+     params.extra_vars.insert(
+         "openvr".into(),
+         bool_to_rc_str(app.feats.xr_backend.is_open_vr()),
+@@ -536,3 +543,72 @@
+     common.alterables.mark_redraw();
+     key_state.drawn_state.set(false);
+ }
++
++#[cfg(test)]
++mod hand_keyboard_tests {
++    use super::*;
++
++    #[test]
++    fn both_keyboard_templates_parse_and_hand_mode_hides_the_desktop_tray() {
++        let globals = wgui::globals::WguiGlobals::new(
++            Box::new(crate::gui::asset::GuiAsset {}),
++            &wlx_common::locale::WayVRLangProvider::default(),
++            &wgui::font_config::WguiFontConfig::default(),
++            std::path::PathBuf::from("/nonexistent"),
++            wgui::palette::PALETTES[0].1.clone(),
++        )
++        .unwrap();
++        for hands in [false, true] {
++            let mut extra = wgui::parser::ParseDocumentExtra::default();
++            extra
++                .extra_vars
++                .insert("hand_keyboard".into(), bool_to_rc_str(hands));
++            extra
++                .extra_vars
++                .insert("standard_keyboard".into(), bool_to_rc_str(!hands));
++            for key in ["openvr", "not_wayland", "not_passthru"] {
++                extra.extra_vars.insert(key.into(), "0".into());
++            }
++            let doc = ParseDocumentParams {
++                globals: globals.clone(),
++                path: AssetPathRef::BuiltIn("gui/keyboard.xml"),
++                extra,
++            };
++            let (mut layout, mut parser) = wgui::parser::new_layout_from_assets(
++                &doc,
++                wgui::layout::LayoutParams {
++                    resize_to_parent: false,
++                    theme: Default::default(),
++                },
++            )
++            .unwrap();
++            let root = parser.get_widget_id("keyboard_root").unwrap();
++            assert_eq!(parser.get_widget_id("tray_root").is_err(), hands);
++            for (template, text) in [
++                ("KeyLetter", "Q"),
++                ("KeySpecial", "shift"),
++                ("KeyOther", "Space"),
++            ] {
++                let mut params = TemplateParams::new();
++                for (key, value) in [
++                    ("id", template),
++                    ("text", text),
++                    ("width", "60"),
++                    ("height", "60"),
++                ] {
++                    params.insert_rc(key, value.into());
++                }
++                parser
++                    .instantiate_template(&doc, template, &mut layout, root, params)
++                    .unwrap();
++            }
++            layout
++                .update(&mut LayoutUpdateParams {
++                    size: vec2(2048., 2048.),
++                    timestep_alpha: 1.,
++                })
++                .unwrap();
++            assert!(layout.content_size.x > 0. && layout.content_size.y > 0.);
++        }
++    }
++}
+diff --git a/wayvr/src/overlays/keyboard/layout.rs b/wayvr/src/overlays/keyboard/layout.rs
+--- a/wayvr/src/overlays/keyboard/layout.rs
++++ b/wayvr/src/overlays/keyboard/layout.rs
+@@ -30,6 +30,40 @@
+ impl Layout {
+     pub(super) fn load_from_disk() -> Self {
+         let mut layout = load_known_yaml::<Self>(ConfigType::Keyboard);
++        layout.post_load();
++        layout
++    }
++
++    /// Compact split QWERTY. Keep the system keymap and custom key labels.
++    pub(super) fn for_hands(&self) -> Self {
++        let mut layout = self.clone();
++        layout.row_size = 13.;
++        let rows = [
++            "Escape N1 N2 N3 N4 N5 _ N6 N7 N8 N9 N0 Delete",
++            "Tab Q W E R T _ Y U I O P BackSpace",
++            "LShift A S D F G _ H J K L Oem1 Return",
++            "LCtrl Z X C V AltGr _ B N M Comma Period Oem2",
++        ];
++        layout.main_layout = rows
++            .iter()
++            .map(|row| {
++                row.split_whitespace()
++                    .map(|key| (key != "_").then(|| key.to_owned()))
++                    .collect()
++            })
++            .collect();
++        layout.key_sizes = vec![vec![1.; 13]; rows.len()];
++        // Wide space bars, with the same six-unit width on either side.
++        layout.main_layout.push(vec![
++            Some("LSuper".into()),
++            Some("LAlt".into()),
++            Some("Space".into()),
++            None,
++            Some("Space".into()),
++            Some("KEYMAP_CYCLE".into()),
++            Some("Return".into()),
++        ]);
++        layout.key_sizes.push(vec![1., 1., 4., 1., 3., 2., 1.]);
+         layout.post_load();
+         layout
+     }
+@@ -265,3 +299,41 @@
+     /// Label has text in the center, e.g. Home
+     Other,
+ }
++
++#[cfg(test)]
++mod hand_layout_tests {
++    use super::*;
++
++    #[test]
++    fn split_layout_has_equal_halves_and_all_letters() {
++        let base: Layout = serde_yaml::from_str(include_str!("../../res/keyboard.yaml")).unwrap();
++        let layout = base.for_hands();
++        for (keys, sizes) in layout.main_layout.iter().zip(&layout.key_sizes) {
++            let gap = keys.iter().position(Option::is_none).unwrap();
++            assert_eq!(sizes[..gap].iter().sum::<f32>(), 6.);
++            assert_eq!(sizes[gap], 1.);
++            assert_eq!(sizes[gap + 1..].iter().sum::<f32>(), 6.);
++        }
++        for letter in 'A'..='Z' {
++            assert_eq!(
++                layout
++                    .main_layout
++                    .iter()
++                    .flatten()
++                    .filter(|k| k.as_deref() == Some(&letter.to_string()))
++                    .count(),
++                1
++            );
++        }
++        for key in ["Space", "Return", "BackSpace", "LShift", "KEYMAP_CYCLE"] {
++            assert!(
++                layout
++                    .main_layout
++                    .iter()
++                    .flatten()
++                    .any(|k| k.as_deref() == Some(key))
++            );
++        }
++        assert_eq!(base.row_size, 23.);
++    }
++}
+diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mod.rs
+--- a/wayvr/src/overlays/keyboard/mod.rs
++++ b/wayvr/src/overlays/keyboard/mod.rs
+@@ -9,7 +9,7 @@
+ use crate::{
+     KEYMAP_CHANGE,
+     backend::{
+-        input::{HoverResult, PointerHit},
++        input::{HoverResult, PointerHit, PointerMode},
+         task::{GlobalChange, OverlayTask, TaskType},
+     },
+     config::none_if_0,
+@@ -72,6 +72,7 @@
+
+     let default_state = KeyboardState {
+         modifiers: 0,
++        pressed_keys: Vec::new(),
+         alt_modifier: alt_modifier_to_key(app.session.config.keyboard_middle_click_mode),
+         processes: vec![],
+         overlay_list: OverlayList::default(),
+@@ -87,6 +88,12 @@
+         layout_ids: HashMap::default(),
+         active_layout: KeyboardPanelKey::default(),
+         default_state,
++        hand_layout: layout.for_hands(),
++        hand_tracking: false,
++        deleting: [false; 2],
++        pressed_modes: [None; 2],
++        armed: [false; 2],
++        current_keymap: maybe_keymap.clone(),
+         wlx_layout: layout,
+         wayland: app.feats.desktop_backend.is_wayland(),
+         re_fcitx: Regex::new(r"^keyboard-([^-]+)(?:-([^-]+))?$").unwrap(),
+@@ -136,25 +143,102 @@
+     active_layout: KeyboardPanelKey,
+     default_state: KeyboardState,
+     wlx_layout: layout::Layout,
++    hand_layout: layout::Layout,
++    hand_tracking: bool,
++    deleting: [bool; 2],
++    pressed_modes: [Option<PointerMode>; 2],
++    armed: [bool; 2],
++    current_keymap: Option<XkbKeymap>,
+     wayland: bool,
+     re_fcitx: Regex,
+     re_keymap: Regex,
+ }
+
+ impl KeyboardBackend {
++    fn release_keys(&mut self, app: &mut AppState) {
++        for pointer in 0..2 {
++            let mode = self.pressed_modes[pointer].take().unwrap_or_default();
++            self.panel().on_pointer(
++                app,
++                &PointerHit {
++                    pointer,
++                    mode,
++                    ..Default::default()
++                },
++                false,
++            );
++            self.panel().on_left(app, pointer);
++            if std::mem::take(&mut self.deleting[pointer]) {
++                app.hid_provider.send_key_routed(
++                    app.wvr_server.as_mut(),
++                    VirtualKey::BackSpace,
++                    false,
++                );
++            }
++        }
++        let keys = std::mem::take(&mut self.panel().state.pressed_keys);
++        for key in keys {
++            app.hid_provider
++                .send_key_routed(app.wvr_server.as_mut(), key, false);
++        }
++    }
++
++    fn layout_id(&self, name: &str) -> String {
++        format!("{}:{name}", self.hand_tracking)
++    }
++
++    fn update_input_mode(&mut self, app: &mut AppState) -> anyhow::Result<bool> {
++        let hand_tracking = app.input_state.pointers.iter().any(|p| p.hand_tracking);
++        if hand_tracking == self.hand_tracking {
++            return Ok(false);
++        }
++        self.release_keys(app);
++        self.armed = [false; 2];
++        self.panel().state.modifiers = 0;
++        app.hid_provider
++            .set_modifiers_routed(app.wvr_server.as_mut(), 0);
++        let old = self.active_layout;
++        self.hand_tracking = hand_tracking;
++        let keymap = self.current_keymap.clone();
++        let name = keymap
++            .as_ref()
++            .and_then(|k| k.get_name())
++            .unwrap_or("default");
++        let new = self.layout_ids.get(&self.layout_id(name)).copied();
++        let new = match new {
++            Some(id) => id,
++            None => self.add_new_keymap(keymap.as_ref(), app)?,
++        };
++        self.active_layout = old;
++        self.internal_switch_keymap(new);
++        if !self.panel().initialized {
++            self.panel().init(app)?;
++        }
++        Ok(true)
++    }
++
+     fn add_new_keymap(
+         &mut self,
+         keymap: Option<&XkbKeymap>,
+         app: &mut AppState,
+     ) -> anyhow::Result<KeyboardPanelKey> {
+-        let panel =
+-            create_keyboard_panel(app, keymap, self.default_state.take(), &self.wlx_layout)?;
++        let panel = create_keyboard_panel(
++            app,
++            keymap,
++            self.default_state.take(),
++            if self.hand_tracking {
++                &self.hand_layout
++            } else {
++                &self.wlx_layout
++            },
++            self.hand_tracking,
++        )?;
+
+         let id = self.layout_panels.insert(panel);
+         if let Some(layout_name) = keymap.and_then(|k| k.get_name()) {
+-            self.layout_ids.insert(layout_name.into(), id);
++            self.layout_ids.insert(self.layout_id(layout_name), id);
+         } else {
+-            log::error!("XKB keymap without a layout!");
++            self.layout_ids.insert(self.layout_id("default"), id);
+         }
+         Ok(id)
+     }
+@@ -169,7 +253,8 @@
+             return Ok(false);
+         };
+
+-        if let Some(new_key) = self.layout_ids.get(layout_name) {
++        self.current_keymap = Some(keymap.clone());
++        if let Some(new_key) = self.layout_ids.get(&self.layout_id(layout_name)) {
+             if self.active_layout.eq(new_key) {
+                 return Ok(false);
+             }
+@@ -298,6 +383,15 @@
+         self.panel().init(app)
+     }
+     fn should_render(&mut self, app: &mut AppState) -> anyhow::Result<ShouldRender> {
++        if self.update_input_mode(app)? {
++            self.panel().should_render(app)?;
++            return Ok(ShouldRender::Should);
++        }
++        for (index, pointer) in app.input_state.pointers.iter().enumerate() {
++            if !pointer.now.click && !pointer.before.click {
++                self.armed[index] = true;
++            }
++        }
+         while KEYMAP_CHANGE.swap(false, Ordering::Relaxed) {
+             if self
+                 .auto_switch_keymap(app)
+@@ -341,9 +435,17 @@
+         self.panel().render(app, rdr)
+     }
+     fn frame_meta(&mut self) -> Option<FrameMeta> {
+-        self.panel().frame_meta()
++        let mut meta = self.panel().frame_meta()?;
++        if self.hand_tracking {
++            meta.transform = Affine3A::from_scale(Vec3::splat(
++                self.hand_layout.row_size / self.wlx_layout.row_size,
++            ));
++        }
++        Some(meta)
+     }
+     fn pause(&mut self, app: &mut AppState) -> anyhow::Result<()> {
++        self.release_keys(app);
++        self.armed = [false; 2];
+         self.panel().state.modifiers = 0;
+         app.hid_provider
+             .set_modifiers_routed(app.wvr_server.as_mut(), 0);
+@@ -363,6 +465,36 @@
+     }
+
+     fn on_pointer(&mut self, app: &mut AppState, hit: &PointerHit, pressed: bool) {
++        if !self.armed[hit.pointer] {
++            if !pressed {
++                self.armed[hit.pointer] = true;
++            }
++            return;
++        }
++        let mut hit = *hit;
++        if pressed {
++            self.pressed_modes[hit.pointer] = Some(hit.mode);
++        } else if let Some(mode) = self.pressed_modes[hit.pointer].take() {
++            hit.mode = mode;
++        }
++        let hit = &hit;
++        if self.deleting[hit.pointer]
++            || (self.hand_tracking
++                && app.input_state.pointers[hit.pointer].hand_tracking
++                && hit.mode == PointerMode::Middle)
++        {
++            // The input router maps index pinch to a dedicated correction action.
++            self.deleting[hit.pointer] = pressed;
++            app.hid_provider.send_key_routed(
++                app.wvr_server.as_mut(),
++                VirtualKey::BackSpace,
++                pressed,
++            );
++            if pressed {
++                play_key_click(app);
++            }
++            return;
++        }
+         self.panel().on_pointer(app, hit, pressed);
+         self.panel().push_event(
+             app,
+@@ -391,6 +523,7 @@
+
+ struct KeyboardState {
+     modifiers: KeyModifier,
++    pressed_keys: Vec<VirtualKey>,
+     alt_modifier: KeyModifier,
+     processes: Vec<Child>,
+     overlay_list: OverlayList,
+@@ -413,6 +546,7 @@
+     fn take(&mut self) -> Self {
+         Self {
+             modifiers: self.modifiers,
++            pressed_keys: std::mem::take(&mut self.pressed_keys),
+             alt_modifier: self.alt_modifier,
+             processes: take_and_leave_default!(&mut self.processes),
+             overlay_list: OverlayList::default(),
+@@ -489,6 +623,7 @@
+             app.hid_provider
+                 .send_key_routed(app.wvr_server.as_mut(), *vk, true);
+             pressed.set(true);
++            keyboard.pressed_keys.push(*vk);
+             play_key_click(app);
+         }
+         KeyButtonData::Modifier { modifier, sticky } => {
+@@ -540,6 +675,7 @@
+     match &key.button_state {
+         KeyButtonData::Key { vk, pressed } => {
+             pressed.set(false);
++            keyboard.pressed_keys.retain(|key| key != vk);
+
+             for m in &AUTO_RELEASE_MODS {
+                 if keyboard.modifiers & *m != 0 {
 diff --git a/wayvr/src/overlays/screen/backend.rs b/wayvr/src/overlays/screen/backend.rs
 index e992047..4965f28 100644
 --- a/wayvr/src/overlays/screen/backend.rs

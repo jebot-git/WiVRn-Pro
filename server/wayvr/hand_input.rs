@@ -19,6 +19,7 @@ pub enum Gesture {
 #[derive(Default)]
 pub struct HandInput {
     space_drag_enabled: bool,
+    keyboard_active: bool,
     double_tap: crate::hand_double_tap::DoubleTap,
     gesture: Gesture,
     armed: bool,
@@ -57,10 +58,15 @@ fn pose(p: xr::Posef) -> Option<Affine3A> {
 impl HandInput {
     pub fn reset(&mut self) {
         let space_drag_enabled = self.space_drag_enabled;
+        let keyboard_active = self.keyboard_active;
         *self = Self {
             space_drag_enabled,
+            keyboard_active,
             ..Default::default()
         };
+    }
+    pub fn set_keyboard_active(&mut self, active: bool) {
+        self.keyboard_active = active;
     }
     pub fn set_space_drag_enabled(&mut self, enabled: bool) {
         if self.space_drag_enabled != enabled {
@@ -147,7 +153,10 @@ impl HandInput {
         let palm = head.inverse().transform_point3(p(0));
         // Once grabbed, allow moving below the pointing zone. A fresh tracked
         // wrist is always required; only finger occlusion gets a short grace.
-        if !self.moving_space_or_window() && (palm.y < -0.50 || palm.z > -0.12) {
+        if !self.keyboard_active
+            && !self.moving_space_or_window()
+            && (palm.y < -0.50 || palm.z > -0.12)
+        {
             self.reset();
             return Some(Sample {
                 wrist,
@@ -420,6 +429,43 @@ mod tests {
         assert!(s.ray.is_none());
         assert_eq!(s.wrist.translation, Vec3::new(0., -0.2, -0.4).into());
     }
+    #[test]
+    fn lowered_hand_can_type_only_while_hovering_keyboard() {
+        let mut h = HandInput::default();
+        let mut j = joints();
+        for joint in &mut j {
+            joint.pose.position.y -= 0.45;
+        }
+        assert!(
+            h.update(ms(0), Some(&j), None, Affine3A::IDENTITY, false)
+                .unwrap()
+                .ray
+                .is_none()
+        );
+        h.set_keyboard_active(true);
+        assert!(
+            h.update(ms(10), Some(&j), None, Affine3A::IDENTITY, false)
+                .unwrap()
+                .ray
+                .is_some()
+        );
+        h.update(ms(110), Some(&j), None, Affine3A::IDENTITY, false);
+        j[5].pose.position = j[10].pose.position;
+        h.update(ms(120), Some(&j), None, Affine3A::IDENTITY, false);
+        assert_eq!(
+            h.update(ms(170), Some(&j), None, Affine3A::IDENTITY, false)
+                .unwrap()
+                .gesture,
+            Gesture::Click
+        );
+        h.set_keyboard_active(false);
+        let sample = h
+            .update(ms(180), Some(&j), None, Affine3A::IDENTITY, false)
+            .unwrap();
+        assert!(sample.ray.is_none());
+        assert_eq!(sample.gesture, Gesture::Neutral);
+    }
+
     #[test]
     fn estimated_fingers_accepted_invalid_palm_rejected_and_loss_releases() {
         let mut h = HandInput::default();

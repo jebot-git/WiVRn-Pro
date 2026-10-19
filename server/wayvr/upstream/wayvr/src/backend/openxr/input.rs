@@ -484,6 +484,7 @@ impl OpenXrInputSource {
                     if pointer.joystick_owned {
                         self.hand_input[i].reset();
                     }
+                    self.hand_input[i].set_keyboard_active(pointer.keyboard_hover);
                     let sample = self.hand_input[i].update(
                         self.started.elapsed(),
                         joints.as_ref(),

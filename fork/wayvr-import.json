@@ -736,9 +736,9 @@
     "wayvr/src/gui/panel/label.rs": "121757db6c03087035238191880fbf968977c0488ee8dcb6126d9fd71c495693",
     "wayvr/src/state.rs": "180a5ac669ad15789c39270b9861aadefefc0e3ae666417eb8af297c39eb6539",
     "wlx-common/src/dash_interface.rs": "49dbe44ff105eb3c22e9da7e741f1d2a1529d13d892f2b77f0e052d44cc5ee8b",
-    "wayvr/src/backend/input.rs": "48abd963c350a964002c89b93e8eb890e9ff610b602bb96dda08456699005904",
+    "wayvr/src/backend/input.rs": "ea2911a57dc15dcce3c82eebc517d888346f824c78b80ea10c3cc560c8bb9006",
     "wayvr/src/backend/openxr/helpers.rs": "9308c0b3546434e11f76b2a524e6eaecf91c13943e7d5f4265ae2e6defbb6bbc",
-    "wayvr/src/backend/openxr/input.rs": "54280dafd7adaa0e19fc18feafb022ba692e14cbcde941ba72b0935bd455a1da",
+    "wayvr/src/backend/openxr/input.rs": "bd1e820b6cfbda831a1fc468e2d68886e9b96051f9a9110c5aa90d568cd9370d",
     "wayvr/src/backend/openxr/mod.rs": "8b1c811f69886af7426bf286f04e78e300f3292e48d3643812734bc43ac58764",
     "wayvr/src/windowing/window.rs": "1a58e01d0c66528ece83c19bf50cfc40f9198c71c15a391ee06f1ab21d27adfe",
     "wayvr/src/overlays/screen/backend.rs": "340a53906ed31e482849de8067711043849aaae96af0904e99923d5d5f69677e",
@@ -752,6 +752,10 @@
     "wayvr/src/gui/panel/device_list.rs": "5e15deb9a9377cc45bdc15d2d069bb940b856e3ae511ea60bf97ffe03aa6a2c7",
     "wayvr/src/graphics/dmabuf.rs": "107d0416590aee6e2209d50020d891238d7801848ee7fc1b9663720ff7576e3a",
     "dash-frontend/assets/lang/en.json": "c811211af457e73da4cddda0897c3915156d81c75ba93b33e09da9625aa9d345",
-    "wayvr/src/overlays/watch.rs": "b39f2d169ed1788707731a7a406a755086c0662211ebd5ade3974154f04f70f5"
+    "wayvr/src/overlays/watch.rs": "b39f2d169ed1788707731a7a406a755086c0662211ebd5ade3974154f04f70f5",
+    "wayvr/src/assets/gui/keyboard.xml": "d278f36b727e4bd18aea1ae2e4bc060ced785ed246b1b7e44dc49f12848ea867",
+    "wayvr/src/overlays/keyboard/builder.rs": "519e576b980c73b0eaa21578acefe5c91836b5fe70133486d9962821912b0a95",
+    "wayvr/src/overlays/keyboard/layout.rs": "b5e1d6f5ce0ab299ec72e2d1439366fa7a9eb8ccf9d3ec01c4edd6025f01bf32",
+    "wayvr/src/overlays/keyboard/mod.rs": "391b013f78af98a4e269a68b0bfa0270a40e17d27144ad5b82d224cb6ad9e87e"
   }
 }

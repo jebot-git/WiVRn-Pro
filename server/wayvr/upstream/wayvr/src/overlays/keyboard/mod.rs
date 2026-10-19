@@ -9,7 +9,7 @@ use crate::overlays::toast::Toast;
 use crate::{
     KEYMAP_CHANGE,
     backend::{
-        input::{HoverResult, PointerHit},
+        input::{HoverResult, PointerHit, PointerMode},
         task::{GlobalChange, OverlayTask, TaskType},
     },
     config::none_if_0,
@@ -72,6 +72,7 @@ pub fn create_keyboard(app: &mut AppState) -> anyhow::Result<OverlayWindowConfig
 
     let default_state = KeyboardState {
         modifiers: 0,
+        pressed_keys: Vec::new(),
         alt_modifier: alt_modifier_to_key(app.session.config.keyboard_middle_click_mode),
         processes: vec![],
         overlay_list: OverlayList::default(),
@@ -87,6 +88,12 @@ pub fn create_keyboard(app: &mut AppState) -> anyhow::Result<OverlayWindowConfig
         layout_ids: HashMap::default(),
         active_layout: KeyboardPanelKey::default(),
         default_state,
+        hand_layout: layout.for_hands(),
+        hand_tracking: false,
+        deleting: [false; 2],
+        pressed_modes: [None; 2],
+        armed: [false; 2],
+        current_keymap: maybe_keymap.clone(),
         wlx_layout: layout,
         wayland: app.feats.desktop_backend.is_wayland(),
         re_fcitx: Regex::new(r"^keyboard-([^-]+)(?:-([^-]+))?$").unwrap(),
@@ -136,25 +143,102 @@ struct KeyboardBackend {
     active_layout: KeyboardPanelKey,
     default_state: KeyboardState,
     wlx_layout: layout::Layout,
+    hand_layout: layout::Layout,
+    hand_tracking: bool,
+    deleting: [bool; 2],
+    pressed_modes: [Option<PointerMode>; 2],
+    armed: [bool; 2],
+    current_keymap: Option<XkbKeymap>,
     wayland: bool,
     re_fcitx: Regex,
     re_keymap: Regex,
 }
 
 impl KeyboardBackend {
+    fn release_keys(&mut self, app: &mut AppState) {
+        for pointer in 0..2 {
+            let mode = self.pressed_modes[pointer].take().unwrap_or_default();
+            self.panel().on_pointer(
+                app,
+                &PointerHit {
+                    pointer,
+                    mode,
+                    ..Default::default()
+                },
+                false,
+            );
+            self.panel().on_left(app, pointer);
+            if std::mem::take(&mut self.deleting[pointer]) {
+                app.hid_provider.send_key_routed(
+                    app.wvr_server.as_mut(),
+                    VirtualKey::BackSpace,
+                    false,
+                );
+            }
+        }
+        let keys = std::mem::take(&mut self.panel().state.pressed_keys);
+        for key in keys {
+            app.hid_provider
+                .send_key_routed(app.wvr_server.as_mut(), key, false);
+        }
+    }
+
+    fn layout_id(&self, name: &str) -> String {
+        format!("{}:{name}", self.hand_tracking)
+    }
+
+    fn update_input_mode(&mut self, app: &mut AppState) -> anyhow::Result<bool> {
+        let hand_tracking = app.input_state.pointers.iter().any(|p| p.hand_tracking);
+        if hand_tracking == self.hand_tracking {
+            return Ok(false);
+        }
+        self.release_keys(app);
+        self.armed = [false; 2];
+        self.panel().state.modifiers = 0;
+        app.hid_provider
+            .set_modifiers_routed(app.wvr_server.as_mut(), 0);
+        let old = self.active_layout;
+        self.hand_tracking = hand_tracking;
+        let keymap = self.current_keymap.clone();
+        let name = keymap
+            .as_ref()
+            .and_then(|k| k.get_name())
+            .unwrap_or("default");
+        let new = self.layout_ids.get(&self.layout_id(name)).copied();
+        let new = match new {
+            Some(id) => id,
+            None => self.add_new_keymap(keymap.as_ref(), app)?,
+        };
+        self.active_layout = old;
+        self.internal_switch_keymap(new);
+        if !self.panel().initialized {
+            self.panel().init(app)?;
+        }
+        Ok(true)
+    }
+
     fn add_new_keymap(
         &mut self,
         keymap: Option<&XkbKeymap>,
         app: &mut AppState,
     ) -> anyhow::Result<KeyboardPanelKey> {
-        let panel =
-            create_keyboard_panel(app, keymap, self.default_state.take(), &self.wlx_layout)?;
+        let panel = create_keyboard_panel(
+            app,
+            keymap,
+            self.default_state.take(),
+            if self.hand_tracking {
+                &self.hand_layout
+            } else {
+                &self.wlx_layout
+            },
+            self.hand_tracking,
+        )?;
 
         let id = self.layout_panels.insert(panel);
         if let Some(layout_name) = keymap.and_then(|k| k.get_name()) {
-            self.layout_ids.insert(layout_name.into(), id);
+            self.layout_ids.insert(self.layout_id(layout_name), id);
         } else {
-            log::error!("XKB keymap without a layout!");
+            self.layout_ids.insert(self.layout_id("default"), id);
         }
         Ok(id)
     }
@@ -169,7 +253,8 @@ impl KeyboardBackend {
             return Ok(false);
         };
 
-        if let Some(new_key) = self.layout_ids.get(layout_name) {
+        self.current_keymap = Some(keymap.clone());
+        if let Some(new_key) = self.layout_ids.get(&self.layout_id(layout_name)) {
             if self.active_layout.eq(new_key) {
                 return Ok(false);
             }
@@ -298,6 +383,15 @@ impl OverlayBackend for KeyboardBackend {
         self.panel().init(app)
     }
     fn should_render(&mut self, app: &mut AppState) -> anyhow::Result<ShouldRender> {
+        if self.update_input_mode(app)? {
+            self.panel().should_render(app)?;
+            return Ok(ShouldRender::Should);
+        }
+        for (index, pointer) in app.input_state.pointers.iter().enumerate() {
+            if !pointer.now.click && !pointer.before.click {
+                self.armed[index] = true;
+            }
+        }
         while KEYMAP_CHANGE.swap(false, Ordering::Relaxed) {
             if self
                 .auto_switch_keymap(app)
@@ -341,9 +435,17 @@ impl OverlayBackend for KeyboardBackend {
         self.panel().render(app, rdr)
     }
     fn frame_meta(&mut self) -> Option<FrameMeta> {
-        self.panel().frame_meta()
+        let mut meta = self.panel().frame_meta()?;
+        if self.hand_tracking {
+            meta.transform = Affine3A::from_scale(Vec3::splat(
+                self.hand_layout.row_size / self.wlx_layout.row_size,
+            ));
+        }
+        Some(meta)
     }
     fn pause(&mut self, app: &mut AppState) -> anyhow::Result<()> {
+        self.release_keys(app);
+        self.armed = [false; 2];
         self.panel().state.modifiers = 0;
         app.hid_provider
             .set_modifiers_routed(app.wvr_server.as_mut(), 0);
@@ -363,6 +465,36 @@ impl OverlayBackend for KeyboardBackend {
     }
 
     fn on_pointer(&mut self, app: &mut AppState, hit: &PointerHit, pressed: bool) {
+        if !self.armed[hit.pointer] {
+            if !pressed {
+                self.armed[hit.pointer] = true;
+            }
+            return;
+        }
+        let mut hit = *hit;
+        if pressed {
+            self.pressed_modes[hit.pointer] = Some(hit.mode);
+        } else if let Some(mode) = self.pressed_modes[hit.pointer].take() {
+            hit.mode = mode;
+        }
+        let hit = &hit;
+        if self.deleting[hit.pointer]
+            || (self.hand_tracking
+                && app.input_state.pointers[hit.pointer].hand_tracking
+                && hit.mode == PointerMode::Middle)
+        {
+            // The input router maps index pinch to a dedicated correction action.
+            self.deleting[hit.pointer] = pressed;
+            app.hid_provider.send_key_routed(
+                app.wvr_server.as_mut(),
+                VirtualKey::BackSpace,
+                pressed,
+            );
+            if pressed {
+                play_key_click(app);
+            }
+            return;
+        }
         self.panel().on_pointer(app, hit, pressed);
         self.panel().push_event(
             app,
@@ -391,6 +523,7 @@ impl OverlayBackend for KeyboardBackend {
 
 struct KeyboardState {
     modifiers: KeyModifier,
+    pressed_keys: Vec<VirtualKey>,
     alt_modifier: KeyModifier,
     processes: Vec<Child>,
     overlay_list: OverlayList,
@@ -413,6 +546,7 @@ impl KeyboardState {
     fn take(&mut self) -> Self {
         Self {
             modifiers: self.modifiers,
+            pressed_keys: std::mem::take(&mut self.pressed_keys),
             alt_modifier: self.alt_modifier,
             processes: take_and_leave_default!(&mut self.processes),
             overlay_list: OverlayList::default(),
@@ -489,6 +623,7 @@ fn handle_press(
             app.hid_provider
                 .send_key_routed(app.wvr_server.as_mut(), *vk, true);
             pressed.set(true);
+            keyboard.pressed_keys.push(*vk);
             play_key_click(app);
         }
         KeyButtonData::Modifier { modifier, sticky } => {
@@ -540,6 +675,7 @@ fn handle_release(app: &mut AppState, key: &KeyState, keyboard: &mut KeyboardSta
     match &key.button_state {
         KeyButtonData::Key { vk, pressed } => {
             pressed.set(false);
+            keyboard.pressed_keys.retain(|key| key != vk);
 
             for m in &AUTO_RELEASE_MODS {
                 if keyboard.modifiers & *m != 0 {
