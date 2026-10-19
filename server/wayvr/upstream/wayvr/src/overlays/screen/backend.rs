@@ -90,6 +90,21 @@ impl ScreenBackend {
         }
     }
 
+    fn refresh_output_geometry(&mut self, app: &AppState) {
+        if matches!(self.capture_type, CaptureType::Xshm) {
+            return;
+        }
+        if let Some(output) = app.hid_provider.desktop_output(&self.name)
+            && (self.logical_pos != output.position || self.logical_size != output.size)
+        {
+            self.logical_pos = output.position;
+            self.logical_size = output.size;
+            self.apply_mouse_transform_with_override(mouse_transform_to_transform(
+                self.mouse_transform_override,
+            ));
+        }
+    }
+
     pub(super) fn apply_mouse_transform_with_override(&mut self, transform: Transform) {
         let mut size = self.logical_size;
         let pos = self.logical_pos;
@@ -289,6 +304,7 @@ impl OverlayBackend for ScreenBackend {
     }
 
     fn on_hover(&mut self, app: &mut AppState, hit: &PointerHit) -> HoverResult {
+        self.refresh_output_geometry(app);
         #[cfg(debug_assertions)]
         log::trace!("Hover: {:?}", hit.uv);
 
@@ -312,6 +328,7 @@ impl OverlayBackend for ScreenBackend {
         HoverResult::consume()
     }
     fn on_pointer(&mut self, app: &mut AppState, hit: &PointerHit, pressed: bool) {
+        self.refresh_output_geometry(app);
         let mut btn = match hit.mode {
             PointerMode::Right => MOUSE_RIGHT,
             PointerMode::Middle => MOUSE_MIDDLE,

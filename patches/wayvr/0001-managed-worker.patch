@@ -2709,7 +2709,7 @@ diff --git a/wayvr/src/gui/panel/mod.rs b/wayvr/src/gui/panel/mod.rs
 diff --git a/wayvr/src/main.rs b/wayvr/src/main.rs
 --- a/wayvr/src/main.rs
 +++ b/wayvr/src/main.rs
-@@ -23,13 +23,45 @@
+@@ -23,13 +23,47 @@
  mod config;
  mod graphics;
  mod gui;
@@ -2739,6 +2739,8 @@ diff --git a/wayvr/src/main.rs b/wayvr/src/main.rs
 +mod shora_battery;
 +#[path = "../../../room.rs"]
 +mod room;
++#[path = "../../../desktop_layout.rs"]
++mod desktop_layout;
 +#[path = "../../../watch_menu.rs"]
 +mod watch_menu;
 +#[path = "../../../hands_frame.rs"]
@@ -2752,11 +2754,11 @@ diff --git a/wayvr/src/main.rs b/wayvr/src/main.rs
 +#[cfg(test)]
 +#[path = "../../../wivrn_tests.rs"]
 +mod wivrn_tests;
- 
+
  use std::{
      path::PathBuf,
-@@ -184,6 +216,9 @@
- 
+@@ -184,6 +218,9 @@
+
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
 +        if std::env::var_os("WIVRN_MANAGED_WAYVR").is_some() {
@@ -2764,7 +2766,7 @@ diff --git a/wayvr/src/main.rs b/wayvr/src/main.rs
 +        }
          let exe = std::env::current_exe()?;
          let mut args = vec!["--replace", "--show"];
- 
+
 diff --git a/wayvr/src/overlays/dashboard.rs b/wayvr/src/overlays/dashboard.rs
 --- a/wayvr/src/overlays/dashboard.rs
 +++ b/wayvr/src/overlays/dashboard.rs
@@ -3288,18 +3290,56 @@ diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mo
 diff --git a/wayvr/src/overlays/screen/backend.rs b/wayvr/src/overlays/screen/backend.rs
 --- a/wayvr/src/overlays/screen/backend.rs
 +++ b/wayvr/src/overlays/screen/backend.rs
-@@ -299,7 +299,7 @@
+@@ -90,6 +90,21 @@
+         }
+     }
+
++    fn refresh_output_geometry(&mut self, app: &AppState) {
++        if matches!(self.capture_type, CaptureType::Xshm) {
++            return;
++        }
++        if let Some(output) = app.hid_provider.desktop_output(&self.name)
++            && (self.logical_pos != output.position || self.logical_size != output.size)
++        {
++            self.logical_pos = output.position;
++            self.logical_size = output.size;
++            self.apply_mouse_transform_with_override(mouse_transform_to_transform(
++                self.mouse_transform_override,
++            ));
++        }
++    }
++
+     pub(super) fn apply_mouse_transform_with_override(&mut self, transform: Transform) {
+         let mut size = self.logical_size;
+         let pos = self.logical_pos;
+@@ -289,6 +304,7 @@
+     }
+
+     fn on_hover(&mut self, app: &mut AppState, hit: &PointerHit) -> HoverResult {
++        self.refresh_output_geometry(app);
+         #[cfg(debug_assertions)]
+         log::trace!("Hover: {:?}", hit.uv);
+
+@@ -299,7 +315,7 @@
                  .set_input_focus(app.wvr_server.as_mut(), InputFocus::PhysicalScreen);
          }
- 
+
 -        if can_move()
 +        if (app.input_state.pointers[hit.pointer].hand_tracking || can_move())
              && (!app.session.config.focus_follows_mouse_mode
                  || app.input_state.pointers[hit.pointer].now.move_mouse)
          {
-@@ -328,18 +328,20 @@
+@@ -312,6 +328,7 @@
+         HoverResult::consume()
+     }
+     fn on_pointer(&mut self, app: &mut AppState, hit: &PointerHit, pressed: bool) {
++        self.refresh_output_geometry(app);
+         let mut btn = match hit.mode {
+             PointerMode::Right => MOUSE_RIGHT,
+             PointerMode::Middle => MOUSE_MIDDLE,
+@@ -328,18 +345,20 @@
          }
- 
+
          if pressed {
 -            set_next_move(app.session.config.click_freeze_time_ms as _);
 -        }
@@ -3328,7 +3368,7 @@ diff --git a/wayvr/src/overlays/screen/backend.rs b/wayvr/src/overlays/screen/ba
 +            app.hid_provider.inner.send_button(btn, pressed);
 +        }
      }
- 
+
      fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {
 diff --git a/wayvr/src/overlays/watch.rs b/wayvr/src/overlays/watch.rs
 --- a/wayvr/src/overlays/watch.rs
@@ -3772,7 +3812,7 @@ diff --git a/wayvr/src/state.rs b/wayvr/src/state.rs
 +++ b/wayvr/src/state.rs
 @@ -55,7 +55,12 @@
      pub executor: wlx_common::async_executor::AsyncExecutor,
- 
+
      pub input_state: InputState,
 +    pub performance: crate::performance::Feed,
 +    pub shora_battery: crate::shora_battery::BatteryFeed,
@@ -3782,7 +3822,7 @@ diff --git a/wayvr/src/state.rs b/wayvr/src/state.rs
 +    pub room: crate::room::Feed,
      pub anchor: Affine3A,
      pub anchor_grabbed: bool,
- 
+
 @@ -203,7 +208,12 @@
              audio,
              wgui_shared,
@@ -3799,7 +3839,7 @@ diff --git a/wayvr/src/state.rs b/wayvr/src/state.rs
 @@ -239,6 +249,14 @@
          Ok(app_state)
      }
- 
+
 +    pub fn room_notice(&mut self, message: &str) {
 +        crate::overlays::toast::Toast::new(
 +            wlx_common::overlays::ToastTopic::System,
@@ -3811,25 +3851,26 @@ diff --git a/wayvr/src/state.rs b/wayvr/src/state.rs
      pub fn late_init(&mut self) {
          self.notifications.run_dbus(&mut self.dbus);
          self.notifications.run_udp();
-@@ -264,6 +282,7 @@
+@@ -264,6 +282,8 @@
      }
- 
+
      pub fn tick(&mut self) {
++        self.hid_provider.refresh_desktop_layout();
 +        self.room.tick();
          while self.executor.try_tick() {}
          self.dbus.tick();
- 
-@@ -364,6 +383,8 @@
+
+@@ -364,6 +384,8 @@
  pub struct PlayspaceState {
      pub openvr_space_center: Affine3A,
      pub openxr_space_center: Affine3A,
 +    #[serde(default, skip_serializing_if = "Option::is_none")]
 +    pub remembered_floor: Option<wlx_common::windowing::RoomBinding>,
  }
- 
+
  pub fn load_playspace_state() -> anyhow::Result<PlayspaceState> {
-@@ -374,6 +395,9 @@
- 
+@@ -374,6 +396,9 @@
+
  pub fn save_playspace_state(state: &PlayspaceState) -> anyhow::Result<()> {
      let json = serde_json5::to_string(state)?;
 -    std::fs::write(config_io::get_config_file_path("playspace.json5"), json)?;
@@ -3842,7 +3883,49 @@ diff --git a/wayvr/src/state.rs b/wayvr/src/state.rs
 diff --git a/wayvr/src/subsystem/input.rs b/wayvr/src/subsystem/input.rs
 --- a/wayvr/src/subsystem/input.rs
 +++ b/wayvr/src/subsystem/input.rs
-@@ -46,14 +46,14 @@
+@@ -16,6 +16,8 @@
+     input_focus: InputFocus,
+     pub inner: Box<dyn HidProvider>,
+     pub keymap: Option<XkbKeymap>,
++    desktop_feed: crate::desktop_layout::Feed,
++    desktop_layout: Option<crate::desktop_layout::Layout>,
+ }
+
+ #[allow(clippy::map_unwrap_or)]
+@@ -36,9 +38,32 @@
+                 input_focus: InputFocus::PhysicalScreen,
+                 inner: provider,
+                 keymap: None,
++                desktop_feed: crate::desktop_layout::Feed::start(),
++                desktop_layout: None,
+             },
+             toast,
+         )
++    }
++
++    pub fn refresh_desktop_layout(&mut self) {
++        if let Some(layout) = self.desktop_feed.take_update() {
++            log::info!(
++                "Desktop pointer mapping: origin {:?}, extent {:?}",
++                layout.origin,
++                layout.extent
++            );
++            self.inner.set_desktop_origin(layout.origin);
++            self.inner.set_desktop_extent(layout.extent);
++            self.desktop_layout = Some(layout);
++        }
++    }
++
++    pub fn desktop_output(&self, name: &str) -> Option<&crate::desktop_layout::Output> {
++        self.desktop_layout
++            .as_ref()?
++            .outputs
++            .iter()
++            .find(|o| o.name == name)
+     }
+
+     pub fn set_input_focus(
+@@ -46,14 +71,14 @@
          wvr_server: Option<&mut WvrServerState>,
          value: InputFocus,
      ) -> bool {
@@ -3858,7 +3941,7 @@ diff --git a/wayvr/src/subsystem/input.rs b/wayvr/src/subsystem/input.rs
 -            if let Some(wvr_server) = wvr_server {
 -                wvr_server.set_input_focus(matches!(value, InputFocus::WayVR));
 -            }
- 
+
              true
          }
 diff --git a/wayvr/src/windowing/window.rs b/wayvr/src/windowing/window.rs

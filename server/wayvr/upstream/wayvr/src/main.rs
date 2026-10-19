@@ -49,6 +49,8 @@ mod shaders;
 mod shora_battery;
 #[path = "../../../room.rs"]
 mod room;
+#[path = "../../../desktop_layout.rs"]
+mod desktop_layout;
 #[path = "../../../watch_menu.rs"]
 mod watch_menu;
 #[path = "../../../hands_frame.rs"]

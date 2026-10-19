@@ -282,6 +282,7 @@ impl AppState {
     }
 
     pub fn tick(&mut self) {
+        self.hid_provider.refresh_desktop_layout();
         self.room.tick();
         while self.executor.try_tick() {}
         self.dbus.tick();

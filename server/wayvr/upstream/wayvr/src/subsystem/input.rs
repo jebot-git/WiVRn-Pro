@@ -16,6 +16,8 @@ pub struct HidWrapper {
     input_focus: InputFocus,
     pub inner: Box<dyn HidProvider>,
     pub keymap: Option<XkbKeymap>,
+    desktop_feed: crate::desktop_layout::Feed,
+    desktop_layout: Option<crate::desktop_layout::Layout>,
 }
 
 #[allow(clippy::map_unwrap_or)]
@@ -36,9 +38,32 @@ impl HidWrapper {
                 input_focus: InputFocus::PhysicalScreen,
                 inner: provider,
                 keymap: None,
+                desktop_feed: crate::desktop_layout::Feed::start(),
+                desktop_layout: None,
             },
             toast,
         )
+    }
+
+    pub fn refresh_desktop_layout(&mut self) {
+        if let Some(layout) = self.desktop_feed.take_update() {
+            log::info!(
+                "Desktop pointer mapping: origin {:?}, extent {:?}",
+                layout.origin,
+                layout.extent
+            );
+            self.inner.set_desktop_origin(layout.origin);
+            self.inner.set_desktop_extent(layout.extent);
+            self.desktop_layout = Some(layout);
+        }
+    }
+
+    pub fn desktop_output(&self, name: &str) -> Option<&crate::desktop_layout::Output> {
+        self.desktop_layout
+            .as_ref()?
+            .outputs
+            .iter()
+            .find(|o| o.name == name)
     }
 
     pub fn set_input_focus(

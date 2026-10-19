@@ -92,6 +92,12 @@ the Qt dashboard. WayVR's own Restart returns to this supervisor. A worker failu
 does not restart streaming or Shora. A briefly disconnected headset can leave the
 runtime alive, so WayVR follows the runtime lifetime rather than every Wi-Fi event.
 
+On Wayland, desktop pointer mapping follows the compositor’s current logical
+output bounds, including virtual monitors added after startup. Existing screen
+overlays also update their pointer geometry when an output moves or changes
+logical size. This keeps absolute mouse input aligned with the laser endpoint
+without restarting WayVR after desktop layout changes.
+
 ```json
 {
   "wayvr": {
