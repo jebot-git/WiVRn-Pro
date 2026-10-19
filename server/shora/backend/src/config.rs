@@ -188,6 +188,7 @@ pub struct FileConfig {
     pub drift_correction: Option<bool>,
     pub drift_amount: Option<f32>,
     pub stay_aligned: crate::stay_aligned::Settings,
+    pub walking: crate::walking::Settings,
     #[serde(default)]
     pub tracker_assignments: Vec<AssignmentFile>,
     pub face: FaceConfig,
@@ -214,6 +215,7 @@ pub struct Config {
     pub drift_correction: bool,
     pub drift_amount: f32,
     pub stay_aligned: crate::stay_aligned::Settings,
+    pub walking: crate::walking::Settings,
     /// Manual tracker body-part overrides, keyed by MAC and sensor id.
     pub tracker_assignments: HashMap<TrackerId, u8>,
     pub face: FaceConfig,
@@ -239,6 +241,7 @@ impl Default for Config {
             drift_correction: false,
             drift_amount: 0.5,
             stay_aligned: Default::default(),
+            walking: Default::default(),
             tracker_assignments: HashMap::new(),
             face: FaceConfig::default(),
             haritorax: HaritoraXConfig::default(),
@@ -295,7 +298,7 @@ impl Config {
     }
     pub fn tracking_settings(&self) -> crate::settings::TrackingSettings {
         crate::settings::TrackingSettings { height_m: self.height_m, smoothing: self.smoothing,
-            prediction: self.prediction, drift_correction: self.drift_correction, drift_amount: self.drift_amount, stay_aligned: self.stay_aligned }
+            prediction: self.prediction, drift_correction: self.drift_correction, drift_amount: self.drift_amount, stay_aligned: self.stay_aligned, walking: self.walking }
     }
     /// Resolve configuration: defaults → TOML file (if any) → CLI flags.
     pub fn load(cli: &Cli) -> anyhow::Result<Self> {
@@ -387,6 +390,7 @@ impl Config {
         f.motoc.validate()?;
         self.motoc = f.motoc;
         self.stay_aligned = f.stay_aligned;
+        self.walking = f.walking;
         if let Some(v) = f.drift_correction { self.drift_correction = v; }
         if let Some(v) = f.drift_amount { self.drift_amount = v; }
         self.face = f.face;
@@ -462,6 +466,8 @@ mod tests {
         settings.smoothing = 0.65;
         settings.prediction = 0.04;
         settings.drift_amount = 0.7;
+        settings.walking.sensitivity = 1.4;
+        settings.walking.max_stick = 0.65;
         for (index, kind) in [PoseKind::Standing, PoseKind::Sitting, PoseKind::Flat].into_iter().enumerate() {
             settings.stay_aligned.save(kind, RelaxedPose {
                 upper_leg_deg: 10.0 + index as f32, lower_leg_deg: 5.0, foot_deg: 2.0,

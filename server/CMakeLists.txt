@@ -114,6 +114,7 @@ if (WIVRN_BUILD_SERVER)
 			audio/audio_setup.cpp
 
 			compositor/compositor.cpp
+            compositor/hands_frame_capture.cpp
 			compositor/layer_squasher.cpp
 			compositor/foveation.cpp
 			compositor/pacer.cpp
@@ -366,7 +367,7 @@ if (WIVRN_BUILD_SERVER_LIBRARY)
 endif()
 
 # Input validation must retain IEEE NaN/Inf checks despite the renderer fast-math default.
-set_source_files_properties(compositor/compositor.cpp
+set_source_files_properties(compositor/hands_frame_capture.cpp compositor/compositor.cpp
             encoder/video_encoder.cpp
             driver/hand_joystick.cpp
 			driver/spatial_bridge.cpp

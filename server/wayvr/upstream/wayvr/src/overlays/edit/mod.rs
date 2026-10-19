@@ -424,6 +424,37 @@ fn make_edit_panel(app: &mut AppState) -> anyhow::Result<EditModeWrapPanel> {
                             Ok(EventResult::Consumed)
                         })
                     }
+                    "::EditModeRoomPin" | "::EditModeRoomUnpin" => {
+                        let pin = command == "::EditModeRoomPin";
+                        Box::new(move |_common, data, app, state| {
+                            if !test_button(data) || !test_duration(&button, app) {
+                                return Ok(EventResult::Pass);
+                            }
+                            let sel = OverlaySelector::Id(*state.id.borrow());
+                            app.tasks.enqueue(TaskType::Overlay(OverlayTask::Modify(sel,
+                                Box::new(move |app, owc| {
+                                    let Some(state) = owc.active_state.as_mut() else { return; };
+                                    let message = if pin {
+                                        if let Some(binding) = app.room.bind(state.transform) {
+                                            state.room_binding = Some(binding);
+                                            state.positioning = wlx_common::windowing::Positioning::Static;
+                                            state.align_to_hmd = false;
+                                            "Pinned to room. Leave edit mode to save."
+                                        } else {
+                                            "Room pin unavailable. Localize a saved room marker and hold steady for two seconds."
+                                        }
+                                    } else {
+                                        state.room_binding = None;
+                                        state.positioning = wlx_common::windowing::Positioning::Static;
+                                        crate::windowing::window::save_transform(state, app);
+                                        "Room pin removed. Leave edit mode to save."
+                                    };
+                                    app.room_notice(message);
+                                }),
+                            )));
+                            Ok(EventResult::Consumed)
+                        })
+                    }
                     "::EditModeSetPos" => {
                         let key = args.next().unwrap().to_owned();
                         Box::new(move |common, data, app, state| {

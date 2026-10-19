@@ -875,7 +875,43 @@ xrt_result_t wivrn_controller::update_inputs()
 	inputs_array = inputs_staging;
 	if (name != XRT_DEVICE_EXT_HAND_INTERACTION)
 	{
-		if (auto value = cnx->emulated_joystick(joints.hand_id))
+		auto mode = cnx->hand_controller(joints.hand_id);
+		// Start from neutral for synthetic controllers, including the first frame
+		// after disable/loss. Never inherit stale headset button state.
+		if (mode.has_value() || was_hand_controller)
+		{
+			for (auto & input: inputs_array)
+			{
+				auto type = XRT_GET_INPUT_TYPE(input.name);
+				if (type != XRT_INPUT_TYPE_POSE && type != XRT_INPUT_TYPE_HAND_TRACKING)
+				{
+					input.value = {};
+					input.active = true;
+					input.timestamp = os_monotonic_get_ns();
+				}
+			}
+		}
+		was_hand_controller = mode.has_value();
+		auto now = os_monotonic_get_ns();
+		auto value = hand_gestures.update(now, mode.has_value(), mode.value_or(false));
+		if (mode.has_value())
+		{
+			auto scalar = [&](unsigned i, float v) { inputs_array[i].value.vec1.x = v; };
+			auto button = [&](unsigned i, bool v) { inputs_array[i].value.boolean = v; };
+			scalar(WIVRN_CONTROLLER_TRIGGER_VALUE, value.trigger);
+			button(WIVRN_CONTROLLER_TRIGGER_CLICK, value.trigger_click);
+			button(WIVRN_CONTROLLER_TRIGGER_TOUCH, value.trigger > .05f);
+			scalar(WIVRN_CONTROLLER_SQUEEZE_VALUE, value.grip);
+			scalar(WIVRN_CONTROLLER_SQUEEZE_FORCE, value.grip);
+			button(WIVRN_CONTROLLER_SQUEEZE_CLICK, value.grip_click);
+			button(WIVRN_CONTROLLER_SQUEEZE_TOUCH, value.grip > .05f);
+			bool left = joints.hand_id == 0;
+			button(left ? WIVRN_CONTROLLER_X_CLICK : WIVRN_CONTROLLER_A_CLICK, value.first);
+			button(left ? WIVRN_CONTROLLER_X_TOUCH : WIVRN_CONTROLLER_A_TOUCH, value.first);
+			button(left ? WIVRN_CONTROLLER_Y_CLICK : WIVRN_CONTROLLER_B_CLICK, value.second);
+			button(left ? WIVRN_CONTROLLER_Y_TOUCH : WIVRN_CONTROLLER_B_TOUCH, value.second);
+		}
+		if (auto value = cnx->emulated_joystick(joints.hand_id, {inputs_staging[WIVRN_CONTROLLER_THUMBSTICK].value.vec2.x, inputs_staging[WIVRN_CONTROLLER_THUMBSTICK].value.vec2.y}))
 		{
 			auto & stick = inputs_array[WIVRN_CONTROLLER_THUMBSTICK];
 			stick.active = true;
@@ -1032,6 +1068,23 @@ void wivrn_controller::update_tracking(const from_headset::tracking & tracking, 
 void wivrn_controller::update_hand_tracking(const from_headset::hand_tracking & tracking, const clock_offset & offset)
 {
 	joints.update_tracking(tracking, offset);
+	if (tracking.hand != joints.hand_id)
+		return;
+	std::lock_guard lock(mutex);
+	static_assert(XR_HAND_JOINT_COUNT_EXT == 26);
+	std::array<hand_controller_gestures::point, 26> points{};
+	bool valid = offset && tracking.joints.has_value();
+	if (tracking.joints)
+	{
+		for (unsigned i = 0; i < points.size(); i++)
+		{
+			auto & joint = (*tracking.joints)[i];
+			points[i] = {joint.position.x, joint.position.y, joint.position.z};
+			valid &= bool(joint.flags & from_headset::pose_flags::position_valid);
+		}
+		valid &= bool((*tracking.joints)[1].flags & from_headset::pose_flags::position_tracked);
+	}
+	hand_gestures.sample(points, valid, offset.from_headset(tracking.production_timestamp));
 }
 
 xrt_result_t wivrn_controller::set_output(xrt_output_name name, const xrt_output_value * value)
@@ -1071,6 +1124,14 @@ xrt_result_t wivrn_controller::set_output(xrt_output_name name, const xrt_output
 
 void wivrn_controller::reset_history()
 {
+	std::lock_guard lock(mutex);
+	hand_gestures.reset();
+	for (auto & input: inputs_staging)
+	{
+		auto type = XRT_GET_INPUT_TYPE(input.name);
+		if (type != XRT_INPUT_TYPE_POSE && type != XRT_INPUT_TYPE_HAND_TRACKING)
+			input.value = {};
+	}
 	grip.reset();
 	aim.reset();
 	palm.reset();

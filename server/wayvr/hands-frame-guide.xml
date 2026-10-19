@@ -1,0 +1,1 @@
+<layout version="2"><elements><div width="1000" height="1000" interactable="0"><image id="preview" position="absolute" width="1000" height="1000"/><label id="status" position="absolute" margin_left="20" margin_top="0" width="960" size="28" color="primary"/></div></elements></layout>

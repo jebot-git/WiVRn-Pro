@@ -67,6 +67,7 @@ pub enum FocusPickState {
 
 pub struct InputState {
     pub hmd: Affine3A,
+    pub frame_view: Option<Affine3A>,
     pub ipd: f32,
     pub eye_gaze: Option<Affine3A>,
     pub pointers: [Pointer; 2],
@@ -79,6 +80,9 @@ pub struct InputState {
     pub space_drag_hand: usize,
     pub mouse_priority: crate::mouse_priority::MousePriority,
     pub joysticks_enabled: bool,
+    pub hand_controllers_enabled: bool,
+    pub walking_enabled: bool,
+    pub body_turning_enabled: bool,
     pub head_yaw_total: f64,
     head_last_yaw: Option<f64>,
     two_hand_grab: Option<(OverlayID, crate::hand_resize::HandResize)>,
@@ -88,6 +92,7 @@ impl InputState {
     pub fn new() -> Self {
         Self {
             hmd: Affine3A::IDENTITY,
+            frame_view: None,
             ipd: 0.0,
             eye_gaze: None,
             pointers: [Pointer::new(0), Pointer::new(1)],
@@ -99,6 +104,9 @@ impl InputState {
             space_drag_hand: 0,
             mouse_priority: Default::default(),
             joysticks_enabled: false,
+            hand_controllers_enabled: false,
+            walking_enabled: false,
+            body_turning_enabled: false,
             head_yaw_total: 0.0,
             head_last_yaw: None,
             two_hand_grab: None,
@@ -359,6 +367,7 @@ pub struct Pointer {
     pub tracked: bool,
     pub handsfree: bool,
     pub hand_tracking: bool,
+    pub frame_hand: Option<crate::hands_frame::Hand>,
     pub wrist_pose: Option<Affine3A>,
     pub index_tip: Option<Vec3A>,
     pub keyboard_hover: bool,
@@ -377,6 +386,7 @@ pub struct Pointer {
 }
 
 impl Pointer {
+    pub fn frame_blocked(&self) -> bool { self.interaction.grabbed.is_some() || self.keyboard_hover || self.joystick_owned || self.cancel_interaction }
     pub fn new(idx: usize) -> Self {
         debug_assert!(idx == 0 || idx == 1);
         Self {
@@ -391,6 +401,7 @@ impl Pointer {
             tracked: false,
             handsfree: false,
             hand_tracking: false,
+            frame_hand: None,
             wrist_pose: None,
             index_tip: None,
             keyboard_hover: false,
@@ -556,6 +567,28 @@ pub fn interact<O>(
 where
     O: Default,
 {
+    if app.watch_menu.open().is_some() {
+        let watch_visible = app.session.config.enable_watch && overlays.values().any(|o|
+            o.config.name.as_ref() == WATCH_NAME && o.config.active_state.as_ref().is_some_and(|s| s.alpha >= 0.05));
+        if !watch_visible { app.watch_menu.close(); }
+        else {
+            app.input_state.two_hand_grab = None;
+            for idx in 0..2 {
+                if app.input_state.pointers[idx].interaction.grabbed.is_some() {
+                    release_pointer(idx, overlays, app);
+                }
+            }
+        }
+    }
+    if crate::hands_frame_panel::update(overlays, app) {
+        app.input_state.two_hand_grab = None;
+        for idx in 0..2 {
+            release_pointer(idx, overlays, app);
+            app.input_state.pointers[idx].interaction.should_block_input = true;
+            app.input_state.pointers[idx].interaction.should_block_poses = false;
+        }
+        return [None,None];
+    }
     if update_two_hand_grab(overlays, app) {
         return [None, None];
     }
@@ -691,6 +724,8 @@ fn prepare_touch<O: Default>(
             .collect();
         for id in ids {
             let overlay = overlays.mut_by_id(id).unwrap();
+            if app.watch_menu.open().is_some() && overlay.config.name.as_ref() != WATCH_NAME { continue; }
+            if !overlay.config.room_available(&app.room) { continue; }
             let Some(state) = overlay.config.active_state.as_ref() else {
                 continue;
             };
@@ -741,6 +776,8 @@ fn prepare_touch<O: Default>(
             if overlay.config.name.as_ref() != WATCH_NAME {
                 continue;
             }
+            if app.watch_menu.open().is_some() && overlay.config.name.as_ref() != WATCH_NAME { continue; }
+            if !overlay.config.room_available(&app.room) { continue; }
             let Some(state) = overlay.config.active_state.as_ref() else {
                 continue;
             };
@@ -1134,6 +1171,8 @@ where
         {
             continue;
         }
+        if app.watch_menu.open().is_some() && overlay.config.name.as_ref() != WATCH_NAME { continue; }
+        if !overlay.config.room_available(&app.room) { continue; }
         let Some(overlay_state) = overlay.config.active_state.as_ref() else {
             continue;
         };
@@ -1260,6 +1299,7 @@ struct StartGrabParams<'a> {
 
 fn start_grab(par: StartGrabParams) {
     let (app, id, state) = (par.app, par.id, par.state);
+    if app.watch_menu.open().is_some() { return; }
 
     let pointer = &mut app.input_state.pointers[par.idx];
 
@@ -1367,6 +1407,11 @@ fn handle_grabbed<O>(idx: usize, overlay: &mut OverlayWindowData<O>, app: &mut A
 where
     O: Default,
 {
+    if !overlay.config.room_available(&app.room) {
+        app.input_state.pointers[idx].interaction.grabbed = None;
+        overlay.config.pause_movement = false;
+        return;
+    }
     let pointer = &mut app.input_state.pointers[idx];
     let Some(grab_data) = pointer.interaction.grabbed.as_mut() else {
         log::error!("Grabbed overlay does not exist");
@@ -1538,7 +1583,10 @@ fn update_two_hand_grab<O: Default>(overlays: &mut OverlayWindowManager<O>, app:
             || p.cancel_interaction || p.joystick_owned || p.wrist_pose.is_none_or(|pose| !pose.is_finite()));
     if let Some((id, resize)) = app.input_state.two_hand_grab {
         let both = !interrupted && app.input_state.pointers.iter().all(hand_grip);
-        let transform = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform));
+        let transform = overlays.mut_by_id(id).and_then(|o| {
+            if !o.config.room_available(&app.room) { return None; }
+            o.config.active_state.as_ref().map(|s| s.transform)
+        });
         if both && transform.is_some() {
             let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
             let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
@@ -1575,7 +1623,10 @@ fn update_two_hand_grab<O: Default>(overlays: &mut OverlayWindowManager<O>, app:
     }
     if interrupted { return false; }
     let Some(id) = two_hand_target(&app.input_state.pointers) else { return false; };
-    let Some(transform) = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform)) else { return false; };
+    let Some(transform) = overlays.mut_by_id(id).and_then(|o| {
+            if !o.config.room_available(&app.room) { return None; }
+            o.config.active_state.as_ref().map(|s| s.transform)
+        }) else { return false; };
     let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
     let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
     let Some(resize) = crate::hand_resize::HandResize::start(transform, left, right) else {

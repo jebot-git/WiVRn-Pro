@@ -34,7 +34,7 @@ int main()
 	put(invalid, 16, std::bit_cast<uint32_t>(1.1f), 4);
 	assert(!decode_joysticks(invalid, now));
 	invalid = packet;
-	put(invalid, 4, 32, 4);
+	put(invalid, 4, 256, 4);
 	assert(!decode_joysticks(invalid, now));
 	// Clicks are independent of analogue-pad activity, and disabled means released.
 	for (unsigned flags: {9u, 17u, 25u, 24u})
@@ -95,8 +95,27 @@ int main()
 		endpoint.poll(now, 3);
 		assert(endpoint.get(0, now));
 		assert(endpoint.get(0, now)->clicked && endpoint.get(1, now)->clicked);
+		// Controller mode is independent of pads, with separate per-hand ownership.
+		put(packet, 4, 32 | 64, 4);
+		put(packet, 32, 7, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now, 3);
+		assert(!endpoint.get(0, now));
+		assert(endpoint.controller(0, now).value());
+		assert(!endpoint.controller(1, now).value());
+		assert(!endpoint.controller(0, now + 151'000'000));
+		endpoint.poll(now, 2);
+		assert(!endpoint.controller(0, now));
+		// Both features can be enabled together, without changing axes/clicks.
+		put(packet, 4, 32 | 9, 4);
+		put(packet, 32, 8, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now, 3);
+		assert(endpoint.controller(0, now).has_value());
+		assert(endpoint.get(0, now)->clicked);
 		close(fd);
 		endpoint.poll(now, 3);
+		assert(!endpoint.controller(0, now));
 		assert(!endpoint.get(0, now));
 	}
 	std::filesystem::remove_all(directory);

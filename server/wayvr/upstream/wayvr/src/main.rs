@@ -47,6 +47,14 @@ mod performance_panel;
 mod shaders;
 #[path = "../../../shora_battery.rs"]
 mod shora_battery;
+#[path = "../../../room.rs"]
+mod room;
+#[path = "../../../watch_menu.rs"]
+mod watch_menu;
+#[path = "../../../hands_frame.rs"]
+mod hands_frame;
+#[path = "../../../hands_frame_panel.rs"]
+mod hands_frame_panel;
 mod state;
 mod subsystem;
 mod test;

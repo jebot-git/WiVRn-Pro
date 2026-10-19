@@ -23,6 +23,7 @@ CALIBRATIONS = [
     ("Stay Aligned: save sitting-on-heels pose", {"command": "save_relaxed_pose", "pose": "heels"}, "After standing and mounting calibration: sit back on both heels, torso upright, thighs forward and shins folded behind. Hold still for at least one second."),
     ("Stay Aligned: save belly-down pose", {"command": "save_relaxed_pose", "pose": "prone"}, "After standing and mounting calibration: lie on your belly with both legs extended. Relax your legs and hold still for at least one second; your head may face sideways."),
     ("Stay Aligned: save belly-down bent-knees pose", {"command": "save_relaxed_pose", "pose": "prone_bent"}, "Lie on your belly with both thighs flat and both knees bent so the shins point upward. Hold naturally still for at least one second."),
+    ("Walking in place setup", {"command": "calibrate_walking"}, "With both thighs and shins calibrated: stand still for two seconds, then march on the spot for eight seconds. Locomotion stays off during setup."),
 ]
 
 
@@ -112,6 +113,23 @@ class TrackingPanel(QWidget):
         form.addRow("Prediction", self.prediction)
         form.addRow(self.drift_enabled)
         form.addRow("Drift amount", self.drift_amount)
+        self.walk_fields = {}
+        for key, label, low, high, value, decimals in [
+            ("lift_deg", "Step lift threshold (degrees)", 6, 35, 12, 1),
+            ("sensitivity", "Walking sensitivity", .2, 3, 1, 2),
+            ("max_stick", "Maximum forward stick", .1, 1, .8, 2),
+            ("stop_ms", "Stop response (ms)", 150, 600, 350, 0),
+            ("turn_deadzone_deg", "Body turn deadzone (degrees)", 3, 25, 8, 1),
+            ("turn_range_deg", "Full body turn (degrees)", 15, 90, 35, 1),
+            ("max_turn", "Maximum turning stick", .1, 1, .65, 2),
+        ]:
+            spin = self.spin(low, high, value, decimals)
+            self.walk_fields[key] = spin
+            form.addRow(label, spin)
+            spin.valueChanged.connect(self.edited)
+        self.walk_status = QLabel("Enable walking and optional body turning in the WayVR Input menu. Turning requires confirmed physical steps.")
+        self.walk_status.setWordWrap(True)
+        form.addRow(self.walk_status)
         self.stay_enabled = QCheckBox("Enable Stay Aligned")
         self.anchor_rest = QCheckBox("Validate rest locks with room anchors")
         self.anchor_rest.setToolTip("Requires three stable room anchors and fresh verified linear acceleration. Uses bounded yaw correction; slow deliberate turns can still resemble drift.")
@@ -203,6 +221,10 @@ class TrackingPanel(QWidget):
         self.anchor_rest.setChecked(stay.get("anchor_rest_lock", False))
         self.stay_rate.setValue(stay.get("rate_deg_per_sec", 0.2))
         self.stay_rate.setEnabled(stay.get("enabled", False))
+        for key, spin in self.walk_fields.items():
+            spin.setEnabled("walking" in settings)
+            if key in settings.get("walking", {}):
+                spin.setValue(settings["walking"][key])
         self.loading = False
 
     def edited(self, *_):
@@ -218,6 +240,7 @@ class TrackingPanel(QWidget):
         self.snapshot = snapshot
         self.hardware.update_snapshot(snapshot)
         self.preview.set_snapshot(snapshot)
+        self.walk_status.setText((snapshot or {}).get("walking_status", "Walking requires calibrated thigh/shin sensors; enable it in WayVR Input. Body turning is active only while stepping."))
         supported = bool(snapshot and isinstance(snapshot.get("settings"), dict))
         self.tuning_group.setEnabled(supported and not self.applying)
         stay_supported = supported and "stay_aligned" in snapshot["settings"]
@@ -277,6 +300,8 @@ class TrackingPanel(QWidget):
                                            enabled=self.stay_enabled.isChecked(), rate_deg_per_sec=self.stay_rate.value())
             if "anchor_rest_lock" in settings["stay_aligned"]:
                 settings["stay_aligned"]["anchor_rest_lock"] = self.anchor_rest.isChecked()
+        if "walking" in self.snapshot["settings"]:
+            settings["walking"] = {key: (int(spin.value()) if key == "stop_ms" else spin.value()) for key, spin in self.walk_fields.items()}
         self.applying = True
         self.tuning_group.setEnabled(False)
         self.notice.setText("Applying settings…")
@@ -292,8 +317,10 @@ class TrackingPanel(QWidget):
             persistent = self.snapshot and self.snapshot.get("config_path")
             self.notice.setText(("Settings applied and saved to the startup profile." if persistent else
                                  "Settings applied · export a tuning profile to keep them.") if ok else error)
-        elif command in ("full_reset", "yaw_reset", "mounting_reset", "clear_drift", "save_relaxed_pose", "clear_stay_aligned"):
+        elif command in ("calibrate_walking", "full_reset", "yaw_reset", "mounting_reset", "clear_drift", "save_relaxed_pose", "clear_stay_aligned"):
             result = "Drift history cleared" if command == "clear_drift" else "Calibration applied"
+            if command == "calibrate_walking":
+                result = "Walking setup started: stand still for two seconds, then march for eight seconds"
             if command == "save_relaxed_pose":
                 result = ("Relaxed pose saved to the startup profile" if self.snapshot and self.snapshot.get("config_path") else
                           "Relaxed pose saved · export tuning to keep it for future sessions")
@@ -369,6 +396,10 @@ class TrackingPanel(QWidget):
                     text += f"\n[stay_aligned.{kind}]\n"
                     for key, value in stay[kind].items():
                         text += f"{key} = {value}\n"
+        if "walking" in settings:
+            text += "\n[walking]\n"
+            for key, value in settings["walking"].items():
+                text += f"{key} = {value}\n"
         file = QSaveFile(str(path))
         if not file.open(QIODevice.OpenModeFlag.WriteOnly):
             raise OSError(file.errorString())

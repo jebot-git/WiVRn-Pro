@@ -92,7 +92,7 @@ impl OverlayWindowData<OpenVrOverlayData> {
         overlay: &mut OverlayManager,
         app: &mut AppState,
     ) -> anyhow::Result<()> {
-        let want_visible = self
+        let want_visible = self.config.room_available(&app.room) && self
             .config
             .active_state
             .as_ref()

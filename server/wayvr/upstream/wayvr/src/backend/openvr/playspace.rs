@@ -45,6 +45,9 @@ impl PlayspaceMover {
         task: PlayspaceTask,
     ) {
         match task {
+            PlayspaceTask::RememberFloor | PlayspaceTask::ForgetFloor => {
+                app.room_notice("Remember floor requires WiVRn OpenXR and a localized room marker.");
+            }
             PlayspaceTask::FixFloor => {
                 self.fix_floor(chaperone_mgr, app, overlays);
             }

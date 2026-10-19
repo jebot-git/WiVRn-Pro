@@ -320,6 +320,14 @@ impl Calibration {
         for tracker in self.trackers.values_mut() { tracker.drift.clear(); }
     }
 
+    pub fn locomotion_revision(&self) -> u64 {
+        use std::hash::{Hash, Hasher};
+        self.trackers.iter().fold(self.reference_revision, |result, (id, t)| {
+            let mut hash = std::collections::hash_map::DefaultHasher::new();
+            (id, t.alignment_revision, t.reset_count).hash(&mut hash);
+            result ^ hash.finish()
+        })
+    }
     pub fn is_calibrated(&self, id: TrackerId) -> bool {
         self.trackers.get(&id).is_some_and(|t| t.reset_count > 0)
     }

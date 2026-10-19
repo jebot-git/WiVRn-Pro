@@ -67,6 +67,8 @@ pub enum PlayspaceTask {
     Recenter,
     Reset,
     FixFloor,
+    RememberFloor,
+    ForgetFloor,
     SaveCenter,
     ResetCenter,
 }

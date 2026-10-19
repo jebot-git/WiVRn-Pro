@@ -27,6 +27,7 @@
 #include "encoder/encoder_settings.h"
 #include "foveation.h"
 #include "layer_squasher.h"
+#include "hands_frame_capture.h"
 #include "pacer.h"
 #include "utils/wivrn_vk_bundle.h"
 
@@ -99,6 +100,7 @@ private:
 	wivrn::pacer pacer;
 
 	layer_squasher squasher;
+    hands_frame_capture hands_frame;
 	wivrn::foveation foveation;
 
 	std::array<std::unique_ptr<video_encoder>, 3> encoders;

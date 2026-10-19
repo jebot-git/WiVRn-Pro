@@ -62,6 +62,7 @@ pub struct GuiPanel<S> {
     pub max_size: Vec2,
     pub gui_scale: f32,
     pub on_notify: Option<OnNotifyFunc<S>>,
+    pub on_event_filter: Option<Box<dyn FnMut(&mut Layout, &mut S, &mut AppState, &WguiEvent) -> bool>>,
     pub on_lifetime_update: Option<OnLifetimeUpdateFunc<S>>,
     pub initialized: bool,
     pub doc_extra: Option<ParseDocumentExtra>,
@@ -179,6 +180,7 @@ impl<S: 'static> GuiPanel<S> {
             timers: vec![],
             interaction_transform: None,
             on_notify: None,
+            on_event_filter: None,
             on_lifetime_update: None,
             gui_scale: params.gui_scale,
             initialized: false,
@@ -244,6 +246,11 @@ impl<S: 'static> GuiPanel<S> {
     }
 
     pub fn push_event(&mut self, app: &mut AppState, event: &WguiEvent) -> EventResult {
+        if let Some(filter) = &mut self.on_event_filter {
+            if !filter(&mut self.layout, &mut self.state, app, event) {
+                return EventResult::Consumed;
+            }
+        }
         match self.layout.push_event(event, app, &mut self.state) {
             Ok(r) => r,
             Err(e) => {

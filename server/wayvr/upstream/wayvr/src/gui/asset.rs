@@ -5,12 +5,8 @@ pub struct GuiAsset;
 impl wgui::assets::AssetProvider for GuiAsset {
     fn load_from_path(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
         if path == "gui/watch-motoc.xml" {
-            return Ok(include_str!("../assets/gui/watch.xml")
-                .replace("Full reset: stand upright and face forward. Three-second countdown; press again to cancel.", "Motoc calibrate: hold the selected tracker against the headset. Three-second countdown; press again to cancel.")
-                .replace("Mounting reset: after a full reset, bend knees and lean forward in a ski pose. Three-second countdown; press again to cancel.", "Motoc resume: use the saved calibration in the selected mode. Three-second countdown; press again to cancel.")
-                .replace("<sprite width=\"40\" height=\"40\" src_builtin=\"@/watch/full-reset.svg\" />", "<label text=\"Calib\" size=\"15\" />")
-                .replace("<sprite width=\"40\" height=\"40\" src_builtin=\"@/watch/mounting-reset.svg\" />", "<label text=\"Resume\" size=\"13\" />")
-                .into_bytes());
+            // Labels/actions are selected by the grouped watch controller.
+            return Ok(include_bytes!("../assets/gui/watch.xml").to_vec());
         }
         if path == "watch/full-reset.svg" {
             return Ok(include_bytes!("../../../../icons/full-reset.svg").to_vec());
@@ -18,6 +14,9 @@ impl wgui::assets::AssetProvider for GuiAsset {
         if path == "watch/mounting-reset.svg" {
             return Ok(include_bytes!("../../../../icons/mounting-reset.svg").to_vec());
         }
+        if path == "gui/hands-frame-bookmarks.xml" {return Ok(include_bytes!("../../../../hands-frame-bookmarks.xml").to_vec());}
+        if path == "gui/hands-frame.xml" {return Ok(include_bytes!("../../../../hands-frame.xml").to_vec());}
+        if path == "gui/hands-frame-guide.xml" {return Ok(include_bytes!("../../../../hands-frame-guide.xml").to_vec());}
         if path == "gui/performance.xml" {
             return Ok(include_bytes!("../../../../performance.xml").to_vec());
         }

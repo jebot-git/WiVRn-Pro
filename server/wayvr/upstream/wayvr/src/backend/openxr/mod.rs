@@ -176,6 +176,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
 
     let mut fps_counter: VecDeque<Instant> = VecDeque::new();
 
+    app.room.start();
     let mut main_session_visible = false;
     let mut environment_blend_mode = modes[0];
     let mut last_frame_time = Instant::now();
@@ -311,6 +312,9 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
         };
 
         if !xr_frame_state.should_render {
+            app.watch_menu.close();
+            app.input_state.frame_view=None;
+            app.hands_frame.model.cancel();app.hands_frame.command("cancel");
             input_source.reset_hands();
             for i in 0..2 {
                 crate::backend::input::release_pointer(i, &mut overlays, &mut app);
@@ -375,6 +379,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
                 .enqueue(TaskType::Overlay(OverlayTask::ToggleDashboard));
         }
 
+        playspace_mover.restore_floor(&mut app, &mut overlays);
         playspace_mover.update(&mut overlays, &mut app);
 
         for o in overlays.values_mut() {
@@ -392,6 +397,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
             &xr_state.stage,
         )?;
 
+        app.input_state.frame_view=views.first().map(|v|helpers::posef_to_transform(&v.pose));
         let ipd = helpers::ipd_from_views(&views);
         if (app.input_state.ipd - ipd).abs() > 0.5 {
             log::info!("IPD changed: {} -> {}", app.input_state.ipd, ipd);
@@ -457,7 +463,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
 
         for o in overlays.values_mut() {
             o.data.cur_visible = false;
-            if o.config
+            if !o.config.room_available(&app.room) || o.config
                 .active_state
                 .as_ref()
                 .is_none_or(|s| s.alpha < 0.01)

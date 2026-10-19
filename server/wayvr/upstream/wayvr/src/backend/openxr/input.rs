@@ -464,7 +464,11 @@ impl OpenXrInputSource {
                     } else {
                         None
                     };
-                    if app.input_state.joysticks_enabled {
+                    pointer.frame_hand = crate::hands_frame_panel::tracked_hand(
+                        joints.as_ref(),
+                        pointer.frame_hand.is_some_and(|h| h.trigger),
+                    );
+                    if app.input_state.joysticks_enabled && !app.hands_frame.model.reserving() {
                         pointer.joystick_pad = self.thumb_pads[i].update(
                             self.started.elapsed(),
                             joints.as_ref(),
@@ -539,9 +543,11 @@ impl OpenXrInputSource {
                     pointer.index_tip = None;
                 }
                 if !hand_mode {
+                    pointer.frame_hand = None;
                     self.thumb_pads[i].reset();
                 }
                 if !xr.focused || pointer.cancel_interaction {
+                    pointer.frame_hand = None;
                     pointer.joystick_pad = None;
                     pointer.joystick_owned = false;
                     self.thumb_pads[i].reset();
@@ -601,6 +607,34 @@ impl OpenXrInputSource {
         self.joystick_link.exchange(
             app.input_state.joysticks_enabled && xr.focused && picking_focus.is_none(),
             app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
+            app.input_state.hand_controllers_enabled && xr.focused && picking_focus.is_none(),
+            app.input_state.pointers.each_ref().map(|p| {
+                p.joystick_owned
+                    || p.cancel_interaction
+                    || p.keyboard_hover
+                    || p.interaction.hovered_id.is_some()
+                    || p.interaction.grabbed.is_some()
+                    || p.interaction.clicked_id.is_some()
+                    || p.interaction.should_block_input
+                    || app.watch_menu.open().is_some()
+                    || app.hands_frame.model.reserving()
+            }),
+            app.input_state.walking_enabled && xr.focused && picking_focus.is_none(),
+            app.input_state.body_turning_enabled,
+            app.input_state
+                .pointers
+                .each_ref()
+                .map(|p| p.joystick_owned),
+            app.watch_menu.open().is_some()
+                || app.hands_frame.model.reserving()
+                || app.input_state.pointers.iter().any(|p| {
+                    p.cancel_interaction
+                        || p.keyboard_hover
+                        || p.interaction.hovered_id.is_some()
+                        || p.interaction.grabbed.is_some()
+                        || p.interaction.clicked_id.is_some()
+                        || p.interaction.should_block_input
+                }),
         );
         app.session.config.handsfree_pointer = old_handsfree;
 

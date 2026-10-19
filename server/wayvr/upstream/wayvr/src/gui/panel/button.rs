@@ -629,47 +629,24 @@ pub(super) fn setup_custom_button<S: 'static>(
                         .enqueue(TaskType::Playspace(PlayspaceTask::Recenter));
                     Ok(EventResult::Consumed)
                 }),
+                "::PlayspaceRememberFloor" | "::PlayspaceForgetFloor" => {
+                    let remember = command == "::PlayspaceRememberFloor";
+                    Box::new(move |_common, data, app, _| {
+                        if !test_button(data) || !test_duration(&button, app) {
+                            return Ok(EventResult::Pass);
+                        }
+                        app.tasks.enqueue(TaskType::Playspace(if remember {
+                            PlayspaceTask::RememberFloor
+                        } else { PlayspaceTask::ForgetFloor }));
+                        Ok(EventResult::Consumed)
+                    })
+                }
                 "::PlayspaceFixFloor" => Box::new(move |_common, data, app, _| {
                     if !test_button(data) || !test_duration(&button, app) {
                         return Ok(EventResult::Pass);
                     }
 
-                    let globals = app.wgui_globals.clone();
-
-                    let duration_secs = 5;
-                    let now = Instant::now();
-
-                    for i in 0..duration_secs {
-                        let text = globals.i18n().translate_and_replace(
-                            "TOAST.FIXING_FLOOR_IN_X_SECS",
-                            ("{SECONDS}", &format!("{}", duration_secs - i)),
-                        );
-                        Toast::new(
-                            ToastTopic::System,
-                            Some(Translation::from_raw_text_string(text)),
-                            Translation::from_translation_key("TOAST.ONE_CONTROLLER_ON_FLOOR"),
-                        )
-                        .with_timeout(1.0)
-                        .with_lerp_amount(1.0)
-                        .with_animate(false)
-                        .with_sound(i == 0)
-                        .submit_at(app, now + Duration::from_secs(i as _));
-                    }
-
-                    app.audio.play_sample("fix_floor");
-
-                    let deadline = now + Duration::from_secs(duration_secs);
-
-                    app.tasks
-                        .enqueue_at(TaskType::Playspace(PlayspaceTask::FixFloor), deadline);
-
-                    Toast::new(
-                        ToastTopic::System,
-                        Some(Translation::from_translation_key("DONE")),
-                        Translation::from_raw_text(""),
-                    )
-                    .with_timeout(2.0)
-                    .submit_at(app, deadline);
+                    queue_fix_floor(app);
                     Ok(EventResult::Consumed)
                 }),
                 "::Shutdown" => Box::new(move |_common, data, app, _| {
@@ -882,4 +859,44 @@ fn shell_on_tick(state: &ShellButtonState) {
     if let Ok(Some(_)) = child.try_wait() {
         mut_state.child = None;
     }
+}
+
+/// Shared by custom panels and the grouped watch menu.
+pub fn queue_fix_floor(app: &mut AppState) {
+    let globals = app.wgui_globals.clone();
+
+    let duration_secs = 5;
+    let now = Instant::now();
+
+    for i in 0..duration_secs {
+        let text = globals.i18n().translate_and_replace(
+            "TOAST.FIXING_FLOOR_IN_X_SECS",
+            ("{SECONDS}", &format!("{}", duration_secs - i)),
+        );
+        Toast::new(
+            ToastTopic::System,
+            Some(Translation::from_raw_text_string(text)),
+            Translation::from_translation_key("TOAST.ONE_CONTROLLER_ON_FLOOR"),
+        )
+        .with_timeout(1.0)
+        .with_lerp_amount(1.0)
+        .with_animate(false)
+        .with_sound(i == 0)
+        .submit_at(app, now + Duration::from_secs(i as _));
+    }
+
+    app.audio.play_sample("fix_floor");
+
+    let deadline = now + Duration::from_secs(duration_secs);
+
+    app.tasks
+        .enqueue_at(TaskType::Playspace(PlayspaceTask::FixFloor), deadline);
+
+    Toast::new(
+        ToastTopic::System,
+        Some(Translation::from_translation_key("DONE")),
+        Translation::from_raw_text(""),
+    )
+    .with_timeout(2.0)
+    .submit_at(app, deadline);
 }

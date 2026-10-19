@@ -311,6 +311,32 @@ ports=["/dev/fake"]
         self.assertEqual(panel.notice.text(), 'Cannot save TOML')
         panel.close()
 
+    def test_walking_tuning_roundtrips_through_apply_and_export(self):
+        from tracking_panel import TrackingPanel, DEFAULTS
+        panel = TrackingPanel()
+        commands = []
+        panel.command_requested.connect(commands.append)
+        walking = dict(lift_deg=12.0, sensitivity=1.0, max_stick=.8, stop_ms=350,
+                       turn_deadzone_deg=8.0, turn_range_deg=35.0, max_turn=.65)
+        snapshot = {"settings": dict(DEFAULTS, walking=walking), "walking_status": "Walking ready"}
+        panel.set_snapshot(snapshot)
+        panel.walk_fields["sensitivity"].setValue(1.4)
+        panel.walk_fields["stop_ms"].setValue(250)
+        panel.apply_button.click()
+        sent = commands[-1]["settings"]["walking"]
+        self.assertEqual(sent["sensitivity"], 1.4)
+        self.assertEqual(sent["stop_ms"], 250)
+        self.assertIsInstance(sent["stop_ms"], int)
+        snapshot["settings"]["walking"] = sent
+        panel.command_finished("set_settings", True, "")
+        panel.set_snapshot(snapshot)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "walking.toml"
+            panel.export_profile(path)
+            self.assertEqual(tomllib.loads(path.read_text())["walking"], sent)
+        self.assertEqual(panel.walk_status.text(), "Walking ready")
+        panel.close()
+
     def test_worker_profile_updates_refresh_clean_editor_and_preserve_drafts(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/'shora.toml'

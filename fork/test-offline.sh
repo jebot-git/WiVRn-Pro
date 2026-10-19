@@ -65,6 +65,12 @@ build/native-tests/wayvr-supervisor-test
 "$cxx" -std=c++23 -Wall -Wextra -Werror -fno-fast-math -Iserver/driver \
   fork/tests/hand_joystick_test.cpp server/driver/hand_joystick.cpp -o build/native-tests/hand-joystick-test
 build/native-tests/hand-joystick-test
+"$cxx" -std=c++23 -Wall -Wextra -Werror -fno-fast-math -Iserver/driver \
+  fork/tests/hand_controller_test.cpp -o build/native-tests/hand-controller-test
+build/native-tests/hand-controller-test
+"$cxx" -std=c++23 -Wall -Wextra -Werror -fno-fast-math -Iserver/driver \
+  fork/tests/walking_input_test.cpp server/driver/hand_joystick.cpp -o build/native-tests/walking-input-test
+build/native-tests/walking-input-test
 
 python3 -m unittest discover -s apps/spatial-subtitles/tests -p "test_*.py"
 

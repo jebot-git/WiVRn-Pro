@@ -52,9 +52,14 @@ pub(super) fn setup_custom_label<S: 'static>(
     };
 
     let callback: EventCallback<AppState, S> = match source {
+        "room_floor" => Box::new(|common, data, app, _| {
+            let text = if app.room.floor_status.is_empty() { "Remembered floor: off" } else { app.room.floor_status };
+            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(common, Translation::from_raw_text(text));
+            Ok(EventResult::Pass)
+        }),
         "tracking_reset" => Box::new(|common, data, app, _| {
             data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(
-                common, Translation::from_raw_text(&app.shora_battery.reset_text()));
+                common, Translation::from_raw_text(&{ let text = app.shora_battery.reset_text(); if app.input_state.walking_enabled && !app.shora_battery.reset_busy() { app.shora_battery.walking_text() } else { text } }));
             Ok(EventResult::Pass)
         }),
         "shora_battery" => {

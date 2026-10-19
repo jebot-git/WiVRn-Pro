@@ -4,7 +4,7 @@
 use std::{path::{Path, PathBuf}, sync::{Arc, Mutex, mpsc}, time::{Duration, Instant}};
 
 #[derive(Clone, Copy, Debug)]
-pub enum ResetKind { Full, Mounting, MotocCalibrate, MotocContinue }
+pub enum ResetKind { Walking, Full, Mounting, MotocCalibrate, MotocContinue }
 impl ResetKind {
     fn validate(self, status: &super::Status) -> anyhow::Result<()> {
         let motoc = matches!(self, Self::MotocCalibrate | Self::MotocContinue);
@@ -13,13 +13,14 @@ impl ResetKind {
         Ok(())
     }
     fn command(self) -> &'static str {
-        match self { Self::Full => "full_reset", Self::Mounting => "mounting_reset", Self::MotocCalibrate => "motoc_calibrate", Self::MotocContinue => "motoc_continue" }
+        match self { Self::Walking => "calibrate_walking", Self::Full => "full_reset", Self::Mounting => "mounting_reset", Self::MotocCalibrate => "motoc_calibrate", Self::MotocContinue => "motoc_continue" }
     }
     fn label(self) -> &'static str {
-        match self { Self::Full => "Full reset", Self::Mounting => "Mounting reset", Self::MotocCalibrate => "Motoc calibrate", Self::MotocContinue => "Motoc resume" }
+        match self { Self::Walking => "Walking setup", Self::Full => "Full reset", Self::Mounting => "Mounting reset", Self::MotocCalibrate => "Motoc calibrate", Self::MotocContinue => "Motoc resume" }
     }
     fn instructions(self) -> &'static str {
         match self {
+            Self::Walking => "Stand still for two seconds, then march on the spot for eight seconds",
             Self::MotocCalibrate => "Hold the selected tracker firmly against the headset, then move slowly together",
             Self::MotocContinue => "Resume the saved Motoc alignment for the configured mode",
             Self::Full => "Stand upright and face forward",
@@ -62,7 +63,7 @@ impl ResetControl {
                     send_reset(&path, kind, status.pid)
                 })();
                 let message = match result {
-                    Ok(()) => if matches!(kind, ResetKind::MotocCalibrate | ResetKind::MotocContinue) {
+                    Ok(()) => if matches!(kind, ResetKind::Walking | ResetKind::MotocCalibrate | ResetKind::MotocContinue) {
                         format!("{} command accepted", kind.label())
                     } else { format!("{} complete", kind.label()) },
                     Err(error) => format!("{}: {error}", kind.label()),
@@ -87,6 +88,7 @@ impl ResetControl {
             state.message = format!("{}: checking trackers…", kind.label());
         }
     }
+    pub fn busy(&self) -> bool { self.state.lock().unwrap().busy }
     pub fn text(&self) -> String {
         let state = self.state.lock().unwrap();
         if let Some((kind, deadline)) = state.countdown {

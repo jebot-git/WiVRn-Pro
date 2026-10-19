@@ -337,6 +337,8 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 
 	trace::instant_feedback("begin", frame.rendering.id, os_monotonic_get_ns());
 
+    hands_frame.poll(vk.device, sem);
+    const bool capture_frame=hands_frame.enabled();
 	cmd_pool.reset();
 	cmd.begin({.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
 
@@ -351,7 +353,7 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	beman::inplace_vector::inplace_vector<vk::ImageMemoryBarrier2, 3> image_barriers;
 
 	// Check if we can pass a layer directly to foveation
-	if (layer_accum.layer_count == 1 and
+	if (!capture_frame and layer_accum.layer_count == 1 and
 	    (layer_accum.layers[0].data.type == XRT_LAYER_PROJECTION or
 	     layer_accum.layers[0].data.type == XRT_LAYER_PROJECTION_DEPTH))
 	{
@@ -446,6 +448,8 @@ xrt_result_t compositor::layer_commit(xrt_graphics_sync_handle_t sync_handle)
 	        src_rect,
 	        src_fov,
 	        view_info.alpha);
+
+    if (capture_frame) hands_frame.record(vk.device, cmd, squasher.get_image(), render_extent(session.get_info()), src_fov[0], sem_value + 1);
 
 	for (auto & encoder: encoders)
 	{

@@ -1,0 +1,2 @@
+# Unified patches contain intentional context indentation and blank context lines.
+patches/wayvr/*.patch -whitespace

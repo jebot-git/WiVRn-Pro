@@ -75,6 +75,7 @@ class wivrn_session : public xrt_system_devices
 
 	shora_bridge shora;
 	xrt_system_devices * lighthouse_devices = nullptr;
+
 public:
 private:
 	wivrn::compositor compositor;
@@ -133,11 +134,15 @@ private:
 	wivrn_session(std::unique_ptr<wivrn_connection> connection, b_system &);
 
 public:
-
-	std::optional<hand_joystick::value> emulated_joystick(unsigned hand) const
+	std::optional<hand_joystick::value> emulated_joystick(unsigned hand, std::array<float,2> physical = {}) const
 	{
-		return joystick_emulation.get(hand, os_monotonic_get_ns());
+		return joystick_emulation.get(hand, os_monotonic_get_ns(), physical);
 	}
+	std::optional<bool> hand_controller(unsigned hand) const
+	{
+		return joystick_emulation.controller(hand, os_monotonic_get_ns());
+	}
+	bool walking_enabled(unsigned hand) const { return joystick_emulation.walking_enabled(hand, os_monotonic_get_ns()); }
 	using base_t = xrt_system_devices;
 	~wivrn_session();
 

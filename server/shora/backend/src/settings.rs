@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct TrackingSettings {
+    #[serde(default)]
+    pub walking: crate::walking::Settings,
     pub height_m: f32,
     /// Slerp blend toward the newest sample: 0 disables, smaller nonzero = smoother.
     pub smoothing: f32,
@@ -16,7 +18,7 @@ pub struct TrackingSettings {
 }
 impl Default for TrackingSettings {
     fn default() -> Self {
-        Self { height_m: 1.8, smoothing: 0.3, prediction: 0.0,
+        Self { walking: Default::default(), height_m: 1.8, smoothing: 0.3, prediction: 0.0,
             drift_correction: false, drift_amount: 0.5, stay_aligned: Default::default() }
     }
 }
@@ -31,6 +33,7 @@ impl TrackingSettings {
         anyhow::ensure!(self.drift_amount.is_finite() && (0.0..=1.0).contains(&self.drift_amount),
             "drift_amount must be between 0 and 1");
         self.stay_aligned.validate()?;
+        self.walking.validate()?;
         anyhow::ensure!(!(self.drift_correction && self.stay_aligned.enabled),
             "Stay Aligned and reset-based drift correction cannot be enabled together");
         Ok(())

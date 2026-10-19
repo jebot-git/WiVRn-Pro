@@ -1,0 +1,5 @@
+# Base capture/VP9 utility. FFmpeg (with libvpx-vp9) and wl-copy are system tools.
+pillow==12.3.0
+# Local QR, Data Matrix and barcode scanning; OCR uses the Spatial Subtitles stack.
+numpy==2.4.6
+zxing-cpp==2.3.0

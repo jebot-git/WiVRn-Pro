@@ -51,7 +51,7 @@
               <div id="tab_none" display="none" height="100">
                 <label align="center" translation="EDIT_MODE.HINT_POINT_WINDOW" />
               </div>
-              <div id="tab_pos" display="none" height="100" flex_direction="column">
+              <div id="tab_pos" display="none" height="140" flex_direction="column">
                 <div padding="8" gap="8" justify_content="center" align_items="center">
                   <PosButton id="pos_static" src="@/edit/pin.svg" tooltip="EDIT_MODE.POS_STATIC" press="::EditModeSetPos static" />
                   <PosButton id="pos_anchored" src="@/edit/anchor.svg" tooltip="EDIT_MODE.POS_ANCHORED" press="::EditModeSetPos anchored" />
@@ -70,6 +70,14 @@
                     <CheckBox id="align_box" translation="EDIT_MODE.ALIGN_TO_HMD" tooltip_side="bottom" />
                     <CheckBox id="block_input_box" translation="EDIT_MODE.BLOCK_INPUT" tooltip_side="bottom" />
                   </div>
+                </div>
+                <div flex_direction="row" gap="8" justify_content="center" align_items="center">
+                  <Button padding="6" _press="::EditModeRoomPin" tooltip_str="Attach this window to a saved physical room marker. Leave edit mode to save.">
+                    <label text="Pin to room" size="18" />
+                  </Button>
+                  <Button padding="6" _press="::EditModeRoomUnpin" tooltip_str="Remove the physical room pin.">
+                    <label text="Unpin" size="18" />
+                  </Button>
                 </div>
               </div>
               <div id="tab_stereo" display="none" height="100" flex_direction="column">

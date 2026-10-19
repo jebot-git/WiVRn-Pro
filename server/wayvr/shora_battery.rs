@@ -27,6 +27,8 @@ struct Status {
     #[serde(default)]
     tracking_mode: String,
     pid: u32,
+    #[serde(default)]
+    walking_status: String,
     paused: bool,
     trackers: Vec<Tracker>,
 }
@@ -144,7 +146,15 @@ impl BatteryFeed {
         let kind = if self.motoc_mode() { match kind { ResetKind::Full => ResetKind::MotocCalibrate, ResetKind::Mounting => ResetKind::MotocContinue, other => other } } else { kind };
         self.reset.request(kind);
     }
-    pub fn reset_text(&self) -> String { self.reset.text() }
+    pub fn reset_busy(&self) -> bool { self.reset.busy() }
+    pub fn reset_text(&self) -> String {
+        let text = self.reset.text();
+        if text == "Walking setup command accepted" {self.walking_text()} else {text}
+    }
+    pub fn walking_text(&self) -> String {
+        self.state.read().unwrap().sample.as_ref().filter(|(at,_)|at.elapsed()<MAX_AGE)
+            .map(|(_,status)|status.walking_status.clone()).unwrap_or_else(||"Walking: tracking unavailable".into())
+    }
     pub fn new() -> Self {
         let state = Arc::new(RwLock::new(State::default()));
         let reset = reset::ResetControl::new(std::env::var_os("WIVRN_SHORA_CONTROL_SOCKET").map(Into::into));
@@ -283,6 +293,7 @@ mod tests {
     #[test]
     fn tiles_represent_physical_batteries_and_expire_without_losing_identity() {
         let mut status = Status {
+            walking_status: String::new(),
             tracking_mode: "slimevr".into(),
             pid: 1,
             paused: false,
@@ -336,6 +347,7 @@ mod tests {
             sample: Some((
                 Instant::now(),
                 Status {
+                    walking_status: String::new(),
                     tracking_mode: "slimevr".into(),
                     pid: 1,
                     paused: false,
@@ -377,6 +389,7 @@ mod tests {
     #[test]
     fn known_unknown_offline_low_and_overflow_match_existing_hooks() {
         let mut status = Status {
+            walking_status: String::new(),
             tracking_mode: "slimevr".into(),
             pid: 1,
             paused: false,
@@ -418,6 +431,7 @@ mod tests {
             sample: Some((
                 Instant::now() - MAX_AGE - Duration::from_secs(1),
                 Status {
+                    walking_status: String::new(),
                     tracking_mode: "slimevr".into(),
                     pid: 1,
                     paused: false,

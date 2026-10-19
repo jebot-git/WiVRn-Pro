@@ -14,34 +14,18 @@
   <macro name="button_style" padding="8" border="2" round="8" align_items="center" justify_content="center" />
 
   <template name="TrackingControls">
-            <div gap="8">
-              <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
-                <sprite src_builtin="@/watch/keyboard.svg" width="40" height="40" />
-              </Button>
-              <Button id="btn_edit_mode" macro="button_style" _press="::EditToggle" tooltip="WATCH.EDIT_MODE" tooltip_side="left">
-                <sprite width="40" height="40" src="@/watch/edit.svg" />
-              </Button>
-              <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
-                <sprite width="40" height="40" src_builtin="@/watch/sticks.svg" />
-              </Button>
-              <Button id="btn_full_reset" macro="button_style" _press="::TrackingFullReset" tooltip_str="Full reset: stand upright and face forward. Three-second countdown; press again to cancel." tooltip_side="left">
-                <sprite width="40" height="40" src_builtin="@/watch/full-reset.svg" />
-              </Button>
-            </div>
-            <div gap="8">
-              <Button macro="button_style" _press="::PlayspaceRecenter" tooltip="WATCH.RECENTER" tooltip_side="left">
-                <sprite width="40" height="40" src="@/watch/recenter.svg" />
-              </Button>
-              <Button macro="button_style" _press="::PlayspaceFixFloor" tooltip="WATCH.FIX_FLOOR" tooltip_side="left">
-                <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
-              </Button>
-              <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
-                <sprite width="40" height="40" src_builtin="@/watch/performance.svg" />
-              </Button>
-              <Button id="btn_mounting_reset" macro="button_style" _press="::TrackingMountingReset" tooltip_str="Mounting reset: after a full reset, bend knees and lean forward in a ski pose. Three-second countdown; press again to cancel." tooltip_side="left">
-                <sprite width="40" height="40" src_builtin="@/watch/mounting-reset.svg" />
-              </Button>
-            </div>
+    <div id="fan_controls" position="absolute" width="1000" height="840" interactable="0" />
+  </template>
+
+  <template name="FanButton">
+    <Button id="${id}" position="absolute" margin_left="${x}" margin_top="${y}"
+      width="128" height="128" padding="10" border="2" round="22"
+      flex_direction="column" gap="8" align_items="center" justify_content="center"
+      color="background_variant" border_color="outline" hover_color="primary" hover_border_color="primary"
+      sticky_color="background" sticky_border_color="primary" tooltip_str="${title}" tooltip_side="top">
+      <sprite src_builtin="@/${icon}" width="52" height="52" />
+      <label text="${title}" size="18" weight="bold" align="center" wrap="1" width="104" />
+    </Button>
   </template>
 
   <template name="Device">
@@ -143,57 +127,34 @@
   </template>
 
   <elements>
-    <!-- padding="32" is required there (to make room for tooltips) -->
-    <div
-      padding="32" interactable="0"
-      flex_direction="column" gap="8">
-      <!-- Top elements (device battery levels) -->
-      <div id="devices_root" interactable="0" gap="6" width="100%" max_width="400" flex_direction="row" flex_wrap="wrap">
-        <!-- Will populate tags at runtime -->
-        <!-- These are examples for uidev -->
-        <Hmd idx="0" />
-        <LeftHand idx="1" />
-        <RightHand idx="2" />
-        <Tracker idx="3" />
-      </div>
-
-      <!-- All other elements inside the container -->
-      <div flex_direction="column" gap="8" min_width="300">
-        <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
-          <!-- Clock, date and various timezones -->
-          <div id="clock_root">
-            <Clock />
-          </div>
-
-          <!-- Four columns, two rows; tracking resets occupy the last column. -->
-          <div id="interaction_buttons" flex_direction="column" gap="8">
-            <TrackingControls />
-          </div>
-        </rectangle>
-
-        <label id="tracking_reset_status" _source="tracking_reset" size="16" width="440" color="on_background" />
-
-        <!-- Bottom buttons -->
-        <div flex_direction="row" gap="8">
-          <div gap="4">
-            <Button id="btn_dashboard" macro="button_style" _press="::DashToggle" tooltip="WATCH.DASHBOARD" tooltip_side="top">
-              <sprite width="40" height="40" src="@/watch/wayvr_dashboard_mono.svg" />
-            </Button>
-          </div>
-          <VerticalSeparator />
-          <div id="sets_root" gap="4">
-            <!-- Will populate tags at runtime -->
-            <!-- These are examples for uidev -->
-            <Set idx="0" display="1" />
-            <Set idx="1" display="2" />
-          </div>
-          <div id="panels_root" gap="4" display="none">
-            <!-- Will populate tags at runtime -->
-            <!-- These are examples for uidev -->
-            <Screen idx="0" display="H1" name="HDMI-A-1" />
-            <Screen idx="1" display="D2" name="DP-2"/>
-          </div>
+    <!-- Fixed transparent canvas keeps physical button size/position unchanged on expansion. -->
+    <div width="1000" height="840" interactable="0">
+      <div id="watch_base" position="absolute" width="1000" height="840" interactable="0">
+        <rectangle position="absolute" margin_left="56" margin_top="396" width="752" height="340"
+          color="background" border="2" border_color="outline" round="28" interactable="0" />
+        <div id="devices_root" position="absolute" margin_left="80" margin_top="416"
+          interactable="0" gap="6" height="92" overflow="hidden" width="700" max_width="700" flex_direction="row" flex_wrap="wrap">
+          <Hmd idx="0" /><LeftHand idx="1" /><RightHand idx="2" /><Tracker idx="3" />
         </div>
+        <div id="clock_root" position="absolute" margin_left="80" margin_top="508" width="232"><Clock /></div>
+        <label id="tracking_reset_status" position="absolute" margin_left="80" margin_top="660"
+          _source="tracking_reset" size="14" width="700" color="on_background" />
+        <label position="absolute" margin_left="80" margin_top="684" _source="room_floor"
+          text="Remembered floor: off" size="14" color="on_background" />
+        <div id="sets_root" position="absolute" margin_left="56" margin_top="752" gap="8">
+          <Set idx="0" display="1" /><Set idx="1" display="2" />
+        </div>
+        <div id="panels_root" position="absolute" margin_left="56" margin_top="752" gap="8" display="none">
+          <Screen idx="0" display="H1" name="HDMI-A-1" /><Screen idx="1" display="D2" name="DP-2" />
+        </div>
+      </div>
+      <div id="fan_heading" position="absolute" margin_left="48" margin_top="116" display="none"
+        width="904" flex_direction="column" gap="8" interactable="0">
+        <label id="fan_title" text="Calibration" size="32" weight="bold" align="center" />
+        <label text="Choose an action · tap the group again to close" size="18" align="center" color="on_background_variant" />
+      </div>
+      <div id="interaction_buttons" position="absolute" width="1000" height="840" interactable="0">
+        <TrackingControls />
       </div>
     </div>
   </elements>

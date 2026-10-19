@@ -39,6 +39,7 @@ pub fn new_pos_tab_handler(
             let positioning = state.pos;
             Box::new(move |app, owc| {
                 let state = owc.active_state.as_mut().unwrap(); //want panic
+                state.room_binding = None;
                 state.positioning = positioning;
                 window::save_transform(state, app);
             })

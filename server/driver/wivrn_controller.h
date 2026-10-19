@@ -22,6 +22,7 @@
 
 #include "xrt/xrt_device.h"
 
+#include "hand_controller.h"
 #include "hand_joints_list.h"
 #include "pose_list.h"
 
@@ -42,6 +43,8 @@ class wivrn_controller : public xrt_device
 	pose_list pinch_ext;
 	pose_list poke_ext;
 	hand_joints_list joints;
+	hand_controller_gestures hand_gestures;
+	bool was_hand_controller = false;
 
 	std::vector<xrt_input> inputs_staging;
 	std::vector<xrt_input> inputs_array;

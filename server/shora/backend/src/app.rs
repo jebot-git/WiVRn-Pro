@@ -69,6 +69,10 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
         let mut term = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
         tokio::select! { r = tokio::signal::ctrl_c() => r, _ = term.recv() => Ok(()) }
     }; tokio::pin!(shutdown);
+    let mut gait = crate::walking::Detector::default();
+    let mut gait_publisher = crate::walking::Publisher::new();
+    let mut gait_valid = false;
+    let mut gait_output = crate::walking::Output::default();
     let mut paused = false;
     let mut hardware_ops = tokio::task::JoinSet::new();
     loop {
@@ -181,10 +185,18 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                             }
                             calib.write().unwrap().configure_drift(next.drift_correction, next.drift_amount);
                             calib.write().unwrap().stay_aligned.configure(next.stay_aligned);
+                            if settings.walking != next.walking {gait.calibrate();gait_publisher.reset();}
                             settings = next;
                             Ok(())
                         }
                     }
+                }
+                Command::CalibrateWalking => {
+                    let trackers: Vec<_> = registry.read().unwrap().iter().cloned().collect();
+                    let calibration = calib.read().unwrap();
+                    if paused || motoc_mode || crate::walking::sample(&trackers, &calibration, &fresh_hmd, Instant::now(), started.elapsed().as_secs_f64(), calibration.locomotion_revision()).is_none() {
+                        Err(anyhow::anyhow!("Resume tracking and calibrate both thighs and shins with a fresh HMD first"))
+                    } else {gait.calibrate(); gait_publisher.reset(); Ok(())}
                 }
                 Command::ClearDrift => { calib.write().unwrap().clear_drift(); Ok(()) }
                 Command::ClearStayAligned => { calib.write().unwrap().stay_aligned.clear(); Ok(()) }
@@ -235,6 +247,17 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             reply = envelope.reply.map(|tx| (tx, result.map_err(|e| format!("{e:#}"))));
         }
         if frame_due { motoc.tick().await; }
+        if frame_due {
+            let trackers: Vec<_> = registry.read().unwrap().iter().cloned().collect();
+            let calibration = calib.read().unwrap();
+            let sample = if paused || motoc_mode {None} else {
+                crate::walking::sample(&trackers, &calibration, &fresh_hmd, Instant::now(), started.elapsed().as_secs_f64(), calibration.locomotion_revision())
+            };
+            gait_output = gait.update(sample, settings.walking);
+            if gait_valid && !gait_output.valid {gait_publisher.reset();}
+            gait_valid = gait_output.valid;
+            gait_publisher.publish(gait_output);
+        }
         if frame_due && !paused {
             let mut trackers: Vec<_> = registry.read().unwrap().iter().cloned().collect();
             let now = Instant::now();
@@ -252,6 +275,8 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
         if frame_due && paused { calib.write().unwrap().stay_aligned.suspend(Instant::now()); }
         if frame_due || reply.is_some() {
             let mut snapshot = status.write().unwrap();
+            snapshot.walking = gait_output;
+            snapshot.walking_status = gait.message.clone();
             snapshot.uptime_secs = started.elapsed().as_secs(); snapshot.paused = paused;
             snapshot.ports = acquisition.ports();
             snapshot.settings = settings;

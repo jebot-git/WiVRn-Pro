@@ -1,5 +1,4 @@
 diff --git a/dash-frontend/assets/gui/tab/home.xml b/dash-frontend/assets/gui/tab/home.xml
-index 312dec7..6e37c9d 100644
 --- a/dash-frontend/assets/gui/tab/home.xml
 +++ b/dash-frontend/assets/gui/tab/home.xml
 @@ -24,6 +24,8 @@
@@ -12,7 +11,6 @@ index 312dec7..6e37c9d 100644
        <div flex_direction="row" gap="8" margin_top="32">
          <MenuButton id="btn_apps" icon="@/dashboard/apps.svg" translation="APPLICATIONS" />
 diff --git a/dash-frontend/assets/lang/en.json b/dash-frontend/assets/lang/en.json
-index 4a2e4e9..0f51dde 100644
 --- a/dash-frontend/assets/lang/en.json
 +++ b/dash-frontend/assets/lang/en.json
 @@ -136,7 +136,7 @@
@@ -25,10 +23,9 @@ index 4a2e4e9..0f51dde 100644
  		"HANDSFREE_ALT_TAB_HELP": "Hold Super+X, aim at the desired window, then release to switch focus.",
  		"DIAGNOSTICS": "Diagnostics",
 diff --git a/dash-frontend/src/tab/home.rs b/dash-frontend/src/tab/home.rs
-index fd35f0d..5f8f7c7 100644
 --- a/dash-frontend/src/tab/home.rs
 +++ b/dash-frontend/src/tab/home.rs
-@@ -27,7 +27,18 @@ pub struct TabHome<T> {
+@@ -27,7 +27,18 @@
  }
  
  impl<T> Tab<T> for TabHome<T> {
@@ -48,11 +45,7 @@ index fd35f0d..5f8f7c7 100644
  		TabType::Home
  	}
  }
-diff --git a/scripts/translator/run.sh b/scripts/translator/run.sh
-old mode 100644
-new mode 100755
 diff --git a/wayvr/build.rs b/wayvr/build.rs
-index 1b49bff..a4ff8fe 100644
 --- a/wayvr/build.rs
 +++ b/wayvr/build.rs
 @@ -1,10 +1,10 @@
@@ -68,7 +61,7 @@ index 1b49bff..a4ff8fe 100644
      ("grid.frag", ShaderKind::Fragment),
      ("screen.frag", ShaderKind::Fragment),
      ("simple.frag", ShaderKind::Fragment),
-@@ -16,7 +16,7 @@ const SHADERS: &[(&str, ShaderKind)] = &[
+@@ -16,7 +16,7 @@
  fn main() {
      compile_shaders();
  
@@ -77,7 +70,7 @@ index 1b49bff..a4ff8fe 100644
  
      match std::env::var("GITHUB_JOB").as_deref() {
          Ok("make_release") => {
-@@ -39,7 +39,11 @@ fn compile_shaders() {
+@@ -39,7 +39,11 @@
      options.set_target_env(TargetEnv::Vulkan, EnvVersion::Vulkan1_3 as u32);
  
      for (name, kind) in SHADERS {
@@ -90,7 +83,7 @@ index 1b49bff..a4ff8fe 100644
          println!("cargo:rerun-if-changed={}", path.display());
  
          let source = std::fs::read_to_string(&path)
-@@ -51,26 +55,3 @@ fn compile_shaders() {
+@@ -51,26 +55,3 @@
              .unwrap_or_else(|e| panic!("failed to write compiled shader {name}: {e}"));
      }
  }
@@ -117,14 +110,38 @@ index 1b49bff..a4ff8fe 100644
 -
 -    Ok(re.replace_all(&output_str, "${1}.r${2}.${3}").into_owned())
 -}
-diff --git a/wayvr/flatpak/sources-wayvr.json b/wayvr/flatpak/sources-wayvr.json
-old mode 100644
-new mode 100755
+diff --git a/wayvr/src/assets/gui/edit.xml b/wayvr/src/assets/gui/edit.xml
+--- a/wayvr/src/assets/gui/edit.xml
++++ b/wayvr/src/assets/gui/edit.xml
+@@ -51,7 +51,7 @@
+               <div id="tab_none" display="none" height="100">
+                 <label align="center" translation="EDIT_MODE.HINT_POINT_WINDOW" />
+               </div>
+-              <div id="tab_pos" display="none" height="100" flex_direction="column">
++              <div id="tab_pos" display="none" height="140" flex_direction="column">
+                 <div padding="8" gap="8" justify_content="center" align_items="center">
+                   <PosButton id="pos_static" src="@/edit/pin.svg" tooltip="EDIT_MODE.POS_STATIC" press="::EditModeSetPos static" />
+                   <PosButton id="pos_anchored" src="@/edit/anchor.svg" tooltip="EDIT_MODE.POS_ANCHORED" press="::EditModeSetPos anchored" />
+@@ -70,6 +70,14 @@
+                     <CheckBox id="align_box" translation="EDIT_MODE.ALIGN_TO_HMD" tooltip_side="bottom" />
+                     <CheckBox id="block_input_box" translation="EDIT_MODE.BLOCK_INPUT" tooltip_side="bottom" />
+                   </div>
++                </div>
++                <div flex_direction="row" gap="8" justify_content="center" align_items="center">
++                  <Button padding="6" _press="::EditModeRoomPin" tooltip_str="Attach this window to a saved physical room marker. Leave edit mode to save.">
++                    <label text="Pin to room" size="18" />
++                  </Button>
++                  <Button padding="6" _press="::EditModeRoomUnpin" tooltip_str="Remove the physical room pin.">
++                    <label text="Unpin" size="18" />
++                  </Button>
+                 </div>
+               </div>
+               <div id="tab_stereo" display="none" height="100" flex_direction="column">
 diff --git a/wayvr/src/assets/gui/keyboard.xml b/wayvr/src/assets/gui/keyboard.xml
 --- a/wayvr/src/assets/gui/keyboard.xml
 +++ b/wayvr/src/assets/gui/keyboard.xml
 @@ -217,7 +217,7 @@
-
+ 
    <elements>
      <div flex_direction="column" interactable="0">
 -      <rectangle macro="bg_rect" padding="10" align_items="center" justify_content="space_between">
@@ -143,65 +160,90 @@ diff --git a/wayvr/src/assets/gui/keyboard.xml b/wayvr/src/assets/gui/keyboard.x
        </rectangle>
      </div>
 diff --git a/wayvr/src/assets/gui/watch.xml b/wayvr/src/assets/gui/watch.xml
-index ee94fe2..fcab0af 100644
 --- a/wayvr/src/assets/gui/watch.xml
 +++ b/wayvr/src/assets/gui/watch.xml
-@@ -13,6 +13,37 @@
+@@ -12,6 +12,21 @@
+     border="2" border_color="outline" round="8" />
  
    <macro name="button_style" padding="8" border="2" round="8" align_items="center" justify_content="center" />
- 
++
 +  <template name="TrackingControls">
-+            <div gap="8">
-+              <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
-+                <sprite src_builtin="@/watch/keyboard.svg" width="40" height="40" />
-+              </Button>
-+              <Button id="btn_edit_mode" macro="button_style" _press="::EditToggle" tooltip="WATCH.EDIT_MODE" tooltip_side="left">
-+                <sprite width="40" height="40" src="@/watch/edit.svg" />
-+              </Button>
-+              <Button id="btn_hand_joysticks" macro="button_style" _press="::HandJoysticksToggle" tooltip_str="Thumbs-up joysticks" tooltip_side="left">
-+                <sprite width="40" height="40" src_builtin="@/watch/sticks.svg" />
-+              </Button>
-+              <Button id="btn_full_reset" macro="button_style" _press="::TrackingFullReset" tooltip_str="Full reset: stand upright and face forward. Three-second countdown; press again to cancel." tooltip_side="left">
-+                <sprite width="40" height="40" src_builtin="@/watch/full-reset.svg" />
-+              </Button>
-+            </div>
-+            <div gap="8">
-+              <Button macro="button_style" _press="::PlayspaceRecenter" tooltip="WATCH.RECENTER" tooltip_side="left">
-+                <sprite width="40" height="40" src="@/watch/recenter.svg" />
-+              </Button>
-+              <Button macro="button_style" _press="::PlayspaceFixFloor" tooltip="WATCH.FIX_FLOOR" tooltip_side="left">
-+                <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
-+              </Button>
-+              <Button id="btn_performance" macro="button_style" _press="::PerformanceToggle" tooltip_str="Performance: wrist / floating / off" tooltip_side="left">
-+                <sprite width="40" height="40" src_builtin="@/watch/performance.svg" />
-+              </Button>
-+              <Button id="btn_mounting_reset" macro="button_style" _press="::TrackingMountingReset" tooltip_str="Mounting reset: after a full reset, bend knees and lean forward in a ski pose. Three-second countdown; press again to cancel." tooltip_side="left">
-+                <sprite width="40" height="40" src_builtin="@/watch/mounting-reset.svg" />
-+              </Button>
-+            </div>
++    <div id="fan_controls" position="absolute" width="1000" height="840" interactable="0" />
 +  </template>
 +
++  <template name="FanButton">
++    <Button id="${id}" position="absolute" margin_left="${x}" margin_top="${y}"
++      width="128" height="128" padding="10" border="2" round="22"
++      flex_direction="column" gap="8" align_items="center" justify_content="center"
++      color="background_variant" border_color="outline" hover_color="primary" hover_border_color="primary"
++      sticky_color="background" sticky_border_color="primary" tooltip_str="${title}" tooltip_side="top">
++      <sprite src_builtin="@/${icon}" width="52" height="52" />
++      <label text="${title}" size="18" weight="bold" align="center" wrap="1" width="104" />
++    </Button>
++  </template>
+ 
    <template name="Device">
      <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
-       <sprite width="32" height="32" src_builtin="${src}" color="on_background" />
-@@ -33,6 +64,13 @@
-     <Device idx="${idx}" src="@/watch/track.svg" />
+@@ -31,6 +46,13 @@
    </template>
- 
+   <template name="Tracker">
+     <Device idx="${idx}" src="@/watch/track.svg" />
++  </template>
++
 +  <template name="ShoraTracker">
 +    <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
 +      <sprite width="32" height="32" src_builtin="@/watch/track.svg" color="on_background" />
 +      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
 +    </rectangle>
-+  </template>
-+
-   <template name="Screen">
-     <Button macro="button_style" id="overlay_${idx}" tooltip_str="${name}" _press="::OverlayToggle ${name}">
-       <sprite width="38" height="38" src_builtin="@/edit/screen.svg" />
-@@ -127,27 +165,14 @@
-             <Clock />
-           </div>
+   </template>
  
+   <template name="Screen">
+@@ -105,70 +127,34 @@
+   </template>
+ 
+   <elements>
+-    <!-- padding="32" is required there (to make room for tooltips) -->
+-    <div
+-      padding="32" interactable="0"
+-      flex_direction="column" gap="8">
+-      <!-- Top elements (device battery levels) -->
+-      <div id="devices_root" interactable="0" gap="6" width="100%" max_width="400" flex_direction="row" flex_wrap="wrap">
+-        <!-- Will populate tags at runtime -->
+-        <!-- These are examples for uidev -->
+-        <Hmd idx="0" />
+-        <LeftHand idx="1" />
+-        <RightHand idx="2" />
+-        <Tracker idx="3" />
++    <!-- Fixed transparent canvas keeps physical button size/position unchanged on expansion. -->
++    <div width="1000" height="840" interactable="0">
++      <div id="watch_base" position="absolute" width="1000" height="840" interactable="0">
++        <rectangle position="absolute" margin_left="56" margin_top="396" width="752" height="340"
++          color="background" border="2" border_color="outline" round="28" interactable="0" />
++        <div id="devices_root" position="absolute" margin_left="80" margin_top="416"
++          interactable="0" gap="6" height="92" overflow="hidden" width="700" max_width="700" flex_direction="row" flex_wrap="wrap">
++          <Hmd idx="0" /><LeftHand idx="1" /><RightHand idx="2" /><Tracker idx="3" />
++        </div>
++        <div id="clock_root" position="absolute" margin_left="80" margin_top="508" width="232"><Clock /></div>
++        <label id="tracking_reset_status" position="absolute" margin_left="80" margin_top="660"
++          _source="tracking_reset" size="14" width="700" color="on_background" />
++        <label position="absolute" margin_left="80" margin_top="684" _source="room_floor"
++          text="Remembered floor: off" size="14" color="on_background" />
++        <div id="sets_root" position="absolute" margin_left="56" margin_top="752" gap="8">
++          <Set idx="0" display="1" /><Set idx="1" display="2" />
++        </div>
++        <div id="panels_root" position="absolute" margin_left="56" margin_top="752" gap="8" display="none">
++          <Screen idx="0" display="H1" name="HDMI-A-1" /><Screen idx="1" display="D2" name="DP-2" />
++        </div>
+       </div>
+-
+-      <!-- All other elements inside the container -->
+-      <div flex_direction="column" gap="8" min_width="300">
+-        <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
+-          <!-- Clock, date and various timezones -->
+-          <div id="clock_root">
+-            <Clock />
+-          </div>
+-
 -          <!-- Four buttons -->
 -          <div flex_direction="column" gap="8">
 -            <div gap="8">
@@ -220,21 +262,52 @@ index ee94fe2..fcab0af 100644
 -                <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
 -              </Button>
 -            </div>
-+          <!-- Four columns, two rows; tracking resets occupy the last column. -->
-+          <div id="interaction_buttons" flex_direction="column" gap="8">
-+            <TrackingControls />
-           </div>
-         </rectangle>
- 
-+        <label id="tracking_reset_status" _source="tracking_reset" size="16" width="440" color="on_background" />
-+
-         <!-- Bottom buttons -->
-         <div flex_direction="row" gap="8">
-           <div gap="4">
+-          </div>
+-        </rectangle>
+-
+-        <!-- Bottom buttons -->
+-        <div flex_direction="row" gap="8">
+-          <div gap="4">
+-            <Button id="btn_dashboard" macro="button_style" _press="::DashToggle" tooltip="WATCH.DASHBOARD" tooltip_side="top">
+-              <sprite width="40" height="40" src="@/watch/wayvr_dashboard_mono.svg" />
+-            </Button>
+-          </div>
+-          <VerticalSeparator />
+-          <div id="sets_root" gap="4">
+-            <!-- Will populate tags at runtime -->
+-            <!-- These are examples for uidev -->
+-            <Set idx="0" display="1" />
+-            <Set idx="1" display="2" />
+-          </div>
+-          <div id="panels_root" gap="4" display="none">
+-            <!-- Will populate tags at runtime -->
+-            <!-- These are examples for uidev -->
+-            <Screen idx="0" display="H1" name="HDMI-A-1" />
+-            <Screen idx="1" display="D2" name="DP-2"/>
+-          </div>
+-        </div>
++      <div id="fan_heading" position="absolute" margin_left="48" margin_top="116" display="none"
++        width="904" flex_direction="column" gap="8" interactable="0">
++        <label id="fan_title" text="Calibration" size="32" weight="bold" align="center" />
++        <label text="Choose an action · tap the group again to close" size="18" align="center" color="on_background_variant" />
++      </div>
++      <div id="interaction_buttons" position="absolute" width="1000" height="840" interactable="0">
++        <TrackingControls />
+       </div>
+     </div>
+   </elements>
 diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs
-@@ -75,8 +75,13 @@
+@@ -67,6 +67,7 @@
+ 
+ pub struct InputState {
+     pub hmd: Affine3A,
++    pub frame_view: Option<Affine3A>,
+     pub ipd: f32,
+     pub eye_gaze: Option<Affine3A>,
+     pub pointers: [Pointer; 2],
+@@ -75,14 +76,23 @@
      pub picking_focus: FocusPickState,
      processes: Vec<Child>,
      disable_lerp_until: Instant,
@@ -242,30 +315,44 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +    pub space_drag_hand: usize,
 +    pub mouse_priority: crate::mouse_priority::MousePriority,
 +    pub joysticks_enabled: bool,
++    pub hand_controllers_enabled: bool,
++    pub walking_enabled: bool,
++    pub body_turning_enabled: bool,
      pub head_yaw_total: f64,
      head_last_yaw: Option<f64>,
 +    two_hand_grab: Option<(OverlayID, crate::hand_resize::HandResize)>,
  }
-
+ 
  impl InputState {
-@@ -91,8 +96,12 @@
+     pub fn new() -> Self {
+         Self {
+             hmd: Affine3A::IDENTITY,
++            frame_view: None,
+             ipd: 0.0,
+             eye_gaze: None,
+             pointers: [Pointer::new(0), Pointer::new(1)],
+@@ -91,8 +101,15 @@
              handsfree_state: PointerState::default(),
              picking_focus: FocusPickState::None,
              disable_lerp_until: Instant::now(),
 +            space_drag_hand: 0,
 +            mouse_priority: Default::default(),
 +            joysticks_enabled: false,
++            hand_controllers_enabled: false,
++            walking_enabled: false,
++            body_turning_enabled: false,
              head_yaw_total: 0.0,
              head_last_yaw: None,
 +            two_hand_grab: None,
          }
      }
-
-@@ -349,6 +358,20 @@
+ 
+@@ -349,11 +366,27 @@
      pub(super) interaction: InteractionState,
      pub tracked: bool,
      pub handsfree: bool,
 +    pub hand_tracking: bool,
++    pub frame_hand: Option<crate::hands_frame::Hand>,
 +    pub wrist_pose: Option<Affine3A>,
 +    pub index_tip: Option<Vec3A>,
 +    pub keyboard_hover: bool,
@@ -282,11 +369,18 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
      /// distance of the most recent ray hit on a wayland client window, used for drag n drop
      pub last_wvr_hit_distance: Option<f32>,
  }
-@@ -367,8 +390,39 @@
+ 
+ impl Pointer {
++    pub fn frame_blocked(&self) -> bool { self.interaction.grabbed.is_some() || self.keyboard_hover || self.joystick_owned || self.cancel_interaction }
+     pub fn new(idx: usize) -> Self {
+         debug_assert!(idx == 0 || idx == 1);
+         Self {
+@@ -367,8 +400,40 @@
              interaction: InteractionState::default(),
              tracked: false,
              handsfree: false,
 +            hand_tracking: false,
++            frame_hand: None,
 +            wrist_pose: None,
 +            index_tip: None,
 +            keyboard_hover: false,
@@ -320,9 +414,9 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +            wrist * on_wrist * watch.inverse()
 +        })
      }
-
+ 
      pub const fn hand(&self) -> Option<LeftRight> {
-@@ -451,6 +505,9 @@
+@@ -451,6 +516,9 @@
      maybe_hit: Option<(PointerHit, RayHit)>,
      hmd: &Affine3A,
  ) {
@@ -332,20 +426,42 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
      let Some((hit, raw_hit)) = maybe_hit else {
          return;
      };
-@@ -499,6 +556,9 @@
+@@ -499,6 +567,31 @@
  where
      O: Default,
  {
++    if app.watch_menu.open().is_some() {
++        let watch_visible = app.session.config.enable_watch && overlays.values().any(|o|
++            o.config.name.as_ref() == WATCH_NAME && o.config.active_state.as_ref().is_some_and(|s| s.alpha >= 0.05));
++        if !watch_visible { app.watch_menu.close(); }
++        else {
++            app.input_state.two_hand_grab = None;
++            for idx in 0..2 {
++                if app.input_state.pointers[idx].interaction.grabbed.is_some() {
++                    release_pointer(idx, overlays, app);
++                }
++            }
++        }
++    }
++    if crate::hands_frame_panel::update(overlays, app) {
++        app.input_state.two_hand_grab = None;
++        for idx in 0..2 {
++            release_pointer(idx, overlays, app);
++            app.input_state.pointers[idx].interaction.should_block_input = true;
++            app.input_state.pointers[idx].interaction.should_block_poses = false;
++        }
++        return [None,None];
++    }
 +    if update_two_hand_grab(overlays, app) {
 +        return [None, None];
 +    }
      let hits = if app.input_state.pointers[1].last_click > app.input_state.pointers[0].last_click {
          let right = interact_hand(1, overlays, app);
          let left = interact_hand(0, overlays, app);
-@@ -523,6 +583,254 @@
+@@ -523,6 +616,258 @@
      [hits[0].1, hits[1].1]
  }
-
+ 
 +// Middle pinch leaves the selecting index fingertip free, as in the reference.
 +fn keyboard_pointer_mode(now: PointerState, before: PointerState) -> PointerMode {
 +    if now.click_modifier_middle || (!now.click && before.click_modifier_middle) {
@@ -454,6 +570,8 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +            .collect();
 +        for id in ids {
 +            let overlay = overlays.mut_by_id(id).unwrap();
++            if app.watch_menu.open().is_some() && overlay.config.name.as_ref() != WATCH_NAME { continue; }
++            if !overlay.config.room_available(&app.room) { continue; }
 +            let Some(state) = overlay.config.active_state.as_ref() else {
 +                continue;
 +            };
@@ -504,6 +622,8 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +            if overlay.config.name.as_ref() != WATCH_NAME {
 +                continue;
 +            }
++            if app.watch_menu.open().is_some() && overlay.config.name.as_ref() != WATCH_NAME { continue; }
++            if !overlay.config.room_available(&app.room) { continue; }
 +            let Some(state) = overlay.config.active_state.as_ref() else {
 +                continue;
 +            };
@@ -597,7 +717,7 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
  fn interact_hand<O>(
      idx: usize,
      overlays: &mut OverlayWindowManager<O>,
-@@ -531,15 +839,30 @@
+@@ -531,15 +876,30 @@
  where
      O: Default,
  {
@@ -632,10 +752,10 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 -        pointer.interaction.kbd_block_activated = false;
 -        return (None, pending_haptics); // no hit
 -    }
-
+ 
      // already grabbing, ignore everything else
      if let Some(grab_data) = pointer.interaction.grabbed {
-@@ -689,6 +1012,9 @@
+@@ -689,6 +1049,9 @@
      if let Some(hovered_id) = hovered_id
          && let Some(hovered) = overlays.mut_by_id(hovered_id)
      {
@@ -645,10 +765,10 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
          log::debug!("{} on_left (no hit)", hovered.config.name);
          hovered.config.backend.on_left(app, pointer_idx);
          hovered.hover_pointers[pointer_idx] = false;
-@@ -798,26 +1124,72 @@
-
+@@ -798,26 +1161,74 @@
+ 
      let mut hits: SmallVec<[RayHit; 8]> = smallvec!();
-
+ 
 -    for (id, overlay) in overlays.iter() {
 +    let ids: Vec<_> = overlays.iter().map(|(id, _)| id).collect();
 +    for id in ids {
@@ -660,6 +780,8 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +        {
 +            continue;
 +        }
++        if app.watch_menu.open().is_some() && overlay.config.name.as_ref() != WATCH_NAME { continue; }
++        if !overlay.config.room_available(&app.room) { continue; }
          let Some(overlay_state) = overlay.config.active_state.as_ref() else {
              continue;
          };
@@ -673,7 +795,7 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
          if (!overlay_state.interactable || overlay_state.alpha < 0.025) && !edit_mode {
              continue;
          }
-
+ 
 -        if let Some(hit) = ray_test(
 -            &ray_origin,
 -            id,
@@ -714,7 +836,7 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
              hits.push(hit);
          }
      }
-
+ 
 +    if let Some(hit) = pointer.touch_hit {
 +        hits.push(hit);
 +    }
@@ -722,13 +844,13 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +    let hand_tracking = pointer.hand_tracking;
 +    let manipulating = pointer.now.grab || edit_mode;
 +    let keyboard_mode = keyboard_pointer_mode(pointer.now, pointer.before);
-
+ 
      for hit in hits {
          let overlay = overlays.mut_by_id(hit.overlay).unwrap(); // safe because we just got the id from the overlay
-@@ -836,6 +1208,20 @@
+@@ -836,6 +1247,20 @@
              continue;
          }
-
+ 
 +        // Each hand operates its own half, keeping the hands apart.
 +        if hand_tracking
 +            && !manipulating
@@ -746,9 +868,9 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
          let pointer_hit = PointerHit {
              pointer: pointer_idx,
              overlay: hit.overlay,
-@@ -845,7 +1231,15 @@
+@@ -845,7 +1270,15 @@
          };
-
+ 
          let result = overlay.config.backend.on_hover(app, &pointer_hit);
 -        if result.consume || overlay.config.editing {
 +        let keyboard_grab = hand_tracking
@@ -763,10 +885,30 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
              return (Some((pointer_hit, hit)), result.haptics);
          }
      }
-@@ -1115,6 +1509,95 @@
+@@ -866,6 +1299,7 @@
+ 
+ fn start_grab(par: StartGrabParams) {
+     let (app, id, state) = (par.app, par.id, par.state);
++    if app.watch_menu.open().is_some() { return; }
+ 
+     let pointer = &mut app.input_state.pointers[par.idx];
+ 
+@@ -973,6 +1407,11 @@
+ where
+     O: Default,
+ {
++    if !overlay.config.room_available(&app.room) {
++        app.input_state.pointers[idx].interaction.grabbed = None;
++        overlay.config.pause_movement = false;
++        return;
++    }
+     let pointer = &mut app.input_state.pointers[idx];
+     let Some(grab_data) = pointer.interaction.grabbed.as_mut() else {
+         log::error!("Grabbed overlay does not exist");
+@@ -1115,6 +1554,101 @@
      }
  }
-
+ 
 +// Both hands manipulate one existing fist grab. Controller grabs and two
 +// different windows retain their ordinary, independent interaction paths.
 +fn hand_grip(pointer: &Pointer) -> bool {
@@ -796,7 +938,10 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +            || p.cancel_interaction || p.joystick_owned || p.wrist_pose.is_none_or(|pose| !pose.is_finite()));
 +    if let Some((id, resize)) = app.input_state.two_hand_grab {
 +        let both = !interrupted && app.input_state.pointers.iter().all(hand_grip);
-+        let transform = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform));
++        let transform = overlays.mut_by_id(id).and_then(|o| {
++            if !o.config.room_available(&app.room) { return None; }
++            o.config.active_state.as_ref().map(|s| s.transform)
++        });
 +        if both && transform.is_some() {
 +            let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
 +            let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
@@ -833,7 +978,10 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +    }
 +    if interrupted { return false; }
 +    let Some(id) = two_hand_target(&app.input_state.pointers) else { return false; };
-+    let Some(transform) = overlays.mut_by_id(id).and_then(|o| o.config.active_state.as_ref().map(|s| s.transform)) else { return false; };
++    let Some(transform) = overlays.mut_by_id(id).and_then(|o| {
++            if !o.config.room_available(&app.room) { return None; }
++            o.config.active_state.as_ref().map(|s| s.transform)
++        }) else { return false; };
 +    let left = app.input_state.pointers[0].wrist_pose.unwrap().translation;
 +    let right = app.input_state.pointers[1].wrist_pose.unwrap().translation;
 +    let Some(resize) = crate::hand_resize::HandResize::start(transform, left, right) else {
@@ -859,7 +1007,7 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
  fn ray_test(
      ray_origin: &Affine3A,
      overlay: OverlayID,
-@@ -1135,3 +1618,226 @@
+@@ -1135,3 +1669,226 @@
          dist,
      })
  }
@@ -1086,11 +1234,35 @@ diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 +        );
 +    }
 +}
+diff --git a/wayvr/src/backend/openvr/overlay.rs b/wayvr/src/backend/openvr/overlay.rs
+--- a/wayvr/src/backend/openvr/overlay.rs
++++ b/wayvr/src/backend/openvr/overlay.rs
+@@ -92,7 +92,7 @@
+         overlay: &mut OverlayManager,
+         app: &mut AppState,
+     ) -> anyhow::Result<()> {
+-        let want_visible = self
++        let want_visible = self.config.room_available(&app.room) && self
+             .config
+             .active_state
+             .as_ref()
+diff --git a/wayvr/src/backend/openvr/playspace.rs b/wayvr/src/backend/openvr/playspace.rs
+--- a/wayvr/src/backend/openvr/playspace.rs
++++ b/wayvr/src/backend/openvr/playspace.rs
+@@ -45,6 +45,9 @@
+         task: PlayspaceTask,
+     ) {
+         match task {
++            PlayspaceTask::RememberFloor | PlayspaceTask::ForgetFloor => {
++                app.room_notice("Remember floor requires WiVRn OpenXR and a localized room marker.");
++            }
+             PlayspaceTask::FixFloor => {
+                 self.fix_floor(chaperone_mgr, app, overlays);
+             }
 diff --git a/wayvr/src/backend/openxr/helpers.rs b/wayvr/src/backend/openxr/helpers.rs
-index 7594acf..6d98e50 100644
 --- a/wayvr/src/backend/openxr/helpers.rs
 +++ b/wayvr/src/backend/openxr/helpers.rs
-@@ -23,6 +23,7 @@ use crate::state::AppState;
+@@ -23,6 +23,7 @@
  pub(super) struct ExtraExts {
      pub mndx_composition_layer_alpha_blend_system_ui: bool,
      pub ext_eye_gaze_interaction: bool,
@@ -1098,7 +1270,7 @@ index 7594acf..6d98e50 100644
  }
  
  pub(super) fn init_xr() -> Result<(xr::Instance, xr::SystemId, ExtraExts), anyhow::Error> {
-@@ -61,6 +62,8 @@ pub(super) fn init_xr() -> Result<(xr::Instance, xr::SystemId, ExtraExts), anyho
+@@ -61,6 +62,8 @@
      } else {
          log::warn!("Missing EXT_hp_mixed_reality_controller extension.");
      }
@@ -1121,12 +1293,12 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +    hand_paths: [xr::Path; 2],
 +    started: Instant,
  }
-
+ 
  pub(super) struct OpenXrPointer {
 @@ -264,7 +270,25 @@
          let mut right_source = OpenXrHandSource::new(&mut action_set, "right")?;
          let mut fallback_source = OpenXrHandSource::new(&mut action_set, "handsfree")?;
-
+ 
 -        let profiles = load_xr_input_profiles();
 +        let mut profiles = load_xr_input_profiles();
 +        // Keep saved mappings, filling missing hand aim bindings in memory only.
@@ -1149,7 +1321,7 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +        }
          let (physical_inputs, physical_input_map) =
              create_physical_inputs(&action_set, &xr.instance, &profiles)?;
-
+ 
 @@ -288,7 +312,40 @@
                  OpenXrPointer::new(xr, right_source)?,
              ],
@@ -1189,7 +1361,7 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +            hand.reset();
 +        }
      }
-
+ 
      pub fn haptics(&self, xr: &XrState, hand: usize, haptics: &Haptics) {
 @@ -348,6 +405,7 @@
          if picking_focus.is_none() {
@@ -1199,7 +1371,7 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
                  let pointer = &mut app.input_state.pointers[i];
                  self.pointers[i].update(
                      pointer,
-@@ -356,6 +414,140 @@
+@@ -356,6 +414,146 @@
                      !should_disable_lerp,
                      physical_inputs,
                  )?;
@@ -1253,7 +1425,11 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +                    } else {
 +                        None
 +                    };
-+                    if app.input_state.joysticks_enabled {
++                    pointer.frame_hand = crate::hands_frame_panel::tracked_hand(
++                        joints.as_ref(),
++                        pointer.frame_hand.is_some_and(|h| h.trigger),
++                    );
++                    if app.input_state.joysticks_enabled && !app.hands_frame.model.reserving() {
 +                        pointer.joystick_pad = self.thumb_pads[i].update(
 +                            self.started.elapsed(),
 +                            joints.as_ref(),
@@ -1328,9 +1504,11 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
 +                    pointer.index_tip = None;
 +                }
 +                if !hand_mode {
++                    pointer.frame_hand = None;
 +                    self.thumb_pads[i].reset();
 +                }
 +                if !xr.focused || pointer.cancel_interaction {
++                    pointer.frame_hand = None;
 +                    pointer.joystick_pad = None;
 +                    pointer.joystick_owned = false;
 +                    self.thumb_pads[i].reset();
@@ -1340,7 +1518,7 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
                  any_tracked |= pointer.tracked;
              }
          } else {
-@@ -371,10 +563,27 @@
+@@ -371,10 +569,27 @@
                  pointer.now = PointerState::default();
                  pointer.tracked = false;
                  pointer.handsfree = false;
@@ -1372,25 +1550,52 @@ diff --git a/wayvr/src/backend/openxr/input.rs b/wayvr/src/backend/openxr/input.
              self.handsfree_pointer.update_handsfree(
                  &mut app.input_state.pointers[0],
                  xr,
-@@ -386,6 +595,13 @@
+@@ -386,6 +601,41 @@
              )?;
          }
-
+ 
 +        if !picking_focus.is_none() {
 +            self.reset_hands();
 +        }
 +        self.joystick_link.exchange(
 +            app.input_state.joysticks_enabled && xr.focused && picking_focus.is_none(),
 +            app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
++            app.input_state.hand_controllers_enabled && xr.focused && picking_focus.is_none(),
++            app.input_state.pointers.each_ref().map(|p| {
++                p.joystick_owned
++                    || p.cancel_interaction
++                    || p.keyboard_hover
++                    || p.interaction.hovered_id.is_some()
++                    || p.interaction.grabbed.is_some()
++                    || p.interaction.clicked_id.is_some()
++                    || p.interaction.should_block_input
++                    || app.watch_menu.open().is_some()
++                    || app.hands_frame.model.reserving()
++            }),
++            app.input_state.walking_enabled && xr.focused && picking_focus.is_none(),
++            app.input_state.body_turning_enabled,
++            app.input_state
++                .pointers
++                .each_ref()
++                .map(|p| p.joystick_owned),
++            app.watch_menu.open().is_some()
++                || app.hands_frame.model.reserving()
++                || app.input_state.pointers.iter().any(|p| {
++                    p.cancel_interaction
++                        || p.keyboard_hover
++                        || p.interaction.hovered_id.is_some()
++                        || p.interaction.grabbed.is_some()
++                        || p.interaction.clicked_id.is_some()
++                        || p.interaction.should_block_input
++                }),
 +        );
          app.session.config.handsfree_pointer = old_handsfree;
-
+ 
          Ok(())
 diff --git a/wayvr/src/backend/openxr/mod.rs b/wayvr/src/backend/openxr/mod.rs
-index 9850137..e2c51bf 100644
 --- a/wayvr/src/backend/openxr/mod.rs
 +++ b/wayvr/src/backend/openxr/mod.rs
-@@ -39,6 +39,8 @@ use crate::{
+@@ -39,6 +39,8 @@
  };
  
  mod blocker;
@@ -1399,7 +1604,7 @@ index 9850137..e2c51bf 100644
  mod helpers;
  mod input;
  mod lines;
-@@ -55,6 +57,7 @@ struct XrState {
+@@ -55,6 +57,7 @@
      session: xr::Session<xr::Vulkan>,
      predicted_display_time: xr::Time,
      fps: f32,
@@ -1407,7 +1612,7 @@ index 9850137..e2c51bf 100644
      stage: Arc<xr::Space>,
      view: Arc<xr::Space>,
      extra_exts: ExtraExts,
-@@ -147,6 +150,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
+@@ -147,6 +150,7 @@
          session,
          predicted_display_time: xr::Time::from_nanos(0),
          fps: 30.0,
@@ -1415,7 +1620,7 @@ index 9850137..e2c51bf 100644
          stage: Arc::new(stage),
          view: Arc::new(view),
          extra_exts,
-@@ -154,6 +158,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
+@@ -154,6 +158,7 @@
  
      let mut skybox: Option<Skybox> = None;
  
@@ -1423,7 +1628,15 @@ index 9850137..e2c51bf 100644
      let pointer_lines = [
          lines.allocate(&xr_state, &app)?,
          lines.allocate(&xr_state, &app)?,
-@@ -203,6 +208,17 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
+@@ -171,6 +176,7 @@
+ 
+     let mut fps_counter: VecDeque<Instant> = VecDeque::new();
+ 
++    app.room.start();
+     let mut main_session_visible = false;
+     let mut environment_blend_mode = modes[0];
+     let mut last_frame_time = Instant::now();
+@@ -203,6 +209,17 @@
                      // Session state change is where we can begin and end sessions, as well as
                      // find quit messages!
                      log::info!("entered state {:?}", e.state());
@@ -1441,7 +1654,7 @@ index 9850137..e2c51bf 100644
                      match e.state() {
                          xr::SessionState::READY => {
                              xr_state.session.begin(VIEW_TYPE)?;
-@@ -257,6 +273,10 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
+@@ -257,6 +274,10 @@
              next_device_update = Instant::now() + Duration::from_secs(30);
          }
  
@@ -1452,10 +1665,13 @@ index 9850137..e2c51bf 100644
          if !session_running {
              std::thread::sleep(Duration::from_millis(100));
              log::trace!("session not running: continue");
-@@ -291,6 +311,14 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
+@@ -291,6 +312,17 @@
          };
  
          if !xr_frame_state.should_render {
++            app.watch_menu.close();
++            app.input_state.frame_view=None;
++            app.hands_frame.model.cancel();app.hands_frame.command("cancel");
 +            input_source.reset_hands();
 +            for i in 0..2 {
 +                crate::backend::input::release_pointer(i, &mut overlays, &mut app);
@@ -1467,7 +1683,7 @@ index 9850137..e2c51bf 100644
              log::trace!("xrEndFrame");
              frame_stream.end(
                  xr_frame_state.predicted_display_time,
-@@ -300,7 +328,27 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
+@@ -300,7 +332,27 @@
              continue 'main_loop;
          }
  
@@ -1495,7 +1711,32 @@ index 9850137..e2c51bf 100644
          input_source.update(&xr_state, &mut app)?;
          app.input_state.post_update(&app.session);
  
-@@ -452,6 +500,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
+@@ -327,6 +379,7 @@
+                 .enqueue(TaskType::Overlay(OverlayTask::ToggleDashboard));
+         }
+ 
++        playspace_mover.restore_floor(&mut app, &mut overlays);
+         playspace_mover.update(&mut overlays, &mut app);
+ 
+         for o in overlays.values_mut() {
+@@ -344,6 +397,7 @@
+             &xr_state.stage,
+         )?;
+ 
++        app.input_state.frame_view=views.first().map(|v|helpers::posef_to_transform(&v.pose));
+         let ipd = helpers::ipd_from_views(&views);
+         if (app.input_state.ipd - ipd).abs() > 0.5 {
+             log::info!("IPD changed: {} -> {}", app.input_state.ipd, ipd);
+@@ -409,7 +463,7 @@
+ 
+         for o in overlays.values_mut() {
+             o.data.cur_visible = false;
+-            if o.config
++            if !o.config.room_available(&app.room) || o.config
+                 .active_state
+                 .as_ref()
+                 .is_none_or(|s| s.alpha < 0.01)
+@@ -452,6 +506,7 @@
          }
  
          lines.render(&app, &mut futures)?;
@@ -1503,7 +1744,7 @@ index 9850137..e2c51bf 100644
          futures.wait()?;
          // End rendering
  
-@@ -485,7 +534,11 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
+@@ -485,7 +540,11 @@
              }
          }
  
@@ -1516,11 +1757,215 @@ index 9850137..e2c51bf 100644
              layers.push((0.0, layer));
          }
          // End layer composition
+diff --git a/wayvr/src/backend/openxr/playspace.rs b/wayvr/src/backend/openxr/playspace.rs
+--- a/wayvr/src/backend/openxr/playspace.rs
++++ b/wayvr/src/backend/openxr/playspace.rs
+@@ -24,6 +24,8 @@
+     rotate: Option<MoverData<Quat>>,
+     gravity: SpaceGravity,
+     playspace_state: PlayspaceState,
++    floor_applied_revision: Option<u64>,
++    floor_retry_at: std::time::Instant,
+ }
+ 
+ impl PlayspaceMover {
+@@ -35,6 +37,8 @@
+             rotate: None,
+             gravity: SpaceGravity::new(),
+             playspace_state: load_playspace_state().unwrap_or_default(),
++            floor_applied_revision: None,
++            floor_retry_at: std::time::Instant::now(),
+         }
+     }
+ 
+@@ -44,11 +48,17 @@
+         overlays: &mut OverlayWindowManager<OpenXrOverlayData>,
+         task: PlayspaceTask,
+     ) {
++        match task {
++            PlayspaceTask::RememberFloor => { self.remember_floor(app); return; }
++            PlayspaceTask::ForgetFloor => { self.forget_floor(app); return; }
++            _ => {}
++        }
+         let Some(monado) = &mut app.monado_state else {
+             return; // monado not available
+         };
+ 
+         match task {
++            PlayspaceTask::RememberFloor | PlayspaceTask::ForgetFloor => unreachable!(),
+             PlayspaceTask::FixFloor => {
+                 self.fix_floor(app, overlays);
+             }
+@@ -65,6 +75,94 @@
+                 self.playspace_state.openxr_space_center = Affine3A::IDENTITY;
+             }
+         }
++    }
++
++    fn moving(&self, app: &AppState) -> bool {
++        self.drag.is_some() || self.rotate.is_some()
++            || app.input_state.pointers.iter().any(|p| p.now.space_drag || p.now.space_rotate || p.now.space_reset)
++    }
++
++    fn remember_floor(&mut self, app: &mut AppState) {
++        if app.monado_state.is_none() || self.moving(app) {
++            app.room_notice("Remember floor requires WiVRn OpenXR with playspace movement stopped.");
++            return;
++        }
++        let level = app.monado_state.as_mut().and_then(|m|
++            m.ipc.get_reference_space_offset(ReferenceSpaceType::Stage).ok()
++        ).is_some_and(|pose| {
++            let rotation: Quat = pose.orientation.into();
++            (rotation * Vec3::Y).dot(Vec3::Y) > 5.0f32.to_radians().cos()
++        });
++        if !level {
++            app.room_notice("Floor not saved. Return the playspace to an upright orientation first.");
++            return;
++        }
++        let Some(binding) = app.room.remember_floor() else {
++            app.room_notice("Floor not saved. Localize a saved room marker and hold steady for two seconds.");
++            return;
++        };
++        let mut candidate = self.playspace_state.clone();
++        candidate.remembered_floor = Some(binding);
++        match save_playspace_state(&candidate) {
++            Ok(()) => {
++                self.playspace_state = candidate;
++                self.floor_applied_revision = Some(app.room.revision());
++                app.room_notice("Floor remembered. It will restore after reconnecting or a reference-space change.");
++            }
++            Err(e) => app.room_notice(&format!("Could not save floor: {e}")),
++        }
++    }
++
++    fn forget_floor(&mut self, app: &mut AppState) {
++        let mut candidate = self.playspace_state.clone();
++        candidate.remembered_floor = None;
++        match save_playspace_state(&candidate) {
++            Ok(()) => {
++                self.playspace_state = candidate;
++                self.floor_applied_revision = None;
++                app.room_notice("Remembered floor removed. Automatic floor restoration is off.");
++            }
++            Err(e) => app.room_notice(&format!("Could not remove saved floor: {e}")),
++        }
++    }
++
++    /// Apply once per connection/reference generation. An already applied floor
++    /// never fights deliberate playspace dragging or accumulates corrections.
++    pub fn restore_floor(
++        &mut self,
++        app: &mut AppState,
++        overlays: &mut OverlayWindowManager<OpenXrOverlayData>,
++    ) {
++        let revision = app.room.revision();
++        app.room.floor_status = if self.playspace_state.remembered_floor.is_none() {
++            "Remembered floor: off"
++        } else if self.floor_applied_revision == Some(revision) {
++            "Remembered floor: active"
++        } else {
++            "Remembered floor: waiting for stable room localization"
++        };
++        if self.floor_applied_revision == Some(revision) || self.moving(app)
++            || std::time::Instant::now() < self.floor_retry_at { return; }
++        let Some(binding) = &self.playspace_state.remembered_floor else { return; };
++        let Some(world) = app.room.locate_floor(binding) else { return; };
++        let Some(monado) = &mut app.monado_state else { return; };
++        self.floor_retry_at = std::time::Instant::now() + std::time::Duration::from_secs(1);
++        let Ok(pose) = monado.ipc.get_reference_space_offset(ReferenceSpaceType::Stage) else { return; };
++        let before = Affine3A::from_rotation_translation(pose.orientation.into(), pose.position.into());
++        let Some(after) = crate::room::floor_offset(before, world) else { return; };
++        let new_pose = Pose { position: after.translation.into(), orientation: pose.orientation };
++        if let Err(e) = monado.ipc.set_reference_space_offset(ReferenceSpaceType::Stage, new_pose) {
++            log::warn!("Could not restore room floor: {e:?}");
++            return;
++        }
++        self.floor_applied_revision = Some(revision);
++        self.gravity.reset();
++        self.playspace_state.openxr_space_center.translation += after.translation - before.translation;
++        if !app.session.config.space_drag_affects_world {
++            playspace_common::shift_world(overlays, &mut app.anchor, &before, &after);
++        }
++        app.room.stage_changed();
++        app.room_notice("Remembered room floor restored.");
+     }
+ 
+     pub fn update(
+@@ -125,6 +223,7 @@
+             data.hand_pose = new_hand;
+ 
+             apply_offset(data.pose, &mut monado.ipc);
++            app.room.stage_changed();
+             self.rotate = Some(data);
+         } else {
+             // start space rotate
+@@ -193,6 +292,7 @@
+             data.hand_pose = new_hand;
+ 
+             apply_offset(data.pose, &mut monado.ipc);
++            app.room.stage_changed();
+             self.drag = Some(data);
+         } else {
+             // start space drag
+@@ -234,6 +334,7 @@
+             let before_pose = Affine3A::from_translation(prev_playspace_pos.into());
+             let after_pose = Affine3A::from_translation(res.playspace_pos.into());
+             apply_offset(after_pose, &mut monado.ipc);
++            app.room.stage_changed();
+ 
+             if !app.session.config.space_drag_affects_world {
+                 playspace_common::shift_world(overlays, &mut app.anchor, &before_pose, &after_pose);
+@@ -306,6 +407,7 @@
+             .ipc
+             .set_reference_space_offset(ReferenceSpaceType::Stage, pose)
+             .inspect_err(|e| log::warn!("Could not recenter due to libmonado error: {e:?}"));
++        app.room.stage_changed();
+ 
+         self.gravity.reset();
+ 
+@@ -348,6 +450,7 @@
+         self.gravity.reset();
+         let offset = self.playspace_state.openxr_space_center;
+         apply_offset(offset, &mut monado.ipc);
++        app.room.stage_changed();
+ 
+         if !app.session.config.space_drag_affects_world {
+             let after = offset;
+@@ -399,6 +502,7 @@
+             .ipc
+             .set_reference_space_offset(ReferenceSpaceType::Stage, pose)
+             .inspect_err(|e| log::warn!("Could not fix floor due to libmonado error: {e:?}"));
++        app.room.stage_changed();
+ 
+         let after =
+             Affine3A::from_rotation_translation(pose.orientation.into(), pose.position.into());
+diff --git a/wayvr/src/backend/playspace_common.rs b/wayvr/src/backend/playspace_common.rs
+--- a/wayvr/src/backend/playspace_common.rs
++++ b/wayvr/src/backend/playspace_common.rs
+@@ -28,6 +28,7 @@
+         let Some(state) = overlay.config.active_state.as_mut() else {
+             return;
+         };
++        if state.room_binding.is_some() { return; }
+         state.transform = correction * state.transform;
+         overlay.config.dirty = true;
+     });
+diff --git a/wayvr/src/backend/task.rs b/wayvr/src/backend/task.rs
+--- a/wayvr/src/backend/task.rs
++++ b/wayvr/src/backend/task.rs
+@@ -67,6 +67,8 @@
+     Recenter,
+     Reset,
+     FixFloor,
++    RememberFloor,
++    ForgetFloor,
+     SaveCenter,
+     ResetCenter,
+ }
 diff --git a/wayvr/src/backend/wayvr/input_capture.rs b/wayvr/src/backend/wayvr/input_capture.rs
-index c2150bd..c7fbb48 100644
 --- a/wayvr/src/backend/wayvr/input_capture.rs
 +++ b/wayvr/src/backend/wayvr/input_capture.rs
-@@ -60,6 +60,7 @@ pub enum CapturedEvent {
+@@ -60,6 +60,7 @@
      },
      Grabbed,
      Ungrabbed,
@@ -1528,7 +1973,7 @@ index c2150bd..c7fbb48 100644
      KeyCombo {
          combo: KeyCombo,
          pressed: bool,
-@@ -85,6 +86,7 @@ pub struct InputCapture {
+@@ -85,6 +86,7 @@
      command_tx: SyncSender<Command>,
      event_rx: Receiver<CapturedEvent>,
      worker: Option<JoinHandle<()>>,
@@ -1536,7 +1981,7 @@ index c2150bd..c7fbb48 100644
  }
  
  impl InputCapture {
-@@ -102,6 +104,7 @@ impl InputCapture {
+@@ -102,6 +104,7 @@
                  command_tx,
                  event_rx,
                  worker: Some(worker),
@@ -1544,7 +1989,7 @@ index c2150bd..c7fbb48 100644
              }),
              Ok(Err(error)) => {
                  let _ = worker.join();
-@@ -118,9 +121,26 @@ impl InputCapture {
+@@ -118,9 +121,26 @@
      }
  
      /// Returns every currently queued event without blocking.
@@ -1573,7 +2018,7 @@ index c2150bd..c7fbb48 100644
      }
  
      /// Set acceleration profile for current and future mice
-@@ -148,12 +168,8 @@ impl Drop for InputCapture {
+@@ -148,12 +168,8 @@
  
  enum Command {
      ResetWatchdog,
@@ -1588,7 +2033,7 @@ index c2150bd..c7fbb48 100644
      Shutdown,
  }
  
-@@ -311,6 +327,7 @@ impl LibinputInterface for RestrictedInterface {
+@@ -311,6 +327,7 @@
  #[derive(Default)]
  struct RuntimeDeviceState {
      pressed_keys: HashSet<u16>,
@@ -1596,7 +2041,7 @@ index c2150bd..c7fbb48 100644
      active_combos: HashSet<KeyCombo>,
      horizontal_v120_remainder: f64,
      vertical_v120_remainder: f64,
-@@ -358,50 +375,24 @@ fn worker_main(
+@@ -358,50 +375,24 @@
          loop {
              match command_rx.try_recv() {
                  Ok(Command::SetGrabbed(requested)) => {
@@ -1662,7 +2107,7 @@ index c2150bd..c7fbb48 100644
                  }
                  Ok(Command::SetPointerAccel { accel, speed }) => {
                      pointer_accel = PointerAccelConfig { accel, speed };
-@@ -460,19 +451,11 @@ fn worker_main(
+@@ -460,17 +451,9 @@
              continue;
          }
  
@@ -1673,16 +2118,14 @@ index c2150bd..c7fbb48 100644
          if poll_fd.revents & (libc::POLLERR | libc::POLLHUP | libc::POLLNVAL) != 0 {
              log::error!("libinput poll fd became invalid; input worker is exiting");
              break 'worker;
-         }
- 
--        if poll_fd.revents & libc::POLLIN == 0 {
--            continue;
 -        }
 -
+-        if poll_fd.revents & libc::POLLIN == 0 {
+-            continue;
+         }
+ 
          if let Err(error) = libinput.dispatch() {
-             if error.kind() != io::ErrorKind::WouldBlock {
-                 log::warn!("libinput dispatch failed: {error}");
-@@ -500,7 +483,7 @@ fn worker_main(
+@@ -500,7 +483,7 @@
              }
          }
  
@@ -1691,7 +2134,7 @@ index c2150bd..c7fbb48 100644
              pending_grab = false;
  
              match restricted_state.borrow_mut().set_grabbed(true) {
-@@ -528,6 +511,7 @@ fn worker_main(
+@@ -528,6 +511,7 @@
                          true,
                      );
                      log::warn!("Could not grab input devices: {error}");
@@ -1699,7 +2142,7 @@ index c2150bd..c7fbb48 100644
                  }
              }
          }
-@@ -670,8 +654,17 @@ fn process_libinput_event(par: ProcessLibinputEventParams) -> ProcessResult {
+@@ -670,8 +654,17 @@
                  return ProcessResult::ReceiverGone;
              }
          }
@@ -1718,7 +2161,7 @@ index c2150bd..c7fbb48 100644
              if par
                  .event_tx
                  .send(CapturedEvent::PointerButton {
-@@ -840,6 +833,7 @@ fn force_emergency_ungrab(
+@@ -840,6 +833,7 @@
  fn clear_transient_state(runtime_devices: &mut HashMap<LibinputDevice, RuntimeDeviceState>) {
      for state in runtime_devices.values_mut() {
          state.pressed_keys.clear();
@@ -1726,7 +2169,7 @@ index c2150bd..c7fbb48 100644
          state.active_combos.clear();
          state.horizontal_v120_remainder = 0.0;
          state.vertical_v120_remainder = 0.0;
-@@ -960,10 +954,81 @@ fn with_device_context(action: &str, path: &Path, error: io::Error) -> io::Error
+@@ -960,10 +954,81 @@
      )
  }
  
@@ -1736,6 +2179,7 @@ index c2150bd..c7fbb48 100644
 -    runtime_devices
 -        .values()
 -        .all(|state| state.pressed_keys.is_empty())
+-}
 +fn all_inputs_released(runtime_devices: &HashMap<LibinputDevice, RuntimeDeviceState>) -> bool {
 +    runtime_devices.values().all(RuntimeDeviceState::released)
 +}
@@ -1813,12 +2257,11 @@ index c2150bd..c7fbb48 100644
 +        state.pressed_buttons.clear();
 +        assert!(state.released());
 +    }
- }
++}
 diff --git a/wayvr/src/backend/wayvr/mod.rs b/wayvr/src/backend/wayvr/mod.rs
-index fecd303..1fae7d1 100644
 --- a/wayvr/src/backend/wayvr/mod.rs
 +++ b/wayvr/src/backend/wayvr/mod.rs
-@@ -518,6 +518,7 @@ impl WvrServerState {
+@@ -518,6 +518,7 @@
                      }
                  }
                  WayVRTask::DropToplevel(client_id, toplevel) => {
@@ -1826,7 +2269,7 @@ index fecd303..1fae7d1 100644
                      for client in &wvr_server.manager.clients {
                          if client.client.id() != client_id {
                              continue;
-@@ -557,8 +558,20 @@ impl WvrServerState {
+@@ -557,7 +558,19 @@
                              }
                          }
  
@@ -1837,17 +2280,16 @@ index fecd303..1fae7d1 100644
 +                                .as_ref()
 +                                .is_some_and(|m| m.hover_window == window_handle);
                          wvr_server.wm.remove_window(window_handle);
-                     }
++                    }
 +                    if release_input || wvr_server.wm.windows.is_empty() {
 +                        app.hid_provider.set_input_focus(
 +                            Some(wvr_server),
 +                            crate::subsystem::input::InputFocus::PhysicalScreen,
 +                        );
-+                    }
+                     }
                  }
                  WayVRTask::VisibilityChange(window_handle, visible) => {
-                     if let Some(oid) = wvr_server.window_to_overlay.get(&window_handle) {
-@@ -692,6 +705,17 @@ impl WvrServerState {
+@@ -692,6 +705,17 @@
              wvr_server.manager.cleanup_handles();
          }
  
@@ -1865,7 +2307,7 @@ index fecd303..1fae7d1 100644
          wvr_server.process_input_capture(
              &mut app.input_state,
              &mut app.tasks,
-@@ -833,6 +857,9 @@ impl WvrServerState {
+@@ -833,6 +857,9 @@
                      .ok();
                  self.input_capture_init_attempted = true;
                  if let Some(cap) = self.input_capture.as_mut() {
@@ -1875,7 +2317,7 @@ index fecd303..1fae7d1 100644
                      cap
                  } else {
                      let text = &globals
-@@ -915,6 +942,7 @@ impl WvrServerState {
+@@ -915,6 +942,7 @@
                      }
                  }
                  input_capture::CapturedEvent::PointerButton { button, pressed } => {
@@ -1883,7 +2325,7 @@ index fecd303..1fae7d1 100644
                      let Some(mouse_index) = Self::button_to_mouse_index(button) else {
                          continue;
                      };
-@@ -942,6 +970,9 @@ impl WvrServerState {
+@@ -942,6 +970,9 @@
                      dx_raw,
                      dy_raw,
                  } => {
@@ -1893,7 +2335,7 @@ index fecd303..1fae7d1 100644
                      mouse_delta += DVec2 { x: dx, y: dy };
                      mouse_delta_raw += DVec2 {
                          x: dx_raw,
-@@ -952,6 +983,9 @@ impl WvrServerState {
+@@ -952,6 +983,9 @@
                      horizontal_v120,
                      vertical_v120,
                  } => {
@@ -1903,7 +2345,7 @@ index fecd303..1fae7d1 100644
                      let mut delta = WheelDelta {
                          x: horizontal_v120 as f32,
                          y: vertical_v120 as f32,
-@@ -966,6 +1000,7 @@ impl WvrServerState {
+@@ -966,6 +1000,7 @@
                      }
                  }
                  input_capture::CapturedEvent::Grabbed => {
@@ -1911,7 +2353,7 @@ index fecd303..1fae7d1 100644
                      audio.play_sample("input_grab");
                      if !self.grab_toast_sent {
                          self.grab_toast_sent = true;
-@@ -973,12 +1008,23 @@ impl WvrServerState {
+@@ -973,12 +1008,23 @@
                          let _ = DbusConnector::notify_send("WayVR", text, 1, 5000, 0, true);
                      }
                  }
@@ -1938,7 +2380,7 @@ index fecd303..1fae7d1 100644
                      audio.play_sample("input_ungrab");
                  }
                  input_capture::CapturedEvent::KeyCombo { combo, pressed } => match combo {
-@@ -1080,9 +1126,24 @@ impl WvrServerState {
+@@ -1080,9 +1126,24 @@
      }
  
      /// Use HidWrapper::set_input_focus instead!!!
@@ -1965,10 +2407,9 @@ index fecd303..1fae7d1 100644
          }
      }
 diff --git a/wayvr/src/graphics/dmabuf.rs b/wayvr/src/graphics/dmabuf.rs
-index 38ab639..86efef1 100644
 --- a/wayvr/src/graphics/dmabuf.rs
 +++ b/wayvr/src/graphics/dmabuf.rs
-@@ -26,7 +26,7 @@ impl WGfxDmabuf for WGfx {
+@@ -26,7 +26,7 @@
              anyhow::bail!("DMA-buf plane has no FD");
          };
  
@@ -1978,20 +2419,15 @@ index 38ab639..86efef1 100644
              frame.format.width,
              frame.format.height,
 diff --git a/wayvr/src/gui/asset.rs b/wayvr/src/gui/asset.rs
-index 57a7fea..858e18b 100644
 --- a/wayvr/src/gui/asset.rs
 +++ b/wayvr/src/gui/asset.rs
-@@ -4,6 +4,29 @@ pub struct GuiAsset;
+@@ -4,6 +4,28 @@
  
  impl wgui::assets::AssetProvider for GuiAsset {
      fn load_from_path(&mut self, path: &str) -> anyhow::Result<Vec<u8>> {
 +        if path == "gui/watch-motoc.xml" {
-+            return Ok(include_str!("../assets/gui/watch.xml")
-+                .replace("Full reset: stand upright and face forward. Three-second countdown; press again to cancel.", "Motoc calibrate: hold the selected tracker against the headset. Three-second countdown; press again to cancel.")
-+                .replace("Mounting reset: after a full reset, bend knees and lean forward in a ski pose. Three-second countdown; press again to cancel.", "Motoc resume: use the saved calibration in the selected mode. Three-second countdown; press again to cancel.")
-+                .replace("<sprite width=\"40\" height=\"40\" src_builtin=\"@/watch/full-reset.svg\" />", "<label text=\"Calib\" size=\"15\" />")
-+                .replace("<sprite width=\"40\" height=\"40\" src_builtin=\"@/watch/mounting-reset.svg\" />", "<label text=\"Resume\" size=\"13\" />")
-+                .into_bytes());
++            // Labels/actions are selected by the grouped watch controller.
++            return Ok(include_bytes!("../assets/gui/watch.xml").to_vec());
 +        }
 +        if path == "watch/full-reset.svg" {
 +            return Ok(include_bytes!("../../../../icons/full-reset.svg").to_vec());
@@ -1999,6 +2435,9 @@ index 57a7fea..858e18b 100644
 +        if path == "watch/mounting-reset.svg" {
 +            return Ok(include_bytes!("../../../../icons/mounting-reset.svg").to_vec());
 +        }
++        if path == "gui/hands-frame-bookmarks.xml" {return Ok(include_bytes!("../../../../hands-frame-bookmarks.xml").to_vec());}
++        if path == "gui/hands-frame.xml" {return Ok(include_bytes!("../../../../hands-frame.xml").to_vec());}
++        if path == "gui/hands-frame-guide.xml" {return Ok(include_bytes!("../../../../hands-frame-guide.xml").to_vec());}
 +        if path == "gui/performance.xml" {
 +            return Ok(include_bytes!("../../../../performance.xml").to_vec());
 +        }
@@ -2012,10 +2451,9 @@ index 57a7fea..858e18b 100644
              Some(data) => Ok(data.data.to_vec()),
              None => anyhow::bail!("embedded file {path} not found"),
 diff --git a/wayvr/src/gui/panel/button.rs b/wayvr/src/gui/panel/button.rs
-index efcaa52..b2b074f 100644
 --- a/wayvr/src/gui/panel/button.rs
 +++ b/wayvr/src/gui/panel/button.rs
-@@ -520,6 +520,32 @@ pub(super) fn setup_custom_button<S: 'static>(
+@@ -520,6 +520,32 @@
                          Ok(EventResult::Consumed)
                      })
                  }
@@ -2048,11 +2486,115 @@ index efcaa52..b2b074f 100644
                  "::EditToggle" => Box::new(move |_common, data, app, _| {
                      if !test_button(data) || !test_duration(&button, app) {
                          return Ok(EventResult::Pass);
+@@ -603,47 +629,24 @@
+                         .enqueue(TaskType::Playspace(PlayspaceTask::Recenter));
+                     Ok(EventResult::Consumed)
+                 }),
++                "::PlayspaceRememberFloor" | "::PlayspaceForgetFloor" => {
++                    let remember = command == "::PlayspaceRememberFloor";
++                    Box::new(move |_common, data, app, _| {
++                        if !test_button(data) || !test_duration(&button, app) {
++                            return Ok(EventResult::Pass);
++                        }
++                        app.tasks.enqueue(TaskType::Playspace(if remember {
++                            PlayspaceTask::RememberFloor
++                        } else { PlayspaceTask::ForgetFloor }));
++                        Ok(EventResult::Consumed)
++                    })
++                }
+                 "::PlayspaceFixFloor" => Box::new(move |_common, data, app, _| {
+                     if !test_button(data) || !test_duration(&button, app) {
+                         return Ok(EventResult::Pass);
+                     }
+ 
+-                    let globals = app.wgui_globals.clone();
+-
+-                    let duration_secs = 5;
+-                    let now = Instant::now();
+-
+-                    for i in 0..duration_secs {
+-                        let text = globals.i18n().translate_and_replace(
+-                            "TOAST.FIXING_FLOOR_IN_X_SECS",
+-                            ("{SECONDS}", &format!("{}", duration_secs - i)),
+-                        );
+-                        Toast::new(
+-                            ToastTopic::System,
+-                            Some(Translation::from_raw_text_string(text)),
+-                            Translation::from_translation_key("TOAST.ONE_CONTROLLER_ON_FLOOR"),
+-                        )
+-                        .with_timeout(1.0)
+-                        .with_lerp_amount(1.0)
+-                        .with_animate(false)
+-                        .with_sound(i == 0)
+-                        .submit_at(app, now + Duration::from_secs(i as _));
+-                    }
+-
+-                    app.audio.play_sample("fix_floor");
+-
+-                    let deadline = now + Duration::from_secs(duration_secs);
+-
+-                    app.tasks
+-                        .enqueue_at(TaskType::Playspace(PlayspaceTask::FixFloor), deadline);
+-
+-                    Toast::new(
+-                        ToastTopic::System,
+-                        Some(Translation::from_translation_key("DONE")),
+-                        Translation::from_raw_text(""),
+-                    )
+-                    .with_timeout(2.0)
+-                    .submit_at(app, deadline);
++                    queue_fix_floor(app);
+                     Ok(EventResult::Consumed)
+                 }),
+                 "::Shutdown" => Box::new(move |_common, data, app, _| {
+@@ -857,3 +860,43 @@
+         mut_state.child = None;
+     }
+ }
++
++/// Shared by custom panels and the grouped watch menu.
++pub fn queue_fix_floor(app: &mut AppState) {
++    let globals = app.wgui_globals.clone();
++
++    let duration_secs = 5;
++    let now = Instant::now();
++
++    for i in 0..duration_secs {
++        let text = globals.i18n().translate_and_replace(
++            "TOAST.FIXING_FLOOR_IN_X_SECS",
++            ("{SECONDS}", &format!("{}", duration_secs - i)),
++        );
++        Toast::new(
++            ToastTopic::System,
++            Some(Translation::from_raw_text_string(text)),
++            Translation::from_translation_key("TOAST.ONE_CONTROLLER_ON_FLOOR"),
++        )
++        .with_timeout(1.0)
++        .with_lerp_amount(1.0)
++        .with_animate(false)
++        .with_sound(i == 0)
++        .submit_at(app, now + Duration::from_secs(i as _));
++    }
++
++    app.audio.play_sample("fix_floor");
++
++    let deadline = now + Duration::from_secs(duration_secs);
++
++    app.tasks
++        .enqueue_at(TaskType::Playspace(PlayspaceTask::FixFloor), deadline);
++
++    Toast::new(
++        ToastTopic::System,
++        Some(Translation::from_translation_key("DONE")),
++        Translation::from_raw_text(""),
++    )
++    .with_timeout(2.0)
++    .submit_at(app, deadline);
++}
 diff --git a/wayvr/src/gui/panel/device_list.rs b/wayvr/src/gui/panel/device_list.rs
-index 2a5349f..f5bfb35 100644
 --- a/wayvr/src/gui/panel/device_list.rs
 +++ b/wayvr/src/gui/panel/device_list.rs
-@@ -55,6 +55,17 @@ impl DeviceList {
+@@ -55,6 +55,17 @@
                          params,
                      )?;
                  }
@@ -2071,16 +2613,20 @@ index 2a5349f..f5bfb35 100644
              }
              _ => {}
 diff --git a/wayvr/src/gui/panel/label.rs b/wayvr/src/gui/panel/label.rs
-index 24b8f4a..e275327 100644
 --- a/wayvr/src/gui/panel/label.rs
 +++ b/wayvr/src/gui/panel/label.rs
-@@ -52,6 +52,43 @@ pub(super) fn setup_custom_label<S: 'static>(
+@@ -52,6 +52,48 @@
      };
  
      let callback: EventCallback<AppState, S> = match source {
++        "room_floor" => Box::new(|common, data, app, _| {
++            let text = if app.room.floor_status.is_empty() { "Remembered floor: off" } else { app.room.floor_status };
++            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(common, Translation::from_raw_text(text));
++            Ok(EventResult::Pass)
++        }),
 +        "tracking_reset" => Box::new(|common, data, app, _| {
 +            data.obj.get_as_mut::<WidgetLabel>().unwrap().set_text(
-+                common, Translation::from_raw_text(&app.shora_battery.reset_text()));
++                common, Translation::from_raw_text(&{ let text = app.shora_battery.reset_text(); if app.input_state.walking_enabled && !app.shora_battery.reset_busy() { app.shora_battery.walking_text() } else { text } }));
 +            Ok(EventResult::Pass)
 +        }),
 +        "shora_battery" => {
@@ -2118,11 +2664,41 @@ index 24b8f4a..e275327 100644
          "battery" => {
              let Some(device) = attribs.get_value("_device") else {
                  log_missing_attrib(parser_state, TAG, "_device");
+diff --git a/wayvr/src/gui/panel/mod.rs b/wayvr/src/gui/panel/mod.rs
+--- a/wayvr/src/gui/panel/mod.rs
++++ b/wayvr/src/gui/panel/mod.rs
+@@ -62,6 +62,7 @@
+     pub max_size: Vec2,
+     pub gui_scale: f32,
+     pub on_notify: Option<OnNotifyFunc<S>>,
++    pub on_event_filter: Option<Box<dyn FnMut(&mut Layout, &mut S, &mut AppState, &WguiEvent) -> bool>>,
+     pub on_lifetime_update: Option<OnLifetimeUpdateFunc<S>>,
+     pub initialized: bool,
+     pub doc_extra: Option<ParseDocumentExtra>,
+@@ -179,6 +180,7 @@
+             timers: vec![],
+             interaction_transform: None,
+             on_notify: None,
++            on_event_filter: None,
+             on_lifetime_update: None,
+             gui_scale: params.gui_scale,
+             initialized: false,
+@@ -244,6 +246,11 @@
+     }
+ 
+     pub fn push_event(&mut self, app: &mut AppState, event: &WguiEvent) -> EventResult {
++        if let Some(filter) = &mut self.on_event_filter {
++            if !filter(&mut self.layout, &mut self.state, app, event) {
++                return EventResult::Consumed;
++            }
++        }
+         match self.layout.push_event(event, app, &mut self.state) {
+             Ok(r) => r,
+             Err(e) => {
 diff --git a/wayvr/src/main.rs b/wayvr/src/main.rs
-index 6507e48..806fe03 100644
 --- a/wayvr/src/main.rs
 +++ b/wayvr/src/main.rs
-@@ -23,13 +23,37 @@ mod backend;
+@@ -23,13 +23,45 @@
  mod config;
  mod graphics;
  mod gui;
@@ -2150,6 +2726,14 @@ index 6507e48..806fe03 100644
  mod shaders;
 +#[path = "../../../shora_battery.rs"]
 +mod shora_battery;
++#[path = "../../../room.rs"]
++mod room;
++#[path = "../../../watch_menu.rs"]
++mod watch_menu;
++#[path = "../../../hands_frame.rs"]
++mod hands_frame;
++#[path = "../../../hands_frame_panel.rs"]
++mod hands_frame_panel;
  mod state;
  mod subsystem;
  mod test;
@@ -2160,7 +2744,7 @@ index 6507e48..806fe03 100644
  
  use std::{
      path::PathBuf,
-@@ -184,6 +208,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
+@@ -184,6 +216,9 @@
  
      if RESTART.load(Ordering::Relaxed) {
          log::warn!("Restarting...");
@@ -2171,10 +2755,9 @@ index 6507e48..806fe03 100644
          let mut args = vec!["--replace", "--show"];
  
 diff --git a/wayvr/src/overlays/dashboard.rs b/wayvr/src/overlays/dashboard.rs
-index 451460c..181f3af 100644
 --- a/wayvr/src/overlays/dashboard.rs
 +++ b/wayvr/src/overlays/dashboard.rs
-@@ -85,6 +85,24 @@ impl DashFrontend {
+@@ -85,6 +85,24 @@
              }
          }
  
@@ -2199,7 +2782,7 @@ index 451460c..181f3af 100644
          let tutorial = !app.session.config.tutorial_graduated;
  
          let frontend = frontend::Frontend::new(frontend::InitParams {
-@@ -391,6 +409,7 @@ impl DashInterfaceLive {
+@@ -391,6 +409,7 @@
  }
  
  impl DashInterface<AppState> for DashInterfaceLive {
@@ -2207,6 +2790,58 @@ index 451460c..181f3af 100644
      fn window_list(&mut self, app: &mut AppState) -> anyhow::Result<Vec<WvrWindow>> {
          let wvr_server = app.wvr_server.as_mut().unwrap();
          Ok(wvr_server
+diff --git a/wayvr/src/overlays/edit/mod.rs b/wayvr/src/overlays/edit/mod.rs
+--- a/wayvr/src/overlays/edit/mod.rs
++++ b/wayvr/src/overlays/edit/mod.rs
+@@ -424,6 +424,37 @@
+                             Ok(EventResult::Consumed)
+                         })
+                     }
++                    "::EditModeRoomPin" | "::EditModeRoomUnpin" => {
++                        let pin = command == "::EditModeRoomPin";
++                        Box::new(move |_common, data, app, state| {
++                            if !test_button(data) || !test_duration(&button, app) {
++                                return Ok(EventResult::Pass);
++                            }
++                            let sel = OverlaySelector::Id(*state.id.borrow());
++                            app.tasks.enqueue(TaskType::Overlay(OverlayTask::Modify(sel,
++                                Box::new(move |app, owc| {
++                                    let Some(state) = owc.active_state.as_mut() else { return; };
++                                    let message = if pin {
++                                        if let Some(binding) = app.room.bind(state.transform) {
++                                            state.room_binding = Some(binding);
++                                            state.positioning = wlx_common::windowing::Positioning::Static;
++                                            state.align_to_hmd = false;
++                                            "Pinned to room. Leave edit mode to save."
++                                        } else {
++                                            "Room pin unavailable. Localize a saved room marker and hold steady for two seconds."
++                                        }
++                                    } else {
++                                        state.room_binding = None;
++                                        state.positioning = wlx_common::windowing::Positioning::Static;
++                                        crate::windowing::window::save_transform(state, app);
++                                        "Room pin removed. Leave edit mode to save."
++                                    };
++                                    app.room_notice(message);
++                                }),
++                            )));
++                            Ok(EventResult::Consumed)
++                        })
++                    }
+                     "::EditModeSetPos" => {
+                         let key = args.next().unwrap().to_owned();
+                         Box::new(move |common, data, app, state| {
+diff --git a/wayvr/src/overlays/edit/pos.rs b/wayvr/src/overlays/edit/pos.rs
+--- a/wayvr/src/overlays/edit/pos.rs
++++ b/wayvr/src/overlays/edit/pos.rs
+@@ -39,6 +39,7 @@
+             let positioning = state.pos;
+             Box::new(move |app, owc| {
+                 let state = owc.active_state.as_mut().unwrap(); //want panic
++                state.room_binding = None;
+                 state.positioning = positioning;
+                 window::save_transform(state, app);
+             })
 diff --git a/wayvr/src/overlays/keyboard/builder.rs b/wayvr/src/overlays/keyboard/builder.rs
 --- a/wayvr/src/overlays/keyboard/builder.rs
 +++ b/wayvr/src/overlays/keyboard/builder.rs
@@ -2398,7 +3033,7 @@ diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mo
      },
      config::none_if_0,
 @@ -72,6 +72,7 @@
-
+ 
      let default_state = KeyboardState {
          modifiers: 0,
 +        pressed_keys: Vec::new(),
@@ -2432,7 +3067,7 @@ diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mo
      re_fcitx: Regex,
      re_keymap: Regex,
  }
-
+ 
  impl KeyboardBackend {
 +    fn release_keys(&mut self, app: &mut AppState) {
 +        for pointer in 0..2 {
@@ -2514,7 +3149,7 @@ diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mo
 +            },
 +            self.hand_tracking,
 +        )?;
-
+ 
          let id = self.layout_panels.insert(panel);
          if let Some(layout_name) = keymap.and_then(|k| k.get_name()) {
 -            self.layout_ids.insert(layout_name.into(), id);
@@ -2528,7 +3163,7 @@ diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mo
 @@ -169,7 +253,8 @@
              return Ok(false);
          };
-
+ 
 -        if let Some(new_key) = self.layout_ids.get(layout_name) {
 +        self.current_keymap = Some(keymap.clone());
 +        if let Some(new_key) = self.layout_ids.get(&self.layout_id(layout_name)) {
@@ -2572,7 +3207,7 @@ diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mo
              .set_modifiers_routed(app.wvr_server.as_mut(), 0);
 @@ -363,6 +465,36 @@
      }
-
+ 
      fn on_pointer(&mut self, app: &mut AppState, hit: &PointerHit, pressed: bool) {
 +        if !self.armed[hit.pointer] {
 +            if !pressed {
@@ -2608,7 +3243,7 @@ diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mo
          self.panel().push_event(
              app,
 @@ -391,6 +523,7 @@
-
+ 
  struct KeyboardState {
      modifiers: KeyModifier,
 +    pressed_keys: Vec<VirtualKey>,
@@ -2636,14 +3271,13 @@ diff --git a/wayvr/src/overlays/keyboard/mod.rs b/wayvr/src/overlays/keyboard/mo
          KeyButtonData::Key { vk, pressed } => {
              pressed.set(false);
 +            keyboard.pressed_keys.retain(|key| key != vk);
-
+ 
              for m in &AUTO_RELEASE_MODS {
                  if keyboard.modifiers & *m != 0 {
 diff --git a/wayvr/src/overlays/screen/backend.rs b/wayvr/src/overlays/screen/backend.rs
-index e992047..4965f28 100644
 --- a/wayvr/src/overlays/screen/backend.rs
 +++ b/wayvr/src/overlays/screen/backend.rs
-@@ -299,7 +299,7 @@ impl OverlayBackend for ScreenBackend {
+@@ -299,7 +299,7 @@
                  .set_input_focus(app.wvr_server.as_mut(), InputFocus::PhysicalScreen);
          }
  
@@ -2652,11 +3286,22 @@ index e992047..4965f28 100644
              && (!app.session.config.focus_follows_mouse_mode
                  || app.input_state.pointers[hit.pointer].now.move_mouse)
          {
-@@ -328,18 +328,20 @@ impl OverlayBackend for ScreenBackend {
+@@ -328,18 +328,20 @@
          }
  
          if pressed {
 -            set_next_move(app.session.config.click_freeze_time_ms as _);
+-        }
+-
+-        app.hid_provider.inner.send_button(btn, pressed);
+-
+-        if !pressed {
+-            return;
+-        }
+-        let pos = self.mouse_transform.transform_point2(hit.uv);
+-        app.hid_provider
+-            .inner
+-            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
 +            if !app.input_state.pointers[hit.pointer].hand_tracking {
 +                set_next_move(app.session.config.click_freeze_time_ms as _);
 +            }
@@ -2665,29 +3310,37 @@ index e992047..4965f28 100644
 +            app.hid_provider
 +                .inner
 +                .mouse_move(DVec2::new(pos.x as _, pos.y as _));
-         }
--
--        app.hid_provider.inner.send_button(btn, pressed);
--
--        if !pressed {
--            return;
++        }
 +        // Captured physical events share this virtual device. An ordinary
 +        // physical mouse has its own device, so always release our own button.
 +        if pressed || !app.input_state.mouse_priority.captured_button_held(btn) {
 +            app.hid_provider.inner.send_button(btn, pressed);
-         }
--        let pos = self.mouse_transform.transform_point2(hit.uv);
--        app.hid_provider
--            .inner
--            .mouse_move(DVec2::new(pos.x as _, pos.y as _));
++        }
      }
  
      fn on_scroll(&mut self, app: &mut AppState, _hit: &PointerHit, mut delta: WheelDelta) {
 diff --git a/wayvr/src/overlays/watch.rs b/wayvr/src/overlays/watch.rs
-index bcdb806..ff14fea 100644
 --- a/wayvr/src/overlays/watch.rs
 +++ b/wayvr/src/overlays/watch.rs
-@@ -31,14 +31,16 @@ struct WatchState {
+@@ -1,3 +1,4 @@
++use crate::watch_menu::{self, Action, ButtonId};
+ use crate::{
+     gui::{
+         panel::{
+@@ -16,6 +17,12 @@
+     components::button::ComponentButton,
+     parser::{Fetchable, ParseDocumentParams},
+ };
++use wgui::{
++    event::{Event, MouseButtonIndex},
++    layout::{Layout, WidgetID},
++    parser::TemplateParams,
++    widget::label::WidgetLabel,
++};
+ use wlx_common::{
+     common::LeftRight,
+     windowing::{OverlayWindowState, Positioning},
+@@ -31,14 +38,20 @@
      overlay_list: OverlayList,
      set_list: SetList,
      clock_12h: bool,
@@ -2701,32 +3354,317 @@ index bcdb806..ff14fea 100644
          ..Default::default()
      };
 -    let watch_xml = "gui/watch.xml";
-+    let watch_xml = if app.shora_battery.motoc_mode() { "gui/watch-motoc.xml" } else { "gui/watch.xml" };
++    let watch_xml = if app.shora_battery.motoc_mode() {
++        "gui/watch-motoc.xml"
++    } else {
++        "gui/watch.xml"
++    };
  
      let mut panel =
          GuiPanel::new_from_template(app, watch_xml, state, NewGuiPanelParams::default())?;
-@@ -76,6 +78,16 @@ pub fn create_watch(app: &mut AppState) -> anyhow::Result<OverlayWindowConfig> {
+@@ -50,6 +63,8 @@
+         path: AssetPathRef::FileOrBuiltIn(watch_xml),
+         extra: panel.doc_extra.take().unwrap_or_default(),
+     };
++
++    setup_fan(&mut panel, app, &doc_params)?;
+ 
+     panel.on_notify = Some(Box::new({
+         let name = WATCH_NAME;
+@@ -76,6 +91,20 @@
                  &doc_params,
              )?;
  
 +            if app.shora_battery.motoc_mode() != panel.state.motoc {
 +                panel.state.motoc = app.shora_battery.motoc_mode();
-+                let root = panel.parser_state.get_widget_id("interaction_buttons")?;
-+                panel.layout.remove_children(root);
-+                let path = if panel.state.motoc { "gui/watch-motoc.xml" } else { "gui/watch.xml" };
-+                panel.parser_state.instantiate_template(
-+                    &ParseDocumentParams { globals: doc_params.globals.clone(), path: AssetPathRef::BuiltIn(path), extra: Default::default() },
-+                    "TrackingControls", &mut panel.layout, root, Default::default())?;
-+                elems_changed = true;
++                for button in watch_menu::buttons(panel.state.motoc) {
++                    if let Ok(component) = panel
++                        .parser_state
++                        .fetch_component_as::<ComponentButton>(button.widget)
++                    {
++                        component.set_text(
++                            &mut panel.layout.common(),
++                            wgui::i18n::Translation::from_raw_text(button.title),
++                        );
++                    }
++                }
 +            }
              match event_data {
                  OverlayEventData::EditModeChanged(edit_mode) => {
                      if let Ok(btn_edit_mode) = panel
+@@ -133,6 +162,7 @@
+         lerp: 1.0,
+     };
+ 
++    panel.max_size = glam::Vec2::new(watch_menu::WIDTH, watch_menu::HEIGHT);
+     panel.update_layout(app)?;
+ 
+     Ok(OverlayWindowConfig {
+@@ -143,7 +173,7 @@
+             interactable: true,
+             positioning,
+             transform: Affine3A::from_scale_rotation_translation(
+-                Vec3::ONE * 0.115,
++                Vec3::ONE * 0.2,
+                 WATCH_ROT,
+                 WATCH_POS,
+             ),
+@@ -181,3 +211,251 @@
+             .set_widget_visible(widget[i], visible[i]);
+     }
+ }
++
++fn setup_fan(
++    panel: &mut GuiPanel<WatchState>,
++    app: &mut AppState,
++    doc: &ParseDocumentParams,
++) -> anyhow::Result<()> {
++    app.watch_menu.close();
++    let base = panel.parser_state.get_widget_id("watch_base")?;
++    let heading = panel.parser_state.get_widget_id("fan_heading")?;
++    let title = panel
++        .parser_state
++        .fetch_widget(&panel.layout.state, "fan_title")?
++        .widget;
++    let controls = build_fan_controls(
++        &mut panel.layout,
++        &mut panel.parser_state,
++        doc,
++        panel.state.motoc,
++    )?;
++    panel.process_custom_elems(app);
++    let parents = controls
++        .iter()
++        .filter(|(spec, _)| matches!(spec.id, ButtonId::Parent(_)))
++        .map(|(spec, _)| {
++            Ok((
++                spec.group,
++                panel
++                    .parser_state
++                    .fetch_component_as::<ComponentButton>(spec.widget)?,
++            ))
++        })
++        .collect::<anyhow::Result<Vec<_>>>()?;
++    let toggles = [
++        (
++            Action::HandsFrame,
++            panel
++                .parser_state
++                .fetch_component_as::<ComponentButton>("btn_hands_frame")?,
++        ),
++        (
++            Action::Walking,
++            panel
++                .parser_state
++                .fetch_component_as::<ComponentButton>("btn_walking")?,
++        ),
++        (
++            Action::BodyTurning,
++            panel
++                .parser_state
++                .fetch_component_as::<ComponentButton>("btn_body_turning")?,
++        ),
++        (
++            Action::Dpad,
++            panel
++                .parser_state
++                .fetch_component_as::<ComponentButton>("btn_hand_joysticks")?,
++        ),
++        (
++            Action::HandControllers,
++            panel
++                .parser_state
++                .fetch_component_as::<ComponentButton>("btn_hand_controllers")?,
++        ),
++    ];
++    let mut displayed = None;
++    panel.on_event_filter = Some(Box::new(move |layout, state, app, event| {
++        // Use actual WGUI boundaries, not idealized fan geometry: theme padding,
++        // font metrics and UI scaling must not change which button receives a tap.
++        let target = |layout: &Layout, pos: glam::Vec2, menu: &watch_menu::Menu| {
++            controls.iter().find_map(|(spec, id)| {
++                if !menu.visible(spec.id, spec.group) {
++                    return None;
++                }
++                let node = *layout.state.nodes.get(*id)?;
++                let mut boundary = layout.state.get_node_boundary(node);
++                let mut parent = layout.state.tree.parent(node);
++                while let Some(node) = parent {
++                    boundary.pos += layout.state.get_node_boundary(node).pos;
++                    parent = layout.state.tree.parent(node);
++                }
++                boundary.contains_point(pos).then_some(spec.id)
++            })
++        };
++        let mut forward = true;
++        match event {
++            Event::MouseDown(e) => {
++                let hit = target(layout, e.pos, &app.watch_menu);
++                if let Some(pointer) = e.device.to_index() {
++                    if matches!(e.index, MouseButtonIndex::Left) {
++                        app.watch_menu.press(pointer, hit);
++                    }
++                }
++                if hit.is_some() {
++                    forward = matches!(e.index, MouseButtonIndex::Left);
++                } else if app.watch_menu.open().is_some() {
++                    forward = false;
++                }
++            }
++            Event::MouseUp(e) => {
++                let hit = target(layout, e.pos, &app.watch_menu);
++                let modal = app.watch_menu.open().is_some();
++                if matches!(e.index, MouseButtonIndex::Left) {
++                    if let Some(pointer) = e.device.to_index() {
++                        if let Some(action) = app.watch_menu.release(pointer, hit) {
++                            trigger_action(app, action);
++                        }
++                    }
++                }
++                if hit.is_some() {
++                    forward = matches!(e.index, MouseButtonIndex::Left);
++                } else if modal {
++                    forward = false;
++                }
++            }
++            Event::MouseLeave(e) => {
++                if let Some(pointer) = e.device.to_index() {
++                    app.watch_menu.cancel_pointer(pointer);
++                }
++            }
++            Event::MouseCancel => app.watch_menu.close(),
++            _ => {}
++        }
++        for (action, button) in &toggles {
++            let enabled = match action {
++                Action::Walking => app.input_state.walking_enabled,
++                Action::BodyTurning => app.input_state.body_turning_enabled,
++                Action::HandsFrame => app.hands_frame.enabled,
++                Action::Dpad => app.input_state.joysticks_enabled,
++                Action::HandControllers => app.input_state.hand_controllers_enabled,
++                _ => false,
++            };
++            button.set_sticky_state(&mut layout.common(), enabled);
++        }
++        if displayed != app.watch_menu.open() {
++            // Cancel native pressed visuals as well as the model's armed taps.
++            // Dispatch directly so this cancellation does not close the new group.
++            let _ = layout.push_event(&Event::MouseCancel, app, state);
++            displayed = app.watch_menu.open();
++            layout
++                .alterables
++                .set_widget_visible(base, displayed.is_none());
++            layout
++                .alterables
++                .set_widget_visible(heading, displayed.is_some());
++            for (spec, id) in &controls {
++                layout
++                    .alterables
++                    .set_widget_visible(*id, app.watch_menu.visible(spec.id, spec.group));
++            }
++            for (group, button) in &parents {
++                button.set_sticky_state(&mut layout.common(), displayed == Some(*group));
++            }
++            if let Some(group) = displayed {
++                if let Ok(mut label) = title.cast::<WidgetLabel>() {
++                    label.set_text(
++                        &mut layout.common(),
++                        wgui::i18n::Translation::from_raw_text(group.name()),
++                    );
++                }
++            }
++            layout.mark_redraw();
++        }
++        forward
++    }));
++    Ok(())
++}
++
++fn trigger_action(app: &mut AppState, action: Action) {
++    use crate::backend::task::{OverlayTask, PlayspaceTask, TaskType, ToggleMode};
++    use crate::windowing::OverlaySelector;
++    let playspace = match action {
++        Action::Recenter => Some(PlayspaceTask::Recenter),
++        Action::RememberFloor => Some(PlayspaceTask::RememberFloor),
++        Action::ForgetFloor => Some(PlayspaceTask::ForgetFloor),
++        _ => None,
++    };
++    if let Some(task) = playspace {
++        app.tasks.enqueue(TaskType::Playspace(task));
++        return;
++    }
++    match action {
++        Action::FixFloor => crate::gui::panel::button::queue_fix_floor(app),
++        Action::FullReset => app
++            .shora_battery
++            .request_reset(crate::shora_battery::ResetKind::Full),
++        Action::MountingReset => app
++            .shora_battery
++            .request_reset(crate::shora_battery::ResetKind::Mounting),
++        Action::Keyboard => app
++            .tasks
++            .enqueue(TaskType::Overlay(OverlayTask::ToggleOverlay(
++                OverlaySelector::Name("kbd".into()),
++                ToggleMode::Toggle,
++            ))),
++        Action::Walking => app.input_state.walking_enabled = !app.input_state.walking_enabled,
++        Action::BodyTurning => {
++            app.input_state.body_turning_enabled = !app.input_state.body_turning_enabled
++        }
++        Action::WalkingSetup => app
++            .shora_battery
++            .request_reset(crate::shora_battery::ResetKind::Walking),
++        Action::Dpad => app.input_state.joysticks_enabled = !app.input_state.joysticks_enabled,
++        Action::HandControllers => {
++            app.input_state.hand_controllers_enabled = !app.input_state.hand_controllers_enabled
++        }
++        Action::HandsFrame => crate::hands_frame_panel::toggle(app),
++        Action::Performance => crate::performance_panel::toggle(app),
++        Action::Configuration => app
++            .tasks
++            .enqueue(TaskType::Overlay(OverlayTask::ToggleDashboard)),
++        Action::Edit => app
++            .tasks
++            .enqueue(TaskType::Overlay(OverlayTask::ToggleEditMode)),
++        _ => {}
++    }
++}
++
++/// Native layout construction shared by the watch and its offline layout/preview test.
++pub(crate) fn build_fan_controls(
++    layout: &mut Layout,
++    parser: &mut wgui::parser::ParserState,
++    doc: &ParseDocumentParams,
++    motoc: bool,
++) -> anyhow::Result<Vec<(watch_menu::Button, WidgetID)>> {
++    let root = parser.get_widget_id("fan_controls")?;
++    let mut controls = Vec::new();
++    for spec in watch_menu::buttons(motoc) {
++        let mut params = TemplateParams::new();
++        for (key, value) in [
++            ("id", spec.widget.to_owned()),
++            ("x", spec.x.to_string()),
++            ("y", spec.y.to_string()),
++            ("title", spec.title.to_owned()),
++            ("icon", spec.icon.to_owned()),
++        ] {
++            params.insert_rc(key, value.into());
++        }
++        parser.instantiate_template(doc, "FanButton", layout, root, params)?;
++        let widget = parser
++            .fetch_component_as::<ComponentButton>(spec.widget)?
++            .get_rect();
++        layout
++            .alterables
++            .set_widget_visible(widget, matches!(spec.id, ButtonId::Parent(_)));
++        controls.push((spec, widget));
++    }
++    Ok(controls)
++}
 diff --git a/wayvr/src/overlays/wayvr.rs b/wayvr/src/overlays/wayvr.rs
-index 8c1950d..5478bf7 100644
 --- a/wayvr/src/overlays/wayvr.rs
 +++ b/wayvr/src/overlays/wayvr.rs
-@@ -1003,6 +1003,24 @@ impl OverlayBackend for WvrWindowBackend {
+@@ -1003,6 +1003,24 @@
              return;
          };
  
@@ -2751,7 +3689,7 @@ index 8c1950d..5478bf7 100644
          if let Some(wvr_server) = app.wvr_server.as_mut() {
              if wvr_server.dnd_active() && !wvr_server.dnd_active_for_pointer(hit.pointer) {
                  return;
-@@ -1020,7 +1038,11 @@ impl OverlayBackend for WvrWindowBackend {
+@@ -1020,7 +1038,11 @@
  
          let target = ctx.hit_target(hit);
          let outside_pos = ctx.unclamped_client_pos_from_hit(hit);
@@ -2764,7 +3702,7 @@ index 8c1950d..5478bf7 100644
  
          // if the press was consumed to dismiss a popup, consume the matching release too.
          if !pressed && self.popup_outside_button == Some(index) {
-@@ -1051,7 +1073,11 @@ impl OverlayBackend for WvrWindowBackend {
+@@ -1051,7 +1073,11 @@
                  self.popup_outside_button = Some(index);
              }
  
@@ -2777,7 +3715,7 @@ index 8c1950d..5478bf7 100644
              app.wvr_server.as_mut().unwrap().send_mouse_button(
                  PointerFocusTarget::None,
                  outside_pos,
-@@ -1094,7 +1120,11 @@ impl OverlayBackend for WvrWindowBackend {
+@@ -1094,7 +1120,11 @@
              }
  
              Some(WvrHitTarget::Toplevel { pos }) => {
@@ -2791,20 +3729,12 @@ index 8c1950d..5478bf7 100644
  
                  wvr_server.send_mouse_button(
 diff --git a/wayvr/src/shaders/mod.rs b/wayvr/src/shaders/mod.rs
-index 9b2bc80..298abc3 100644
 --- a/wayvr/src/shaders/mod.rs
 +++ b/wayvr/src/shaders/mod.rs
-@@ -42,6 +42,24 @@ pub mod frag_color {
-     }
- }
- 
-+pub mod frag_hand_pad {
-+    use super::{Arc, DescriptorBinding, DescriptorType, ShaderModule, ShaderStage, WGfx};
-+
-+    pub fn load(gfx: &WGfx) -> anyhow::Result<Arc<ShaderModule>> {
-+        super::load(
-+            gfx,
-+            include_bytes!(concat!(env!("OUT_DIR"), "/hand_pad.frag.spv")),
+@@ -31,6 +31,24 @@
+         super::load(
+             gfx,
+             include_bytes!(concat!(env!("OUT_DIR"), "/color.frag.spv")),
 +            ShaderStage::Fragment,
 +            &[DescriptorBinding::new(
 +                0,
@@ -2816,36 +3746,92 @@ index 9b2bc80..298abc3 100644
 +    }
 +}
 +
- pub mod frag_grid {
-     use super::{Arc, ShaderModule, ShaderStage, WGfx};
- 
++pub mod frag_hand_pad {
++    use super::{Arc, DescriptorBinding, DescriptorType, ShaderModule, ShaderStage, WGfx};
++
++    pub fn load(gfx: &WGfx) -> anyhow::Result<Arc<ShaderModule>> {
++        super::load(
++            gfx,
++            include_bytes!(concat!(env!("OUT_DIR"), "/hand_pad.frag.spv")),
+             ShaderStage::Fragment,
+             &[DescriptorBinding::new(
+                 0,
 diff --git a/wayvr/src/state.rs b/wayvr/src/state.rs
-index bf797d8..35f98e7 100644
 --- a/wayvr/src/state.rs
 +++ b/wayvr/src/state.rs
-@@ -55,6 +55,8 @@ pub struct AppState {
+@@ -55,7 +55,12 @@
      pub executor: wlx_common::async_executor::AsyncExecutor,
  
      pub input_state: InputState,
 +    pub performance: crate::performance::Feed,
 +    pub shora_battery: crate::shora_battery::BatteryFeed,
      pub screens: SmallVec<[ScreenMeta; 8]>,
++    pub watch_menu: crate::watch_menu::Menu,
++    pub hands_frame: crate::hands_frame::Feed,
++    pub room: crate::room::Feed,
      pub anchor: Affine3A,
      pub anchor_grabbed: bool,
-@@ -203,6 +205,8 @@ impl AppState {
+ 
+@@ -203,7 +208,12 @@
              audio,
              wgui_shared,
              input_state: InputState::new(),
 +            shora_battery: crate::shora_battery::BatteryFeed::new(),
 +            performance: crate::performance::Feed::new(),
              screens: smallvec![],
++            watch_menu: crate::watch_menu::Menu::default(),
++            hands_frame: crate::hands_frame::Feed::default(),
++            room: crate::room::Feed::default(),
              anchor: Affine3A::IDENTITY,
              anchor_grabbed: false,
+             wgui_theme: Rc::new(theme),
+@@ -239,6 +249,14 @@
+         Ok(app_state)
+     }
+ 
++    pub fn room_notice(&mut self, message: &str) {
++        crate::overlays::toast::Toast::new(
++            wlx_common::overlays::ToastTopic::System,
++            Some(wgui::i18n::Translation::from_raw_text("Room placement")),
++            wgui::i18n::Translation::from_raw_text_string(message.to_owned()),
++        ).submit(self);
++    }
++
+     pub fn late_init(&mut self) {
+         self.notifications.run_dbus(&mut self.dbus);
+         self.notifications.run_udp();
+@@ -264,6 +282,7 @@
+     }
+ 
+     pub fn tick(&mut self) {
++        self.room.tick();
+         while self.executor.try_tick() {}
+         self.dbus.tick();
+ 
+@@ -364,6 +383,8 @@
+ pub struct PlayspaceState {
+     pub openvr_space_center: Affine3A,
+     pub openxr_space_center: Affine3A,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub remembered_floor: Option<wlx_common::windowing::RoomBinding>,
+ }
+ 
+ pub fn load_playspace_state() -> anyhow::Result<PlayspaceState> {
+@@ -374,6 +395,9 @@
+ 
+ pub fn save_playspace_state(state: &PlayspaceState) -> anyhow::Result<()> {
+     let json = serde_json5::to_string(state)?;
+-    std::fs::write(config_io::get_config_file_path("playspace.json5"), json)?;
++    let path = config_io::get_config_file_path("playspace.json5");
++    let temporary = path.with_extension("json5.tmp");
++    std::fs::write(&temporary, json)?;
++    std::fs::rename(temporary, path)?;
+     Ok(())
+ }
 diff --git a/wayvr/src/subsystem/input.rs b/wayvr/src/subsystem/input.rs
-index 190895d..1492f61 100644
 --- a/wayvr/src/subsystem/input.rs
 +++ b/wayvr/src/subsystem/input.rs
-@@ -46,15 +46,15 @@ impl HidWrapper {
+@@ -46,14 +46,14 @@
          wvr_server: Option<&mut WvrServerState>,
          value: InputFocus,
      ) -> bool {
@@ -2857,19 +3843,45 @@ index 190895d..1492f61 100644
              false
          } else {
              self.input_focus = value;
- 
+-
 -            if let Some(wvr_server) = wvr_server {
 -                wvr_server.set_input_focus(matches!(value, InputFocus::WayVR));
 -            }
--
+ 
              true
          }
-     }
 diff --git a/wayvr/src/windowing/window.rs b/wayvr/src/windowing/window.rs
-index 3702980..d51cbe2 100644
 --- a/wayvr/src/windowing/window.rs
 +++ b/wayvr/src/windowing/window.rs
-@@ -270,7 +270,7 @@ impl OverlayWindowConfig {
+@@ -183,6 +183,12 @@
+         self.tick_lifetime(app)
+     }
+ 
++    /// Physical-room windows stay hidden and cannot be hit while localization is unavailable.
++    pub fn room_available(&self, room: &crate::room::Feed) -> bool {
++        self.active_state.as_ref().and_then(|s| s.room_binding.as_ref())
++            .is_none_or(|b| room.locate(b).is_some())
++    }
++
+     pub fn extend_lifetime(&mut self, seconds: f32) {
+         if let Some(lifetime) = self.lifetime.as_mut() {
+             lifetime.extend(seconds);
+@@ -262,6 +268,14 @@
+             return;
+         };
+ 
++        if let Some(binding) = &state.room_binding {
++            if let Some(pose) = app.room.locate(binding) {
++                state.transform = pose;
++                self.dirty = true;
++            }
++            return;
++        }
++
+         let cur_transform = state
+             .saved_transform
+             .unwrap_or(self.default_state.transform);
+@@ -270,7 +284,7 @@
          let (target_transform, lerp) = match state.positioning {
              Positioning::FollowHead { lerp } => (app.input_state.hmd * cur_transform, lerp),
              Positioning::FollowHand { hand, lerp } => (
@@ -2878,7 +3890,7 @@ index 3702980..d51cbe2 100644
                  lerp,
              ),
              Positioning::Anchored => (app.anchor * cur_transform, 1.0),
-@@ -314,7 +314,22 @@ impl OverlayWindowConfig {
+@@ -314,7 +328,22 @@
              return;
          };
  
@@ -2901,7 +3913,21 @@ index 3702980..d51cbe2 100644
              return;
          }
  
-@@ -340,7 +355,9 @@ impl OverlayWindowConfig {
+@@ -334,13 +363,23 @@
+             return;
+         };
+ 
++        if let Some(binding) = &state.room_binding {
++            if let Some(pose) = app.room.locate(binding) {
++                state.transform = pose;
++                self.dirty = true;
++            }
++            return;
++        }
++
+         let cur_transform = state
+             .saved_transform
+             .unwrap_or(self.default_state.transform);
  
          let parent_transform = match state.positioning {
              Positioning::Floating | Positioning::FollowHead { .. } => app.input_state.hmd,
@@ -2912,7 +3938,16 @@ index 3702980..d51cbe2 100644
              Positioning::Anchored => app.anchor,
              Positioning::Static => {
                  if hard_reset {
-@@ -431,7 +448,9 @@ pub fn save_transform(state: &mut OverlayWindowState, app: &mut AppState) {
+@@ -428,10 +467,18 @@
+ }
+ 
+ pub fn save_transform(state: &mut OverlayWindowState, app: &mut AppState) {
++    if let Some(binding) = &mut state.room_binding {
++        if let Some(anchor) = app.room.anchor(&binding.uuid) {
++            binding.relative = anchor.inverse() * state.transform;
++        }
++        return;
++    }
      let parent_transform = match state.positioning {
          Positioning::Floating => snap_upright(app.input_state.hmd, Vec3A::Y),
          Positioning::FollowHead { .. } => app.input_state.hmd,
@@ -2924,10 +3959,9 @@ index 3702980..d51cbe2 100644
          Positioning::Static => Affine3A::IDENTITY,
      };
 diff --git a/wlx-common/src/dash_interface.rs b/wlx-common/src/dash_interface.rs
-index 1ccf12e..b513fb0 100644
 --- a/wlx-common/src/dash_interface.rs
 +++ b/wlx-common/src/dash_interface.rs
-@@ -74,6 +74,7 @@ pub struct HmdStats {
+@@ -74,6 +74,7 @@
  }
  
  pub trait DashInterface<T> {
@@ -2935,3 +3969,34 @@ index 1ccf12e..b513fb0 100644
  	fn window_list(&mut self, data: &mut T) -> anyhow::Result<Vec<WvrWindow>>;
  	fn window_set_visible(&mut self, data: &mut T, handle: WvrWindowHandle, visible: bool) -> anyhow::Result<()>;
  	fn window_request_close(&mut self, data: &mut T, handle: WvrWindowHandle) -> anyhow::Result<()>;
+diff --git a/wlx-common/src/windowing.rs b/wlx-common/src/windowing.rs
+--- a/wlx-common/src/windowing.rs
++++ b/wlx-common/src/windowing.rs
+@@ -3,6 +3,10 @@
+ use wayvr_ipc::packet_client::WlxPositioning;
+ 
+ use crate::{common::LeftRight, config::DefaultPositioning};
++
++#[path = "../../../room_binding.rs"]
++mod room_binding;
++pub use room_binding::RoomBinding;
+ 
+ #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+ pub enum Positioning {
+@@ -88,6 +92,8 @@
+ #[derive(Clone, Serialize, Deserialize)]
+ #[serde(default)]
+ pub struct OverlayWindowState {
++	#[serde(default, skip_serializing_if = "Option::is_none")]
++	pub room_binding: Option<RoomBinding>,
+ 	#[serde(skip_serializing, skip_deserializing)]
+ 	pub transform: Affine3A,
+ 	pub alpha: f32,
+@@ -106,6 +112,7 @@
+ impl Default for OverlayWindowState {
+ 	fn default() -> Self {
+ 		Self {
++			room_binding: None,
+ 			grabbable: false,
+ 			interactable: false,
+ 			alpha: 1.0,

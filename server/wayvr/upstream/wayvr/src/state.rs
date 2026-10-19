@@ -58,6 +58,9 @@ pub struct AppState {
     pub performance: crate::performance::Feed,
     pub shora_battery: crate::shora_battery::BatteryFeed,
     pub screens: SmallVec<[ScreenMeta; 8]>,
+    pub watch_menu: crate::watch_menu::Menu,
+    pub hands_frame: crate::hands_frame::Feed,
+    pub room: crate::room::Feed,
     pub anchor: Affine3A,
     pub anchor_grabbed: bool,
 
@@ -208,6 +211,9 @@ impl AppState {
             shora_battery: crate::shora_battery::BatteryFeed::new(),
             performance: crate::performance::Feed::new(),
             screens: smallvec![],
+            watch_menu: crate::watch_menu::Menu::default(),
+            hands_frame: crate::hands_frame::Feed::default(),
+            room: crate::room::Feed::default(),
             anchor: Affine3A::IDENTITY,
             anchor_grabbed: false,
             wgui_theme: Rc::new(theme),
@@ -243,6 +249,14 @@ impl AppState {
         Ok(app_state)
     }
 
+    pub fn room_notice(&mut self, message: &str) {
+        crate::overlays::toast::Toast::new(
+            wlx_common::overlays::ToastTopic::System,
+            Some(wgui::i18n::Translation::from_raw_text("Room placement")),
+            wgui::i18n::Translation::from_raw_text_string(message.to_owned()),
+        ).submit(self);
+    }
+
     pub fn late_init(&mut self) {
         self.notifications.run_dbus(&mut self.dbus);
         self.notifications.run_udp();
@@ -268,6 +282,7 @@ impl AppState {
     }
 
     pub fn tick(&mut self) {
+        self.room.tick();
         while self.executor.try_tick() {}
         self.dbus.tick();
 
@@ -368,6 +383,8 @@ pub fn load_pw_token_config() -> anyhow::Result<PwTokenMap> {
 pub struct PlayspaceState {
     pub openvr_space_center: Affine3A,
     pub openxr_space_center: Affine3A,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub remembered_floor: Option<wlx_common::windowing::RoomBinding>,
 }
 
 pub fn load_playspace_state() -> anyhow::Result<PlayspaceState> {
@@ -378,6 +395,9 @@ pub fn load_playspace_state() -> anyhow::Result<PlayspaceState> {
 
 pub fn save_playspace_state(state: &PlayspaceState) -> anyhow::Result<()> {
     let json = serde_json5::to_string(state)?;
-    std::fs::write(config_io::get_config_file_path("playspace.json5"), json)?;
+    let path = config_io::get_config_file_path("playspace.json5");
+    let temporary = path.with_extension("json5.tmp");
+    std::fs::write(&temporary, json)?;
+    std::fs::rename(temporary, path)?;
     Ok(())
 }

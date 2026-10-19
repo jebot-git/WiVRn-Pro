@@ -272,12 +272,31 @@ pub fn diagnostic_sample(
     }
 }
 
-// WVJ1 flags: enabled and left/right analogue pad activity. No click bits.
+// WVJ1 lower flags retain the existing pad protocol. Bit 5 enables skeletal
+// controllers independently; bits 6/7 reserve each hand for UI/pad interaction.
+// WayVR does not emit the legacy pad click bits.
 fn command_flags(enabled: bool, active: [bool; 2]) -> u32 {
     if !enabled {
         return 0;
     }
     1 | (u32::from(active[0]) << 1) | (u32::from(active[1]) << 2)
+}
+
+fn controller_flags(enabled: bool, suppressed: [bool; 2]) -> u32 {
+    if !enabled {
+        return 0;
+    }
+    32 | (u32::from(suppressed[0]) << 6) | (u32::from(suppressed[1]) << 7)
+}
+
+fn walking_flags(enabled: bool, turning: bool, pads: [bool; 2], ui: bool) -> u32 {
+    if !enabled {
+        return 0;
+    }
+    256 | (u32::from(turning) << 9)
+        | (u32::from(pads[0]) << 10)
+        | (u32::from(pads[1]) << 11)
+        | if ui { 3 << 12 } else { 0 }
 }
 
 pub struct Link {
@@ -373,7 +392,17 @@ impl Link {
             log::info!("WiVRn joystick input channel connected");
         }
     }
-    pub fn exchange(&mut self, enabled: bool, pads: [Option<Pad>; 2]) {
+    pub fn exchange(
+        &mut self,
+        enabled: bool,
+        pads: [Option<Pad>; 2],
+        controllers: bool,
+        suppressed: [bool; 2],
+        walking: bool,
+        turning: bool,
+        pad_owned: [bool; 2],
+        ui_owned: bool,
+    ) {
         self.connect();
         let Some(fd) = self.fd.as_ref().map(AsRawFd::as_raw_fd) else {
             return;
@@ -405,8 +434,10 @@ impl Link {
             return;
         }
         let mut packet = [0u8; 40];
-        packet[..4].copy_from_slice(b"WVJ1");
-        let flags = command_flags(enabled, pads.map(|p| p.is_some()));
+        packet[..4].copy_from_slice(if walking { b"WVJ2" } else { b"WVJ1" });
+        let flags = command_flags(enabled, pads.map(|p| p.is_some()))
+            | controller_flags(controllers, suppressed)
+            | walking_flags(walking, turning, pad_owned, ui_owned);
         packet[4..8].copy_from_slice(&flags.to_le_bytes());
         let mut ts: libc::timespec = unsafe { std::mem::zeroed() };
         unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut ts) };
@@ -436,6 +467,27 @@ impl Link {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn walking_flags_leave_legacy_packets_unchanged_and_reserve_owners() {
+        assert_eq!(walking_flags(false, true, [true, true], true), 0);
+        assert_eq!(walking_flags(true, false, [false, false], false), 256);
+        assert_eq!(
+            walking_flags(true, true, [true, false], true),
+            256 | 512 | 1024 | 4096 | 8192
+        );
+    }
+    #[test]
+    fn controller_mode_preserves_legacy_pad_flags_when_disabled() {
+        assert_eq!(controller_flags(false, [true, true]), 0);
+        assert_eq!(controller_flags(true, [false, false]), 32);
+        assert_eq!(controller_flags(true, [true, false]), 96);
+        assert_eq!(controller_flags(true, [false, true]), 160);
+        assert_eq!(
+            command_flags(true, [true, false]) | controller_flags(true, [true, false]),
+            99
+        );
+    }
+
     fn joints() -> xr::HandJointLocations {
         let joint = xr::HandJointLocation {
             location_flags: xr::SpaceLocationFlags::POSITION_VALID

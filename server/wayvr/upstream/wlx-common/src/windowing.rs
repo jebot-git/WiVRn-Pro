@@ -4,6 +4,10 @@ use wayvr_ipc::packet_client::WlxPositioning;
 
 use crate::{common::LeftRight, config::DefaultPositioning};
 
+#[path = "../../../room_binding.rs"]
+mod room_binding;
+pub use room_binding::RoomBinding;
+
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
 pub enum Positioning {
 	/// Stays in place, recenters relative to HMD
@@ -88,6 +92,8 @@ impl Positioning {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct OverlayWindowState {
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub room_binding: Option<RoomBinding>,
 	#[serde(skip_serializing, skip_deserializing)]
 	pub transform: Affine3A,
 	pub alpha: f32,
@@ -106,6 +112,7 @@ pub struct OverlayWindowState {
 impl Default for OverlayWindowState {
 	fn default() -> Self {
 		Self {
+			room_binding: None,
 			grabbable: false,
 			interactable: false,
 			alpha: 1.0,

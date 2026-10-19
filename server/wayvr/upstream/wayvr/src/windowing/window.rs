@@ -183,6 +183,12 @@ impl OverlayWindowConfig {
         self.tick_lifetime(app)
     }
 
+    /// Physical-room windows stay hidden and cannot be hit while localization is unavailable.
+    pub fn room_available(&self, room: &crate::room::Feed) -> bool {
+        self.active_state.as_ref().and_then(|s| s.room_binding.as_ref())
+            .is_none_or(|b| room.locate(b).is_some())
+    }
+
     pub fn extend_lifetime(&mut self, seconds: f32) {
         if let Some(lifetime) = self.lifetime.as_mut() {
             lifetime.extend(seconds);
@@ -261,6 +267,14 @@ impl OverlayWindowConfig {
         let Some(state) = self.active_state.as_mut() else {
             return;
         };
+
+        if let Some(binding) = &state.room_binding {
+            if let Some(pose) = app.room.locate(binding) {
+                state.transform = pose;
+                self.dirty = true;
+            }
+            return;
+        }
 
         let cur_transform = state
             .saved_transform
@@ -348,6 +362,14 @@ impl OverlayWindowConfig {
         let Some(state) = self.active_state.as_mut() else {
             return;
         };
+
+        if let Some(binding) = &state.room_binding {
+            if let Some(pose) = app.room.locate(binding) {
+                state.transform = pose;
+                self.dirty = true;
+            }
+            return;
+        }
 
         let cur_transform = state
             .saved_transform
@@ -445,6 +467,12 @@ pub fn scalar_scale(a: &Affine3A) -> f32 {
 }
 
 pub fn save_transform(state: &mut OverlayWindowState, app: &mut AppState) {
+    if let Some(binding) = &mut state.room_binding {
+        if let Some(anchor) = app.room.anchor(&binding.uuid) {
+            binding.relative = anchor.inverse() * state.transform;
+        }
+        return;
+    }
     let parent_transform = match state.positioning {
         Positioning::Floating => snap_upright(app.input_state.hmd, Vec3A::Y),
         Positioning::FollowHead { .. } => app.input_state.hmd,

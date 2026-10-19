@@ -28,6 +28,7 @@ pub fn shift_world<OverlayData>(
         let Some(state) = overlay.config.active_state.as_mut() else {
             return;
         };
+        if state.room_binding.is_some() { return; }
         state.transform = correction * state.transform;
         overlay.config.dirty = true;
     });

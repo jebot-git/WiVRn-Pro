@@ -216,6 +216,14 @@ mod tests {
                         .unwrap();
                 }
             }
+            if path.contains("watch") {
+                crate::overlays::watch::build_fan_controls(
+                    &mut layout, &mut parser,
+                    &wgui::parser::ParseDocumentParams {
+                        globals: globals.clone(), path: wgui::assets::AssetPathRef::BuiltIn(path), extra: Default::default(),
+                    }, path.contains("motoc"),
+                ).unwrap();
+            }
             layout
                 .update(&mut wgui::layout::LayoutUpdateParams {
                     size: glam::vec2(2048.0, 2048.0),

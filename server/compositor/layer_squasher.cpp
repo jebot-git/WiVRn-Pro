@@ -350,7 +350,7 @@ layer_squasher::layer_squasher(vk_bundle & vk, vk::Extent3D target_size) :
                                       .extent = target_size,
                                       .mipLevels = 1,
                                       .arrayLayers = view_count,
-                                      .usage = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled,
+                                      .usage = vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc,
                               },
                               vk::ImageFormatListCreateInfo{
                                       .viewFormatCount = formats.size(),

@@ -1,5 +1,6 @@
 //! Native SlimeVR + HaritoraX + oscavmgr server with Shora frontends.
 mod app;
+mod walking;
 mod autobone;
 mod calibration;
 mod config;

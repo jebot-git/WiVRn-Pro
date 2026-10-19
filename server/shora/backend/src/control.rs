@@ -13,6 +13,7 @@ pub enum Command {
     Status, YawReset, FullReset, MountingReset, PauseTracking, Restart, ShutdownTrackers, Shutdown,
     SetSettings { settings: crate::settings::TrackingSettings },
     ClearDrift,
+    CalibrateWalking,
     MotocCalibrate, MotocContinue, MotocStop,
     SetMotocSettings { motoc: crate::motoc::Settings },
     SaveRelaxedPose { pose: crate::stay_aligned::PoseKind },

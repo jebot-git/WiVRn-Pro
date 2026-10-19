@@ -24,6 +24,8 @@ pub(super) struct PlayspaceMover {
     rotate: Option<MoverData<Quat>>,
     gravity: SpaceGravity,
     playspace_state: PlayspaceState,
+    floor_applied_revision: Option<u64>,
+    floor_retry_at: std::time::Instant,
 }
 
 impl PlayspaceMover {
@@ -35,6 +37,8 @@ impl PlayspaceMover {
             rotate: None,
             gravity: SpaceGravity::new(),
             playspace_state: load_playspace_state().unwrap_or_default(),
+            floor_applied_revision: None,
+            floor_retry_at: std::time::Instant::now(),
         }
     }
 
@@ -44,11 +48,17 @@ impl PlayspaceMover {
         overlays: &mut OverlayWindowManager<OpenXrOverlayData>,
         task: PlayspaceTask,
     ) {
+        match task {
+            PlayspaceTask::RememberFloor => { self.remember_floor(app); return; }
+            PlayspaceTask::ForgetFloor => { self.forget_floor(app); return; }
+            _ => {}
+        }
         let Some(monado) = &mut app.monado_state else {
             return; // monado not available
         };
 
         match task {
+            PlayspaceTask::RememberFloor | PlayspaceTask::ForgetFloor => unreachable!(),
             PlayspaceTask::FixFloor => {
                 self.fix_floor(app, overlays);
             }
@@ -65,6 +75,94 @@ impl PlayspaceMover {
                 self.playspace_state.openxr_space_center = Affine3A::IDENTITY;
             }
         }
+    }
+
+    fn moving(&self, app: &AppState) -> bool {
+        self.drag.is_some() || self.rotate.is_some()
+            || app.input_state.pointers.iter().any(|p| p.now.space_drag || p.now.space_rotate || p.now.space_reset)
+    }
+
+    fn remember_floor(&mut self, app: &mut AppState) {
+        if app.monado_state.is_none() || self.moving(app) {
+            app.room_notice("Remember floor requires WiVRn OpenXR with playspace movement stopped.");
+            return;
+        }
+        let level = app.monado_state.as_mut().and_then(|m|
+            m.ipc.get_reference_space_offset(ReferenceSpaceType::Stage).ok()
+        ).is_some_and(|pose| {
+            let rotation: Quat = pose.orientation.into();
+            (rotation * Vec3::Y).dot(Vec3::Y) > 5.0f32.to_radians().cos()
+        });
+        if !level {
+            app.room_notice("Floor not saved. Return the playspace to an upright orientation first.");
+            return;
+        }
+        let Some(binding) = app.room.remember_floor() else {
+            app.room_notice("Floor not saved. Localize a saved room marker and hold steady for two seconds.");
+            return;
+        };
+        let mut candidate = self.playspace_state.clone();
+        candidate.remembered_floor = Some(binding);
+        match save_playspace_state(&candidate) {
+            Ok(()) => {
+                self.playspace_state = candidate;
+                self.floor_applied_revision = Some(app.room.revision());
+                app.room_notice("Floor remembered. It will restore after reconnecting or a reference-space change.");
+            }
+            Err(e) => app.room_notice(&format!("Could not save floor: {e}")),
+        }
+    }
+
+    fn forget_floor(&mut self, app: &mut AppState) {
+        let mut candidate = self.playspace_state.clone();
+        candidate.remembered_floor = None;
+        match save_playspace_state(&candidate) {
+            Ok(()) => {
+                self.playspace_state = candidate;
+                self.floor_applied_revision = None;
+                app.room_notice("Remembered floor removed. Automatic floor restoration is off.");
+            }
+            Err(e) => app.room_notice(&format!("Could not remove saved floor: {e}")),
+        }
+    }
+
+    /// Apply once per connection/reference generation. An already applied floor
+    /// never fights deliberate playspace dragging or accumulates corrections.
+    pub fn restore_floor(
+        &mut self,
+        app: &mut AppState,
+        overlays: &mut OverlayWindowManager<OpenXrOverlayData>,
+    ) {
+        let revision = app.room.revision();
+        app.room.floor_status = if self.playspace_state.remembered_floor.is_none() {
+            "Remembered floor: off"
+        } else if self.floor_applied_revision == Some(revision) {
+            "Remembered floor: active"
+        } else {
+            "Remembered floor: waiting for stable room localization"
+        };
+        if self.floor_applied_revision == Some(revision) || self.moving(app)
+            || std::time::Instant::now() < self.floor_retry_at { return; }
+        let Some(binding) = &self.playspace_state.remembered_floor else { return; };
+        let Some(world) = app.room.locate_floor(binding) else { return; };
+        let Some(monado) = &mut app.monado_state else { return; };
+        self.floor_retry_at = std::time::Instant::now() + std::time::Duration::from_secs(1);
+        let Ok(pose) = monado.ipc.get_reference_space_offset(ReferenceSpaceType::Stage) else { return; };
+        let before = Affine3A::from_rotation_translation(pose.orientation.into(), pose.position.into());
+        let Some(after) = crate::room::floor_offset(before, world) else { return; };
+        let new_pose = Pose { position: after.translation.into(), orientation: pose.orientation };
+        if let Err(e) = monado.ipc.set_reference_space_offset(ReferenceSpaceType::Stage, new_pose) {
+            log::warn!("Could not restore room floor: {e:?}");
+            return;
+        }
+        self.floor_applied_revision = Some(revision);
+        self.gravity.reset();
+        self.playspace_state.openxr_space_center.translation += after.translation - before.translation;
+        if !app.session.config.space_drag_affects_world {
+            playspace_common::shift_world(overlays, &mut app.anchor, &before, &after);
+        }
+        app.room.stage_changed();
+        app.room_notice("Remembered room floor restored.");
     }
 
     pub fn update(
@@ -125,6 +223,7 @@ impl PlayspaceMover {
             data.hand_pose = new_hand;
 
             apply_offset(data.pose, &mut monado.ipc);
+            app.room.stage_changed();
             self.rotate = Some(data);
         } else {
             // start space rotate
@@ -193,6 +292,7 @@ impl PlayspaceMover {
             data.hand_pose = new_hand;
 
             apply_offset(data.pose, &mut monado.ipc);
+            app.room.stage_changed();
             self.drag = Some(data);
         } else {
             // start space drag
@@ -234,6 +334,7 @@ impl PlayspaceMover {
             let before_pose = Affine3A::from_translation(prev_playspace_pos.into());
             let after_pose = Affine3A::from_translation(res.playspace_pos.into());
             apply_offset(after_pose, &mut monado.ipc);
+            app.room.stage_changed();
 
             if !app.session.config.space_drag_affects_world {
                 playspace_common::shift_world(overlays, &mut app.anchor, &before_pose, &after_pose);
@@ -306,6 +407,7 @@ impl PlayspaceMover {
             .ipc
             .set_reference_space_offset(ReferenceSpaceType::Stage, pose)
             .inspect_err(|e| log::warn!("Could not recenter due to libmonado error: {e:?}"));
+        app.room.stage_changed();
 
         self.gravity.reset();
 
@@ -348,6 +450,7 @@ impl PlayspaceMover {
         self.gravity.reset();
         let offset = self.playspace_state.openxr_space_center;
         apply_offset(offset, &mut monado.ipc);
+        app.room.stage_changed();
 
         if !app.session.config.space_drag_affects_world {
             let after = offset;
@@ -399,6 +502,7 @@ impl PlayspaceMover {
             .ipc
             .set_reference_space_offset(ReferenceSpaceType::Stage, pose)
             .inspect_err(|e| log::warn!("Could not fix floor due to libmonado error: {e:?}"));
+        app.room.stage_changed();
 
         let after =
             Affine3A::from_rotation_translation(pose.orientation.into(), pose.position.into());

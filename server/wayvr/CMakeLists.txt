@@ -16,7 +16,7 @@ add_custom_command(OUTPUT "${wayvr_binary}" "${wayvrctl_binary}"
         ${CARGO_EXECUTABLE} build ${wayvr_args} --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/upstream/Cargo.toml"
     COMMAND ${CMAKE_COMMAND} -E env "CARGO_TARGET_DIR=${WIVRN_WAYVR_TARGET_DIR}" "CARGO_BUILD_JOBS=4"
         ${CARGO_EXECUTABLE} build ${wayvrctl_args} --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/upstream/Cargo.toml"
-    DEPENDS performance.rs performance_panel.rs performance.xml ${wayvr_sources} wivrn_tests.rs shora_battery.rs shora_reset.rs icons/full-reset.svg icons/mounting-reset.svg hand_input.rs hand_resize.rs hand_touch.rs hand_joystick.rs hand_double_tap.rs mouse_priority.rs hand_pad.rs hand_pad.frag
+    DEPENDS hands_frame.rs hands_frame_panel.rs hands-frame-worker.py hands-frame.xml hands-frame-guide.xml hands-frame-bookmarks.xml watch_menu.rs room.rs room_binding.rs room_tests.rs performance.rs performance_panel.rs performance.xml ${wayvr_sources} wivrn_tests.rs shora_battery.rs shora_reset.rs icons/full-reset.svg icons/mounting-reset.svg hand_input.rs hand_resize.rs hand_touch.rs hand_joystick.rs hand_double_tap.rs mouse_priority.rs hand_pad.rs hand_pad.frag
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/upstream"
     VERBATIM)
 add_custom_target(wivrn-wayvr ALL DEPENDS "${wayvr_binary}" "${wayvrctl_binary}")
@@ -28,3 +28,7 @@ foreach(component wayvr wayvrctl wayvr-ipc dash-frontend wgui wlx-common wlx-cap
     install(DIRECTORY "upstream/${component}/" DESTINATION "${CMAKE_INSTALL_DATADIR}/licenses/wivrn-pro/wayvr/${component}"
         FILES_MATCHING PATTERN "LICENSE*" PATTERN "src" EXCLUDE PATTERN "res" EXCLUDE)
 endforeach()
+
+install(PROGRAMS hands-frame-worker.py DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/wivrn-pro)
+
+install(FILES requirements-hands-frame.txt DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro)
