@@ -559,7 +559,7 @@ void settings_audio(const settings_context & ctx)
 	list.push_back({
 	        .id = "##unprocessed",
 	        .label = _C("setting name", "Unprocessed audio"),
-	        .description = _("Disable audio filters, such as noise cancellation."),
+	        .description = _("Send raw microphone audio. When disabled, apply software noise suppression. Both modes use unprocessed capture for reliable reconnection; acoustic echo cancellation is not applied."),
 	        .ui = ui_kind::toggle,
 	        .get_bool = [&config] { return config.mic_unprocessed_audio; },
 	        .set_bool = [&config](bool v) { config.mic_unprocessed_audio = v; config.save(); },

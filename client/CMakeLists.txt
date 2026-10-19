@@ -85,6 +85,8 @@ if(ANDROID)
     if(WIVRN_AUDIO_AB_STOCK)
         list(REMOVE_ITEM PLATFORM_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/audio/android/audio.cpp")
         list(APPEND PLATFORM_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/audio/android/stock/audio.cpp")
+        include(MicrophoneDSP)
+        target_link_libraries(wivrn wivrn-microphone-dsp)
     endif()
     target_sources(wivrn PRIVATE ${PLATFORM_SOURCE})
 

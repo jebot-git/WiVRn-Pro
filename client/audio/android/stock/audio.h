@@ -20,9 +20,11 @@
 #pragma once
 
 #include "utils/ring_buffer.h"
+#include "audio/software_microphone.h"
 #include "wivrn_packets.h"
 #include <atomic>
 #include <mutex>
+#include <memory>
 #include <thread>
 
 struct AAudioStreamStruct;
@@ -60,6 +62,7 @@ class audio
 	AAudioStreamStruct * microphone = nullptr;
 	std::atomic<bool> microphone_stop_ack = false;
 	std::atomic<bool> mic_running = false;
+	std::unique_ptr<wivrn::software_microphone> microphone_worker;
 
 	wivrn_session & session;
 	xr::instance & instance;

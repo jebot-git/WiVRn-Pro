@@ -3,6 +3,15 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
+  microphone-dsp:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build and test microphone DSP and lifecycle
+        run: |
+          cmake -S fork/tests/microphone -B build/microphone-tests -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build/microphone-tests --parallel 2
+          ctest --test-dir build/microphone-tests --output-on-failure
   server:
     runs-on: ubuntu-26.04
     strategy:

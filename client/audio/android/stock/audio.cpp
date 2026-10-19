@@ -30,6 +30,8 @@
 void wivrn::android::audio::exit()
 {
 	exiting = true;
+	if (microphone_worker)
+		microphone_worker->set_enabled(false);
 	if (speaker)
 	{
 		speaker_stop_ack.wait(false);
@@ -115,7 +117,7 @@ int32_t wivrn::android::audio::microphone_data_cb(AAudioStream * stream, void * 
 	auto self = (wivrn::android::audio *)userdata;
 	uint8_t * audio_data = (uint8_t *)audio_data_v;
 
-	if (self->exiting)
+	if (self->exiting or (self->microphone_worker and self->microphone_worker->failed()))
 	{
 		self->microphone_stop_ack = true;
 		self->microphone_stop_ack.notify_all();
@@ -123,25 +125,11 @@ int32_t wivrn::android::audio::microphone_data_cb(AAudioStream * stream, void * 
 		return AAUDIO_CALLBACK_RESULT_STOP;
 	}
 
-	size_t frame_size = AAudioStream_getChannelCount(stream) * sizeof(uint16_t);
-
-	// Copy data because we encrypt in-place, we don't want to write on the input data
-	thread_local std::vector<uint8_t> data_copy;
-	data_copy.assign(audio_data, audio_data + frame_size * num_frames);
-	try
-	{
-		self->session.send_control(wivrn::audio_data{
-		        .timestamp = self->instance.now(),
-		        .payload = std::span(data_copy),
-		});
-	}
-	catch (...)
-	{
-		self->microphone_stop_ack = true;
-		self->microphone_stop_ack.notify_all();
-		self->mic_running = false;
-		return AAUDIO_CALLBACK_RESULT_STOP;
-	}
+	// Bounded copy only: DSP and encryption/network I/O run on the worker.
+	if (num_frames > 0 and self->microphone_worker)
+		self->microphone_worker->enqueue(
+		        std::span(reinterpret_cast<const int16_t *>(audio_data), size_t(num_frames)),
+		        self->instance.now());
 
 	return AAUDIO_CALLBACK_RESULT_CONTINUE;
 }
@@ -154,17 +142,33 @@ void wivrn::android::audio::build_microphone(AAudioStreamBuilder * builder, int3
 	AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
 	AAudioStreamBuilder_setSharingMode(builder, AAUDIO_SHARING_MODE_EXCLUSIVE);
 	AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
-	if (application::get_config().mic_unprocessed_audio)
-		AAudioStreamBuilder_setInputPreset(builder, AAUDIO_INPUT_PRESET_UNPROCESSED);
-	else
-		AAudioStreamBuilder_setInputPreset(builder, AAUDIO_INPUT_PRESET_VOICE_COMMUNICATION);
+	// VOICE_COMMUNICATION is downgraded to normal capture on Quest Pro and
+	// competes with the system recorder's HAL usecase 23 after reader churn.
+	// Use the demonstrated FAST/unprocessed route for both modes. Filtering is
+	// software noise suppression; never switch hardware routes to enable it.
+	AAudioStreamBuilder_setInputPreset(builder, AAUDIO_INPUT_PRESET_UNPROCESSED);
 
 	AAudioStreamBuilder_setDataCallback(builder, &microphone_data_cb, this);
 	AAudioStreamBuilder_setErrorCallback(builder, &microphone_error_cb, this);
 
 	aaudio_result_t result = AAudioStreamBuilder_openStream(builder, &microphone);
 	if (result != AAUDIO_OK)
+	{
 		spdlog::error("Cannot create input stream: {}", AAudio_convertResultToText(result));
+		microphone = nullptr;
+		return;
+	}
+	if (AAudioStream_getChannelCount(microphone) != 1 or AAudioStream_getSampleRate(microphone) != sample_rate)
+	{
+		spdlog::error("Unexpected microphone format; refusing mismatched mono PCM forwarding");
+		AAudioStream_close(microphone);
+		microphone = nullptr;
+		return;
+	}
+	spdlog::info("Microphone capture: preset=UNPROCESSED rate={} channels={} performance={} sharing={} software_denoise={}",
+	             AAudioStream_getSampleRate(microphone), AAudioStream_getChannelCount(microphone),
+	             int(AAudioStream_getPerformanceMode(microphone)), int(AAudioStream_getSharingMode(microphone)),
+	             not application::get_config().mic_unprocessed_audio);
 	mic_running = false;
 	// Microphone is started manually by a tracking_control packet
 }
@@ -251,6 +255,15 @@ wivrn::android::audio::audio(const wivrn::to_headset::audio_stream_description &
         session(session), instance(instance)
 {
 	std::unique_lock lock(mutex);
+	if (desc.microphone)
+		microphone_worker = std::make_unique<wivrn::software_microphone>(
+		        desc.microphone->sample_rate, not application::get_config().mic_unprocessed_audio,
+		        [this](std::span<int16_t> samples, int64_t timestamp) {
+			        this->session.send_control(wivrn::audio_data{
+			                .timestamp = timestamp,
+			                .payload = std::span(reinterpret_cast<uint8_t *>(samples.data()), samples.size_bytes()),
+			        });
+		        });
 	AAudioStreamBuilder * builder;
 	aaudio_result_t result = AAudio_createStreamBuilder(&builder);
 	if (result != AAUDIO_OK)
@@ -295,10 +308,23 @@ void wivrn::android::audio::set_mic_state(bool running)
 	auto old = mic_running.exchange(running);
 	if (old == running)
 		return;
+	if (microphone_worker)
+		microphone_worker->set_enabled(running);
+	auto before = AAudioStream_getState(microphone);
+	aaudio_result_t result;
 	if (running)
-		AAudioStream_requestStart(microphone);
+		result = AAudioStream_requestStart(microphone);
 	else
-		AAudioStream_requestStop(microphone);
+		result = AAudioStream_requestStop(microphone);
+	spdlog::info("Microphone demand={} state_before={} state_after={} result={} dropped_chunks={}",
+	             running, int(before), int(AAudioStream_getState(microphone)),
+	             AAudio_convertResultToText(result), microphone_worker ? microphone_worker->dropped() : 0);
+	if (result != AAUDIO_OK)
+	{
+		mic_running = false;
+		if (microphone_worker)
+			microphone_worker->set_enabled(false);
+	}
 }
 
 void wivrn::android::audio::get_audio_description(wivrn::from_headset::headset_info_packet & info)
@@ -323,6 +349,8 @@ void wivrn::android::audio::get_audio_description(wivrn::from_headset::headset_i
 	}
 
 	AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_INPUT);
+	// Capability probing must not transiently open the conflicting voice path.
+	AAudioStreamBuilder_setInputPreset(builder, AAUDIO_INPUT_PRESET_UNPROCESSED);
 
 	AAudioStreamBuilder_setSampleRate(builder, 48'000);
 	result = AAudioStreamBuilder_openStream(builder, &stream);

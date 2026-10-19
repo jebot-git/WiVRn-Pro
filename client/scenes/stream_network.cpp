@@ -115,7 +115,7 @@ void scenes::stream::operator()(to_headset::feature_control && control)
 void scenes::stream::operator()(to_headset::audio_stream_description && desc)
 {
 #if defined(__ANDROID__) && WIVRN_AUDIO_AB_STOCK
-	spdlog::info("Audio backend: upstream v26.9 (default)");
+	spdlog::info("Audio backend: demand-driven unprocessed capture with optional software noise suppression");
 #else
 	spdlog::info("Audio backend: experimental session keep-alive");
 #endif
