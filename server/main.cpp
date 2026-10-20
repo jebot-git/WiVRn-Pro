@@ -28,6 +28,7 @@
 #include "application.h"
 #include "openxr/openxr.h"
 #include "sleep_inhibitor.h"
+#include "session_policy.h"
 #include "util/u_trace_marker.h"
 
 #include "active_runtime.h"
@@ -215,6 +216,11 @@ std::unique_ptr<wayvr_worker> wayvr;
 void start_wayvr(const configuration & config)
 {
 	wayvr.reset();
+	if (!desktop_autostart_allowed())
+	{
+		wivrn_server_set_way_vrstatus(dbus_server, "Session managed by LightXR / DomeD");
+		return;
+	}
 	try
 	{
 		wayvr_options options(configuration::read_configuration(), config.application);
@@ -482,7 +488,7 @@ gboolean headset_connected_success(void *)
 	try
 	{
 		// The managed worker replaces recognized legacy WayVR autostart entries.
-		if (!is_wayvr_application(c.application))
+		if (desktop_autostart_allowed() && !is_wayvr_application(c.application))
 			children->start_application(c.application);
 	}
 	catch (std::exception & e)
@@ -1129,6 +1135,7 @@ int main(int argc, char * argv[])
 	std::string config_file;
 	app.add_option("-f", config_file, "configuration file")->option_text("FILE")->check(CLI::ExistingFile);
 	auto version_flag = app.add_flag("--version")->description("print version and exit");
+	auto desktop_autostart = app.add_flag("--desktop-autostart-allowed")->description("exit 0 if the display manager permits automatic desktop helpers, 1 for LightXR");
 	auto no_active_runtime = app.add_flag("--no-manage-active-runtime")->description("don't set the active runtime on connection");
 	auto early_active_runtime = app.add_flag("--early-active-runtime")->description("forcibly manages the active runtime even if no headset present");
 	auto no_instructions = app.add_flag("--no-instructions")->group("");
@@ -1140,6 +1147,8 @@ int main(int argc, char * argv[])
 #endif
 
 	CLI11_PARSE(app, argc, argv);
+	if (*desktop_autostart)
+		return desktop_autostart_allowed() ? 0 : 1;
 
 	if (*version_flag)
 	{

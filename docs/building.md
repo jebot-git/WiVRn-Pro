@@ -125,5 +125,60 @@ Both internal workers use it explicitly. WiVRn retains upstream's runtime-select
 behavior for VR applications when started. Builds and offline tests do not select
 a runtime or activate an installed service.
 
+### Host checks and system runtime
+
+Run `wivrn-pro-check` as the streaming user. It loads the installed runtime,
+opens DRM render nodes, verifies a hardware Vulkan device without relying on a
+desktop display, connects to PipeWire, checks WirePlumber, and opens `/dev/uinput`
+without creating any input devices. GPU encoding capability is still validated by
+the selected encoder when a headset connects. Install `vulkaninfo` (usually the
+`vulkan-tools` package), PipeWire's `pw-cli`, and WirePlumber for these checks.
+The core user service requests PipeWire's socket and WirePlumber and records
+these checks in its journal at startup. Missing optional host facilities do not
+prevent the streaming service from starting; the standalone checker exits nonzero
+when full functionality is unavailable.
+
+For a user-prefix installation, install a system-visible copy of the matching
+runtime and persistent pre-login input permissions with:
+
+```sh
+sudo "$HOME/.local/opt/wivrn-pro/bin/wivrn-pro-install-system" --user "$USER"
+```
+
+This installs a root-owned manifest at
+`/usr/local/share/openxr/1/openxr_wivrn_pro.json` and copies both runtime libraries
+into `/usr/local/lib/wivrn-pro`. It does not select a global active runtime. It
+loads `uinput` at boot, assigns `/dev/uinput` to the dedicated `wivrn-pro-input`
+group, adds the selected user to that group and the existing `render` group, and
+enables lingering. It does not grant access to all physical input devices.
+Reboot for the lingering user manager to acquire new group membership; replacing
+groups in a running desktop would terminate its services. Enable the user's
+`wivrn-pro.service` as above. Re-run this installer after updating a user-prefix
+runtime; `wivrn-pro-check --system` checks ownership, loadability and matching
+library hashes. Startup checks also verify the system copy when installed.
+`--prefix PATH` selects another installed prefix;
+`--destdir PATH` stages files without changing the host, accounts or services.
+
+### LightXR display manager
+
+With the single-user LightXR/DomeD login flow, leave WiVRn-Pro in its lingering
+user service. The server queries the system manager's `display-manager.service`
+identity on headset connection and helper restart, with the selected unit as an
+early-boot fallback. When it is `lightxr.service`, LightXR/DomeD owns the session
+lifecycle: managed WayVR, its in-headset dashboard, configured application
+autostart and automatic desktop-dashboard startup are suppressed. WiVRn's
+streaming runtime and tracking continue through login and logout. Settings are
+preserved, and manually launching the desktop dashboard remains possible.
+Other display managers retain the existing configured startup behavior.
+
+The installed dashboard unit uses `wivrn-pro-server --desktop-autostart-allowed`
+as an `ExecCondition`; this read-only query exits 1 for LightXR and 0 otherwise.
+No LightXR daemon needs to invoke a privileged WiVRn command or restart the
+runtime at login. Configure LightXR's broker to allow the same user and its
+system-installed WiVRn-Pro manifest. LightXR installation/PAM configuration and
+selecting it as the display manager remain separate deployment operations.
+Cold-boot connection, greeter controller focus, authentication, DomeD attachment,
+and return to the greeter require validation on the actual headset.
+
 For a review-only install use `DESTDIR=/absolute/staging cmake --install build/server`.
 Validate generated units with `systemd-analyze --user verify`; this does not start them.

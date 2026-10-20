@@ -6,6 +6,7 @@ Wants=wivrn-pro.service
 
 [Service]
 Type=simple
+ExecCondition=@CMAKE_INSTALL_FULL_BINDIR@/wivrn-pro-server --desktop-autostart-allowed
 ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/wivrn-pro-dashboard
 Restart=on-failure
 RestartSec=5

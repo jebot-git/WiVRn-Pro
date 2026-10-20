@@ -33,7 +33,6 @@ pub struct Model {
     right_down: Option<f64>,
     left_down: Option<f64>,
     frozen: Option<[Vec3A; 2]>,
-    drag: Option<(usize, Vec3A)>,
     timer: Option<f64>,
     shot: Option<f64>,
     last_time: Option<f64>,
@@ -51,7 +50,7 @@ impl Model {
         self.active || self.latched
     }
     pub fn adjust_zoom(&mut self, delta: f32) {
-        if self.active && delta.is_finite() {
+        if self.active && self.frozen.is_none() && delta.is_finite() {
             self.zoom = (self.zoom * delta.exp()).clamp(0.3, 3.);
         }
     }
@@ -62,7 +61,6 @@ impl Model {
         self.timer = None;
         self.shot = None;
         self.frozen = None;
-        self.drag = None;
         self.rect = None;
         self.armed = false;
         self.right_down = None;
@@ -120,22 +118,6 @@ impl Model {
                 owned: true,
             };
         }
-        if self.timer.is_some() && (held[0] != held[1]) {
-            let idx = if held[0] { 0 } else { 1 };
-            if let Some((old, position)) = self.drag {
-                if old == idx {
-                    let delta = hands[idx].position - position;
-                    if delta.length() > 0.15 {
-                        self.cancel();
-                        return Update::default();
-                    }
-                    self.frozen = self.frozen.map(|points| points.map(|point| point + delta));
-                }
-            }
-            self.drag = Some((idx, hands[idx].position));
-        } else {
-            self.drag = None;
-        }
         let points = self.frozen.unwrap_or(hands.map(|h| h.position));
         let p = points.map(|p| head.inverse().transform_point3a(p));
         if p.iter().any(|p| p.z >= -0.12 || p.z < -2.5) || points[0].distance(points[1]) > 1.8 {
@@ -180,6 +162,7 @@ impl Model {
             if now >= deadline && valid {
                 event = Some("capture");
                 self.shot = None;
+                self.frozen = None;
                 if !self.repeat {
                     self.active = false;
                 }
@@ -199,6 +182,9 @@ impl Model {
             }
             if triggers[1] && !self.before[1] {
                 self.right_down = Some(now);
+                // Keep the selected world-space corners throughout confirmation
+                // and recording, regardless of subsequent hand movement.
+                self.frozen = Some(points);
             }
             if triggers[1]
                 && self.mode == 0
@@ -213,12 +199,15 @@ impl Model {
                 if self.recording {
                     event = Some("stop");
                     self.recording = false;
+                    self.frozen = None;
                     if !self.repeat {
                         self.active = false;
                     }
                 } else if valid {
                     self.shot = Some(now + 0.12);
                     self.frozen = Some(points);
+                } else {
+                    self.frozen = None;
                 }
             }
             self.caption = format!(
@@ -672,6 +661,89 @@ mod tests {
             Some("stop")
         );
         assert!(!m.active);
+    }
+    #[test]
+    fn recording_locks_corners_from_confirmation_until_stop_and_repeat_reframes() {
+        let mut m = Model::default();
+        let mut t = 0.;
+        start(&mut m, &mut t);
+        m.repeat = true;
+        tick(&mut m, &mut t, true, [false, true]);
+        let selected = m.rect.unwrap();
+        let mut moved = hands(true, [false, true]);
+        // Live corners would be out of range and cancel the capture.
+        moved[0].position = Vec3A::new(-2., 1., 0.);
+        moved[1].position = Vec3A::new(2., -1., 0.);
+        let mut starts = 0;
+        for _ in 0..70 {
+            t += 0.02;
+            starts += usize::from(
+                m.update(t, Affine3A::IDENTITY, moved, false).event == Some("record"),
+            );
+            m.adjust_zoom(0.1);
+            assert_eq!(m.rect.unwrap().bounds, selected.bounds);
+            assert_eq!(m.rect.unwrap().depth, selected.depth);
+        }
+        assert_eq!(starts, 1);
+        assert!(m.recording);
+        moved[1].trigger = false;
+        t += 0.02;
+        assert_eq!(
+            m.update(t, Affine3A::IDENTITY, moved, false).event,
+            Some("stop")
+        );
+        assert!(!m.recording);
+        assert!(m.active);
+        let mut reframed = hands(true, [false; 2]);
+        reframed[0].position.x -= 0.1;
+        t += 0.02;
+        m.update(t, Affine3A::IDENTITY, reframed, false);
+        assert_ne!(m.rect.unwrap().bounds, selected.bounds);
+    }
+    #[test]
+    fn photo_keeps_confirmation_region_and_repeat_can_reframe() {
+        let mut m = Model::default();
+        let mut t = 0.;
+        start(&mut m, &mut t);
+        m.repeat = true;
+        tick(&mut m, &mut t, true, [false, true]);
+        let selected = m.rect.unwrap().bounds;
+        let mut moved = hands(true, [false; 2]);
+        moved[0].position.x -= 0.1;
+        let mut shots = 0;
+        for _ in 0..8 {
+            t += 0.02;
+            let output = m.update(t, Affine3A::IDENTITY, moved, false);
+            assert_eq!(m.rect.unwrap().bounds, selected);
+            if output.event == Some("capture") {
+                shots += 1;
+                break;
+            }
+        }
+        assert_eq!(shots, 1);
+        t += 0.02;
+        m.update(t, Affine3A::IDENTITY, moved, false);
+        assert_ne!(m.rect.unwrap().bounds, selected);
+    }
+    #[test]
+    fn timer_ignores_movement_with_one_framing_hand_held() {
+        let mut m = Model::default();
+        let mut t = 0.;
+        start(&mut m, &mut t);
+        tick(&mut m, &mut t, true, [true; 2]);
+        let selected = m.rect.unwrap().bounds;
+        let mut moved = hands(false, [false; 2]);
+        moved[0].hold = true;
+        let mut shots = 0;
+        for _ in 0..160 {
+            moved[0].position.x += 0.02;
+            t += 0.02;
+            shots += usize::from(
+                m.update(t, Affine3A::IDENTITY, moved, false).event == Some("capture"),
+            );
+            assert_eq!(m.rect.unwrap().bounds, selected);
+        }
+        assert_eq!(shots, 1);
     }
     #[test]
     fn two_triggers_start_timer_and_hold_release_does_not_cancel_it() {

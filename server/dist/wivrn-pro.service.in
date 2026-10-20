@@ -1,10 +1,13 @@
 [Unit]
 Description=WiVRn Pro (Quest Pro, Intel Arc, spatial capture, Shora tracking and WayVR)
 # Enable user lingering to run at boot, before graphical login.
+Wants=pipewire.socket wireplumber.service
+After=pipewire.socket wireplumber.service
 Conflicts=spatial-bridge.service shora-wayvr.service wayvr.service wlx-overlay-s.service wivrn.service wivrn-pro-shora.service shora-server.service shora-proxy.service
 
 [Service]
 Type=simple
+ExecStartPre=-@CMAKE_INSTALL_FULL_BINDIR@/wivrn-pro-check --startup --manifest @CMAKE_INSTALL_FULL_DATADIR@/openxr/1/openxr_wivrn_pro.json
 ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/wivrn-pro-server
 Environment=XDG_RUNTIME_DIR=%t
 RuntimeDirectory=wivrn-pro

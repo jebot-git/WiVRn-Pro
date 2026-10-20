@@ -22,12 +22,14 @@ finger remain available for the confirmation pinch. Both inputs must be tracked.
 - Hold and release the left trigger/pinch for at least one second: toggle repeat.
 - Tap/release the right trigger/index pinch: take a still PNG.
 - Hold the right trigger/pinch for one second: start **silent VP9 WebM** recording;
-  release it or the framing grip to stop. Recording has a ten-second ceiling,
-  15 fps timeline and 1024-pixel maximum side. No audio device is opened.
+  release it or the framing grip to stop. The frame corners lock in world space
+  when the right trigger/pinch is pressed; moving hands or adjusting the stick
+  during capture does not move or resize the region. Recording has a ten-second
+  ceiling, 15 fps timeline and 1024-pixel maximum side. No audio device is opened.
 - Tilt the right controller stick vertically to adjust frame size; tracked hands resize by moving their corners.
 - Press both triggers/pinches together: start a three-second still-photo timer.
-  The captured area stays fixed in world space while the timer runs. Hold one
-  framing corner to fine-tune its position during the countdown.
+  The captured area stays fixed in world space while the timer runs, even if
+  either hand moves.
 - Release the framing grips, lose tracking/focus, or disable the utility to cancel.
   A held gesture cannot reactivate framing until both grips return to neutral.
 
