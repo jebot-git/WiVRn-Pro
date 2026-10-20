@@ -81,3 +81,34 @@ CUDA and ROCm GPU backends; recognized text can be translated with Google Cloud
 Translation or DeepL API Free. Images stay on the PC. Without that package,
 Hands Frame shows OCR translation as unavailable. Speech recognition and the
 standalone subtitle application have been removed.
+
+## Desktop layer minification (WiVRn Pro)
+
+`WIVRN_LAYER_FILTER=off|balanced|quality` selects footprint-aware sampling of
+minified cylinder and quad layers in the PC compositor. The default is `off`.
+Set the variable on **wivrn-pro-server**, then restart/reconnect the stream;
+setting it on an OpenXR application has no effect. Unknown values select off.
+Balanced uses up to 2×2 bilinear samples; quality uses up to 4×4. Sampling ramps
+in from 1× to 1.5× minification. Magnified layers retain their original pixels.
+Projection layers and unpremultiplied/inverted-alpha layers retain the original
+sampling path. Filter taps stay within each submitted subimage, including
+flipped UVs and side-by-side stereo. Gaze-driven encoding is independent.
+
+This bounded filter reduces small-pattern aliasing; it is not an exact area
+integrator or a replacement for mipmaps at extreme minification. The footprint
+calculation adds work even when a layer is magnified, so opt in after profiling.
+See `man wivrn-layer-filter` and `fork/VALIDATION.md` for measurements and limits.
+
+Run the actual production shader's bounded Vulkan smoke test (no headset restart):
+
+```sh
+python fork/tests/layer_filter_smoke.py --monado build/monado-src
+# Add --spirv-opt /path/to/spirv-opt to match optimized production builds.
+```
+
+The test requires Vulkan development files, g++, glslangValidator, and a hardware
+GPU. It checks baseline/off pixel equality, unchanged magnification/projection/
+alpha modes, stereo subimage boundaries, and minification fixtures. It reports
+GPU timestamp distributions in three order-reversed rounds. Its 512×512 SSBO
+output and synthetic overlapping layers are a microbenchmark, not end-to-end
+headset performance; concurrent workloads and clock changes affect timings.

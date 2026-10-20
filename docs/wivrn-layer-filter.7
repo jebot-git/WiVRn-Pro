@@ -1,0 +1,33 @@
+.TH WIVRN-LAYER-FILTER 7 "2026-10-20" "WiVRn Pro" "Miscellaneous Information"
+.SH NAME
+wivrn-layer-filter \- bounded minification filtering for desktop composition layers
+.SH DESCRIPTION
+WiVRn Pro can filter minified quad and cylinder textures using a locally estimated
+output-pixel footprint. This reduces spatial aliasing in small or oblique desktop
+windows without applying a full-frame blur. Gaze-driven encoding is independent.
+.SH ENVIRONMENT
+.TP
+.B WIVRN_LAYER_FILTER=off
+Default. Preserve the original bilinear sampling path.
+.TP
+.B WIVRN_LAYER_FILTER=balanced
+Use up to two samples per footprint axis (four bilinear samples per pixel).
+.TP
+.B WIVRN_LAYER_FILTER=quality
+Use up to four samples per footprint axis (sixteen bilinear samples per pixel).
+.PP
+Unknown values select off. Set the variable on wivrn-pro-server before startup,
+not on DomeD or another OpenXR client. Restarting the server interrupts the stream.
+.SH BEHAVIOR
+Sampling ramps in between 1 and 1.5 times minification. Magnified textures retain
+the original pixels. Taps are clamped to the submitted subimage, including flipped
+coordinates and stereo halves. Projection layers and layers requesting
+unpremultiplied or inverted alpha retain their original sampling path.
+.SH PERFORMANCE
+Footprint estimation adds GPU work even for magnified layers. The sample limit
+bounds work but cannot exactly integrate arbitrarily large footprints. This is
+not a mipmap implementation. Profile the actual headset workload before enabling.
+.PP
+The source distribution includes fork/tests/layer_filter_smoke.py. It compares
+production shaders with float-buffer readback, excluding transfers from GPU
+shader timings. Its synthetic timings are not headset latency or frame timings.

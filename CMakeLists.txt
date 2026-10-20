@@ -380,3 +380,5 @@ foreach(TARGET_NAME wivrn wivrn-server wivrn-common wivrn-dissector wivrnctl)
 
     endif()
 endforeach()
+
+install(FILES docs/wivrn-layer-filter.7 DESTINATION ${CMAKE_INSTALL_MANDIR}/man7)

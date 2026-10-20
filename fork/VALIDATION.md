@@ -788,3 +788,54 @@ Existing native layout test passed with the battery templates instantiated;
 release build and 723-file upstream patch audit passed. Installed worker hash
 matches `2cafb4a4e04672e997d7a59135e806fb2bcaffe327aa9001f1db0b006aab8dd6`.
 Only WayVR was reloaded; in-headset visual confirmation remains pending.
+
+## DomeD desktop-layer minification — 2026-10-20
+
+The prototype was built in an isolated worktree from archived `639120d1`.
+Before deployment it was ported to the exact installed server commit `15a53b72`
+(WiVRn 26.9.3-pyrowave.3); unrelated worktree changes were preserved. The installed
+Monado layer shader matches the prototype baseline byte-for-byte. The Monado shader patch is pinned by the existing
+`monado-rev`. Filtering is opt-in on the server with `WIVRN_LAYER_FILTER`.
+No gaze, encoding, protocol, client, or projection-layer changes are required.
+
+The actual shader smoke test passed on Intel Arc A770: original/off output is
+byte-identical, magnification is unchanged, unsupported alpha modes and projection
+output are unchanged, flipped stereo subimages do not bleed, transparent fixtures
+retain alpha, and the minified one-pixel checker fixture has reduced error.
+Three reversed-order rounds use five warmups and forty measured dispatches per
+case. GPU timestamps cover shader execution and float SSBO writes, not transfers.
+The test changes only the production shader's output image into an SSBO for
+readback. Source/patch hashes and all rounds are recorded in the ignored report.
+
+| 512×512 output, eight overlapping layers | Original median GPU ms | Balanced median GPU ms | Quality median GPU ms |
+| --- | ---: | ---: | ---: |
+| Quad | 0.076 | 0.283 | 0.277 |
+| Cylinder | 0.088 | 0.273 | 0.264 |
+
+These optimized-shader synthetic figures are medians of round medians, from a live GPU
+with other applications active. They are not additive predictions for both eyes,
+full headset resolution, or a particular DomeD layout. Magnification adds footprint
+estimation cost despite unchanged output. Filtering remains off by default.
+
+A separate read-only sixty-second live DomeD/WiVRn smoke sample observed a 72 Hz
+target, 4,273 newly presented stream frames and 26 repeats per stream over the
+sampled endpoints, roughly 1.2 ms median encoding, and approximately 23% of one CPU
+core for dome-compositor, 9% for dome-xr and 24% for the runtime compositor process.
+The live feed lacks a separate layer-squash GPU timer. Its sampled latency gauges
+are not a per-frame latency distribution and do not measure photon latency.
+The active runtime and headset were not restarted for baseline collection.
+
+The Prototype QSV-enabled server and OpenXR runtime build passed with the new shader and
+mode logging. The environment lacked a libinput development linker symlink; a
+local build-directory symlink to the existing runtime library resolved linking
+without installing system packages. Existing WayVR unused-code warnings remain.
+
+The installed-base smoke also uses the same SPIRV-Tools optimization pass as the
+production build. All pixel/compatibility checks pass after optimization. Shader
+medians vary with the live workload and clocks; quality mode being slightly faster
+in this probe is not evidence that its higher maximum sample budget is cheaper.
+
+The final build based on the installed `15a53b72` server passed with QSV, PyroWave,
+stock PipeWire audio, the existing hand/controller policy patches and production
+SPIR-V optimization enabled. The production layer SPIR-V passed spirv-val.
+No Android/client or wire-protocol changes are introduced.

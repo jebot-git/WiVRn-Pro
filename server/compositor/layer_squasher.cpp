@@ -33,6 +33,8 @@
 #include "render/render_interface.h"
 
 #include "layer_squasher.h"
+#include "layer_filter.h"
+#include <cstdlib>
 
 #include "driver/wivrn_hmd.h"
 #include "utils/wivrn_vk_bundle.h"
@@ -262,11 +264,16 @@ vk::raii::PipelineLayout make_layout(wivrn::vk_bundle & vk, vk::DescriptorSetLay
 
 vk::raii::Pipeline make_pipeline(wivrn::vk_bundle & vk, uint32_t image_array_size, vk::PipelineLayout layout)
 {
+	const char *requested_filter = std::getenv("WIVRN_LAYER_FILTER");
+	const int filter_samples = wivrn::layer_filter_samples(requested_filter ? requested_filter : "off");
+	U_LOG_I("Desktop layer minification: %s (up to %d samples per axis)",
+	        filter_samples == 4 ? "quality" : filter_samples == 2 ? "balanced" : "off", filter_samples);
 	auto specialization = make_specialization_constants(
 	        int32_t(0),     // unused
 	        VkBool32(true), // do_timewarp
 	        VkBool32(true), // do_color_correction
-	        int32_t(image_array_size));
+	        int32_t(image_array_size),
+	        int32_t(filter_samples));
 	vk::raii::Pipeline res(
 	        vk.device,
 	        nullptr,

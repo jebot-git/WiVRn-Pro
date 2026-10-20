@@ -1,0 +1,170 @@
+From 84ad9850235d6061bf868c0c7719d717287f889f Mon Sep 17 00:00:00 2001
+From: jebot-git <326713999+jebot-git@users.noreply.github.com>
+Date: Tue, 20 Oct 2026 22:12:20 +0200
+Subject: [PATCH] render: add opt-in bounded minification filtering for desktop
+ layers
+
+---
+ src/xrt/auxiliary/render/shaders/layer.comp | 123 +++++++++++++++++++-
+ 1 file changed, 120 insertions(+), 3 deletions(-)
+
+diff --git a/src/xrt/auxiliary/render/shaders/layer.comp b/src/xrt/auxiliary/render/shaders/layer.comp
+index 1459599..5898346 100644
+--- a/src/xrt/auxiliary/render/shaders/layer.comp
++++ b/src/xrt/auxiliary/render/shaders/layer.comp
+@@ -57,6 +57,8 @@ layout(constant_id = 2) const bool do_color_correction = true;
+ //! This is always set by the render_resource pipeline creation code to the actual limit.
+ layout(constant_id = 3) const int SAMPLER_ARRAY_SIZE = 16;
+ 
++layout(constant_id = 4) const int MINIFICATION_AXIS_SAMPLES = 1;
++
+ layout(constant_id = 5) const float INSET_BLEND_EDGE = 0.05;
+ 
+ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+@@ -224,6 +226,121 @@ vec2 transform_uv(vec2 uv, uint layer)
+ 	}
+ }
+ 
++bool cylinder_uv(vec2 view_uv, uint layer, out vec2 sample_uv)
++{
++	// Get ray position in model space.
++	const vec3 ray_origin = (LAYER.mv_inverse * vec4(0, 0, 0, 1)).xyz;
++
++	// [0 .. 1] to tangent lengths (at unit Z).
++	const vec2 uv = fma(view_uv, ubo.pre_transform.zw, ubo.pre_transform.xy);
++
++	// With Z at the unit plane and flip y for OpenXR coordinate system,
++	// transform the ray into model space.
++	const vec3 ray_dir = normalize((LAYER.mv_inverse * vec4(uv.x, -uv.y, -1, 0)).xyz);
++
++	const float radius = LAYER.cylinder_data.x;
++	const float central_angle = LAYER.cylinder_data.y;
++	const float aspect_ratio = LAYER.cylinder_data.z;
++
++	vec3 dir_from_cyl;
++	// CPU code will set +INFINITY to zero.
++	if (radius == 0) {
++		dir_from_cyl = ray_dir;
++	} else {
++		// Find if the cylinder intersects with the ray direction
++		// Inspired by Inigo Quilez
++		// https://iquilezles.org/articles/intersectors/
++
++		const vec3 axis = vec3(0.f, 1.f, 0.f);
++
++		float card = dot(axis, ray_dir);
++		float caoc = dot(axis, ray_origin);
++		float a = 1.f - card * card;
++		float b = dot(ray_origin, ray_dir) - caoc * card;
++		float c = dot(ray_origin, ray_origin) - caoc * caoc - radius * radius;
++		float h = b * b - a * c;
++		if(h < 0.f) {
++			// no intersection
++			return false;
++		}
++
++		h = sqrt(h);
++		vec2 distances = vec2(-b - h, -b + h) / a;
++
++		if (distances.y < 0) {
++			return false;
++		}
++
++		dir_from_cyl = normalize(ray_origin + (ray_dir * distances.y));
++	}
++
++	const float lon = atan(dir_from_cyl.x, -dir_from_cyl.z) / (2 * PI) + 0.5; // => [0, 1]
++	// float lat = -asin(dir_from_cyl.y); // => [-π/2, π/2]
++	// float y = tan(lat); // => [-inf, inf]
++	// simplified: -y/sqrt(1 - y^2)
++	const float y = -dir_from_cyl.y / sqrt(1 - (dir_from_cyl.y * dir_from_cyl.y)); // => [-inf, inf]
++
++
++    const float height = central_angle / aspect_ratio;
++    vec2 local_uv = vec2((lon - 0.5) * (2.0 * PI) / central_angle + 0.5, y / height + 0.5);
++    sample_uv = transform_uv_subimage(local_uv, layer);
++    return all(greaterThanEqual(local_uv, vec2(0))) && all(lessThanEqual(local_uv, vec2(1)));
++}
++
++bool quad_uv(vec2 view_uv, uint layer, out vec2 sample_uv)
++{
++    vec2 uv = fma(view_uv, ubo.pre_transform.zw, ubo.pre_transform.xy);
++    vec3 direction = vec3(uv.x, -uv.y, -1.0);
++    vec3 normal = normalize(LAYER.quad_normal.xyz);
++    float denominator = dot(direction, normal);
++    if (denominator >= 0.00001) { return false; }
++    float distance = dot(LAYER.quad_position.xyz, normal) / denominator;
++    if (distance < 0.0) { return false; }
++    vec2 point = (LAYER.inverse_quad_transform * vec4(direction * distance, 1.0)).xy;
++    vec2 local_uv = point / LAYER.quad_extent + 0.5;
++    sample_uv = transform_uv_subimage(local_uv, layer);
++    return all(greaterThanEqual(local_uv, vec2(0))) && all(lessThanEqual(local_uv, vec2(1)));
++}
++
++vec4 sample_desktop_layer(vec2 view_uv, vec2 center, uint layer, bool cylinder)
++{
++    uint index = LAYER.image_info.color_image_index;
++    // Preserve magnification and unsupported alpha modes exactly. Explicit LOD
++    // is necessary in compute shaders, which have no implicit derivatives.
++    if (MINIFICATION_AXIS_SAMPLES <= 1 || LAYER.layer_data.unpremultiplied_alpha != 0 ||
++        LAYER.layer_data.inverted_alpha != 0) { return textureLod(source[index], center, 0); }
++    vec2 pixel = 1.0 / vec2(ubo.view.zw);
++    vec2 adjacent_x, adjacent_y;
++    bool valid_x = cylinder ? cylinder_uv(view_uv + vec2(pixel.x, 0), layer, adjacent_x)
++                            : quad_uv(view_uv + vec2(pixel.x, 0), layer, adjacent_x);
++    bool valid_y = cylinder ? cylinder_uv(view_uv + vec2(0, pixel.y), layer, adjacent_y)
++                            : quad_uv(view_uv + vec2(0, pixel.y), layer, adjacent_y);
++    if (!valid_x || !valid_y) { return textureLod(source[index], center, 0); }
++    vec2 dx = adjacent_x - center, dy = adjacent_y - center;
++    vec2 size = vec2(textureSize(source[index], 0));
++    vec2 footprint = vec2(length(dx * size), length(dy * size));
++    ivec2 taps = ivec2(footprint.x > 1.0 ? ceil(footprint.x) : 1.0,
++                       footprint.y > 1.0 ? ceil(footprint.y) : 1.0);
++    taps = clamp(taps, ivec2(1), ivec2(MINIFICATION_AXIS_SAMPLES));
++    if (taps == ivec2(1)) { return textureLod(source[index], center, 0); }
++    // Clamp each tap to this submitted subimage, including flipped OpenGL UVs.
++    // In particular, never bleed across the two halves of a stereo swapchain.
++    vec2 lo = min(LAYER.post_transform.xy, LAYER.post_transform.xy + LAYER.post_transform.zw) + 0.5 / size;
++    vec2 hi = max(LAYER.post_transform.xy, LAYER.post_transform.xy + LAYER.post_transform.zw) - 0.5 / size;
++    hi = max(hi, lo);
++    dx *= smoothstep(1.0, 1.5, footprint.x);
++    dy *= smoothstep(1.0, 1.5, footprint.y);
++    vec4 sum = vec4(0);
++    for (int y = 0; y < taps.y; ++y) {
++        for (int x = 0; x < taps.x; ++x) {
++            vec2 offset = (vec2(x, y) + 0.5) / vec2(taps) - 0.5;
++            vec2 uv = clamp(center + dx * offset.x + dy * offset.y, lo, hi);
++            sum += textureLod(source[index], uv, 0);
++        }
++    }
++    return sum / float(taps.x * taps.y);
++}
++
+ vec4 do_cylinder(vec2 view_uv, uint layer)
+ {
+ 	// Get ray position in model space.
+@@ -317,10 +434,10 @@ vec4 do_cylinder(vec2 view_uv, uint layer)
+ 
+ 		uint index = LAYER.image_info.color_image_index;
+ #ifdef DEBUG
+-		out_color += texture(source[index], uv_sub) / 2.f;
++		out_color += sample_desktop_layer(view_uv, uv_sub, layer, true) / 2.f;
+ #else
+ 
+-		out_color = texture(source[index], uv_sub);
++		out_color = sample_desktop_layer(view_uv, uv_sub, layer, true);
+ #endif
+ 	} else {
+ 		out_color += vec4(0.f);
+@@ -546,7 +663,7 @@ vec4 do_quad(vec2 view_uv, uint layer)
+ 			// sample on the desired subimage, not the entire texture
+ 			plane_uv = fma(plane_uv, LAYER.post_transform.zw, LAYER.post_transform.xy);
+ 
+-			colour = texture(source[source_image_index], plane_uv);
++			colour = sample_desktop_layer(view_uv, plane_uv, layer, false);
+ 		} else {
+ 			// intersection on infinite plane outside of plane bounds
+ 			colour = vec4(0.0, 0.0, 0.0, 0.0);
+-- 
+2.55.0
+
