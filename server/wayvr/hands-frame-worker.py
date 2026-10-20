@@ -287,6 +287,29 @@ class Worker:
             if value.parent == self.cache: value.unlink(missing_ok=True)
         self.current = min(index, len(self.results)-1)
         self.revision += 1
+    def copy_video(self, source):
+        # Keep the file outside the gallery: Save, Close and worker shutdown
+        # may delete the original while another application is still pasting.
+        directory = self.root/'hands-frame-clipboard'
+        directory.mkdir(mode=0o700, exist_ok=True)
+        private(directory, True)
+        fd, name = tempfile.mkstemp(prefix='Hands Frame ', suffix='.webm', dir=directory)
+        target = Path(name)
+        try:
+            with os.fdopen(fd, 'wb') as dst, source.open('rb') as src:
+                shutil.copyfileobj(src, dst)
+            subprocess.run(['wl-copy','--type','text/uri-list'],
+                input=(target.resolve().as_uri()+'\r\n').encode(), check=True, timeout=3)
+        except BaseException:
+            target.unlink(missing_ok=True)
+            raise
+        # Only replace the previous snapshot after publishing the new one.
+        # The latest copy survives worker restarts, until another video Copy
+        # or the desktop session's runtime-directory cleanup.
+        for previous in directory.glob('Hands Frame *.webm'):
+            if previous != target:
+                try: previous.unlink()
+                except OSError: pass
     def refresh_provider(self):
         try:
             info=self.config_path.lstat();stamp=(info.st_ino,info.st_mtime_ns)
@@ -398,12 +421,13 @@ class Worker:
                 text = item.get('original' if item.get('show_original') else 'text', '')
                 source = Path(item['path'])
                 if source.suffix.lower() == '.webm':
-                    mime, data = 'video/webm', source.read_bytes()
+                    self.copy_video(source)
                 elif text:
                     mime, data = 'text/plain;charset=utf-8', text.encode()
+                    subprocess.run(['wl-copy','--type',mime],input=data,check=True,timeout=3)
                 else:
                     mime, data = 'image/png', (self.cache/item['preview']).read_bytes()
-                subprocess.run(['wl-copy','--type',mime],input=data,check=True,timeout=3)
+                    subprocess.run(['wl-copy','--type',mime],input=data,check=True,timeout=3)
                 self.notice = 'Copied to clipboard'
             elif kind == 'open':
                 text = item.get('text','').strip()

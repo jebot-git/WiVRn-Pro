@@ -83,6 +83,24 @@ fn grouped_watch_native_layout_and_preview() {
         }
         layout.update(&mut LayoutUpdateParams { size: Vec2::new(watch_menu::WIDTH, watch_menu::HEIGHT), timestep_alpha: 1.0 }).unwrap();
         assert_eq!(layout.content_size, Vec2::new(watch_menu::WIDTH, watch_menu::HEIGHT));
+        if open.is_none() {
+            let bounds = |name| layout.state.get_widget_boundary(parser.get_widget_id(name).unwrap());
+            let devices = bounds("devices_root");
+            let body = bounds("watch_body");
+            let battery = bounds("battery_0");
+            assert!(battery.size.y <= 28.0, "battery tile too tall: {:?}", battery);
+            assert!((devices.pos.y + battery.pos.y + battery.size.y + 8.0 - body.pos.y).abs() < 0.1,
+                "battery row must sit directly above the watch: {:?} / {:?}", devices, battery);
+            let clock = bounds("clock_root");
+            let button_bounds = |name| layout.state.get_widget_boundary(
+                controls.iter().find(|(spec, _)| spec.widget == name).unwrap().1);
+            let first = button_bounds("group_calibration");
+            let second = button_bounds("group_input");
+            assert!(devices.pos.y + devices.size.y + 8.0 <= body.pos.y);
+            assert!((first.pos.x - clock.pos.x - clock.size.x - 8.0).abs() < 0.1);
+            assert!((second.pos.x - first.pos.x - first.size.x - 12.0).abs() < 0.1);
+            assert!(body.size.x <= 628.0);
+        }
         for (spec, id) in &controls {
             let show = open.map_or(matches!(spec.id, ButtonId::Parent(_)), |group| group == spec.group);
             let node = *layout.state.nodes.get(*id).unwrap();

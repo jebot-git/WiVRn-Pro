@@ -733,7 +733,7 @@
     "wayvr/build.rs": "6f496da15871563c86c10a9d44f2e82f2cf33c895a571f26eb2ececaf55cf4c1",
     "wayvr/src/assets/gui/edit.xml": "433cf6af739bb3a8963c150e3e5eb9f6d3746d412c4e68c85a882b29ddd61e11",
     "wayvr/src/assets/gui/keyboard.xml": "d278f36b727e4bd18aea1ae2e4bc060ced785ed246b1b7e44dc49f12848ea867",
-    "wayvr/src/assets/gui/watch.xml": "ed948c555e3ce475e5b890879ebf27bc7395372b46b21a310af44d631710bcf1",
+    "wayvr/src/assets/gui/watch.xml": "19897e2ff5d8cb38c5b9df91e244c63abca6996474a9136c7e23002e6fa39314",
     "wayvr/src/backend/input.rs": "0a5ead612082555f58db6b39f76f98e5a51bc2ea04a0cabde8ceb34bcd18c900",
     "wayvr/src/backend/openvr/overlay.rs": "616a48d77d45d02acec9c21bcf9eaafed7df6b14762e01c8b850ad7c9f65dd0e",
     "wayvr/src/backend/openvr/playspace.rs": "8dffafc448ecfa991529face8a1aa389bdab47e3e0986e8585ffa195df3dfb2b",

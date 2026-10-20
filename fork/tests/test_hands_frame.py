@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import contextlib, errno, fcntl, importlib.util, io, json, os, shutil, struct, subprocess, tempfile, time, types, unittest
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 from PIL import Image
 from unittest import mock
 SOURCE=Path(__file__).resolve().parents[2]/'server/wayvr/hands-frame-worker.py'
@@ -70,7 +71,18 @@ class CaptureReliabilityTests(unittest.TestCase):
             try: yield root,instance
             finally:
                 instance.recording=None;instance.pool.shutdown();instance.encoders.shutdown();os.close(instance.lock)
-    def test_clipboard_copies_webm_bytes_from_current_capture_path(self):
+    def copied_video(self, copy):
+        args, kwargs = copy.call_args
+        self.assertEqual(args, (['wl-copy','--type','text/uri-list'],))
+        self.assertTrue(kwargs['check'])
+        self.assertEqual(kwargs['timeout'], 3)
+        uri = kwargs['input'].decode()
+        self.assertTrue(uri.endswith('\r\n'))
+        self.assertIn('%20', uri)
+        parsed = urlsplit(uri.strip())
+        self.assertEqual(parsed.scheme, 'file')
+        return Path(unquote(parsed.path))
+    def test_clipboard_copies_webm_file_uri_from_current_capture_path(self):
         with self.instance() as (root,instance), mock.patch.object(worker.subprocess,'run') as copy:
             instance.add_result(Image.new('RGB',(16,16)))
             # Cover both the unsaved recording and a saved file outside the cache.
@@ -78,7 +90,41 @@ class CaptureReliabilityTests(unittest.TestCase):
                 video=directory/'capture.webm';video.write_bytes(b'\x1aE\xdf\xa3video payload')
                 instance.results[0]['path']=str(video)
                 instance.command({'op':'copy'})
-                copy.assert_called_with(['wl-copy','--type','video/webm'],input=video.read_bytes(),check=True,timeout=3)
+                target = self.copied_video(copy)
+                self.assertNotEqual(target, video)
+                self.assertEqual(target.read_bytes(), video.read_bytes())
+                self.assertEqual(target.stat().st_mode&0o777, 0o600)
+                self.assertEqual(target.parent.stat().st_mode&0o777, 0o700)
+            self.assertEqual(list(target.parent.glob('*.webm')), [target])
+    def test_clipboard_video_survives_save_close_and_worker_restart(self):
+        with self.instance() as (root,instance), mock.patch.object(worker.subprocess,'run') as copy:
+            video=instance.cache/'capture.webm';video.write_bytes(b'video payload')
+            instance.add_result(Image.new('RGB',(16,16)),path=video)
+            instance.command({'op':'copy'})
+            target=self.copied_video(copy)
+            with mock.patch.object(worker.Path,'home',return_value=root):
+                instance.command({'op':'save'})
+            self.assertFalse(video.exists())
+            instance.command({'op':'close'})
+            self.assertEqual(target.read_bytes(), b'video payload')
+            # Release the worker lock and recreate the worker in the same session.
+            fcntl.flock(instance.lock,fcntl.LOCK_UN)
+            restarted=worker.Worker(root, root/'config.json')
+            try:
+                self.assertEqual(target.read_bytes(), b'video payload')
+            finally:
+                restarted.pool.shutdown();restarted.encoders.shutdown();os.close(restarted.lock)
+    def test_failed_video_copy_keeps_previous_clipboard_file(self):
+        with self.instance() as (root,instance), mock.patch.object(worker.subprocess,'run') as copy:
+            video=instance.cache/'capture.webm';video.write_bytes(b'first video')
+            instance.add_result(Image.new('RGB',(16,16)),path=video)
+            instance.command({'op':'copy'})
+            previous=self.copied_video(copy)
+            video.write_bytes(b'second video')
+            copy.side_effect=subprocess.CalledProcessError(1, 'wl-copy')
+            with self.assertRaises(subprocess.CalledProcessError):instance.command({'op':'copy'})
+            self.assertEqual(previous.read_bytes(), b'first video')
+            self.assertEqual(list(previous.parent.glob('*.webm')), [previous])
     def test_clipboard_waits_for_recording_and_encoder_instead_of_copying_preview(self):
         with self.instance() as (root,instance), mock.patch.object(worker.subprocess,'run') as copy:
             instance.add_result(Image.new('RGB',(16,16)))

@@ -64,24 +64,24 @@ def icon(painter, name, box):
 def draw_watch(painter, state):
     group = state['group']
     if group is None:
-        rect(painter, [56, 396, 752, 340], 'background', radius=28)
+        rect(painter, [48, 500, 628, 180], 'background', radius=28)
         for i, (name, charge) in enumerate([('hmd', '96%'), ('controller_l', '83%'), ('controller_r', '87%'), ('track', '72%')]):
-            x = 80 + i * 148
-            rect(painter, [x, 416, 136, 46], 'button', radius=8)
-            icon(painter, f'watch/{name}.svg', [x+8, 425, 28, 28])
-            text(painter, [x+44, 420, 78, 38], charge, size=22, bold=True)
-        text(painter, [80, 508, 232, 58], '09:41', size=46, bold=True)
-        text(painter, [80, 566, 232, 26], 'Mon  ·  19 Oct', size=16, color='muted')
-        text(painter, [80, 606, 110, 24], 'Paris', size=14, color='muted')
-        text(painter, [200, 606, 112, 24], 'New York', size=14, color='muted')
-        text(painter, [80, 630, 110, 28], '09:41', size=22)
-        text(painter, [200, 630, 112, 28], '03:41', size=22)
-        text(painter, [80, 684, 700, 24], 'Remembered floor: active', size=14, color='muted', align=Qt.AlignLeft)
+            x = 64 + i * 98
+            rect(painter, [x, 466, 94, 26], 'background', radius=8)
+            icon(painter, f'watch/{name}.svg', [x+4, 469, 20, 20])
+            text(painter, [x+28, 468, 62, 22], charge, size=16, bold=True)
+        text(painter, [64, 508, 180, 50], '09:41', size=40, bold=True, align=Qt.AlignRight)
+        text(painter, [64, 558, 180, 22], 'Mon  ·  19 Oct', size=16, color='muted')
+        text(painter, [64, 588, 86, 20], 'Paris', size=14, color='muted')
+        text(painter, [158, 588, 86, 20], 'New York', size=14, color='muted')
+        text(painter, [64, 608, 86, 28], '09:41', size=24)
+        text(painter, [158, 608, 86, 28], '03:41', size=24)
+        text(painter, [64, 652, 596, 20], 'Floor: on', size=12, color='muted', align=Qt.AlignLeft)
         for i in range(2):
-            x = 56 + i * 72
-            rect(painter, [x, 752, 60, 60], 'button', radius=8)
-            icon(painter, 'watch/set2.svg', [x+11, 760, 38, 38])
-            text(painter, [x, 778, 60, 30], str(i+1), size=18, bold=True)
+            x = 48 + i * 66
+            rect(painter, [x, 688, 58, 58], 'button', radius=8)
+            icon(painter, 'watch/set2.svg', [x+10, 698, 38, 38])
+            text(painter, [x, 715, 58, 24], str(i+1), size=18, bold=True)
     else:
         text(painter, [48, 116, 904, 46], group, size=32, bold=True)
         text(painter, [48, 166, 904, 30], 'Choose an action · tap the group again to close', size=18, color='muted')

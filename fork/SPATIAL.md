@@ -261,8 +261,11 @@ clicks/touches and new grabs are blocked while the group is open. Hiding the
 watch, losing XR focus or canceling interaction clears the modal state.
 
 The existing reset countdowns and floor procedure are shared with custom panels.
-The lower watch canvas is compacted to 760 pixels without moving or shrinking
-the 128-pixel action targets. Reset/walking and floor status share one line.
+The lower watch canvas is compacted to 760 pixels with 128-pixel action targets.
+Compact battery blocks use 20-pixel icons and 16-pixel readouts, with wrapped rows
+packed against the 628-pixel-wide watch body. The time is right-aligned in a
+180-pixel clock face. Group buttons sit 8 pixels from it and 12 pixels apart.
+Reset/walking and floor status share one line.
 Battery/clock/status information and set/display controls return when the fan is
 closed. No headset session is needed to test or preview the layout:
 

@@ -33,9 +33,9 @@ impl Group {
     pub fn center(self) -> [f32; 2] {
         [
             match self {
-                Self::Calibration => 400.0,
-                Self::Input => 552.0,
-                Self::Utils => 704.0,
+                Self::Calibration => 316.0,
+                Self::Input => 456.0,
+                Self::Utils => 596.0,
             },
             580.0,
         ]
@@ -202,6 +202,9 @@ pub fn buttons(motoc: bool) -> Vec<Button> {
                 ),
             ],
         };
+        // Preserve the expanded fan positions while the collapsed groups
+        // pack tightly against the visible clock face.
+        let x = x + 60.0;
         for (i, &(action, widget, title, icon)) in options.iter().enumerate() {
             let (start, step, radius) = match group {
                 Group::Calibration => (-165.0, 30.0, 320.0),

@@ -162,138 +162,82 @@ diff --git a/wayvr/src/assets/gui/keyboard.xml b/wayvr/src/assets/gui/keyboard.x
 diff --git a/wayvr/src/assets/gui/watch.xml b/wayvr/src/assets/gui/watch.xml
 --- a/wayvr/src/assets/gui/watch.xml
 +++ b/wayvr/src/assets/gui/watch.xml
-@@ -12,6 +12,21 @@
-     border="2" border_color="outline" round="8" />
-
-   <macro name="button_style" padding="8" border="2" round="8" align_items="center" justify_content="center" />
-+
-+  <template name="TrackingControls">
-+    <div id="fan_controls" position="absolute" width="1000" height="760" interactable="0" />
-+  </template>
-+
-+  <template name="FanButton">
-+    <Button id="${id}" position="absolute" margin_left="${x}" margin_top="${y}"
-+      width="128" height="128" padding="10" border="2" round="22"
-+      flex_direction="column" gap="8" align_items="center" justify_content="center"
-+      color="background_variant" border_color="outline" hover_color="primary" hover_border_color="primary"
-+      sticky_color="background" sticky_border_color="primary" tooltip_str="${title}" tooltip_side="top">
-+      <sprite src_builtin="@/${icon}" width="52" height="52" />
-+      <label text="${title}" size="18" weight="bold" align="center" wrap="1" width="104" />
-+    </Button>
-+  </template>
-
+@@ -1,6 +1,6 @@
+ <layout version="2">
+   <vars>
+-    <var key="clock0_size" value="46" />
++    <var key="clock0_size" value="40" />
+     <var key="clock0_date_size" value="16" />
+     <var key="clock0_dow_size" value="16" />
+     <var key="clock_alt_size" value="24" />
+@@ -29,9 +29,9 @@
+   </template>
+ 
    <template name="Device">
-     <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
-@@ -31,6 +46,13 @@
+-    <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
+-      <sprite width="32" height="32" src_builtin="${src}" color="on_background" />
+-      <label _source="battery" _device="${idx}" size="24" weight="bold" _low_color="danger" _normal_color="primary" _charging_color="tertiary" />
++    <rectangle id="battery_${idx}" macro="decorative_rect" padding="4" padding_top="2" padding_bottom="2" border="1" align_items="center" gap="4">
++      <sprite width="20" height="20" src_builtin="${src}" color="on_background" />
++      <label _source="battery" _device="${idx}" size="16" weight="bold" _low_color="danger" _normal_color="primary" _charging_color="tertiary" />
+     </rectangle>
    </template>
-   <template name="Tracker">
-     <Device idx="${idx}" src="@/watch/track.svg" />
-+  </template>
-+
-+  <template name="ShoraTracker">
-+    <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
-+      <sprite width="32" height="32" src_builtin="@/watch/track.svg" color="on_background" />
-+      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
-+    </rectangle>
+ 
+@@ -49,9 +49,9 @@
    </template>
-
-   <template name="Screen">
-@@ -105,70 +127,32 @@
+ 
+   <template name="ShoraTracker">
+-    <rectangle macro="decorative_rect" padding_top="4" padding_bottom="4" align_items="center" gap="8">
+-      <sprite width="32" height="32" src_builtin="@/watch/track.svg" color="on_background" />
+-      <label _source="shora_battery" _device="${key}" size="24" weight="bold" _low_color="danger" _normal_color="primary" />
++    <rectangle macro="decorative_rect" padding="4" padding_top="2" padding_bottom="2" border="1" align_items="center" gap="4">
++      <sprite width="20" height="20" src_builtin="@/watch/track.svg" color="on_background" />
++      <label _source="shora_battery" _device="${key}" size="16" weight="bold" _low_color="danger" _normal_color="primary" />
+     </rectangle>
    </template>
-
-   <elements>
--    <!-- padding="32" is required there (to make room for tooltips) -->
--    <div
--      padding="32" interactable="0"
--      flex_direction="column" gap="8">
--      <!-- Top elements (device battery levels) -->
--      <div id="devices_root" interactable="0" gap="6" width="100%" max_width="400" flex_direction="row" flex_wrap="wrap">
--        <!-- Will populate tags at runtime -->
--        <!-- These are examples for uidev -->
--        <Hmd idx="0" />
--        <LeftHand idx="1" />
--        <RightHand idx="2" />
--        <Tracker idx="3" />
-+    <!-- Fixed transparent canvas keeps physical button size/position unchanged on expansion. -->
-+    <div width="1000" height="760" interactable="0">
-+      <div id="watch_base" position="absolute" width="1000" height="760" interactable="0">
-+        <rectangle position="absolute" margin_left="56" margin_top="396" width="752" height="284"
-+          color="background" border="2" border_color="outline" round="28" interactable="0" />
-+        <div id="devices_root" position="absolute" margin_left="80" margin_top="416"
-+          interactable="0" gap="6" height="92" overflow="hidden" width="700" max_width="700" flex_direction="row" flex_wrap="wrap">
-+          <Hmd idx="0" /><LeftHand idx="1" /><RightHand idx="2" /><Tracker idx="3" />
-+        </div>
-+        <div id="clock_root" position="absolute" margin_left="80" margin_top="508" width="232"><Clock /></div>
-+        <label id="tracking_reset_status" position="absolute" margin_left="80" margin_top="652"
-+          _source="watch_status" size="12" width="700" height="20" wrap="0" overflow="hidden" color="on_background" />
-+        <div id="sets_root" position="absolute" margin_left="56" margin_top="688" gap="8">
-+          <Set idx="0" display="1" /><Set idx="1" display="2" />
-+        </div>
-+        <div id="panels_root" position="absolute" margin_left="56" margin_top="688" gap="8" display="none">
-+          <Screen idx="0" display="H1" name="HDMI-A-1" /><Screen idx="1" display="D2" name="DP-2" />
-+        </div>
+ 
+@@ -100,10 +100,10 @@
+   </template>
+ 
+   <template name="Clock">
+-    <div gap="12" flex_direction="column" padding="4">
++    <div gap="8" flex_direction="column" padding="0">
+       <div flex_direction="column" >
+-        <label text="11:22 PM" _source="clock" _display="time" color="on_background" size="~clock0_size" weight="bold" align="center" />
+-        <div padding_left="2" gap="16" flex_direction="row" justify_content="center">
++        <label text="11:22 PM" _source="clock" _display="time" color="on_background" size="~clock0_size" weight="bold" align="right" width="100%" />
++        <div padding_left="0" gap="8" flex_direction="row" justify_content="end">
+           <label text="Tue" _source="clock" _display="dow_short" color="on_background_variant" size="~clock0_dow_size" weight="bold" />
+           <label text="22/2/2022" _source="clock" _display="date" color="on_background_variant" size="~clock0_date_size" weight="bold" />
+         </div>
+@@ -130,19 +130,19 @@
+     <!-- Fixed transparent canvas keeps physical button size/position unchanged on expansion. -->
+     <div width="1000" height="760" interactable="0">
+       <div id="watch_base" position="absolute" width="1000" height="760" interactable="0">
+-        <rectangle position="absolute" margin_left="56" margin_top="396" width="752" height="284"
++        <rectangle id="watch_body" position="absolute" margin_left="48" margin_top="500" width="628" height="180"
+           color="background" border="2" border_color="outline" round="28" interactable="0" />
+-        <div id="devices_root" position="absolute" margin_left="80" margin_top="416"
+-          interactable="0" gap="6" height="92" overflow="hidden" width="700" max_width="700" flex_direction="row" flex_wrap="wrap">
++        <div id="devices_root" position="absolute" margin_left="64" margin_top="396"
++          interactable="0" gap="4" height="96" overflow="hidden" width="596" max_width="596" flex_direction="row" flex_wrap="wrap" align_content="end">
+           <Hmd idx="0" /><LeftHand idx="1" /><RightHand idx="2" /><Tracker idx="3" />
+         </div>
+-        <div id="clock_root" position="absolute" margin_left="80" margin_top="508" width="232"><Clock /></div>
+-        <label id="tracking_reset_status" position="absolute" margin_left="80" margin_top="652"
+-          _source="watch_status" size="12" width="700" height="20" wrap="0" overflow="hidden" color="on_background" />
+-        <div id="sets_root" position="absolute" margin_left="56" margin_top="688" gap="8">
++        <div id="clock_root" position="absolute" margin_left="64" margin_top="508" width="180"><Clock /></div>
++        <label id="tracking_reset_status" position="absolute" margin_left="64" margin_top="652"
++          _source="watch_status" size="12" width="596" height="20" wrap="0" overflow="hidden" color="on_background" />
++        <div id="sets_root" position="absolute" margin_left="48" margin_top="688" gap="8">
+           <Set idx="0" display="1" /><Set idx="1" display="2" />
+         </div>
+-        <div id="panels_root" position="absolute" margin_left="56" margin_top="688" gap="8" display="none">
++        <div id="panels_root" position="absolute" margin_left="48" margin_top="688" gap="8" display="none">
+           <Screen idx="0" display="H1" name="HDMI-A-1" /><Screen idx="1" display="D2" name="DP-2" />
+         </div>
        </div>
--
--      <!-- All other elements inside the container -->
--      <div flex_direction="column" gap="8" min_width="300">
--        <rectangle macro="decorative_rect" flex_direction="row" gap="8" justify_content="space_evenly">
--          <!-- Clock, date and various timezones -->
--          <div id="clock_root">
--            <Clock />
--          </div>
--
--          <!-- Four buttons -->
--          <div flex_direction="column" gap="8">
--            <div gap="8">
--              <Button id="btn_keyboard" macro="button_style" _press="::OverlayToggle kbd" tooltip="EDIT_MODE.KEYBOARD" tooltip_side="left">
--                <sprite src_builtin="@/watch/keyboard.svg" width="40" height="40" />
--              </Button>
--              <Button id="btn_edit_mode" macro="button_style" _press="::EditToggle" tooltip="WATCH.EDIT_MODE" tooltip_side="left">
--                <sprite width="40" height="40" src="@/watch/edit.svg" />
--              </Button>
--            </div>
--            <div gap="8">
--              <Button macro="button_style" _press="::PlayspaceRecenter" tooltip="WATCH.RECENTER" tooltip_side="left">
--                <sprite width="40" height="40" src="@/watch/recenter.svg" />
--              </Button>
--              <Button macro="button_style" _press="::PlayspaceFixFloor" tooltip="WATCH.FIX_FLOOR" tooltip_side="left">
--                <sprite width="40" height="40" src="@/watch/fix-floor.svg" />
--              </Button>
--            </div>
--          </div>
--        </rectangle>
--
--        <!-- Bottom buttons -->
--        <div flex_direction="row" gap="8">
--          <div gap="4">
--            <Button id="btn_dashboard" macro="button_style" _press="::DashToggle" tooltip="WATCH.DASHBOARD" tooltip_side="top">
--              <sprite width="40" height="40" src="@/watch/wayvr_dashboard_mono.svg" />
--            </Button>
--          </div>
--          <VerticalSeparator />
--          <div id="sets_root" gap="4">
--            <!-- Will populate tags at runtime -->
--            <!-- These are examples for uidev -->
--            <Set idx="0" display="1" />
--            <Set idx="1" display="2" />
--          </div>
--          <div id="panels_root" gap="4" display="none">
--            <!-- Will populate tags at runtime -->
--            <!-- These are examples for uidev -->
--            <Screen idx="0" display="H1" name="HDMI-A-1" />
--            <Screen idx="1" display="D2" name="DP-2"/>
--          </div>
--        </div>
-+      <div id="fan_heading" position="absolute" margin_left="48" margin_top="116" display="none"
-+        width="904" flex_direction="column" gap="8" interactable="0">
-+        <label id="fan_title" text="Calibration" size="32" weight="bold" align="center" />
-+        <label text="Choose an action · tap the group again to close" size="18" align="center" color="on_background_variant" />
-+      </div>
-+      <div id="interaction_buttons" position="absolute" width="1000" height="760" interactable="0">
-+        <TrackingControls />
-       </div>
-     </div>
-   </elements>
 diff --git a/wayvr/src/backend/input.rs b/wayvr/src/backend/input.rs
 --- a/wayvr/src/backend/input.rs
 +++ b/wayvr/src/backend/input.rs

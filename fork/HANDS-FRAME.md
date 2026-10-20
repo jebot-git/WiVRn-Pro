@@ -42,7 +42,11 @@ Automatic scanning checks an active frame at most twice per second. A recognized
 code closes framing and presents its contents; links open **only** after choosing
 Open. HTTP/HTTPS are accepted as web links; arbitrary URI handlers are not invoked
 from scanned text. Copy uses the local Wayland clipboard: photos as PNG, selected
-text as text, and completed recordings as the actual WebM video (`video/webm`).
+text as text, and completed recordings as a WebM file URL (`text/uri-list`), for
+pasting into applications that accept file attachments. Video Copy creates a
+private snapshot outside the gallery, so Save, Close and worker shutdown do not
+invalidate it. The latest snapshot remains until the next successful video Copy
+or desktop session cleanup; clipboard history entries for older videos may expire.
 Copy is unavailable until recording/encoding finishes. Open also plays a saved
 WebM with the desktop's configured player. The vendor-specific Steam-friend/PIN
 sharing, social uploads, AI-comment accounts and Workshop integrations are not
