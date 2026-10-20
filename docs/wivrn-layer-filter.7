@@ -24,6 +24,10 @@ the original pixels. Taps are clamped to the submitted subimage, including flipp
 coordinates and stereo halves. Projection layers and layers requesting
 unpremultiplied or inverted alpha retain their original sampling path.
 .SH PERFORMANCE
+This experimental feature improves minification quality at additional GPU cost;
+it is not a performance optimization. Leave it off when current readability is
+acceptable. Full-headset performance with filtering enabled remains unmeasured.
+.PP
 Footprint estimation adds GPU work even for magnified layers. The sample limit
 bounds work but cannot exactly integrate arbitrarily large footprints. This is
 not a mipmap implementation. Profile the actual headset workload before enabling.

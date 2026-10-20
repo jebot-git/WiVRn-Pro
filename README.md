@@ -82,7 +82,7 @@ Translation or DeepL API Free. Images stay on the PC. Without that package,
 Hands Frame shows OCR translation as unavailable. Speech recognition and the
 standalone subtitle application have been removed.
 
-## Desktop layer minification (WiVRn Pro)
+## Experimental desktop layer minification (WiVRn Pro)
 
 `WIVRN_LAYER_FILTER=off|balanced|quality` selects footprint-aware sampling of
 minified cylinder and quad layers in the PC compositor. The default is `off`.
@@ -96,7 +96,9 @@ flipped UVs and side-by-side stereo. Gaze-driven encoding is independent.
 
 This bounded filter reduces small-pattern aliasing; it is not an exact area
 integrator or a replacement for mipmaps at extreme minification. The footprint
-calculation adds work even when a layer is magnified, so opt in after profiling.
+calculation adds work even when a layer is magnified. This is a quality option,
+not a performance optimization. Leave it disabled when existing readability is
+acceptable. Full-headset performance with filtering enabled has not been measured.
 See `man wivrn-layer-filter` and `fork/VALIDATION.md` for measurements and limits.
 
 Run the actual production shader's bounded Vulkan smoke test (no headset restart):

@@ -839,3 +839,15 @@ The final build based on the installed `15a53b72` server passed with QSV, PyroWa
 stock PipeWire audio, the existing hand/controller policy patches and production
 SPIR-V optimization enabled. The production layer SPIR-V passed spirv-val.
 No Android/client or wire-protocol changes are introduced.
+
+
+### Deployment decision
+
+After reviewing the quality/performance tradeoff, the user requested that filtering
+remain disabled and that the local server not be updated for this feature. The
+previous server binary was restored from the pre-install backup and its checksum
+verified. The running server was not restarted, and filtering was never activated
+in the live session. The experimental implementation remains on
+`codex/dome-minification`; its default is off. No frame-rate gain is claimed.
+The live baseline and synthetic shader results above remain separate evidence;
+full-headset performance with the new filter enabled has not been measured.
