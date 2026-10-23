@@ -182,3 +182,11 @@ and return to the greeter require validation on the actual headset.
 
 For a review-only install use `DESTDIR=/absolute/staging cmake --install build/server`.
 Validate generated units with `systemd-analyze --user verify`; this does not start them.
+
+### Optional DomeD FLTK dashboard
+
+The default dashboard remains Qt6. A native FLTK frontend is available with
+`-DWIVRN_DASHBOARD_FRONTEND=fltk` and `-DWIVRN_BUILD_DASHBOARD=ON`. It uses de-xr's
+patched shared FLTK 1.4.5 and DomeD's live appearance helpers, and starts hidden
+in the DomeD tray manager. It can also be built independently with
+`fork/build-dashboard-fltk.sh`. See [build, coverage and testing details](../dashboard/fltk/README.md).
