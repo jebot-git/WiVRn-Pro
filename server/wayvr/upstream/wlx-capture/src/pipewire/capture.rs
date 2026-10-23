@@ -353,11 +353,21 @@ where
                             }
                         }
                         DataType::MemFd => {
+                            // The FD can contain a shared pool. Chunk offsets are
+                            // relative to this buffer's mapping, not the FD start.
+                            let Some(offset) = datas[0]
+                                .as_raw()
+                                .mapoffset
+                                .checked_add(datas[0].chunk().offset())
+                            else {
+                                log::warn!("{}: shared-memory frame offset overflow", name);
+                                return;
+                            };
                             let memfd = MemFdFrame {
                                 format: *format,
                                 plane: FramePlane {
                                     fd: Some(datas[0].as_raw().fd as _),
-                                    offset: datas[0].chunk().offset(),
+                                    offset,
                                     stride: datas[0].chunk().stride(),
                                 },
                                 mouse: mouse_meta,
