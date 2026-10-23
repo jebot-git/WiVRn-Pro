@@ -216,11 +216,9 @@ std::unique_ptr<wayvr_worker> wayvr;
 void start_wayvr(const configuration & config)
 {
 	wayvr.reset();
-	if (!desktop_autostart_allowed())
-	{
-		wivrn_server_set_way_vrstatus(dbus_server, "Session managed by LightXR / DomeD");
-		return;
-	}
+	// WayVR is an explicitly configured XR overlay, not a desktop autostart
+	// helper. LightXR owns the login session but does not launch this worker.
+	// Apply the wayvr.enabled setting independently of the display manager.
 	try
 	{
 		wayvr_options options(configuration::read_configuration(), config.application);

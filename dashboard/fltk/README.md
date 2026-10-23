@@ -122,3 +122,8 @@ requires a mapped WiVRn surface and captures `fltk-dome-wayland.png`.
 
 Physical headset interaction and complete Qt feature parity remain separate
 validation work.
+
+WayVR is managed by the WiVRn server independently of the display manager.
+The `wayvr.enabled` configuration controls automatic startup with each VR
+session, and **Restart WayVR** uses the same worker path. LightXR's suppression
+of automatic desktop helper windows does not suppress this XR overlay.
