@@ -1,0 +1,35 @@
+Empty-frame application pacing regression
+
+WiVRn's app_pacer used to return an immediate wake time whenever its saved
+CPU or GPU estimate exceeded one display period. Those estimates are updated
+by mark_gpu_done, but xrEndFrame with zero layers calls mark_discarded instead.
+After an app becomes invisible, empty frames can therefore run much faster
+than the saved estimate while every prediction advances last_display_time by
+one period. No GPU queue provides backpressure for these discarded frames.
+
+When layers are submitted again, the multi compositor's scheduled and progress
+slots receive future-dated frames. wait_for_scheduled_free waits for the first
+frame to become due, and the next layer_begin blocks on the waiter. This can
+look like a renderer crash even though its GPU work is already complete.
+
+The fix restricts immediate wake to predictions within one period of the
+current earliest ready time. Further-ahead predictions use the existing timed
+wake path. It preserves increasing predicted display times and immediate
+returns for genuinely slow applications, without resetting timing estimates
+or changing the delivery-slot synchronization.
+
+Regression test (requires a configured and built server dependency tree):
+  python3 fork/tests/app_pacer_test.py build/server
+  python3 fork/tests/app_pacer_test.py BUILD_DIR --sanitize --compiler clang++
+
+The test compiles the production app_pacer.cpp and calls its real pacing
+callbacks against simulated monotonic time. It reports GPU completions while
+training CPU/GPU estimates, submits 100,000 empty frames, and resumes rendering.
+It covers 72/80/90/120 Hz, CPU- and GPU-limited estimates, low estimates, the
+captured Dome timing values, a stopped compositor timing feed, suspension,
+refresh changes, and slow-app throughput. The old code accumulated over 21
+minutes of display lead at 72 Hz; the fixed test cases stay below 100 ms.
+
+This test does not replace headset validation of hide/show and application
+switches. Install the optimized server without restarting an active desktop or
+VR session; the fixed code takes effect when WiVRn next starts normally.

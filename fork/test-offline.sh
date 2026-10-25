@@ -7,6 +7,13 @@ python3 fork/check-wayvr-source.py
 python3 -m unittest discover -s fork/tests -p "test_*.py"
 python3 -m unittest discover -s apps/mac-desktop -p "test_*.py"
 mkdir -p build/native-tests
+# The real pacer uses Monado headers and utility libraries from a server build.
+# Keep the standalone policy suite usable before those dependencies are built.
+if [[ -f build/server/_deps/monado-build/src/xrt/auxiliary/util/libaux_util.a ]]; then
+  python3 fork/tests/app_pacer_test.py build/server
+else
+  echo "SKIP app pacer: configure/build the server, then run fork/tests/app_pacer_test.py BUILD_DIR"
+fi
 cxx=${CXX:-c++}
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Icommon fork/tests/audio_recovery_test.cpp -o build/native-tests/audio-recovery-test
 build/native-tests/audio-recovery-test

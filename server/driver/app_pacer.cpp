@@ -147,7 +147,14 @@ void app_pacer::predict(int64_t now_ns,
 	// Sync phase with compositor
 	last_display_time = compositor_display_time + period * ((period / 2 + last_display_time - compositor_display_time) / period);
 
-	if (cpu_time > period or gpu_time > period or (min_ready > last_display_time and min_ready < last_display_time + period))
+	// Empty frames do not report GPU completion, so the app-time estimates can
+	// remain above one period after the app becomes invisible. There is then
+	// no submitted-frame backpressure. Only return immediately if the display
+	// prediction is still near the actual ready time: otherwise each empty
+	// frame advances last_display_time faster than real time, and the next
+	// layer submission can block the delivery queue for minutes.
+	if (last_display_time < min_ready + period and
+	    (cpu_time > period or gpu_time > period or (min_ready > last_display_time and min_ready < last_display_time + period)))
 	{
 		// We are limited by app time, don't wait
 		*out_wake_up_time = now_ns;
