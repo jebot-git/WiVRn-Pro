@@ -34,7 +34,8 @@ impl HandPads {
             WPipelineCreateInfo::new(app.gfx.surface_format()),
         )?;
         let mut surfaces = Vec::new();
-        for _ in 0..2 {
+        // Two joystick pads plus thumb/index/middle contacts for both hands.
+        for _ in 0..8 {
             let uniform = app
                 .gfx
                 .empty_buffer(BufferUsage::TRANSFER_DST | BufferUsage::UNIFORM_BUFFER, 8)?;
@@ -69,7 +70,24 @@ impl HandPads {
         futures: &mut GpuFutures,
     ) -> anyhow::Result<()> {
         for (i, surface) in self.surfaces.iter_mut().enumerate() {
-            surface.pad = app.input_state.pointers[i].joystick_pad;
+            let hand = if i < 2 { i } else { (i - 2) / 3 };
+            let pointer = &app.input_state.pointers[hand];
+            surface.pad = if i < 2 {
+                pointer.joystick_pad
+            } else if pointer.hand_tracking && pointer.keyboard_contact.is_some() {
+                pointer.keyboard_tips.map(|tips| {
+                    let tip = tips[(i - 2) % 3];
+                    let to_head = (app.input_state.hmd.translation - tip).try_normalize().unwrap_or(glam::Vec3A::Z);
+                    Pad {
+                        frame: glam::Affine3A::from_rotation_translation(
+                            glam::Quat::from_rotation_arc(glam::Vec3::Z, to_head.into()), tip.into()),
+                        radius: pointer.keyboard_radii[(i - 2) % 3],
+                        axes: glam::Vec2::ZERO,
+                        cursor: glam::Vec2::ZERO,
+                        armed: pointer.now.click && pointer.keyboard_input_armed,
+                    }
+                })
+            } else { None };
             if let Some(pad) = surface.pad {
                 let target = surface
                     .swapchain
@@ -81,10 +99,10 @@ impl HandPads {
                 surface.uniform.write()?[..8].copy_from_slice(&[
                     pad.cursor.x,
                     pad.cursor.y,
-                    i as f32,
+                    hand as f32,
                     f32::from(pad.armed),
                     DEADZONE,
-                    0.0,
+                    f32::from(i >= 2),
                     0.0,
                     0.0,
                 ]);
@@ -102,7 +120,7 @@ impl HandPads {
     pub(super) fn present<'a>(
         &'a mut self,
         xr: &'a XrState,
-    ) -> anyhow::Result<SmallVec<[CompositionLayer<'a>; 2]>> {
+    ) -> anyhow::Result<SmallVec<[CompositionLayer<'a>; 8]>> {
         let mut layers = SmallVec::new();
         for surface in &mut self.surfaces {
             surface.swapchain.ensure_image_released()?;

@@ -198,11 +198,14 @@ impl HandInput {
         let was_grabbing = self.moving_space_or_window();
         if fingers_valid {
             let width = p(7).distance(p(22));
-            let ratios = [
+            let mut ratios = [
                 p(5).distance(p(10)) / width,
                 p(5).distance(p(15)) / width,
                 p(5).distance(p(20)) / width,
             ];
+            if self.keyboard_active && let Some(contacts) = crate::hand_keyboard::Contacts::from_joints(j) {
+                ratios[..2].copy_from_slice(&contacts.pinch_ratios());
+            }
             // Tip-to-knuckle distance / bone-chain length: 1 = straight,
             // close to 0 = curled. Independent of thumb contact and hand size.
             let extension = [7, 12, 17, 22].map(|base| {
@@ -281,6 +284,12 @@ impl HandInput {
         let first = pinches.next().map(|(i, _)| gestures[i]);
         let candidate = if extension[0] < 0.65 && curled >= 3 {
             Gesture::Grab
+        } else if self.keyboard_active {
+            // Larger contacts may overlap two fingers: choose the closest pair,
+            // never turn a keyboard pinch into the offhand playspace chord.
+            ratios.iter().enumerate().filter(|(_, r)| **r < 0.28)
+                .min_by(|a, b| a.1.total_cmp(b.1))
+                .map_or(Gesture::Neutral, |(i, _)| gestures[i])
         } else if self.space_drag_enabled
             && ratios[0] < 0.28
             && ratios[1] < 0.28
@@ -298,7 +307,7 @@ impl HandInput {
         }
         let debounce = if matches!(candidate, Gesture::Grab | Gesture::SpaceDrag) {
             80
-        } else if self.space_drag_enabled {
+        } else if self.space_drag_enabled && !self.keyboard_active {
             120
         } else {
             45
@@ -399,6 +408,24 @@ mod tests {
             assert_eq!(h.gesture, Gesture::Neutral);
         }
     }
+    #[test]
+    fn keyboard_overlapping_contacts_choose_nearest_pair_without_space_drag() {
+        for (ratios, expected) in [([0.20, 0.10, 1.], Gesture::MiddleClick), ([0.10, 0.20, 1.], Gesture::Click)] {
+            let mut hand = HandInput::default();
+            hand.set_space_drag_enabled(true);
+            hand.set_keyboard_active(true);
+            hand.update_gesture(ms(0), [1.; 3], [1.; 4]);
+            hand.update_gesture(ms(100), [1.; 3], [1.; 4]);
+            hand.update_gesture(ms(110), ratios, [1.; 4]);
+            hand.update_gesture(ms(160), ratios, [1.; 4]);
+            assert_eq!(hand.gesture, expected);
+            hand.update_gesture(ms(170), [0.35, 0.35, 1.], [1.; 4]);
+            assert_eq!(hand.gesture, expected); // release hysteresis
+            hand.update_gesture(ms(180), [0.5, 0.5, 1.], [1.; 4]);
+            assert_eq!(hand.gesture, Gesture::Neutral);
+        }
+    }
+
     #[test]
     fn ambiguous_pinch_does_not_press() {
         let mut h = HandInput::default();

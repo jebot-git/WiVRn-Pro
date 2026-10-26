@@ -259,7 +259,33 @@ pub(super) struct OpenXrHandSource {
     haptics: xr::Action<xr::Haptic>,
 }
 
+fn set_keyboard_contacts(pointer: &mut Pointer, joints: Option<&xr::HandJointLocations>) {
+    let contacts = joints.and_then(crate::hand_keyboard::Contacts::from_joints);
+    pointer.keyboard_tips = contacts.map(|c| c.tips);
+    if let Some(contacts) = contacts { pointer.keyboard_radii = contacts.radii; }
+    pointer.keyboard_neutral = contacts.is_some_and(|c| {
+        let j = joints.unwrap();
+        let p = |i: usize| glam::Vec3A::new(j[i].pose.position.x, j[i].pose.position.y, j[i].pose.position.z);
+        c.neutral() && p(5).distance(p(20)) > p(7).distance(p(22)) * 0.42
+    });
+}
+
 impl OpenXrInputSource {
+    /// Re-locate at the same display time after overlay/task work, immediately
+    /// before interaction and rendering. Both use this one fresh contact sample.
+    pub(super) fn refresh_keyboard_contacts(&self, xr: &XrState, app: &mut AppState) {
+        for (i, tracker) in self.hand_trackers.iter().enumerate() {
+            let pointer = &mut app.input_state.pointers[i];
+            if !xr.focused || !pointer.hand_tracking || pointer.joystick_owned
+                || pointer.cancel_interaction || pointer.keyboard_tips.is_none()
+            { continue; }
+            let joints = tracker.as_ref().and_then(|tracker| {
+                xr.stage.locate_hand_joints(tracker, xr.predicted_display_time).ok().flatten()
+            });
+            set_keyboard_contacts(pointer, joints.as_ref());
+        }
+    }
+
     pub fn new(xr: &XrState) -> anyhow::Result<Self> {
         let mut action_set =
             xr.session
@@ -441,6 +467,8 @@ impl OpenXrInputSource {
                 pointer.hand_tracking = hand_mode;
                 pointer.wrist_pose = None;
                 pointer.index_tip = None;
+                pointer.keyboard_tips = None;
+                pointer.keyboard_neutral = false;
                 pointer.joystick_pad = None;
                 pointer.joystick_owned = false;
                 if hand_mode {
@@ -514,6 +542,7 @@ impl OpenXrInputSource {
                                 && pos.is_finite())
                             .then_some(pos)
                         });
+                        set_keyboard_contacts(pointer, joints.as_ref());
                         if let Some(ray) = sample.ray {
                             pointer.pose = ray;
                             // Playspace movement uses the wrist, including the release
@@ -541,6 +570,8 @@ impl OpenXrInputSource {
                     self.hand_input[i].reset();
                     pointer.now = PointerState::default();
                     pointer.index_tip = None;
+                    pointer.keyboard_tips = None;
+                    pointer.keyboard_neutral = false;
                 }
                 if !hand_mode {
                     pointer.frame_hand = None;
@@ -571,6 +602,8 @@ impl OpenXrInputSource {
                 pointer.handsfree = false;
                 pointer.wrist_pose = None;
                 pointer.index_tip = None;
+                pointer.keyboard_tips = None;
+                pointer.keyboard_neutral = false;
                 pointer.joystick_pad = None;
                 pointer.joystick_owned = false;
             }

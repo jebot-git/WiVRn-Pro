@@ -374,6 +374,12 @@ pub struct Pointer {
     pub frame_hand: Option<crate::hands_frame::Hand>,
     pub wrist_pose: Option<Affine3A>,
     pub index_tip: Option<Vec3A>,
+    /// Thumb, index and middle tips, in stage metres.
+    pub keyboard_tips: Option<[Vec3A; 3]>,
+    pub keyboard_radii: [f32; 3],
+    pub keyboard_neutral: bool,
+    pub(crate) keyboard_contact: Option<RayHit>,
+    pub keyboard_input_armed: bool,
     pub keyboard_hover: bool,
     keyboard_projection_only: bool,
     keyboard_grab_target: Option<(RayHit, Instant)>,
@@ -410,6 +416,11 @@ impl Pointer {
             frame_hand: None,
             wrist_pose: None,
             index_tip: None,
+            keyboard_tips: None,
+            keyboard_radii: [0.014; 3],
+            keyboard_neutral: false,
+            keyboard_contact: None,
+            keyboard_input_armed: false,
             keyboard_hover: false,
             keyboard_projection_only: false,
             keyboard_grab_target: None,
@@ -486,7 +497,7 @@ pub struct Haptics {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-struct RayHit {
+pub(crate) struct RayHit {
     overlay: OverlayID,
     global_pos: Vec3A,
     local_pos: Vec2,
@@ -522,7 +533,7 @@ fn populate_lines(
     maybe_hit: Option<(PointerHit, RayHit)>,
     hmd: &Affine3A,
 ) {
-    if pointer.touch_hit.is_some() {
+    if pointer.touch_hit.is_some() || (pointer.hand_tracking && pointer.keyboard_contact.is_some() && !pointer.now.grab) {
         return;
     }
     let Some((hit, raw_hit)) = maybe_hit else {
@@ -669,9 +680,7 @@ fn keyboard_hit(
         return Some(hit);
     }
     if pointer.hand_tracking && !pointer.now.grab && !edit_mode {
-        pointer
-            .index_tip
-            .and_then(|tip| keyboard_projection(tip, id, transform, curvature))
+        pointer.keyboard_contact.filter(|hit| hit.overlay == id)
     } else {
         ray_test(&pointer.pose, id, transform, curvature)
     }
@@ -694,6 +703,48 @@ fn keyboard_projection(
     }
     hit.dist = clearance.abs();
     Some(hit)
+}
+
+/// All three fingers must be near the surface. Selection lies between their
+/// contact spheres and is independent of hand rotation and the pointer laser.
+fn keyboard_contacts(
+    tips: [Vec3A; 3],
+    id: OverlayID,
+    transform: &Affine3A,
+    curvature: Option<&f32>,
+) -> Option<RayHit> {
+    for tip in tips {
+        if !tip.is_finite() { return None; }
+        keyboard_projection(tip, id, transform, curvature)?;
+    }
+    keyboard_projection((tips[0] + tips[1] + tips[2]) / 3., id, transform, curvature)
+}
+
+fn keyboard_can_press(pointer: &Pointer) -> bool {
+    !pointer.hand_tracking || (pointer.keyboard_contact.is_some()
+        && pointer.keyboard_input_armed && !pointer.now.grab)
+}
+
+/// Returns the previously pressed surface to release on departure. Re-entry
+/// requires physically open fingers, even during the gesture detector's debounce.
+fn update_keyboard_contact(pointer: &mut Pointer, target: Option<RayHit>) -> Option<RayHit> {
+    let previous = pointer.keyboard_contact;
+    let mut release = None;
+    if previous.map(|h| h.overlay) != target.map(|h| h.overlay) {
+        pointer.keyboard_input_armed = false;
+        if let Some(old) = previous && pointer.interaction.clicked_id == Some(old.overlay) {
+            pointer.interaction.clicked_id = None;
+            release = Some(old);
+        }
+    }
+    pointer.keyboard_contact = target;
+    if target.is_some() && pointer.keyboard_neutral && !pointer.now.click && !pointer.before.click {
+        pointer.keyboard_input_armed = true;
+    }
+    if let Some(target) = target {
+        pointer.keyboard_grab_target = Some((target, Instant::now()));
+    }
+    release
 }
 
 /// Project an index fingertip onto the same flat/curved surface used by rays.
@@ -720,60 +771,51 @@ fn prepare_touch<O: Default>(
 ) {
     let pointer = &app.input_state.pointers[idx];
     let old = pointer.touch_hit;
-    let mut keyboard_hover = false;
     let mut keyboard_target = None;
     if pointer.hand_tracking
         && !pointer.now.grab
+        && !overlays.get_edit_mode()
         && pointer.interaction.grabbed.is_none()
-        && let Some(tip) = pointer.index_tip
+        && let Some(tips) = pointer.keyboard_tips
     {
-        let ids: Vec<_> = overlays
-            .iter()
-            .filter_map(|(id, overlay)| {
-                (overlay.config.category == OverlayCategory::Keyboard).then_some(id)
-            })
-            .collect();
+        let ids: Vec<_> = overlays.iter().filter_map(|(id, overlay)| {
+            (overlay.config.category == OverlayCategory::Keyboard).then_some(id)
+        }).collect();
         for id in ids {
             let overlay = overlays.mut_by_id(id).unwrap();
-            if app.watch_menu.open().is_some() && overlay.config.name.as_ref() != WATCH_NAME { continue; }
+            if app.watch_menu.open().is_some() { continue; }
             if !overlay.config.room_available(&app.room) { continue; }
-            let Some(state) = overlay.config.active_state.as_ref() else {
-                continue;
-            };
-            if !state.interactable || state.alpha < 0.025 {
-                continue;
-            }
-            let transform = state.transform
-                * overlay
-                    .config
-                    .backend
-                    .frame_meta()
-                    .map(|meta| meta.transform)
-                    .unwrap_or_default();
-            if let Some(hit) = keyboard_projection(tip, id, &transform, state.curvature.as_ref())
+            let Some(state) = overlay.config.active_state.as_ref() else { continue; };
+            if !state.interactable || state.alpha < 0.025 { continue; }
+            let transform = state.transform * overlay.config.backend.frame_meta()
+                .map(|meta| meta.transform).unwrap_or_default();
+            if let Some(hit) = keyboard_contacts(tips, id, &transform, state.curvature.as_ref())
                 && let Some(t) = overlay.config.backend.get_interaction_transform()
             {
                 let uv = t.transform_point2(hit.local_pos);
-                let inside = (0.0..=1.0).contains(&uv.x)
-                    && (0.0..=1.0).contains(&uv.y)
-                    && ((idx == 0 && uv.x <= 0.5) || (idx == 1 && uv.x >= 0.5));
-                keyboard_hover |= inside;
-                if inside {
-                    keyboard_target = Some((hit, Instant::now()));
+                if (0.0..=1.0).contains(&uv.x) && (0.0..=1.0).contains(&uv.y)
+                    && keyboard_target.is_none_or(|old: RayHit| hit.dist < old.dist)
+                {
+                    keyboard_target = Some(hit);
                 }
             }
         }
     }
     let pointer = &mut app.input_state.pointers[idx];
-    if let Some(target) = keyboard_target {
-        pointer.keyboard_grab_target = Some(target);
+    if let Some(old) = update_keyboard_contact(pointer, keyboard_target) {
+        let hit = PointerHit { pointer: idx, overlay: old.overlay,
+            mode: keyboard_pointer_mode(pointer.now, pointer.before), ..Default::default() };
+        if let Some(overlay) = overlays.mut_by_id(old.overlay) {
+            overlay.config.backend.on_pointer(app, &hit, false);
+        }
     }
+    let pointer = &mut app.input_state.pointers[idx];
     // Keep the low-hand gesture detector alive while the fingertip curls into a fist.
     let closing_fist = pointer.hand_tracking
         && pointer.index_tip.is_some()
         && pointer.wrist_pose.is_some()
         && keyboard_grab_candidate(pointer, Instant::now()).is_some();
-    pointer.keyboard_hover = keyboard_hover || closing_fist;
+    pointer.keyboard_hover = keyboard_target.is_some() || closing_fist;
     pointer.keyboard_projection_only = pointer.keyboard_hover && !pointer.tracked;
     pointer.tracked |= pointer.keyboard_hover;
     let mut candidates = Vec::new();
@@ -858,6 +900,8 @@ where
     pointer.pending_haptics = None;
     pointer.touch_hit = None;
     pointer.keyboard_hover = false;
+    pointer.keyboard_contact = None;
+    pointer.keyboard_input_armed = false;
     pointer.keyboard_projection_only = false;
     pointer.keyboard_grab_target = None;
     pointer.touch_press = Default::default();
@@ -1035,7 +1079,9 @@ where
 
     // click / release
     let pointer = &mut app.input_state.pointers[hit.pointer];
-    if pointer.now.click && !pointer.before.click {
+    if pointer.now.click && !pointer.before.click
+        && (hovered.config.category != OverlayCategory::Keyboard || keyboard_can_press(pointer))
+    {
         pointer.interaction.clicked_id = Some(hit.overlay);
         if hovered.config.category == OverlayCategory::Keyboard {
             pointer.interaction.kbd_block_activated = true;
@@ -1263,14 +1309,6 @@ where
             continue;
         }
 
-        // Each hand operates its own half, keeping the hands apart.
-        if hand_tracking
-            && !manipulating
-            && overlay.config.category == OverlayCategory::Keyboard
-            && ((pointer_idx == 0 && uv.x > 0.5) || (pointer_idx == 1 && uv.x < 0.5))
-        {
-            continue;
-        }
         let mode = if hand_tracking && overlay.config.category == OverlayCategory::Keyboard {
             // Use explicit pinch gestures, independent of wrist orientation.
             keyboard_mode
@@ -1749,6 +1787,74 @@ mod hand_attachment_tests {
                 .abs_diff_eq(glam::Vec3::Y, 1e-5)
         );
     }
+    #[test]
+    fn keyboard_contacts_select_between_three_fingers_and_ignore_the_laser() {
+        let mut p = Pointer::new(0);
+        p.hand_tracking = true;
+        let tips = [Vec3A::new(-0.06, 0., 0.05), Vec3A::new(0.06, 0., 0.05), Vec3A::new(0., 0.09, 0.05)];
+        let hit = keyboard_contacts(tips, OverlayID::default(), &Affine3A::IDENTITY, None).unwrap();
+        assert!(hit.local_pos.abs_diff_eq(Vec2::new(0., 0.03), 1e-5));
+        p.keyboard_contact = Some(hit);
+        for rotation in [0., 1., 3.] {
+            p.pose = Affine3A::from_rotation_translation(Quat::from_rotation_y(rotation), glam::Vec3::splat(10.));
+            let selected = keyboard_hit(&p, hit.overlay, &Affine3A::IDENTITY, None, true, false).unwrap();
+            assert_eq!(selected.local_pos, hit.local_pos);
+        }
+        // Each finger must be near, even if the average position is near.
+        let mut far = tips;
+        far[0].z = 0.4;
+        assert!(keyboard_contacts(far, hit.overlay, &Affine3A::IDENTITY, None).is_none());
+        far[0].z = f32::NAN;
+        assert!(keyboard_contacts(far, hit.overlay, &Affine3A::IDENTITY, None).is_none());
+    }
+
+    #[test]
+    fn keyboard_departure_releases_and_held_pinch_cannot_reenter() {
+        let mut p = Pointer::new(0);
+        p.hand_tracking = true;
+        let hit = RayHit::default();
+        // Entering pinched (including before debounce) never arms typing.
+        update_keyboard_contact(&mut p, Some(hit));
+        assert!(!keyboard_can_press(&p));
+        p.keyboard_neutral = true;
+        update_keyboard_contact(&mut p, Some(hit));
+        assert!(keyboard_can_press(&p));
+        p.now.click = true;
+        p.keyboard_neutral = false;
+        p.interaction.clicked_id = Some(hit.overlay);
+        assert_eq!(update_keyboard_contact(&mut p, None).unwrap().overlay, hit.overlay);
+        assert!(p.interaction.clicked_id.is_none());
+        assert!(!keyboard_can_press(&p));
+        update_keyboard_contact(&mut p, Some(hit));
+        assert!(!keyboard_can_press(&p));
+        p.now.click = false;
+        p.before.click = true;
+        p.keyboard_neutral = true;
+        update_keyboard_contact(&mut p, Some(hit));
+        assert!(!keyboard_can_press(&p));
+        p.before.click = false;
+        update_keyboard_contact(&mut p, Some(hit));
+        assert!(keyboard_can_press(&p));
+        p.now.grab = true;
+        assert!(!keyboard_can_press(&p));
+    }
+
+    #[test]
+    fn keyboard_edit_ray_does_not_authorize_typing_or_draw_a_typing_laser() {
+        let mut p = Pointer::new(0);
+        p.hand_tracking = true;
+        p.pose = Affine3A::from_translation(glam::Vec3::Z);
+        let hit = keyboard_hit(&p, OverlayID::default(), &Affine3A::IDENTITY, None, true, true).unwrap();
+        assert!(!keyboard_can_press(&p));
+        p.keyboard_contact = Some(hit);
+        let mut lines = Vec::new();
+        populate_lines(&mut lines, &p, Some((PointerHit::default(), hit)), &Affine3A::IDENTITY);
+        assert!(lines.is_empty());
+        p.now.grab = true;
+        populate_lines(&mut lines, &p, Some((PointerHit::default(), hit)), &Affine3A::IDENTITY);
+        assert_eq!(lines.len(), 1);
+    }
+
     #[test]
     fn keyboard_middle_pinch_types_and_index_pinch_deletes_on_press_and_release() {
         for (pinch, mode) in [

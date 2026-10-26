@@ -413,6 +413,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
         overlays.tick(&mut app);
 
         current_lines.clear();
+        input_source.refresh_keyboard_contacts(&xr_state, &mut app);
 
         let haptics = interact(&mut overlays, &mut app, &mut current_lines);
         for (idx, haptics) in haptics.iter().enumerate() {

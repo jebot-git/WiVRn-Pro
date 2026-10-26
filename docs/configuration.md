@@ -235,10 +235,23 @@ returns when the runtime switches back to the controller interaction profile.
 - Point at a movable window, close your hand into a grip, then move it in 3D.
   Open the hand to drop it. The grip moves that window rather than its whole group.
 - Pinch thumb–ring to right-click. Open the hand briefly between gestures.
-- Touch the wrist watch or virtual keyboard with an extended index fingertip.
-  Approach from the front, touch the surface, then withdraw to release. Use the
-  opposite hand for the watch. Touch takes priority over that hand's distant ray;
-  after leaving the panel, release any pinch before clicking with the ray again.
+- Touch the wrist watch with the opposite hand's extended index fingertip.
+  Approach from the front, touch the surface, then withdraw to release. Touch
+  takes priority over that hand's distant ray; after leaving the panel, release
+  any pinch before clicking with the ray again.
+- The hand keyboard uses proximity and pinches, rather than depth presses or
+  pointer lasers. Thumb, index and middle fingertips display contact spheres;
+  their centre selects and highlights a key along the surface normal. Contact
+  radii follow the tracked fingertip size with padding, bounded to 14–20 mm.
+  Thumb contact with the nearest index/middle sphere triggers that pinch; the
+  release distance is 50% wider to prevent chatter. Visuals and input share these
+  contact volumes, refreshed just before keyboard interaction/drawing. All three
+  tips must stay within 8 cm behind to 25 cm in front of the keyboard surface,
+  with their centre inside its bounds. Thumb–middle types; thumb–index deletes
+  anywhere on the keyboard, including the split and spaces between keys. Either
+  hand can use the full surface. Enter with open fingers; leaving proximity or
+  losing tracking releases held keys and requires opening before typing again.
+  Fists and edit-mode lasers still move/resize the window, without key input.
 - The mouse cursor follows the hand ray's projected surface hit without requiring
   a movement modifier or pausing after a click.
 

@@ -42,9 +42,14 @@ again to cancel. The wrist panel displays the result or the tracking worker's er
 Motoc mode replaces these with Calibrate and Resume. See [portability and Motoc setup](fork/PORTABILITY.md).
 
 WayVR automatically uses a compact split QWERTY keyboard while tracked hands are active.
-Move each index fingertip over its half, pinch thumb to middle to type, and pinch thumb
-to index to backspace. Ring pinch applies Shift to the selected key. Selection projects
-along the keyboard surface normal, so wrist rotation does not steer the cursor. Controller
+Bring the thumb, index and middle fingertips near the keyboard: each displays a contact
+sphere, and their centre projects along the keyboard surface normal to highlight a key.
+Pinch thumb to middle to type, or thumb to index to backspace anywhere on the keyboard,
+including the centre split. Ring pinch applies Shift to the selected key. All three
+fingertips must be within 8 cm behind to 25 cm in front of the surface. Enter with open
+fingers before pinching; leaving the area or losing tracking releases any held key.
+Typing does not use or display the pointer laser. Edit-mode lasers only manipulate the
+window and cannot highlight or activate keys. Controller
 input restores the standard keyboard; saved placement and scale are preserved.
 Close one hand into a fist over the keyboard to drag it. While holding it, close the
 other hand and move the fists apart or together to resize, as with other WayVR panels.

@@ -788,3 +788,39 @@ Existing native layout test passed with the battery templates instantiated;
 release build and 723-file upstream patch audit passed. Installed worker hash
 matches `2cafb4a4e04672e997d7a59135e806fb2bcaffe327aa9001f1db0b006aab8dd6`.
 Only WayVR was reloaded; in-headset visual confirmation remains pending.
+
+
+### Proximity hand keyboard (2026-10-21)
+
+The keyboard now selects at the centre of tracked thumb/index/middle tips and
+renders six shaded contact-sphere visuals at the fingertips while near the
+keyboard. All three tips must pass the existing surface-depth limits. Either
+hand can use the full surface, including deletion in the centre split or gaps.
+The typing laser is suppressed; manipulation rays cannot hover or press keys.
+Leaving proximity ends held input immediately and neutral entry is required
+before another pinch can type. Controller keyboard behavior is preserved.
+
+Offline release tests: 94 passed, one ignored, including new contact geometry,
+laser isolation, departure/release and held-pinch re-entry regressions. Shader
+and release binary compilation passed; all 723 pinned source hashes, integration
+patch reconstruction, fork policy and whitespace checks passed. Installed with
+an original-binary backup under `build/keyboard-contacts-20261021/` for the next
+WayVR launch. The running worker was left uninterrupted. Physical headset visual
+and ergonomic verification remains pending.
+
+
+### Fingertip contact alignment and area (2026-10-21)
+
+Replaced fixed 7 mm contact visuals with tracked joint radii plus 7 mm padding,
+clamped to 14–20 mm. Keyboard press distance now matches the sum of these visible
+radii; release distance is 50% wider. Nearest-pair arbitration resolves overlapping
+contacts and prevents the offhand playspace chord from stealing keyboard pinches.
+The keyboard re-locates raw tracked tips immediately before interaction/rendering,
+with no aim-pose offsets or smoothing in the contact path. This reduces the age
+of the contact sample without inventing predicted positions.
+
+Offline release tests: 97 passed, one ignored. New regressions cover exact tip
+positions, shared contact radii/press geometry, radius bounds, invalid or lost
+tracking, overlapping-pinch arbitration, and keyboard release hysteresis. Release
+build, upstream reconstruction and policy checks passed. Headset alignment and
+comfort require user verification; transport/tracker latency was not measured.

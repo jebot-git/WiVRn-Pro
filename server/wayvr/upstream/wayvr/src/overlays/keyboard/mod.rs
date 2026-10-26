@@ -465,6 +465,12 @@ impl OverlayBackend for KeyboardBackend {
     }
 
     fn on_pointer(&mut self, app: &mut AppState, hit: &PointerHit, pressed: bool) {
+        let pointer = &app.input_state.pointers[hit.pointer];
+        if pressed && pointer.hand_tracking
+            && (pointer.keyboard_contact.is_none() || !pointer.keyboard_input_armed || pointer.now.grab)
+        {
+            return;
+        }
         if !self.armed[hit.pointer] {
             if !pressed {
                 self.armed[hit.pointer] = true;
@@ -508,7 +514,20 @@ impl OverlayBackend for KeyboardBackend {
         self.panel().on_left(app, pointer);
     }
     fn on_hover(&mut self, app: &mut AppState, hit: &PointerHit) -> HoverResult {
-        self.panel().on_hover(app, hit)
+        let pointer = &app.input_state.pointers[hit.pointer];
+        if pointer.hand_tracking {
+            if pointer.keyboard_contact.is_none() || pointer.now.grab {
+                // Manipulation rays own the surface, never key hover or typing.
+                self.panel().on_left(app, hit.pointer);
+                return HoverResult::consume();
+            }
+            let mut result = self.panel().on_hover(app, hit);
+            // Delete works on the entire surface, including the split and gaps.
+            result.consume = true;
+            result
+        } else {
+            self.panel().on_hover(app, hit)
+        }
     }
     fn get_interaction_transform(&mut self) -> Option<glam::Affine2> {
         self.panel().get_interaction_transform()

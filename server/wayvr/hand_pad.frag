@@ -8,6 +8,14 @@ void main() {
     float r = length(p);
     float edge = 1.0 - smoothstep(0.985, 1.015, r);
     vec3 color = params.data.z < 0.5 ? vec3(0.1, 0.85, 1.0) : vec3(0.8, 0.4, 1.0);
+    if (params.limits.y > 0.5) {
+        // A shaded sphere silhouette, billboarded at the tracked fingertip.
+        vec3 normal = vec3(p, sqrt(max(0.0, 1.0 - dot(p, p))));
+        float light = 0.25 + 0.75 * max(0.0, dot(normal, normalize(vec3(-0.4, 0.5, 1.0))));
+        vec3 sphere = mix(color, vec3(1.0), params.data.w * 0.7) * light;
+        out_color = vec4(sphere, edge);
+        return;
+    }
     float grid = 1.0 - smoothstep(0.015, 0.035, min(abs(p.x), abs(p.y)));
     float ring = smoothstep(0.93, 0.96, r);
     float dot = 1.0 - smoothstep(0.08, 0.11, length(p - params.data.xy));

@@ -29,6 +29,9 @@ mod hand_double_tap;
 #[cfg(feature = "openxr")]
 #[path = "../../../hand_input.rs"]
 mod hand_input;
+#[cfg(feature = "openxr")]
+#[path = "../../../hand_keyboard.rs"]
+mod hand_keyboard;
 #[path = "../../../hand_resize.rs"]
 mod hand_resize;
 #[cfg(feature = "openxr")]
