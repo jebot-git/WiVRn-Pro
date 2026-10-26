@@ -56,7 +56,7 @@ impl NotificationManager {
             .become_monitor(
                 rule.clone(),
                 Box::new(move |msg, _| {
-                    if let Ok(toast) = parse_dbus(&msg) {
+                    if !crate::domed_link::notifications() && let Ok(toast) = parse_dbus(&msg) {
                         let _ = sender
                             .try_send(toast)
                             .inspect_err(|e| log::error!("Failed to send notification: {e:?}"));
@@ -77,7 +77,7 @@ impl NotificationManager {
             .add_match(
                 rule.with_eavesdrop(),
                 Box::new(move |(), _, msg| {
-                    if let Ok(toast) = parse_dbus(msg) {
+                    if !crate::domed_link::notifications() && let Ok(toast) = parse_dbus(msg) {
                         let _ = sender
                             .try_send(toast)
                             .inspect_err(|e| log::error!("Failed to send notification: {e:?}"));

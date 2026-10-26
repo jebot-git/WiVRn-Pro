@@ -53,6 +53,7 @@ pub enum Action {
     Keyboard,
     Dpad,
     HandControllers,
+    HandTracking,
     Walking,
     BodyTurning,
     WalkingSetup,
@@ -144,6 +145,7 @@ pub fn buttons(motoc: bool) -> Vec<Button> {
                 ),
             ],
             Group::Input => &[
+                (Action::HandTracking,"btn_hand_tracking","WiVRn hand\ntracking","watch/sticks.svg"),
                 (
                     Action::Keyboard,
                     "btn_keyboard",
@@ -208,7 +210,7 @@ pub fn buttons(motoc: bool) -> Vec<Button> {
         for (i, &(action, widget, title, icon)) in options.iter().enumerate() {
             let (start, step, radius) = match group {
                 Group::Calibration => (-165.0, 30.0, 320.0),
-                Group::Input => (-165.0, 37.5, 320.0),
+                Group::Input => (-170.0, 34.0, 320.0),
                 Group::Utils => (-170.0, 45.0, 280.0),
             };
             let angle = (start + step * i as f32).to_radians();

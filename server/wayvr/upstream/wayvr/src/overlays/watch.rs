@@ -11,6 +11,7 @@ use crate::{
     windowing::{Z_ORDER_WATCH, backend::OverlayEventData, window::OverlayWindowConfig},
 };
 use glam::{Affine3A, Quat, Vec3, vec3};
+use slotmap::Key;
 use std::time::Duration;
 use wgui::{
     assets::AssetPathRef,
@@ -187,7 +188,7 @@ pub fn create_watch(app: &mut AppState) -> anyhow::Result<OverlayWindowConfig> {
 }
 
 fn sets_or_overlays(panel: &mut GuiPanel<WatchState>, app: &mut AppState) {
-    let visible = if app.session.config.sets_on_watch {
+    let visible = if app.domed.active() { [false,false] } else if app.session.config.sets_on_watch {
         [false, true]
     } else {
         [true, false]
@@ -244,6 +245,7 @@ fn setup_fan(
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
     let toggles = [
+        (Action::HandTracking,panel.parser_state.fetch_component_as::<ComponentButton>("btn_hand_tracking")?),
         (
             Action::HandsFrame,
             panel
@@ -275,6 +277,7 @@ fn setup_fan(
                 .fetch_component_as::<ComponentButton>("btn_hand_controllers")?,
         ),
     ];
+    let domed_widgets=["panels_root","sets_root","domed_controls"].map(|id|panel.parser_state.get_widget_id(id).unwrap_or_default());
     let mut displayed = None;
     panel.on_event_filter = Some(Box::new(move |layout, state, app, event| {
         // Use actual WGUI boundaries, not idealized fan geometry: theme padding,
@@ -294,6 +297,8 @@ fn setup_fan(
                 boundary.contains_point(pos).then_some(spec.id)
             })
         };
+        let domed=app.domed.active();
+        for (i,id) in domed_widgets.iter().enumerate(){if !id.is_null(){layout.alterables.set_widget_visible(*id,if i==2{domed}else{!domed&&if i==0{!app.session.config.sets_on_watch}else{app.session.config.sets_on_watch}});}}
         let mut forward = true;
         match event {
             Event::MouseDown(e) => {
@@ -340,6 +345,7 @@ fn setup_fan(
                 Action::HandsFrame => app.hands_frame.enabled,
                 Action::Dpad => app.input_state.joysticks_enabled,
                 Action::HandControllers => app.input_state.hand_controllers_enabled,
+                Action::HandTracking => app.input_state.hand_tracking_enabled,
                 _ => false,
             };
             button.set_sticky_state(&mut layout.common(), enabled);
@@ -413,6 +419,7 @@ fn trigger_action(app: &mut AppState, action: Action) {
             .shora_battery
             .request_reset(crate::shora_battery::ResetKind::Walking),
         Action::Dpad => app.input_state.joysticks_enabled = !app.input_state.joysticks_enabled,
+        Action::HandTracking => app.input_state.hand_tracking_enabled = !app.input_state.hand_tracking_enabled,
         Action::HandControllers => {
             app.input_state.hand_controllers_enabled = !app.input_state.hand_controllers_enabled
         }

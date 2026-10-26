@@ -13,6 +13,7 @@ struct joystick_command
 {
 	bool enabled = false;
 	bool controllers = false;
+	bool hand_tracking_disabled = false;
 	bool walking = false, turning = false;
 	uint32_t pad_owned = 0, ui_owned = 0;
 	uint32_t suppressed = 0;
@@ -54,5 +55,6 @@ public:
 	// Present means controller emulation is enabled; value means gestures are blocked.
 	std::optional<bool> controller(unsigned hand, int64_t now) const;
 	bool controllers_enabled() const;
+	bool hand_tracking_enabled() const;
 };
 } // namespace wivrn

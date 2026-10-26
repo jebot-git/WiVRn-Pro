@@ -69,6 +69,9 @@ build/native-tests/tracking-supervisor-test
 "$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/wayvr_supervisor_test.cpp server/wayvr_worker.cpp $(pkg-config --cflags --libs gio-2.0) -o build/native-tests/wayvr-supervisor-test
 build/native-tests/wayvr-supervisor-test
 
+"$cxx" -std=c++23 -Wall -Wextra -Werror -Iserver fork/tests/dome_supervisor_test.cpp server/dome_supervisor.cpp $(pkg-config --cflags --libs gio-2.0) -o build/native-tests/dome-supervisor-test
+build/native-tests/dome-supervisor-test
+
 "$cxx" -std=c++23 -Wall -Wextra -Werror -UNDEBUG -pthread -Iserver \
   fork/tests/session_policy_test.cpp $(pkg-config --cflags --libs gio-2.0) -o build/native-tests/session-policy-test
 build/native-tests/session-policy-test

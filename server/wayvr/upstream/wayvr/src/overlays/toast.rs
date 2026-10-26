@@ -144,6 +144,13 @@ impl BakedToast {
         self.submit_at(app, Instant::now());
     }
     pub fn submit_at(self, app: &mut AppState, instant: Instant) {
+        if app.domed.active() {
+            if matches!(app.session.toast_topics.get(self.params.topic),Some(ToastDisplayMethod::Hide)){return;}
+            // Desktop Notify calls already belong to DomeD. Internal/UDP WayVR
+            // notices enter that same history and get exactly one presentation.
+            if matches!(self.params.topic,ToastTopic::DesktopNotification) {if crate::domed_link::notifications(){return;}}
+            else if app.domed.notify(&self.title_raw,&self.body_raw,self.params.timeout){return;}
+        }
         let selector = OverlaySelector::Name(TOAST_NAME.clone());
 
         if self.params.sound && app.session.config.notifications_sound_enabled {

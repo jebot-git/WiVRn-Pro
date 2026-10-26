@@ -1,0 +1,14 @@
+[Unit]
+Description=DomeD compositor kept alive by WiVRn Pro
+After=graphical-session.target
+PartOf=graphical-session.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/wivrn-pro-dome
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=10
+KillMode=control-group

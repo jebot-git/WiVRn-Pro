@@ -185,6 +185,8 @@ impl OverlayWindowConfig {
 
     /// Physical-room windows stay hidden and cannot be hit while localization is unavailable.
     pub fn room_available(&self, room: &crate::room::Feed) -> bool {
+        if crate::domed_link::notifications() && self.name.as_ref()=="toast" {return false;}
+        if crate::domed_link::active() && matches!(self.category,OverlayCategory::Screen|OverlayCategory::Mirror){return false;}
         self.active_state.as_ref().and_then(|s| s.room_binding.as_ref())
             .is_none_or(|b| room.locate(b).is_some())
     }

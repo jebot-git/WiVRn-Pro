@@ -37,6 +37,7 @@ impl OverlayList {
                 self.overlay_buttons.clear();
 
                 for (i, meta) in metas.iter().enumerate() {
+                    if crate::domed_link::active()&&matches!(meta.category,OverlayCategory::Screen|OverlayCategory::Mirror){continue;}
                     let mut params = TemplateParams::new();
 
                     let (template, root) = match meta.category {

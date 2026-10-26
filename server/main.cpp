@@ -47,6 +47,7 @@
 #include "version.h"
 #include "wayvr_options.h"
 #include "wayvr_worker.h"
+#include "dome_supervisor.h"
 #include "wivrn_config.h"
 #include "wivrn_ipc.h"
 #include "wivrn_packets.h"
@@ -1092,10 +1093,13 @@ int inner_main(int argc, char * argv[], bool show_instructions)
 	auto tracking_mode = wivrn::configuration().tracking_mode;
     setenv("WIVRN_TRACKING_MODE", tracking_mode.c_str(), true);
 	auto tracking = std::make_unique<wivrn::tracking_worker>(tracking_mode);
+	auto dome = wivrn::dome_supervisor::start();
 	// Main loop
 	g_main_loop_run(main_loop);
 
 	// Cleanup
+	dome->stop();
+	dome.reset();
 	wayvr.reset();
 	tracking.reset();
 	notify_uninit();

@@ -81,3 +81,5 @@ CUDA and ROCm GPU backends; recognized text can be translated with Google Cloud
 Translation or DeepL API Free. Images stay on the PC. Without that package,
 Hands Frame shows OCR translation as unavailable. Speech recognition and the
 standalone subtitle application have been removed.
+
+DomeD interoperability, recovery, notification and hand-input policy: [fork/DOMED.md](fork/DOMED.md).

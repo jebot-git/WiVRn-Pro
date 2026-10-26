@@ -145,6 +145,12 @@
         <div id="panels_root" position="absolute" margin_left="48" margin_top="688" gap="8" display="none">
           <Screen idx="0" display="H1" name="HDMI-A-1" /><Screen idx="1" display="D2" name="DP-2" />
         </div>
+        <div id="domed_controls" position="absolute" margin_left="48" margin_top="688" gap="8" display="none">
+          <Button id="domed_desktop" width="140" height="64" _release_left="::Dome toggle_desktop" tooltip_str="Show or hide DomeD XR desktop"><label text="XR / desktop" size="18" wrap="1"/></Button>
+          <Button id="domed_launch" width="140" height="64" _release_left="::Dome launcher" tooltip_str="Open DomeD application launcher"><label text="Launch" size="18"/></Button>
+          <Button id="domed_screenshot" width="140" height="64" _release_left="::Dome screenshot" tooltip_str="Capture the DomeD XR view"><label text="XR screenshot" size="18" wrap="1"/></Button>
+          <Button id="domed_terminal" width="140" height="64" _release_left="::Dome terminal" tooltip_str="Toggle the overlay terminal"><label text="Terminal" size="18"/></Button>
+        </div>
       </div>
       <div id="fan_heading" position="absolute" margin_left="48" margin_top="116" display="none"
         width="904" flex_direction="column" gap="8" interactable="0">

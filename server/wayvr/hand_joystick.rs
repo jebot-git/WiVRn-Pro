@@ -395,6 +395,7 @@ impl Link {
     pub fn exchange(
         &mut self,
         enabled: bool,
+        hand_tracking: bool,
         pads: [Option<Pad>; 2],
         controllers: bool,
         suppressed: [bool; 2],
@@ -434,8 +435,8 @@ impl Link {
             return;
         }
         let mut packet = [0u8; 40];
-        packet[..4].copy_from_slice(if walking { b"WVJ2" } else { b"WVJ1" });
-        let flags = command_flags(enabled, pads.map(|p| p.is_some()))
+        packet[..4].copy_from_slice(b"WVJ3");
+        let flags = (u32::from(!hand_tracking) << 14) | command_flags(enabled, pads.map(|p| p.is_some()))
             | controller_flags(controllers, suppressed)
             | walking_flags(walking, turning, pad_owned, ui_owned);
         packet[4..8].copy_from_slice(&flags.to_le_bytes());

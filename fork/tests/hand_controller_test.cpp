@@ -19,6 +19,12 @@ int main()
 		assert(!wivrn::application_hand_tracking_allowed(true, app));
 	}
 	assert(wivrn::application_hand_tracking_allowed(true, "wayvr"));
+    for (const char *app: {"Dome", "DomeD", "dome-xr"}) {
+        assert(wivrn::application_hand_tracking_allowed(true, app));
+        assert(!wivrn::application_hand_tracking_allowed(true, app, false));
+    }
+    assert(!wivrn::application_hand_tracking_allowed(false, "game", false));
+    assert(wivrn::application_hand_tracking_allowed(true, "wayvr", false));
 	int64_t now = 1'000'000'000;
 	Gestures g;
 	auto j = open_hand();

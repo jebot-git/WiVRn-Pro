@@ -81,6 +81,7 @@ pub struct InputState {
     pub mouse_priority: crate::mouse_priority::MousePriority,
     pub joysticks_enabled: bool,
     pub hand_controllers_enabled: bool,
+    pub hand_tracking_enabled: bool,
     pub walking_enabled: bool,
     pub body_turning_enabled: bool,
     pub head_yaw_total: f64,
@@ -105,6 +106,7 @@ impl InputState {
             mouse_priority: Default::default(),
             joysticks_enabled: false,
             hand_controllers_enabled: false,
+            hand_tracking_enabled: true,
             walking_enabled: false,
             body_turning_enabled: false,
             head_yaw_total: 0.0,
@@ -356,6 +358,8 @@ impl Default for InteractionState {
 }
 
 pub struct Pointer {
+    pub domed_owned: bool,
+    pub domed_release_gate: bool,
     pub idx: usize,
     pub pose: Affine3A,
     pub raw_pose: Affine3A,
@@ -399,6 +403,8 @@ impl Pointer {
             pending_haptics: None,
             interaction: InteractionState::default(),
             tracked: false,
+            domed_owned:false,
+            domed_release_gate:false,
             handsfree: false,
             hand_tracking: false,
             frame_hand: None,
@@ -567,6 +573,7 @@ pub fn interact<O>(
 where
     O: Default,
 {
+    route_domed(overlays,app);
     if app.watch_menu.open().is_some() {
         let watch_visible = app.session.config.enable_watch && overlays.values().any(|o|
             o.config.name.as_ref() == WATCH_NAME && o.config.active_state.as_ref().is_some_and(|s| s.alpha >= 0.05));
@@ -603,6 +610,10 @@ where
     };
 
     for (idx, hit) in hits.iter().enumerate() {
+        if app.input_state.pointers[idx].domed_owned {
+            if let Some(distance)=app.domed.hit(idx) {let p=&app.input_state.pointers[idx];lines.push(PointerLine{mode:p.interaction.mode,a:p.pose.translation,b:p.pose.transform_point3a(Vec3A::NEG_Z*distance)});}
+            continue;
+        }
         populate_lines(
             lines,
             &app.input_state.pointers[idx],
@@ -876,6 +887,11 @@ fn interact_hand<O>(
 where
     O: Default,
 {
+    if app.input_state.pointers[idx].domed_owned {return (None,None);}
+    if app.input_state.pointers[idx].domed_release_gate {
+        if app.input_state.pointers[idx].now.click||app.input_state.pointers[idx].now.grab {app.input_state.pointers[idx].now=PointerState::default();}
+        else {app.input_state.pointers[idx].domed_release_gate=false;}
+    }
     if app.input_state.pointers[idx].hand_tracking && app.input_state.pointers[idx].now.space_drag {
         // Playspace movement owns this hand; release touch/click/grab targets
         // and do not move the desktop cursor while dragging the playspace.
@@ -1557,6 +1573,7 @@ where
 // Both hands manipulate one existing fist grab. Controller grabs and two
 // different windows retain their ordinary, independent interaction paths.
 fn hand_grip(pointer: &Pointer) -> bool {
+    if pointer.domed_owned{return false;}
     pointer.hand_tracking && pointer.tracked && pointer.now.grab
         && !pointer.cancel_interaction && !pointer.joystick_owned
         && pointer.wrist_pose.is_some_and(|p| p.is_finite())
@@ -1890,5 +1907,38 @@ mod hand_attachment_tests {
             )
             .is_none()
         );
+    }
+}
+
+fn route_domed<O:Default>(overlays:&mut OverlayWindowManager<O>,app:&mut AppState) {
+    let enabled=app.domed.active()&&app.watch_menu.open().is_none()&&!app.hands_frame.model.reserving();
+    let mut nearest=[100f32;2];
+    for i in 0..2 {
+        let pointer=&app.input_state.pointers[i];
+        for (_,overlay) in overlays.iter(){
+            if !overlay.config.room_available(&app.room){continue;}
+            let Some(state)=overlay.config.active_state.as_ref().filter(|s|s.interactable&&s.alpha>=0.025) else{continue;};
+            if pointer.hand_tracking&&overlay.config.name.as_ref()==WATCH_NAME&&matches!(state.positioning,Positioning::FollowHand{hand,..} if hand as usize==i){continue;}
+            if let Some((distance,_))=raycast_overlay(&pointer.pose,&state.transform,state.curvature){if distance>=0.{nearest[i]=nearest[i].min(distance);}}
+        }
+    }
+    let head_inverse=app.input_state.hmd.inverse();
+    let rays=std::array::from_fn(|i|{
+        let p=&app.input_state.pointers[i];
+        let valid=enabled&&p.tracked&&!p.joystick_owned&&!p.now.space_drag&&!p.cancel_interaction&&p.touch_hit.is_none()&&!p.keyboard_hover&&p.interaction.grabbed.is_none()&&!(p.hand_tracking&&app.input_state.mouse_priority.active());
+        let button=match p.interaction.mode{PointerMode::Middle=>2,PointerMode::Right=>4,_=>1};
+        crate::domed_link::Ray{tracked:valid,origin:head_inverse.transform_point3a(p.pose.translation).to_array(),direction:head_inverse.transform_vector3a(p.pose.transform_vector3a(Vec3A::NEG_Z)).normalize_or_zero().to_array(),buttons:if p.now.click{button}else{0},scroll:[(p.now.scroll_x as f64).clamp(-20.,20.),(p.now.scroll_y as f64).clamp(-20.,20.)],max_distance:nearest[i]}
+    });
+    app.domed.pointers(rays.clone());
+    for i in 0..2 {
+        let owned=rays[i].tracked&&app.domed.hit(i).is_some_and(|d|d<nearest[i]);
+        let old=app.input_state.pointers[i].domed_owned;
+        if owned&&!old {
+            let now=app.input_state.pointers[i].now;let before=app.input_state.pointers[i].before;let tracked=app.input_state.pointers[i].tracked;
+            release_pointer(i,overlays,app);
+            let p=&mut app.input_state.pointers[i];p.now=now;p.before=before;p.tracked=tracked;
+        }
+        if old&&!owned {app.input_state.pointers[i].domed_release_gate=true;}
+        app.input_state.pointers[i].domed_owned=owned;
     }
 }

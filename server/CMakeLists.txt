@@ -131,6 +131,7 @@ if (WIVRN_BUILD_SERVER)
 			driver/shora_bridge.cpp
 			tracking_worker.cpp
 			wayvr_worker.cpp
+			dome_supervisor.cpp
 			driver/configuration.cpp
 			driver/hand_joints_list.cpp
 			driver/pose_list.cpp
@@ -375,3 +376,9 @@ set_source_files_properties(compositor/hands_frame_capture.cpp compositor/compos
 			driver/spatial_bridge.cpp
 			driver/shora_bridge.cpp
 			tracking_worker.cpp PROPERTIES COMPILE_OPTIONS "-fno-fast-math")
+
+if(WIVRN_BUILD_SERVER)
+    configure_file(dist/wivrn-pro-dome.service.in wivrn-pro-dome.service @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/wivrn-pro-dome.service DESTINATION lib/systemd/user/)
+    install(PROGRAMS ../fork/dome-keepalive.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME wivrn-pro-dome)
+endif()

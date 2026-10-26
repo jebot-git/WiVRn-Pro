@@ -39,6 +39,7 @@ use crate::{
 };
 
 pub struct AppState {
+    pub domed: crate::domed_link::Link,
     pub session: AppSession,
     pub tasks: TaskContainer,
 
@@ -201,6 +202,7 @@ impl AppState {
         }
 
         let mut app_state = Self {
+            domed: crate::domed_link::Link::new(),
             tasks,
             gfx,
             gfx_extras,

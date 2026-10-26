@@ -26,14 +26,15 @@ static uint64_t u64(const uint8_t * p)
 }
 std::optional<joystick_command> decode_joysticks(std::span<const uint8_t> p, int64_t now)
 {
-	if (p.size() != 40 || (std::memcmp(p.data(), "WVJ1", 4) && std::memcmp(p.data(), "WVJ2", 4)))
+	if (p.size() != 40 || (std::memcmp(p.data(), "WVJ1", 4) && std::memcmp(p.data(), "WVJ2", 4) && std::memcmp(p.data(), "WVJ3", 4)))
 		return {};
 	auto flags = u32(p.data() + 4);
-	if (flags & ~(p[3] == '2' ? 16383u : 255u))
+	if (flags & ~(p[3] == '3' ? 32767u : p[3] == '2' ? 16383u : 255u))
 		return {};
 	joystick_command c;
 	c.enabled = flags & 1;
 	c.controllers = flags & 32;
+	c.hand_tracking_disabled = flags & 16384;
 	c.walking = flags & 256;
 	c.turning = c.walking && (flags & 512);
 	c.pad_owned = (flags >> 10) & 3;
@@ -295,6 +296,11 @@ std::optional<bool> hand_joystick::controller(unsigned hand, int64_t now) const
 	if (hand > 1 || client < 0 || !command.controllers || !(hands & (1u << hand)) || now - command.time > ttl || now - received > ttl)
 		return {};
 	return bool(command.suppressed & (1u << hand));
+}
+bool hand_joystick::hand_tracking_enabled() const
+{
+	std::lock_guard lock(mutex);
+	return client < 0 || !command.hand_tracking_disabled;
 }
 bool hand_joystick::controllers_enabled() const
 {

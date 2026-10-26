@@ -212,6 +212,15 @@ pub(super) fn setup_custom_button<S: 'static>(
             let button = button.clone();
 
             let callback: EventCallback<AppState, S> = match command {
+                "::Dome" => {
+                    let action=args.next().unwrap_or("").to_owned();
+                    if !["toggle_desktop","launcher","screenshot","terminal"].contains(&action.as_str()){return;}
+                    Box::new(move |_common,data,app,_| {
+                        if !test_button(data)||!test_duration(&button,app){return Ok(EventResult::Pass);}
+                        app.domed.command(&action);
+                        Ok(EventResult::Consumed)
+                    })
+                }
                 "::ContextMenuOpen" => {
                     let Some(template_name) = args.next() else {
                         log_cmd_missing_arg(parser_state, TAG, name, command);

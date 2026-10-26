@@ -53,6 +53,8 @@ mod room;
 mod desktop_layout;
 #[path = "../../../watch_menu.rs"]
 mod watch_menu;
+#[path = "../../../domed_link.rs"]
+mod domed_link;
 #[path = "../../../hands_frame.rs"]
 mod hands_frame;
 #[path = "../../../hands_frame_panel.rs"]

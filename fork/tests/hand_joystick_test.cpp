@@ -135,8 +135,20 @@ int main()
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
 		assert(endpoint.controllers_enabled());
-		close(fd);
+		// WVJ3 hand tracking is independent of all existing virtual-pad bits.
+        packet[3] = '3';
+        put(packet, 4, 16384 | 32 | 9, 4);
+        put(packet, 32, 12, 8);
+        assert(send(fd, packet.data(), packet.size(), 0) == 40);
+        endpoint.poll(now, 3);
+        assert(!endpoint.hand_tracking_enabled());
+        assert(endpoint.controllers_enabled() && endpoint.get(0, now)->clicked);
+        endpoint.poll(now + 200'000'000, 3);
+        assert(!endpoint.hand_tracking_enabled()); // mode survives input expiry
+        assert(!endpoint.get(0, now + 200'000'000));
+        close(fd);
 		endpoint.poll(now, 3);
+        assert(endpoint.hand_tracking_enabled());
 		assert(!endpoint.controller(0, now));
 		assert(!endpoint.controllers_enabled());
 		assert(!endpoint.get(0, now));

@@ -61,6 +61,7 @@ pub struct OverlayWindowManager<T> {
     edit_mode: bool,
     dropped_overlays: VecDeque<OverlayWindowData<T>>,
     initialized: bool,
+    domed_active: bool,
 }
 
 impl<T> OverlayWindowManager<T>
@@ -81,6 +82,7 @@ where
             edit_mode: false,
             dropped_overlays: VecDeque::with_capacity(8),
             initialized: false,
+            domed_active: false,
         };
 
         if headless {
@@ -937,6 +939,11 @@ impl<T> OverlayWindowManager<T> {
     }
 
     pub fn tick(&mut self, app: &mut AppState) {
+        let domed_active=app.domed.active();
+        if domed_active!=self.domed_active {
+            self.domed_active=domed_active;
+            if let Err(e)=self.overlays_changed(app){log::warn!("DomeD overlay list refresh: {e:?}");}
+        }
         let mut expired = Vec::new();
         for (id, overlay) in &mut self.overlays {
             if overlay.config.tick(app) {

@@ -8,9 +8,13 @@
 namespace wivrn
 {
 // WayVR consumes joints for its own UI even while applications use Touch emulation.
-inline bool application_hand_tracking_allowed(bool controllers_enabled, const char *application_name)
+inline bool application_hand_tracking_allowed(bool controllers_enabled, const char *application_name, bool hand_tracking_enabled = true)
 {
-	return !controllers_enabled || (application_name && std::string_view(application_name) == "wayvr");
+	auto name = std::string_view(application_name ? application_name : "");
+	// Keep the wrist UI usable to re-enable delivery. Dome is a UI consumer,
+	// not a game that should lose joints in hands-as-controllers mode.
+	if (name == "wayvr") return true;
+	return hand_tracking_enabled && (!controllers_enabled || name == "Dome" || name == "DomeD" || name == "dome-xr");
 }
 
 // OpenXR joint order. Kept independent of the transport and runtime for testing.

@@ -606,6 +606,7 @@ impl OpenXrInputSource {
         }
         self.joystick_link.exchange(
             app.input_state.joysticks_enabled && xr.focused && picking_focus.is_none(),
+            app.input_state.hand_tracking_enabled,
             app.input_state.pointers.each_ref().map(|p| p.joystick_pad),
             // Keep the advertised device mode stable while focus/picking reserves
             // gestures; only the per-hand input ownership changes.
@@ -614,6 +615,8 @@ impl OpenXrInputSource {
                 !xr.focused
                     || !picking_focus.is_none()
                     || p.joystick_owned
+                    || p.domed_owned
+                    || p.domed_release_gate
                     || p.cancel_interaction
                     || p.keyboard_hover
                     || p.interaction.hovered_id.is_some()
@@ -633,6 +636,8 @@ impl OpenXrInputSource {
                 || app.hands_frame.model.reserving()
                 || app.input_state.pointers.iter().any(|p| {
                     p.cancel_interaction
+                        || p.domed_owned
+                        || p.domed_release_gate
                         || p.keyboard_hover
                         || p.interaction.hovered_id.is_some()
                         || p.interaction.grabbed.is_some()
