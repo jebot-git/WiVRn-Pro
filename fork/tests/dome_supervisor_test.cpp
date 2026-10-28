@@ -4,8 +4,13 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <fcntl.h>
+#include <nlohmann/json.hpp>
+#include <sys/file.h>
+#include <unistd.h>
 #include <thread>
 static unsigned starts;
+static std::string integration_state = "{\"version\":1,\"backend\":\"drm\",\"xr_active\":false,\"shown\":false}";
 static void call(GDBusConnection *, const gchar *, const gchar *, const gchar *, const gchar * method, GVariant * parameters, GDBusMethodInvocation * invocation, gpointer)
 {
 	if (std::string(method) == "StartUnit")
@@ -17,7 +22,7 @@ static void call(GDBusConnection *, const gchar *, const gchar *, const gchar *,
 		g_dbus_method_invocation_return_value(invocation, g_variant_new("(o)", "/org/freedesktop/systemd1/job/1"));
 	}
 	else
-		g_dbus_method_invocation_return_value(invocation, g_variant_new("(s)", "{\"version\":1,\"backend\":\"drm\"}"));
+		g_dbus_method_invocation_return_value(invocation, g_variant_new("(s)", integration_state.c_str()));
 }
 static void spin(double seconds)
 {
@@ -56,10 +61,27 @@ int main()
 	assert(starts == 0);
 	auto root = std::filesystem::path(directory) / "dome";
 	assert(std::filesystem::exists(root / "wivrn-context.json"));
+	auto context = [&]() { std::ifstream file(root / "wivrn-context.json"); return nlohmann::json::parse(file); };
+	assert(context()["xr_active"] == false && context()["shown"] == false);
+	integration_state = "{\"version\":1,\"backend\":\"drm\",\"xr_active\":true,\"shown\":true}";
+	spin(1.5);
+	assert(context()["xr_active"] == true && context()["shown"] == true);
+	integration_state = "{\"version\":1,\"backend\":\"drm\",\"xr_active\":true,\"shown\":false}";
+	spin(1.5);
+	assert(context()["shown"] == false); // desktop selected with an XR runtime still alive
+	int native = open((root / "native-owner.lock").c_str(), O_RDWR | O_CREAT, 0600);
+	assert(native >= 0 && flock(native, LOCK_EX | LOCK_NB) == 0);
+	integration_state = "{\"version\":1,\"backend\":\"nested\",\"xr_active\":true,\"shown\":true}";
+	spin(1.5);
+	assert(context()["backend"] == "drm"); // a nested test must not replace the login context
 	g_bus_unown_name(compositor);
 	spin(1.2);
 	assert(starts == 0); // give the login wrapper recovery time
 	spin(4);
+	assert(starts == 0); // D-Bus name loss must not duplicate a live native compositor
+	flock(native, LOCK_UN);
+	close(native);
+	spin(2);
 	assert(starts > 0);
 	std::ofstream(root / "explicit-stop") << "stop\n";
 	auto before = starts;

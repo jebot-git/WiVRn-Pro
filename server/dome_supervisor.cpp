@@ -4,6 +4,11 @@
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <cerrno>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <unistd.h>
 namespace wivrn
 {
 namespace
@@ -12,6 +17,23 @@ using Hold = std::shared_ptr<dome_supervisor>;
 auto directory()
 {
 	return std::filesystem::path(g_getenv("XDG_RUNTIME_DIR")) / "dome";
+}
+bool native_owner_active()
+{
+	// A compositor can own the seat without owning our optional D-Bus name.
+	// Check without creating/removing the record or relying on a stale PID.
+	int fd = open((directory() / "native-owner.lock").c_str(), O_RDWR | O_CLOEXEC | O_NOFOLLOW);
+	if (fd < 0)
+		return errno != ENOENT;
+	struct stat info{};
+	bool active = true;
+	if (fstat(fd, &info) == 0 && S_ISREG(info.st_mode) && info.st_uid == getuid() && flock(fd, LOCK_EX | LOCK_NB) == 0)
+	{
+		active = false;
+		flock(fd, LOCK_UN);
+	}
+	close(fd);
+	return active;
 }
 } // namespace
 std::shared_ptr<dome_supervisor> dome_supervisor::start()
@@ -70,8 +92,8 @@ void dome_supervisor::tick()
         g_dbus_connection_call(self->bus,"org.domed.Compositor","/org/domed/Compositor","org.domed.Compositor","GetIntegrationState",nullptr,G_VARIANT_TYPE("(s)"),G_DBUS_CALL_FLAGS_NO_AUTO_START,500,self->cancel,
         [](GObject *source,GAsyncResult *r,gpointer data){
             std::unique_ptr<Hold> hold(static_cast<Hold*>(data));auto self=*hold;auto reply=g_dbus_connection_call_finish(G_DBUS_CONNECTION(source),r,nullptr);self->pending=false;
-            if(reply&&!self->stopped){const char *text;g_variant_get(reply,"(&s)",&text);try{auto j=nlohmann::json::parse(text);auto backend=j.value("backend",std::string());if(j.value("version",0)==1&&(backend=="drm"||backend=="nested")){
-                std::filesystem::create_directories(directory());auto tmp=directory()/"wivrn-context.tmp";std::ofstream f(tmp);f<<nlohmann::json{{"version",1},{"backend",backend}}.dump();f.close();std::filesystem::rename(tmp,directory()/"wivrn-context.json");
+            if(reply&&!self->stopped){const char *text;g_variant_get(reply,"(&s)",&text);try{auto j=nlohmann::json::parse(text);auto backend=j.value("backend",std::string());if(j.value("version",0)==1&&(backend=="drm"||backend=="nested")&&!(backend=="nested"&&native_owner_active())){
+                std::filesystem::create_directories(directory());auto tmp=directory()/"wivrn-context.tmp";std::ofstream f(tmp);f<<nlohmann::json{{"version",1},{"backend",backend},{"xr_active",j.value("xr_active",false)},{"shown",j.value("shown",false)}}.dump();f.close();std::filesystem::rename(tmp,directory()/"wivrn-context.json");
             }}catch(const std::exception &e){g_debug("DomeD recovery context: %s",e.what());}}
             if(reply)g_variant_unref(reply);
         },new Hold(self)); }, new Hold(shared_from_this()));
@@ -79,7 +101,7 @@ void dome_supervisor::tick()
 void dome_supervisor::ensure_unit()
 {
 	std::error_code ec;
-	if (std::filesystem::exists(directory() / "explicit-stop", ec))
+	if (std::filesystem::exists(directory() / "explicit-stop", ec) || native_owner_active())
 		return;
 	pending = true;
 	// Start an independent user unit. WiVRn's control-group teardown must never

@@ -28,14 +28,34 @@ Both recovery paths honor it. Starting DomeD manually clears it once the new
 compositor owns its bus name. `wivrn-pro-dome --resume` also clears it and starts
 the recovery unit. SIGKILL, a crash, or losing the D-Bus owner do not set it.
 
-The recovery helper requires an active graphical session. It retains the last
-reported native/nested backend. A cold launch defaults to nested mode and
-requires a host display. A recovered native login keeps the desktop's own seat
-wrapper preferentially; a user unit is the fallback. `WIVRN_DOME_EXECUTABLE` can
-select an absolute compositor executable. The helper explicitly selects the
-installed WiVRn-Pro runtime for a newly launched XR helper; an already-running
-DomeD keeps its existing runtime configuration. Its XR session must use the same
-headset/runtime as WayVR for aligned head-relative input.
+The recovery helper is a background policy process. It never automatically opens
+an XR/nested window on the desktop, including when the cached backend is nested
+or unknown. It requires an active graphical session whose current
+`XDG_SESSION_DESKTOP` is `dome` and a version-one context from a previously
+observed native (`drm`) compositor. A different login, missing context or a
+failed D-Bus query leaves the current session alone. To start a nested compositor,
+launch it explicitly; `--resume` permits recovery but does not override these
+background-launch rules.
+
+Both the supervisor and launcher check the native compositor's existing
+`dome/native-owner.lock` without creating/removing it. A held lock is authoritative
+even when the optional `org.domed.Compositor` bus name is unavailable. This
+prevents a second nested compositor from briefly mapping/focusing a window before
+failing on the existing control port. A second lock check immediately before
+exec allows the login wrapper to win recovery races; the compositor retains its
+own native singleton protection.
+
+The supervisor caches both `xr_active` and `shown` with the backend. Native
+fallback starts XR only when both were explicitly true: a selected desktop or
+hidden XR presentation stays in desktop mode, and older context defaults to no
+XR startup. Recovery never sends an activation/focus/toggle command to a running
+compositor. A nested diagnostic owner cannot replace the cached native context
+while the native seat lock is held.
+
+`WIVRN_DOME_EXECUTABLE` can select an absolute compositor executable. The helper
+selects the installed WiVRn-Pro runtime only for a newly recovered XR helper;
+an already-running DomeD keeps its existing runtime configuration. No global
+OpenXR runtime is changed.
 
 ## Notifications and input
 
@@ -75,3 +95,41 @@ The broader legacy offline script cannot finish on this machine: its Qt dashboar
 tests require the unavailable `PySide6.QtDBus` module, and its unrelated passthrough
 lifecycle test requires spdlog development headers. These dependencies are not
 required for the FLTK dashboard. Physical headset QA is still outstanding.
+
+## Background recovery regression checks (2026-10-28)
+
+Ten launcher tests cover native desktop/XR/hidden choice, strict context/session
+checks, refusal to create nested windows, held/stale/unsafe ownership locks,
+D-Bus failure/timeout, explicit stop/resume and an owner appearing during the
+launch decision. The private-bus C++ supervisor test verifies mode updates,
+refusal to overwrite native context from a nested owner, no unit start after
+D-Bus-name loss while the native lock remains held, and ordinary recovery after
+that lock is released. These tests create no real graphical windows or focus
+changes. The optimized Release server build also passes.
+
+## System-wide installation
+
+Configure optimized server and FLTK dashboard builds with
+`-DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local`; the prefix must be
+set at configure time because the server embeds its WayVR/helper paths. Keep
+`WIVRN_DASHBOARD_FRONTEND=fltk`. Build as the regular user, then stage and verify
+both builds before installing system files:
+
+```sh
+DESTDIR="$PWD/build/system-stage" cmake --install build/server
+DESTDIR="$PWD/build/system-stage" cmake --install build/dashboard-fltk
+python3 fork/install-service-overrides.py --prefix /usr/local --destdir build/system-stage
+```
+
+Install the staged files as root using the normal package/deployment workflow.
+`fork/install-service-overrides.py --prefix /usr/local` can also install just the
+three system service overrides with sudo after a normal CMake installation.
+They live under `/etc/systemd/user/` and ensure legacy per-user service symlinks
+also use the root-owned server, background helper, host checker and FLTK
+dashboard. They do not enable services for additional users, change device
+permissions, select the global OpenXR runtime or restart any process.
+
+Run `systemctl --user daemon-reload` as the desktop user after installation.
+The new launcher applies to subsequent watchdog requests immediately. An already
+running WiVRn server retains its loaded code until its next normal restart;
+installation does not disconnect the headset or restart DomeD/display sessions.
