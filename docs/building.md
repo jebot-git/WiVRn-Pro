@@ -40,10 +40,11 @@ Artifacts: `build/server/server/wivrn-pro-server`,
 `build/server/openxr_wivrn-dev.json`, the corresponding runtime shared libraries,
 and `build/server/server/wivrn-pro*.service`.
 
-The build helper includes the unified Qt6 dashboard by default. Install
-`dashboard/shora/requirements.txt` (PySide6, including QtDBus) in the Python
-environment used for configuration; no KDE/Kirigami development packages are
-needed. Launch the installed `wivrn-pro-dashboard`. For a server-only build,
+The build helper includes the unified FLTK dashboard by default, using the patched
+FLTK 1.4.5 and DomeD appearance helpers. Qt6 is an explicit opt-in through
+`-DWIVRN_DASHBOARD_FRONTEND=qt` and requires `dashboard/shora/requirements.txt`.
+Launch the installed `wivrn-pro-dashboard --show` from the desktop or DomeD XR
+session. Standalone WayVR dashboard launches are unsupported. For a server-only build,
 pass `-DWIVRN_BUILD_DASHBOARD=OFF`. The dashboard controls `wivrn-pro.service`;
 closing it leaves streaming and tracking running. WiVRn's D-Bus name and network
 port remain shared with stock WiVRn, so run only one server at a time.
@@ -111,7 +112,7 @@ processes. The core service survives logout and starts at boot when user lingeri
 is enabled.
 The separate attach-only desktop dashboard starts with `graphical-session.target`
 and stops at logout. No separate Shora, spatial or WayVR service is needed.
-WayVR and its in-headset dashboard start when the Quest creates a VR session.
+WayVR starts when the Quest creates a VR session; it never starts the WiVRn-Pro dashboard.
 The supervisor refreshes the desktop display environment from the user manager
 at each WayVR launch, so a server started before login can capture the desktop
 after login. A graphical session is required for desktop capture; boot activation
@@ -165,8 +166,9 @@ With the single-user LightXR/DomeD login flow, leave WiVRn-Pro in its lingering
 user service. The server queries the system manager's `display-manager.service`
 identity on headset connection and helper restart, with the selected unit as an
 early-boot fallback. When it is `lightxr.service`, LightXR/DomeD owns the session
-lifecycle: managed WayVR, its in-headset dashboard, configured application
-autostart and automatic desktop-dashboard startup are suppressed. WiVRn's
+lifecycle: configured application autostart and automatic desktop-dashboard startup
+are suppressed. Managed WayVR follows its explicit configuration, and never hosts
+the WiVRn-Pro dashboard. WiVRn's
 streaming runtime and tracking continue through login and logout. Settings are
 preserved, and manually launching the desktop dashboard remains possible.
 Other display managers retain the existing configured startup behavior.
@@ -183,10 +185,9 @@ and return to the greeter require validation on the actual headset.
 For a review-only install use `DESTDIR=/absolute/staging cmake --install build/server`.
 Validate generated units with `systemd-analyze --user verify`; this does not start them.
 
-### Optional DomeD FLTK dashboard
+### DomeD FLTK dashboard
 
-The default dashboard remains Qt6. A native FLTK frontend is available with
-`-DWIVRN_DASHBOARD_FRONTEND=fltk` and `-DWIVRN_BUILD_DASHBOARD=ON`. It uses de-xr's
+The dashboard defaults to FLTK with `-DWIVRN_BUILD_DASHBOARD=ON`. It uses de-xr's
 patched shared FLTK 1.4.5 and DomeD's live appearance helpers, and starts hidden
 in the DomeD tray manager. It can also be built independently with
 `fork/build-dashboard-fltk.sh`. See [build, coverage and testing details](../dashboard/fltk/README.md).

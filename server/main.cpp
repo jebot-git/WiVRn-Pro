@@ -233,7 +233,7 @@ void start_wayvr(const configuration & config)
 			throw std::runtime_error("Matching OpenXR manifest missing");
 		auto runtime = std::getenv("XDG_RUNTIME_DIR");
 		auto dir = (runtime ? std::filesystem::path(runtime) : std::filesystem::path("/run/user") / std::to_string(getuid())) / "wivrn-pro";
-		wayvr = std::make_unique<wayvr_worker>(WIVRN_WAYVR_EXECUTABLE, manifests.front().string(), options.dashboard ? WIVRN_DASHBOARD_EXECUTABLE : "", (dir / "wayvr.log").string(), options.flags, [](const std::string & state) { wivrn_server_set_way_vrstatus(dbus_server, state.c_str()); });
+		wayvr = std::make_unique<wayvr_worker>(WIVRN_WAYVR_EXECUTABLE, manifests.front().string(), (dir / "wayvr.log").string(), options.flags, [](const std::string & state) { wivrn_server_set_way_vrstatus(dbus_server, state.c_str()); });
 	}
 	catch (const std::exception & e)
 	{

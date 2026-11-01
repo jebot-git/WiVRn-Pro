@@ -47,9 +47,11 @@ In a DomeD session (`XDG_CURRENT_DESKTOP` contains `Dome`), desktop startup rese
 exports a standard StatusNotifier item with ID **`wivrn.pro`**, and leaves its
 window hidden for background startup. The desktop application launcher passes
 `--show` to open the window on its first invocation; `--tray` requests hidden startup elsewhere.
-A second invocation activates the existing window on the same surface. WayVR
-uses `io.github.wivrn.ProDashboard.VR`, so its dashboard and the desktop dashboard
-can coexist. WayVR starts with a visible window and no desktop tray.
+A second invocation activates the existing window. The dashboard is an ordinary
+Wayland application supported on the desktop and in the DomeD XR session.
+It never runs as a standalone WayVR/OpenXR application. WayVR launch attempts,
+including the legacy `WIVRN_DASHBOARD_SURFACE=vr` context, are rejected before
+opening a window or reserving a D-Bus name.
 
 DomeD must include the companion change in its compositor and native tray
 manager: `wivrn.pro` defaults to managed placement, alongside `dome.translator`.

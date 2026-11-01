@@ -10,6 +10,14 @@ from PySide6.QtDBus import QDBusConnection, QDBusMessage
 from dashboard_instance import DashboardInstance, SERVICE, OBJECT
 app=QCoreApplication(sys.argv)
 if len(sys.argv)>1:
+    if sys.argv[1]=='reject':
+        try:
+            DashboardInstance()
+        except RuntimeError as error:
+            assert 'desktop or DomeD XR session' in str(error)
+        else:
+            raise AssertionError('Standalone WayVR dashboard was accepted')
+        sys.exit(0)
     guard=DashboardInstance()
     if sys.argv[1]=='owner':
         assert guard.acquire()
@@ -19,7 +27,9 @@ if len(sys.argv)>1:
     else:
         assert not guard.acquire()
     sys.exit(0)
-for initial,duplicate in [('desktop','vr'),('vr','desktop')]:
+for setting in ({'WAYVR_DISPLAY_AUTH':'test-auth'}, {'WIVRN_DASHBOARD_SURFACE':'vr'}):
+    subprocess.run([sys.executable,__file__,'reject'],env=os.environ|setting,check=True,timeout=5)
+for initial,duplicate in [('desktop','dome-xr'),('dome-xr','desktop')]:
     env=os.environ.copy();env.pop('WAYVR_DISPLAY_AUTH',None);env['WIVRN_DASHBOARD_SURFACE']=initial
     owner=subprocess.Popen([sys.executable,__file__,'owner'],env=env,stdout=subprocess.PIPE,text=True)
     try:
@@ -28,11 +38,11 @@ for initial,duplicate in [('desktop','vr'),('vr','desktop')]:
             subprocess.run([sys.executable,__file__,'duplicate'],env=env|{'WIVRN_DASHBOARD_SURFACE':duplicate},check=True,timeout=5)
         request=QDBusMessage.createMethodCall(SERVICE,OBJECT,SERVICE,'Surface')
         reply=QDBusConnection.sessionBus().call(request)
-        assert reply.arguments()==[initial],reply.errorMessage()
+        assert reply.arguments()==['desktop'],reply.errorMessage()
     finally:
         owner.terminate();owner.wait(timeout=5)
     for _ in range(50):
         if not QDBusConnection.sessionBus().interface().isServiceRegistered(SERVICE).value():break
         time.sleep(.02)
 guard=DashboardInstance();assert guard.acquire();guard.close()
-print('Dashboard: cross-display exclusion, same-process ownership and crash recovery passed')
+print('Dashboard: shared desktop/DomeD instance, standalone rejection and crash recovery passed')

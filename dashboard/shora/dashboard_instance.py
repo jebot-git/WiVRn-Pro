@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""One settings window per login session, shared by KDE and WayVR."""
+"""One ordinary settings window per desktop/DomeD login session."""
 import os
 from pathlib import Path
 from PySide6.QtCore import QObject, Slot, ClassInfo
@@ -14,7 +14,9 @@ class DashboardInstance(QObject):
         super().__init__()
         self.bus = bus or QDBusConnection.sessionBus()
         self.window = None
-        self.surface = 'vr' if os.environ.get('WAYVR_DISPLAY_AUTH') or os.environ.get('WIVRN_DASHBOARD_SURFACE') == 'vr' else 'desktop'
+        if os.environ.get('WAYVR_DISPLAY_AUTH') or os.environ.get('WIVRN_DASHBOARD_SURFACE') == 'vr':
+            raise RuntimeError('Open WiVRn Pro from the desktop or DomeD XR session.')
+        self.surface = 'desktop'
         self.owner = False
 
     def legacy_running(self):

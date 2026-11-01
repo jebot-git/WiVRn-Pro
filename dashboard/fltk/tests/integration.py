@@ -137,9 +137,18 @@ class Tests(unittest.TestCase):
         for key in ('WAYLAND_DISPLAY', 'WAYLAND_SOCKET', 'WAYVR_DISPLAY_AUTH', 'WIVRN_DASHBOARD_SURFACE'):
             cls.environment.pop(key, None)
 
-    def test_00_surface_instances(self):
-        for first in ('vr', 'desktop'):
-            subprocess.run(['dbus-run-session', '--', BUILD / 'fltk/wivrn-dashboard-tray-test', first], check=True, timeout=10)
+    def test_00_session_policy(self):
+        subprocess.run(['dbus-run-session', '--', BUILD / 'fltk/wivrn-dashboard-tray-test'], check=True, timeout=10)
+        for setting in ({'WAYVR_DISPLAY_AUTH': 'test-auth'}, {'WIVRN_DASHBOARD_SURFACE': 'vr'}):
+            env = dict(self.environment, DBUS_SESSION_BUS_ADDRESS='unix:path=/missing-dashboard-test-bus', **setting)
+            result = subprocess.run([BUILD / 'fltk/wivrn-pro-dashboard', '--show'], env=env, text=True, capture_output=True, timeout=5)
+            self.assertEqual(result.returncode, 1, result)
+            self.assertIn('desktop or DomeD XR session', result.stderr)
+            # The optional Qt wrapper must reject the same context before Python/Qt loads.
+            wrapper = Path(__file__).parents[2] / 'wivrn-pro-dashboard.in'
+            result = subprocess.run(['sh', wrapper, '--show'], env=env, text=True, capture_output=True, timeout=5)
+            self.assertEqual(result.returncode, 1, result)
+            self.assertIn('desktop or DomeD XR session', result.stderr)
 
     def test_01_backend(self):
         subprocess.run([BUILD / 'fltk/wivrn-dashboard-backend-test', self.services.socket_path], env=self.environment, check=True, timeout=25)
@@ -270,6 +279,18 @@ class Tests(unittest.TestCase):
             self.assertIsNone(ui.poll(), (self.directory / 'wayland-ui.log').read_text())
             ui.terminate()
             self.assertEqual(ui.wait(timeout=10), 0)
+            self.wait(lambda: not mapped())
+            # DomeD's XR Wayland socket is supported as an ordinary application
+            # window; it must not require a separate WayVR/OpenXR instance.
+            xr_name = re.search(r'Dome XR Wayland socket: (\S+)', logpath.read_text())[1]
+            client_env['WAYLAND_DISPLAY'] = xr_name
+            ui = subprocess.Popen([BUILD / 'fltk/wivrn-pro-dashboard', '--show', '--socket', self.services.socket_path,
+                                   '--profile', self.directory / 'wayland-profile.toml'], env=client_env, stdout=uilog, stderr=uilog)
+            self.wait(mapped, timeout=30)
+            with urllib.request.urlopen(f'http://127.0.0.1:{port}/api/state', timeout=1) as reply:
+                state = json.load(reply)['scene']
+            self.assertTrue(any(w.get('origin') == 'xr' and 'WiVRn' in w.get('title', '') for w in state['windows']))
+            self.assertIsNone(ui.poll())
         finally:
             for child in (ui, compositor, x):
                 if child and child.poll() is None:

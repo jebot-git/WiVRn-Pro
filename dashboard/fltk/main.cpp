@@ -927,6 +927,9 @@ try
 		else
 			throw std::runtime_error("Unknown argument: " + a);
 	}
+	if ((getenv("WAYVR_DISPLAY_AUTH") && *getenv("WAYVR_DISPLAY_AUTH")) ||
+	    (getenv("WIVRN_DASHBOARD_SURFACE") && std::string(getenv("WIVRN_DASHBOARD_SURFACE")) == "vr"))
+		throw std::runtime_error("Open WiVRn Pro from the desktop or DomeD XR session.");
 	GError * error = nullptr;
 	auto bus = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error);
 	if (!bus)
@@ -936,11 +939,10 @@ try
 		throw std::runtime_error(text);
 	}
 	auto backend = std::make_shared<Backend>(bus, socketPath);
-	// Reserve one instance per surface so a VR window cannot suppress the desktop UI.
+	// Desktop and DomeD XR use the same ordinary Wayland window and tray instance.
 	Dashboard * active = nullptr;
 	bool earlyShow = false;
-	auto surface = getenv("WAYVR_DISPLAY_AUTH") || (getenv("WIVRN_DASHBOARD_SURFACE") && std::string(getenv("WIVRN_DASHBOARD_SURFACE")) == "vr") ? "vr" : "desktop";
-	Tray tray(bus, surface, [&](int id) {if(!active){earlyShow=true;return;}if(id==1)active->present();else if(id==5)active->requestQuit();else backend->serviceAction(id==2?"start":id==3?"stop":"restart"); });
+	Tray tray(bus, [&](int id) {if(!active){earlyShow=true;return;}if(id==1)active->present();else if(id==5)active->requestQuit();else backend->serviceAction(id==2?"start":id==3?"stop":"restart"); });
 	g_object_unref(bus);
 	if (!tray.owner)
 		return 0;
@@ -950,7 +952,7 @@ try
 	window.tray = &tray;
 	if (page == "skeleton" || !screenshotFile.empty())
 		window.tabs->value(window.trackingPage);
-	bool hidden = (dx::dome() || forceTray) && !forceShow && screenshotFile.empty() && std::string(surface) != "vr";
+	bool hidden = (dx::dome() || forceTray) && !forceShow && screenshotFile.empty();
 	if (!hidden || earlyShow)
 		window.present();
 	Json fixture;

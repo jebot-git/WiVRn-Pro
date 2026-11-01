@@ -24,7 +24,9 @@ use a different protocol. The standalone spatial bridge remains on `main`.
 - Shora's native tracker UDP/serial acquisition, skeleton/calibration, face/eye
   OSC and reconnect bridge are linked into the WiVRn executable. WiVRn supervises
   its own private tracking worker; no separate Shora installation is required.
-- A unified Shora Qt6 dashboard controls streaming, pairing, tracking and profiles.
+- A unified FLTK dashboard controls streaming, pairing, tracking and profiles.
+  It runs as an ordinary desktop or DomeD XR window, never a standalone WayVR
+  application. Qt6 remains an explicit frontend opt-in.
   Existing WiVRn and Shora user configurations are imported once without overwriting
   fork profiles.
 - `wivrn-pro.service` manages the entire fork. Native CMake installation is the supported packaging

@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
 	{
 		assert(std::string(argv[1]) == "--openxr" && std::string(argv[2]) == "--wait");
 		assert(std::string(std::getenv("XR_RUNTIME_JSON")) == "/test/manifest.json");
-		assert(std::string(std::getenv("WIVRN_DASHBOARD_EXECUTABLE")) == "/test/dashboard");
+		assert(std::getenv("WIVRN_DASHBOARD_EXECUTABLE") == nullptr);
 		assert(std::string(std::getenv("WIVRN_MANAGED_WAYVR")) == "1");
 		assert(std::string(std::getenv("WIVRN_SHORA_CONTROL_SOCKET")).ends_with("/wivrn-pro/ShoraControl"));
 		int signal = 0;
@@ -61,13 +61,16 @@ int main(int argc, char ** argv)
 	assert(is_wayvr_application({"wayvr"}));
 	assert(!is_wayvr_application({"/my/game"}) && !is_wayvr_application({"sh", "-c", "wayvr"}));
 	wayvr_options defaults(nlohmann::json::object());
-	assert(defaults.enabled && defaults.dashboard);
+	assert(defaults.enabled);
 	wayvr_options imported(nlohmann::json::object(), {"/Apps/WayVR-v26.AppImage", "--headless"});
 	assert(imported.flags == std::vector<std::string>{"--headless"});
 	wayvr_options forced(nlohmann::json::object(), {"wayvr", "--openxr", "--wait", "--show", "--show"});
 	assert(forced.flags == std::vector<std::string>{"--show"});
 	wayvr_options explicit_options({{"wayvr", {{"enabled", false}, {"dashboard", false}, {"args", {"--show"}}}}}, {"wayvr", "--headless"});
-	assert(!explicit_options.enabled && !explicit_options.dashboard && explicit_options.flags[0] == "--show");
+	assert(!explicit_options.enabled && explicit_options.flags[0] == "--show");
+	// A legacy dashboard=true cannot re-enable a standalone dashboard.
+	wayvr_options legacy_dashboard({{"wayvr", {{"dashboard", true}}}});
+	assert(legacy_dashboard.enabled);
 	for (const auto * flag: {"--openvr", "--replace", "--multi", "--install", ";evil"})
 	{
 		bool rejected = false;
@@ -85,9 +88,10 @@ int main(int argc, char ** argv)
 	auto tmp = std::filesystem::path(mkdtemp(name));
 	auto pidfile = tmp / "worker.pid";
 	setenv("TEST_WAYVR_PIDFILE", pidfile.c_str(), 1);
+	setenv("WIVRN_DASHBOARD_EXECUTABLE", "/test/forbidden-dashboard", 1);
 	auto executable = std::filesystem::read_symlink("/proc/self/exe").string();
 	std::string status;
-	auto make = [&](std::string exe) { return std::make_unique<wayvr_worker>(exe, "/test/manifest.json", "/test/dashboard", (tmp / "log").string(), std::vector<std::string>{}, [&](auto state) { status = state; }); };
+	auto make = [&](std::string exe) { return std::make_unique<wayvr_worker>(exe, "/test/manifest.json", (tmp / "log").string(), std::vector<std::string>{}, [&](auto state) { status = state; }); };
 	pid_t pid = 0;
 	{
 		auto worker = make(executable);

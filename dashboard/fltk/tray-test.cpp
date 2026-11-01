@@ -15,33 +15,28 @@ GDBusConnection * connection()
 	return bus;
 }
 
-int main(int argc, char ** argv)
+int main()
 try
 {
-	std::string first = argc > 1 ? argv[1] : "vr";
-	std::string second = first == "vr" ? "desktop" : "vr";
-	auto a = connection(), b = connection(), c = connection(), d = connection();
-	int firstActivations = 0, secondActivations = 0;
+	auto a = connection(), b = connection(), c = connection();
+	int activations = 0;
 	{
-		Tray one(a, first, [&](int id) { if (id == 1) ++firstActivations; });
-		Tray two(b, second, [&](int id) { if (id == 1) ++secondActivations; });
-		if (!one.owner || !two.owner)
-			throw std::runtime_error("VR and desktop must both own their surface instance");
-		Tray duplicateOne(c, first, [](int) {}), duplicateTwo(d, second, [](int) {});
-		if (duplicateOne.owner || duplicateTwo.owner)
-			throw std::runtime_error("Repeated launches must activate the existing instance");
+		Tray one(a, [&](int id) { if (id == 1) ++activations; });
+		Tray duplicateOne(b, [](int) {}), duplicateTwo(c, [](int) {});
+		if (!one.owner || duplicateOne.owner || duplicateTwo.owner)
+			throw std::runtime_error("Desktop and DomeD XR must share one ordinary dashboard instance");
 		auto until = g_get_monotonic_time() + 3 * G_USEC_PER_SEC;
-		while ((firstActivations == 0 || secondActivations == 0) && g_get_monotonic_time() < until)
+		while (activations < 2 && g_get_monotonic_time() < until)
 		{
 			while (g_main_context_iteration(nullptr, false)) {}
 			g_usleep(1000);
 		}
-		if (firstActivations != 1 || secondActivations != 1)
-			throw std::runtime_error("Activation did not reach the matching surface exactly once");
+		if (activations != 2)
+			throw std::runtime_error("Repeated launches did not activate the shared instance");
 	}
-	for (auto bus : {a, b, c, d})
+	for (auto bus : {a, b, c})
 		g_object_unref(bus);
-	std::cout << first << "-first surface coexistence and activation passed\n";
+	std::cout << "Shared desktop/DomeD instance and duplicate activation passed\n";
 	return 0;
 }
 catch (const std::exception & error)

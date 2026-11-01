@@ -11,8 +11,8 @@
 #include <unistd.h>
 namespace wivrn
 {
-wayvr_worker::wayvr_worker(std::string executable, std::string manifest, std::string dashboard, std::string log_path, std::vector<std::string> flags, std::function<void(const std::string &)> changed) :
-        arguments{std::move(executable), "--openxr", "--wait"}, manifest(std::move(manifest)), dashboard(std::move(dashboard)), log_path(std::move(log_path)), changed(std::move(changed))
+wayvr_worker::wayvr_worker(std::string executable, std::string manifest, std::string log_path, std::vector<std::string> flags, std::function<void(const std::string &)> changed) :
+        arguments{std::move(executable), "--openxr", "--wait"}, manifest(std::move(manifest)), log_path(std::move(log_path)), changed(std::move(changed))
 {
 	arguments.insert(arguments.end(), flags.begin(), flags.end());
 	spawn();
@@ -67,7 +67,8 @@ void wayvr_worker::spawn()
 	}
 	env = g_environ_setenv(env, "XR_RUNTIME_JSON", manifest.c_str(), TRUE);
 	env = g_environ_setenv(env, "WIVRN_MANAGED_WAYVR", "1", TRUE);
-	env = g_environ_setenv(env, "WIVRN_DASHBOARD_EXECUTABLE", dashboard.c_str(), TRUE);
+	// The dashboard belongs to the desktop/DomeD session, never this XR worker.
+	env = g_environ_unsetenv(env, "WIVRN_DASHBOARD_EXECUTABLE");
 	env = g_environ_setenv(env, "WAYVR_LOGFILE", log_path.c_str(), TRUE);
     auto runtime = std::getenv("XDG_RUNTIME_DIR");
     auto control = ((runtime ? std::filesystem::path(runtime) : std::filesystem::path("/run/user") / std::to_string(getuid())) / "wivrn-pro/ShoraControl").string();

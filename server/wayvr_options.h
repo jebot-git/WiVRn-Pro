@@ -20,7 +20,7 @@ inline bool is_wayvr_application(const std::vector<std::string> & args)
 }
 struct wayvr_options
 {
-	bool enabled = true, dashboard = true;
+	bool enabled = true;
 	std::vector<std::string> flags;
 	explicit wayvr_options(const nlohmann::json & json, const std::vector<std::string> & application = {})
 	{
@@ -29,7 +29,7 @@ struct wayvr_options
 			if (!it->is_object())
 				throw std::runtime_error("wayvr must be an object");
 			enabled = it->value("enabled", true);
-			dashboard = it->value("dashboard", true);
+			// The retired dashboard key is ignored in existing configurations.
 			flags = it->value("args", std::vector<std::string>{});
 		}
 		// Preserve legacy arguments only when no explicit fork args are supplied.

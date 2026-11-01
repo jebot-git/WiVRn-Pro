@@ -1,2 +1,6 @@
 #!/bin/sh
+if [ -n "${WAYVR_DISPLAY_AUTH:-}" ] || [ "${WIVRN_DASHBOARD_SURFACE:-}" = vr ]; then
+    echo 'Open WiVRn Pro from the desktop or DomeD XR session.' >&2
+    exit 1
+fi
 exec "@Python3_EXECUTABLE@" "@CMAKE_INSTALL_FULL_DATADIR@/wivrn-pro/dashboard/wivrn_dashboard.py" "$@"

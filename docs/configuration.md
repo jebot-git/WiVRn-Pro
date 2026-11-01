@@ -88,7 +88,7 @@ Launch No Man's Sky in VR mode on Steam when connection with headset is establis
 WayVR runs from the bundled upstream source build, starting with the WiVRn runtime
 and stopping when that runtime ends. The supervisor restarts crashes with a capped
 backoff; normal Quit stays stopped until the next session or **Restart WayVR** in
-the Qt dashboard. WayVR's own Restart returns to this supervisor. A worker failure
+the dashboard. WayVR's own Restart returns to this supervisor. A worker failure
 does not restart streaming or Shora. A briefly disconnected headset can leave the
 runtime alive, so WayVR follows the runtime lifetime rather than every Wi-Fi event.
 
@@ -102,15 +102,15 @@ without restarting WayVR after desktop layout changes.
 {
   "wayvr": {
     "enabled": true,
-    "dashboard": true,
     "args": ["--show"]
   }
 }
 ```
 
-Both booleans default to true. `dashboard` opens the unified Qt dashboard in a
-WayVR-owned 1440×1000 virtual Wayland display without changing saved autostart
-settings. `--no-autostart` also suppresses that automatic dashboard launch.
+`enabled` defaults to true. The legacy `dashboard` setting is ignored.
+The WiVRn-Pro dashboard is supported only as an ordinary desktop or DomeD XR
+window. WayVR never launches it, including from saved autostart entries or IPC
+launch requests. Open `wivrn-pro-dashboard --show` in the desktop/DomeD session.
 Allowed arguments are `--show`, `--headless`, `--no-autostart`, `--no-audio`,
 `--openxr` and `--wait`; OpenXR and waiting are always enforced by the supervisor.
 Unsupported arguments fail with a dashboard status message. Existing unrelated
@@ -131,12 +131,12 @@ No profile conversion or copy is necessary. Changes made inside WayVR use its
 normal shared configuration files. Desktop portals may require screen access to
 be authorized again for the new executable.
 
-Save settings in the Qt dashboard, then use **Restart WayVR / apply saved overlay
+Save settings in the dashboard, then use **Restart WayVR / apply saved overlay
 settings**, or reconnect for the next runtime session. Status reports the worker
 process lifecycle; it does not certify XR/desktop capture readiness. Diagnostics
 are in the service journal and `$XDG_RUNTIME_DIR/wivrn-pro/wayvr.log`.
-Restarting WayVR closes its virtual displays and apps, including a dashboard
-opened inside it; the new worker reopens the dashboard if enabled.
+Restarting WayVR closes its virtual displays and apps. The WiVRn-Pro dashboard
+belongs to the desktop/DomeD session and remains independent of that worker.
 
 ## `tcp-only`
 Default value: `false`
