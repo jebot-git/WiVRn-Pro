@@ -936,7 +936,7 @@ try
 		throw std::runtime_error(text);
 	}
 	auto backend = std::make_shared<Backend>(bus, socketPath);
-	// Reserve the shared Qt/FLTK instance name before creating a window or loading fonts.
+	// Reserve one instance per surface so a VR window cannot suppress the desktop UI.
 	Dashboard * active = nullptr;
 	bool earlyShow = false;
 	auto surface = getenv("WAYVR_DISPLAY_AUTH") || (getenv("WIVRN_DASHBOARD_SURFACE") && std::string(getenv("WIVRN_DASHBOARD_SURFACE")) == "vr") ? "vr" : "desktop";

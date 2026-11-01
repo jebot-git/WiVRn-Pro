@@ -1,7 +1,7 @@
 # Optional DomeD / de-xr dashboard
 
-Select `WIVRN_DASHBOARD_FRONTEND=fltk` with `WIVRN_BUILD_DASHBOARD=ON`
-when building WiVRn-Pro. The default remains `qt`. Both choices install the same
+Select `WIVRN_BUILD_DASHBOARD=ON` when building WiVRn-Pro. The default frontend
+is `fltk`; `WIVRN_DASHBOARD_FRONTEND=qt` is an explicit opt-in. Both choices install the same
 `wivrn-pro-dashboard` command and desktop/user-service integration; only the
 selected frontend is installed. This native C++ frontend does not load Qt.
 Python 3.11+ is used solely for asynchronous TOML validation and serialization.
@@ -42,14 +42,14 @@ restart the streaming runtime.
 
 ## DomeD session and tray manager
 
-In a DomeD session (`XDG_CURRENT_DESKTOP` contains `Dome`), startup reserves the
-same `io.github.wivrn.ProDashboard` single-instance name used by the Qt frontend,
+In a DomeD session (`XDG_CURRENT_DESKTOP` contains `Dome`), desktop startup reserves the
+`io.github.wivrn.ProDashboard` single-instance name used by the Qt frontend,
 exports a standard StatusNotifier item with ID **`wivrn.pro`**, and leaves its
-window hidden. The existing user unit and desktop launcher keep working.
-`--show` explicitly opens the window; `--tray` requests hidden startup elsewhere.
-A second invocation activates the existing window. Desktop and WayVR instances
-keep the existing rule that an activation from another surface does not move or
-reveal the window there. WayVR starts with a visible window and no desktop tray.
+window hidden for background startup. The desktop application launcher passes
+`--show` to open the window on its first invocation; `--tray` requests hidden startup elsewhere.
+A second invocation activates the existing window on the same surface. WayVR
+uses `io.github.wivrn.ProDashboard.VR`, so its dashboard and the desktop dashboard
+can coexist. WayVR starts with a visible window and no desktop tray.
 
 DomeD must include the companion change in its compositor and native tray
 manager: `wivrn.pro` defaults to managed placement, alongside `dome.translator`.

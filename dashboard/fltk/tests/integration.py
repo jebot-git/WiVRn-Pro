@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import socket
 import signal
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -136,6 +137,10 @@ class Tests(unittest.TestCase):
         for key in ('WAYLAND_DISPLAY', 'WAYLAND_SOCKET', 'WAYVR_DISPLAY_AUTH', 'WIVRN_DASHBOARD_SURFACE'):
             cls.environment.pop(key, None)
 
+    def test_00_surface_instances(self):
+        for first in ('vr', 'desktop'):
+            subprocess.run(['dbus-run-session', '--', BUILD / 'fltk/wivrn-dashboard-tray-test', first], check=True, timeout=10)
+
     def test_01_backend(self):
         subprocess.run([BUILD / 'fltk/wivrn-dashboard-backend-test', self.services.socket_path], env=self.environment, check=True, timeout=25)
         self.assertEqual(self.services.config['unknown-future'], CONFIG['unknown-future'])
@@ -164,6 +169,7 @@ class Tests(unittest.TestCase):
         saved = helper.run({'path': str(dated), 'action': 'save', 'expected': loaded['text'], 'profile': transported})
         self.assertEqual(saved['profile']['stamp'], loaded['profile']['stamp'])
 
+    @unittest.skipUnless(shutil.which('xwininfo'), 'optional X11 inspection tool is unavailable')
     def test_03_tray_and_real_window(self):
         display_file = self.directory / 'display'
         with display_file.open('w') as output:

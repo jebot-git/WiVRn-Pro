@@ -11,6 +11,7 @@ class Tray
 	std::vector<GDBusNodeInfo *> infos;
 	guint watcher = 0;
 	std::function<void(int)> action;
+	std::string instanceName;
 	static void method(GDBusConnection *, const gchar *, const gchar *, const gchar *, const gchar *, GVariant *, GDBusMethodInvocation *, gpointer);
 	static GVariant * property(GDBusConnection *, const gchar *, const gchar *, const gchar *, const gchar *, GError **, gpointer);
 	void add(const char * path, const char * xml);

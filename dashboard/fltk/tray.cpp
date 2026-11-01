@@ -131,10 +131,10 @@ void Tray::add(const char * path, const char * xml)
 	}
 	registrations.push_back(id);
 }
-Tray::Tray(GDBusConnection * b, std::string s, std::function<void(int)> callback) : bus(G_DBUS_CONNECTION(g_object_ref(b))), action(std::move(callback)), surface(std::move(s))
+Tray::Tray(GDBusConnection * b, std::string s, std::function<void(int)> callback) : bus(G_DBUS_CONNECTION(g_object_ref(b))), action(std::move(callback)), instanceName(s == "vr" ? "io.github.wivrn.ProDashboard.VR" : instance), surface(std::move(s))
 {
 	GError * error = nullptr;
-	auto result = g_dbus_connection_call_sync(bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "RequestName", g_variant_new("(su)", instance, 4u), G_VARIANT_TYPE("(u)"), G_DBUS_CALL_FLAGS_NONE, 3000, nullptr, &error);
+	auto result = g_dbus_connection_call_sync(bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "RequestName", g_variant_new("(su)", instanceName.c_str(), 4u), G_VARIANT_TYPE("(u)"), G_DBUS_CALL_FLAGS_NONE, 3000, nullptr, &error);
 	if (!result)
 	{
 		std::string text = error->message;
@@ -148,7 +148,7 @@ Tray::Tray(GDBusConnection * b, std::string s, std::function<void(int)> callback
 	if (!owner)
 	{
 		// Queued delivery lets the incumbent finish registering after RequestName.
-		auto msg = g_dbus_message_new_method_call(instance, instancePath, instance, "Activate");
+		auto msg = g_dbus_message_new_method_call(instanceName.c_str(), instancePath, instance, "Activate");
 		g_dbus_message_set_body(msg, g_variant_new("(s)", surface.c_str()));
 		g_dbus_connection_send_message(bus, msg, G_DBUS_SEND_MESSAGE_FLAGS_NONE, nullptr, nullptr);
 		g_object_unref(msg);
@@ -173,7 +173,7 @@ Tray::~Tray()
 	for (auto info: infos)
 		g_dbus_node_info_unref(info);
 	if (owner)
-		g_dbus_connection_call(bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "ReleaseName", g_variant_new("(s)", instance), nullptr, G_DBUS_CALL_FLAGS_NONE, 1000, nullptr, nullptr, nullptr);
+		g_dbus_connection_call(bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "ReleaseName", g_variant_new("(s)", instanceName.c_str()), nullptr, G_DBUS_CALL_FLAGS_NONE, 1000, nullptr, nullptr, nullptr);
 	g_object_unref(bus);
 }
 } // namespace wivrn::dashboard
