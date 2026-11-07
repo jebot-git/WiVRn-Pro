@@ -55,7 +55,7 @@ video_encoder_pyrowave::video_encoder_pyrowave(vk_bundle & vk, const encoder_set
         !f.get<vk::PhysicalDeviceVulkan13Features>().subgroupSizeControl ||
         !f.get<vk::PhysicalDeviceVulkan13Features>().computeFullSubgroups ||
         !f.get<vk::PhysicalDeviceVulkan13Features>().maintenance4)
-        throw std::runtime_error("GPU lacks the Vulkan features required by experimental PyroWave");
+        throw std::runtime_error("GPU lacks the Vulkan features required by PyroWave");
     for (auto & slot : state)
     {
         slot.encoder = std::make_unique<PyroWave::Encoder>(vk.physical_device, vk.device,

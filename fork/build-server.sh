@@ -3,12 +3,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # Extra arguments permit encoder choices, dependency caches, and install prefix.
+release_version=$(python3 -c 'import json; print(json.load(open("fork/release.json"))["version"])')
 cmake -S . -B build/server -G Ninja \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_BUILD_TYPE=Release \
   -DWIVRN_BUILD_CLIENT=OFF -DWIVRN_BUILD_SERVER=ON \
   -DWIVRN_BUILD_SERVER_LIBRARY=ON -DWIVRN_BUILD_DASHBOARD=ON \
   -DWIVRN_USE_PYROWAVE=ON -DWIVRN_BUILD_WIVRNCTL=OFF -DWIVRN_USE_VAAPI=ON \
   -DWIVRN_USE_PIPEWIRE=ON -DWIVRN_AUDIO_AB_STOCK=ON \
   -DWIVRN_USE_VULKAN_ENCODE=ON -DWIVRN_OPTIMIZE_SHADERS=ON -DWIVRN_WERROR=ON \
-  -DGIT_DESC=v26.9-pro1 -DGIT_COMMIT="$(git rev-parse HEAD)" "$@"
+  -DGIT_DESC="v${release_version}" -DGIT_COMMIT="$(git rev-parse HEAD)" "$@"
 cmake --build build/server --target wivrn-server openxr_wivrn --parallel "${BUILD_JOBS:-6}"

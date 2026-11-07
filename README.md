@@ -1,5 +1,7 @@
 # WiVRn Pro
 
+Current stable release: **26.9.4**, including PyroWave 4:4:4, native VRChat face output and tracking correctness fixes.
+
 A WiVRn fork for **Meta Quest Pro and Steam Frame over Wi-Fi with Intel Arc, NVIDIA NVENC and AMD VAAPI**.
 This development branch adds a native ARM64 Frame client and unified headset profiles; see [Frame support and known limitations](fork/STEAM-FRAME.md).
 WiVRn client, server, guided spatial capture and the complete current native Shora backend are
@@ -9,7 +11,7 @@ use a different protocol. The standalone spatial bridge remains on `main`.
 - Intel Arc retains Vulkan Video, VAAPI and optional QSV. NVIDIA defaults to
   NVENC and AMD to VAAPI. Encoding stays on the selected Vulkan GPU; software
   encoders and Intel UHD remain excluded. H.264/HEVC remain the default codecs;
-  Frame also offers an explicitly selected experimental PyroWave codec. The Arc CBR/CQP presets also support NVENC and VAAPI.
+  PyroWave 4:4:4 is a supported, explicitly selected codec for compatible Quest Pro and Frame builds. The Arc CBR/CQP presets also support NVENC and VAAPI.
 - An explicit **SlimeVR / Motoc Lighthouse** bridge-mode selector keeps the two
   tracking paths mutually exclusive. Mode changes require a WiVRn restart.
   Motoc includes rigid-tracker continuous calibration and experimental

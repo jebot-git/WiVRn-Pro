@@ -223,7 +223,7 @@ public:
                 throw std::runtime_error("The connected client does not support PyroWave");
             return {"pyrowave", pyrowave};
 #else
-            throw std::runtime_error("Experimental PyroWave was not built; configure WIVRN_USE_PYROWAVE=ON");
+            throw std::runtime_error("PyroWave was not built; configure WIVRN_USE_PYROWAVE=ON");
 #endif
         }
 		if (!fork_policy::encoder(config.name))

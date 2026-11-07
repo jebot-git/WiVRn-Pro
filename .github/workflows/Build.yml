@@ -14,6 +14,9 @@ jobs:
           ctest --test-dir build/microphone-tests --output-on-failure
   server:
     runs-on: ubuntu-26.04
+    name: Server with optional Qt frontend (QSV ${{ matrix.qsv }})
+    env:
+      WIVRN_TEST_QT: '1'
     strategy:
       fail-fast: false
       matrix:
@@ -41,7 +44,9 @@ jobs:
           python3 fork/check-motoc-source.py
           CARGO_TARGET_DIR="$PWD/build/motoc-tests" cargo test --locked --manifest-path server/motoc/upstream/Cargo.toml
       - name: Build server and OpenXR runtime
-        run: fork/build-server.sh -DWIVRN_USE_PYROWAVE=ON -DWIVRN_USE_QSV=${{ matrix.qsv }} -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        run: |
+          fork/build-server.sh -DWIVRN_DASHBOARD_FRONTEND=qt -DWIVRN_USE_PYROWAVE=ON -DWIVRN_USE_QSV=${{ matrix.qsv }}
+          python3 fork/tests/tracking_history_test.py build/server
       - name: Upstream WayVR tests (no XR session)
         run: cargo test --locked --release --manifest-path server/wayvr/upstream/Cargo.toml -p wayvr --no-default-features --features openxr,wayland,x11
       - name: Staged combined service package
@@ -71,8 +76,8 @@ jobs:
         run: fork/build-client.sh
       - uses: actions/upload-artifact@v7
         with:
-          name: quest-pro-debug
-          path: build/android/outputs/apk/debug/*.apk
+          name: quest-pro-release
+          path: build/android/outputs/apk/release/*.apk
 
   build-steam-frame:
     name: Steam Frame

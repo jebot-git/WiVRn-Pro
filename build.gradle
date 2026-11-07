@@ -16,6 +16,11 @@ allprojects {
 }
 
 apply plugin: 'com.android.application'
+def releaseMetadata = new groovy.json.JsonSlurper().parse(file('fork/release.json'))
+def sourceRevision = project.findProperty('wivrn_commit') ?: providers.exec {
+    commandLine 'git', 'rev-parse', 'HEAD'
+    ignoreExitValue = true
+}.standardOutput.asText.get().trim()
 layout.buildDirectory = layout.projectDirectory.dir('build/android')
 
 
@@ -133,8 +138,8 @@ android {
         compileSdkVersion 34
         targetSdkVersion 32 // for Oculus Store
 
-        versionName = project.hasProperty('wivrn_version') ? wivrn_version : "1.0"
-        versionCode = project.hasProperty('wivrn_versionCode') ? wivrn_versionCode.toInteger() : 1
+        versionName = project.hasProperty('wivrn_version') ? wivrn_version : releaseMetadata.version
+        versionCode = project.hasProperty('wivrn_versionCode') ? wivrn_versionCode.toInteger() : releaseMetadata.android_version_code.toInteger()
         def showImguiDemo = project.hasProperty('wivrn_show_imgui_demo') ? wivrn_show_imgui_demo : 'OFF'
         def showDebugMenu = project.hasProperty('wivrn_show_debug_menu') ? wivrn_show_debug_menu : 'OFF'
         def compressGlb = project.hasProperty('wivrn_compress_glb') ? wivrn_compress_glb : 'OFF'
@@ -148,6 +153,9 @@ android {
 
             cmake {
                 arguments  = ['-DANDROID_TOOLCHAIN=clang',
+                          '-DGIT_TAG=',
+                          '-DGIT_DESC=v' + versionName,
+                          '-DGIT_COMMIT=' + sourceRevision,
                           '-DANDROID_STL=' + stl,
                           '-DCMAKE_ANDROID_NDK_VERSION=' + ndkVersion,
                           '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON',
@@ -158,7 +166,7 @@ android {
                           '-DWIVRN_USE_SYSTEM_FREETYPE=OFF',
                           '-DWIVRN_USE_ANDROID_BIN_LIBKTX=ON',
                           '-DWIVRN_BUILD_CLIENT=ON',
-                          '-DWIVRN_USE_PYROWAVE=' + (project.hasProperty('wivrn_pyrowave') ? 'ON' : 'OFF'),
+                          '-DWIVRN_USE_PYROWAVE=' + ((project.findProperty('wivrn_pyrowave') ?: '1').toString().toLowerCase() in ['0', 'off', 'false'] ? 'OFF' : 'ON'),
                           '-DWIVRN_BUILD_SERVER=OFF',
                           '-DWIVRN_BUILD_SERVER_LIBRARY=OFF',
                           '-DWIVRN_BUILD_WIVRNCTL=OFF',

@@ -1,4 +1,4 @@
-# Quest Pro PyroWave 4:4:4 experiment
+# Quest Pro PyroWave 4:4:4
 
 This WiVRn-Pro option adapts the Haar GPU encoder/decoder from
 [JMS1717/Quest3-Pyrowave](https://github.com/JMS1717/Quest3-Pyrowave)
@@ -19,8 +19,7 @@ it does not require ALVR or Granite at runtime.
 
 ## Selection and resolution
 
-Build both endpoints with `WIVRN_USE_PYROWAVE=ON`. Select **PyroWave 4:4:4 Haar
-(experimental)** in the client codec settings and select the `pyrowave`
+Build both endpoints with `WIVRN_USE_PYROWAVE=ON`. Select **PyroWave 4:4:4 Haar** in the client codec settings and select the `pyrowave`
 encoder in the server configuration. Use matching builds: this change adds
 chroma/wavelet negotiation fields and changes the WiVRn protocol hash.
 Mixed PyroWave and video-codec streams are rejected, including alpha.
@@ -51,7 +50,7 @@ cmake --build build/native --target wivrn-server openxr_wivrn pyrowave-gpu-test 
 python3 fork/tests/performance_feed_test.py build/native
 ```
 
-Main builds include the experimental option in `org.meumeu.wivrn.spatial`.
+Main builds include PyroWave in `org.meumeu.wivrn.spatial`.
 Use `-Pwivrn_pyrowave_test_app=1` to build the separate test package.
 The dedicated test Android package is `org.meumeu.wivrn.pyrowave`, displayed as **WiVRn Pro
 PyroWave**. It installs alongside the production spatial client. The APK is
@@ -90,8 +89,8 @@ fields should not be equated. `frames` counts received source frames;
 counts additional submissions of those frames. Presentation feedback refers
 to predicted OpenXR display time, not measured photon timing.
 
-Keep this option experimental until representative game content sustains the
-90 Hz target over the intended 6 GHz network. No headset root changes, radio
+PyroWave is a supported codec in the stable 26.9.4 release. The measurements
+here do not qualify sustained 90 Hz on representative games or 6 GHz networks. No headset root changes, radio
 changes or production server replacement were required for these tests.
 
 ## Local live result (2026-10-13)
@@ -116,7 +115,7 @@ isolated `/run/user/$(id -u)/wivrn-pyrowave-test` directory (or
 `WIVRN_PYROWAVE_RUNTIME`) and `XR_RUNTIME_JSON` to its absolute
 `host/openxr_wivrn.json` path. Keep the host system dependencies installed.
 
-## Experimental desktop foveation
+## Desktop foveation
 
 The main preset now supports `pyrowave-foveation` (0–80%) and exposes it in the
 desktop dashboard. The preset defaults to Use headset setting, clearing any old desktop override.

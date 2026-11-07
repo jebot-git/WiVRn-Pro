@@ -213,7 +213,7 @@ class StreamingPanel(QWidget):
         self.headset_profile.setToolTip('Auto accepts both clients. A specific profile restricts new connections to that headset. Anchor controls follow the connected client.')
         self.encoder = QComboBox()
         self.encoder.addItems(['Preserve current layout', 'auto', 'vaapi', 'vulkan', 'qsv', 'nvenc', 'pyrowave'])
-        self.encoder.setToolTip('Selecting an encoder replaces the encoder layout. QSV requires a QSV-enabled server build. PyroWave is experimental and requires compatible client and server builds.')
+        self.encoder.setToolTip('Selecting an encoder replaces the encoder layout. QSV requires a QSV-enabled server build. PyroWave requires compatible client and server builds.')
         self.codec = QComboBox()
         self.codec.addItems(['Preserve current codec', 'h264', 'h265', 'pyrowave'])
         self.pyrowave_bitrate = QSpinBox(); self.pyrowave_bitrate.setRange(0, 1000)

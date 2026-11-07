@@ -753,7 +753,7 @@
     "wayvr/src/gui/panel/mod.rs": "f74cf71166a14b05a69a9a18a9348ae8990e0690034f7e97a80cab600f16aac0",
     "wayvr/src/gui/panel/overlay_list.rs": "51b48535ed81f78a14237cf5043c5c7f7aa475ff83aa5f579ab507ff95497563",
     "wayvr/src/main.rs": "8b654941deb0d7aabd0b926b9d9afa301b5b9441b4e58c779c328967552acfd6",
-    "wayvr/src/overlays/dashboard.rs": "d45c4b52033e399e0c03c287d0a79f27ec7225591458fdb37ef7fe68141a8101",
+    "wayvr/src/overlays/dashboard.rs": "ac194e7fa1a81448bf4089641b0ce8dbc579ac5974800568d419313667238520",
     "wayvr/src/overlays/edit/mod.rs": "1e4812044674f5a6ed10c83612d05347cea15172a2a9f57eb75f09c9e2a57a28",
     "wayvr/src/overlays/edit/pos.rs": "f45ce8908d2b3c438e9cd97f791b461b03804558f0f35dfc4f7d4e9d7c86445e",
     "wayvr/src/overlays/keyboard/builder.rs": "519e576b980c73b0eaa21578acefe5c91836b5fe70133486d9962821912b0a95",

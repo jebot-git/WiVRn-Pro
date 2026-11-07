@@ -65,18 +65,23 @@ def client_instructions(preset):
 
 def main(argv=None):
     catalog = presets()
+    # Keep existing scripts working without listing duplicate preview presets.
+    selections = dict(catalog)
+    for preset in catalog.values():
+        for alias in preset.get('aliases', []):
+            selections[alias] = preset
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("list", help="List profiles and client bitrate requirements")
     show = sub.add_parser("show", help="Show the full profile and headset settings")
-    show.add_argument("preset", choices=catalog)
+    show.add_argument("preset", choices=selections)
     render = sub.add_parser("render", help="Merge a profile into a reviewable config; no live change")
-    render.add_argument("preset", choices=catalog)
+    render.add_argument("preset", choices=selections)
     render.add_argument("--base", type=Path, default=default_config())
     render.add_argument("--output", type=Path, help="New output file; defaults to stdout")
     render.add_argument("--cqp-capable", action="store_true", help="Target is the CQP-capable experimental branch")
     apply = sub.add_parser("apply", help="Save host config with a backup; no restart or headset changes")
-    apply.add_argument("preset", choices=catalog)
+    apply.add_argument("preset", choices=selections)
     apply.add_argument("--config", type=Path, default=default_config())
     apply.add_argument("--cqp-capable", action="store_true", help="Target is the CQP-capable experimental branch")
     args = parser.parse_args(argv)
@@ -85,7 +90,7 @@ def main(argv=None):
             print(f"{name:25} {preset['title']}")
         print("Bitrate, refresh and foveation require matching headset settings; they are not host config fields.")
         return 0
-    preset = catalog[args.preset]
+    preset = selections[args.preset]
     if args.command == "show":
         print(json.dumps(preset, indent=2))
         return 0

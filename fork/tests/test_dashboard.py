@@ -43,13 +43,13 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.server.calls[-1],('save',{'tcp-only':True},{}))
     def test_pyrowave_preset_preserves_codec_and_host_application(self):
         self.panel.preset_backend.setCurrentText('nvenc')
-        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
+        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444'))
         self.panel.load_preset.click()
         value = self.panel.configuration()
         self.assertEqual(value['encoder'], {'encoder': 'pyrowave', 'codec': 'pyrowave'})
         self.assertEqual(value['application'], self.config['application'])
         self.assertFalse(self.panel.preset_backend.isEnabled())
-        self.assertIn('Experimental', self.panel.preset_notice.text())
+        self.assertNotIn('Experimental', self.panel.preset_notice.text())
 
     def test_pyrowave_bitrate_saves_override_and_returns_to_headset(self):
         self.panel.encoder.setCurrentText('pyrowave')
@@ -67,7 +67,7 @@ class DashboardTests(unittest.TestCase):
         self.assertNotIn('pyrowave-bitrate', self.panel.configuration())
 
     def test_pyrowave_preset_bitrate_is_editable_and_preserves_raw_edits(self):
-        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
+        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444'))
         self.panel.load_preset.click()
         self.assertEqual(self.panel.pyrowave_bitrate.value(), 400)
         self.panel.pyrowave_bitrate.setValue(280)
@@ -78,7 +78,7 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(self.panel.configuration(), draft)
 
     def test_pyrowave_foveation_preset_and_override_round_trip(self):
-        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
+        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444'))
         self.panel.load_preset.click()
         self.assertEqual(self.panel.pyrowave_foveation.value(), -1)
         self.assertIsNone(self.panel.configuration().get('pyrowave-foveation'))
@@ -98,7 +98,7 @@ class DashboardTests(unittest.TestCase):
         config = {**self.config, 'pyrowave-foveation': 0}
         self.server.state.emit({'JsonConfiguration': json.dumps(config)})
         self.assertEqual(self.panel.pyrowave_foveation.value(), 0)
-        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444-experimental'))
+        self.panel.preset.setCurrentIndex(self.panel.preset.findData('pyrowave-444'))
         self.panel.load_preset.click()
         self.assertEqual(self.panel.pyrowave_foveation.value(), -1)
         value = self.panel.configuration()

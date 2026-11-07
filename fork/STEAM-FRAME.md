@@ -80,7 +80,7 @@ files with `fork/packaging/package-frame.py`, which verifies the Valve archive
 checksum and ARM64 binaries and includes the runtime and local KTX/OpenXR loader.
 These changes address startup packaging; headset streaming still needs a retest.
 
-## Experimental PyroWave
+## PyroWave
 
 Build with `-DWIVRN_USE_PYROWAVE=ON` on server and Frame client (enabled in the
 `frame` preset). Choose encoder/codec `pyrowave` in server streaming settings,
@@ -135,7 +135,7 @@ DESTDIR="$PWD/build/frame-install" fork/build-frame.sh -DCMAKE_INSTALL_PREFIX=/u
 ```
 
 The matching unified server is built with the existing `fork/build-server.sh`;
-add `-DWIVRN_USE_PYROWAVE=ON` to include that experimental encoder. Rebuild the
+PyroWave is included by default; `-DWIVRN_USE_PYROWAVE=OFF` excludes it. Rebuild the
 Quest APK from this branch as well: upstream controller IDs and codec-capability
 packets change the protocol hash. Released portability APKs are not a matching
 client for this development branch.

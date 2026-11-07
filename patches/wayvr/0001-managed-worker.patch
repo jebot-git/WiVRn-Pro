@@ -2996,32 +2996,17 @@ diff --git a/wayvr/src/main.rs b/wayvr/src/main.rs
 diff --git a/wayvr/src/overlays/dashboard.rs b/wayvr/src/overlays/dashboard.rs
 --- a/wayvr/src/overlays/dashboard.rs
 +++ b/wayvr/src/overlays/dashboard.rs
-@@ -85,6 +85,24 @@
-             }
-         }
+@@ -73,6 +73,9 @@
  
-+        if let Ok(exec) = std::env::var("WIVRN_DASHBOARD_EXECUTABLE")
-+            && !exec.is_empty()
-+            && app.wvr_server.is_some()
-+            && !app.session.no_autostart
-+            && !app.session.config.autostart_apps.iter().any(|p| p.exec == exec || std::path::Path::new(&p.exec).file_name().is_some_and(|name| name == "wivrn-pro-dashboard"))
-+        {
-+            let params = WvrProcessLaunchParams {
-+                name: "WiVRn Pro".into(), exec, args: String::new(),
-+                env: vec!["QT_QPA_PLATFORM=wayland".into()], icon: None,
-+                resolution: [1440, 1000],
-+                pos_mode: wayvr_ipc::packet_client::PositionMode::Float,
-+                userdata: Default::default(),
-+            };
-+            if let Err(error) = interface.process_launch(app, false, params) {
-+                log::warn!("Could not open WiVRn dashboard: {error}");
-+            }
-+        }
+ const GUI_SCALE: f32 = 2.0;
+ 
++#[path = "../../../../dashboard_policy.rs"]
++mod dashboard_policy;
 +
-         let tutorial = !app.session.config.tutorial_graduated;
- 
-         let frontend = frontend::Frontend::new(frontend::InitParams {
-@@ -391,6 +409,7 @@
+ impl DashFrontend {
+     fn new(app: &mut AppState) -> anyhow::Result<Self> {
+         let mut interface = DashInterfaceLive::new();
+@@ -391,6 +394,7 @@
  }
  
  impl DashInterface<AppState> for DashInterfaceLive {
@@ -3029,6 +3014,17 @@ diff --git a/wayvr/src/overlays/dashboard.rs b/wayvr/src/overlays/dashboard.rs
      fn window_list(&mut self, app: &mut AppState) -> anyhow::Result<Vec<WvrWindow>> {
          let wvr_server = app.wvr_server.as_mut().unwrap();
          Ok(wvr_server
+@@ -434,6 +438,10 @@
+         auto_start: bool,
+         params: WvrProcessLaunchParams,
+     ) -> anyhow::Result<WvrProcessHandle> {
++        anyhow::ensure!(
++            dashboard_policy::supported_application(&params.exec),
++            "Open WiVRn Pro from the desktop or DomeD XR session."
++        );
+         let wvr_server = app.wvr_server.as_mut().unwrap();
+ 
+         let args_vec = gen_args_vec(&params.args);
 diff --git a/wayvr/src/overlays/edit/mod.rs b/wayvr/src/overlays/edit/mod.rs
 --- a/wayvr/src/overlays/edit/mod.rs
 +++ b/wayvr/src/overlays/edit/mod.rs

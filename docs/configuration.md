@@ -301,7 +301,7 @@ across connections, and takes priority over subsequent headset bitrate changes.
 Saving updates an active PyroWave session without restarting VRChat. Actual
 traffic can vary with content; this target is not a network throughput guarantee.
 
-### Experimental PyroWave foveation
+### PyroWave foveation
 
 **PyroWave foveation (restart)** in the desktop streaming panel overrides the
 headset stream scale for this codec. Save and restart WiVRn to change dimensions.

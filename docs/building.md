@@ -191,3 +191,10 @@ The dashboard defaults to FLTK with `-DWIVRN_BUILD_DASHBOARD=ON`. It uses de-xr'
 patched shared FLTK 1.4.5 and DomeD's live appearance helpers, and starts hidden
 in the DomeD tray manager. It can also be built independently with
 `fork/build-dashboard-fltk.sh`. See [build, coverage and testing details](../dashboard/fltk/README.md).
+# Release verification
+
+The normal local build uses the FLTK dashboard. Run `fork/test-offline.sh` for
+the common checks, then the FLTK integration checks described in
+`dashboard/fltk/README.md`. Set `WIVRN_TEST_QT=1` only when testing the optional
+Qt frontend with its Python dependencies installed. Release version and Android
+versionCode defaults are recorded in `fork/release.json`.

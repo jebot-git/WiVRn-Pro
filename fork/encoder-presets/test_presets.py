@@ -13,6 +13,16 @@ TOOL = ROOT / "wivrn-host-preset"
 
 
 class PresetTests(unittest.TestCase):
+    def test_stable_pyrowave_preserves_preview_cli_alias(self):
+        stable = self.run_tool('render', 'pyrowave-444', '--base', self.config)
+        legacy = self.run_tool('render', 'pyrowave-444-experimental', '--base', self.config)
+        self.assertEqual(stable.stdout, legacy.stdout)
+        listing = self.run_tool('list').stdout
+        self.assertIn('pyrowave-444 ', listing)
+        self.assertNotIn('pyrowave-444-experimental', listing)
+        profile = json.loads(self.run_tool('show', 'pyrowave-444').stdout)
+        self.assertFalse(profile['experimental'])
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

@@ -35,7 +35,7 @@ profiles = list((root / 'usr/share/wivrn-pro/encoder-presets/profiles').glob('*.
 assert len(profiles) >= 8
 info = json.loads((root / 'usr/share/doc/wivrn-pro/build-info.json').read_text())
 if 'pyrowave' in info['encoders']:
-    pyro = root / 'usr/share/wivrn-pro/encoder-presets/profiles/pyrowave-444-experimental.json'
+    pyro = root / 'usr/share/wivrn-pro/encoder-presets/profiles/pyrowave-444.json'
     assert json.loads(pyro.read_text())['host_config']['encoder']['codec'] == 'pyrowave'
 assert (root / 'usr/share/licenses/wivrn-pro/motoc/LICENSE').is_file()
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'
