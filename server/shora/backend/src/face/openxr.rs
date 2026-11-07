@@ -70,7 +70,7 @@ struct XrState {
     // before the instance, so `face_tracker_fb` must come first and `instance`
     // last — otherwise destroying the face tracker after the session/instance is
     // gone segfaults in the runtime (use-after-free).
-    face_tracker_fb: Option<MyFaceTrackerFB>,
+    face_tracker_fb: Option<xr::FaceTrackerFB>,
     events: xr::EventDataBuffer,
     actions: xr::ActionSet,
     eye_space: xr::Space,
@@ -105,7 +105,7 @@ impl XrState {
         let view_space =
             session.create_reference_space(xr::ReferenceSpaceType::VIEW, xr::Posef::IDENTITY)?;
         let eye_space =
-            eye_action.create_space(session.clone(), xr::Path::NULL, xr::Posef::IDENTITY)?;
+            eye_action.create_space(&session, xr::Path::NULL, xr::Posef::IDENTITY)?;
 
         let mut me = Self {
             instance,
@@ -120,30 +120,16 @@ impl XrState {
             eyes_closed_frames: 0,
         };
 
-        me.face_tracker_fb = MyFaceTrackerFB::new(&me)
-            .map_err(|e| tracing::info!("FB_face_tracking2: {e}"))
-            .ok();
-
-        Ok(me)
-    }
-
-    fn load_properties<T>(&self, next: *mut T) -> xr::Result<()> {
-        unsafe {
-            let mut p = xr::sys::SystemProperties {
-                ty: xr::sys::SystemProperties::TYPE,
-                next: next as _,
-                ..std::mem::zeroed()
-            };
-            let res = (self.instance.fp().get_system_properties)(
-                self.instance.as_raw(),
-                self.system,
-                &mut p,
-            );
-            if res != xr::sys::Result::SUCCESS {
-                return Err(res);
+        if me.instance.exts().fb_face_tracking2.is_some() {
+            let supported = me.instance.supports_face_tracking_fb(me.system)?;
+            if supported.supports_visual_face_tracking {
+                me.face_tracker_fb = me.session.create_face_tracker_fb(
+                    xr::FaceExpressionSet2FB::DEFAULT,
+                    &[xr::FaceTrackingDataSource2FB::VISUAL],
+                ).map_err(|e| tracing::info!("FB_face_tracking2: {e}")).ok();
             }
-            Ok(())
         }
+        Ok(me)
     }
 
     fn receive(&mut self, data: &mut UnifiedTrackingData) -> anyhow::Result<bool> {
@@ -219,12 +205,10 @@ impl XrState {
         }
 
         if let Some(face_tracker) = self.face_tracker_fb.as_ref() {
-            let mut weights = [0f32; 70];
-            let mut confidences = [0f32; 2];
-            if face_tracker.get_face_expression_weights(next_frame, &mut weights, &mut confidences)? {
+            if let Some(expression) = face_tracker.get_expression_weights(next_frame)? {
                 valid = true;
-                if let Some(shapes) = face2_fb::face2_fb_to_unified(&weights) {
-                    data.eye_active = true;
+                if let Some(shapes) = face2_fb::face2_fb_to_unified(&expression.weights) {
+                    data.eye_active = expression.eye_following_blendshapes_valid || data.eye_active;
                     data.shapes[..UnifiedExpressions::COUNT]
                         .copy_from_slice(&shapes[..UnifiedExpressions::COUNT]);
                 }
@@ -236,7 +220,7 @@ impl XrState {
 }
 
 fn xr_init() -> anyhow::Result<(xr::Instance, xr::SystemId)> {
-    let entry = xr::Entry::linked();
+    let entry = xr::Entry::linked(&())?;
     let available_extensions = entry
         .enumerate_extensions()
         .map_err(|_| anyhow::anyhow!("Failed to enumerate OpenXR extensions."))?;
@@ -273,6 +257,7 @@ fn xr_init() -> anyhow::Result<(xr::Instance, xr::SystemId)> {
             },
             &enabled_extensions,
             &[],
+            &(),
         )
         .map_err(|_| anyhow::anyhow!("Failed to create OpenXR instance."))?;
 
@@ -295,96 +280,4 @@ fn xr_init() -> anyhow::Result<(xr::Instance, xr::SystemId)> {
 fn to_quat(p: xr::Quaternionf) -> Quat {
     let q: Quaternion<f32> = p.into();
     q.into()
-}
-
-struct MyFaceTrackerFB {
-    api: xr::raw::FaceTracking2FB,
-    tracker: xr::sys::FaceTracker2FB,
-}
-
-impl MyFaceTrackerFB {
-    fn new(xr_state: &XrState) -> anyhow::Result<Self> {
-        if xr_state.instance.exts().fb_face_tracking2.is_none() {
-            anyhow::bail!("Extension not supported.");
-        }
-
-        let mut props = xr::sys::SystemFaceTrackingProperties2FB {
-            ty: xr::StructureType::SYSTEM_FACE_TRACKING_PROPERTIES2_FB,
-            next: std::ptr::null_mut(),
-            supports_visual_face_tracking: xr::sys::Bool32::from_raw(0),
-            supports_audio_face_tracking: xr::sys::Bool32::from_raw(0),
-        };
-        xr_state.load_properties(&mut props)?;
-        if props.supports_visual_face_tracking.into_raw() == 0 {
-            anyhow::bail!("Unable to provide visual data.");
-        }
-
-        let api = unsafe {
-            xr::raw::FaceTracking2FB::load(
-                xr_state.session.instance().entry(),
-                xr_state.session.instance().as_raw(),
-            )?
-        };
-
-        let mut data_source = xr::sys::FaceTrackingDataSource2FB::VISUAL;
-        let info = xr::sys::FaceTrackerCreateInfo2FB {
-            ty: xr::StructureType::FACE_TRACKER_CREATE_INFO2_FB,
-            next: std::ptr::null(),
-            face_expression_set: xr::FaceExpressionSet2FB::DEFAULT,
-            requested_data_source_count: 1,
-            requested_data_sources: &mut data_source,
-        };
-
-        let mut tracker = xr::sys::FaceTracker2FB::default();
-        let res =
-            unsafe { (api.create_face_tracker2)(xr_state.session.as_raw(), &info, &mut tracker) };
-        if res.into_raw() != 0 {
-            anyhow::bail!("Could not initialize: {:?}", res);
-        }
-
-        tracing::info!("Using FB_face_tracking2 for face.");
-        Ok(Self { api, tracker })
-    }
-
-    fn get_face_expression_weights(
-        &self,
-        time: xr::Time,
-        weights: &mut [f32],
-        confidences: &mut [f32],
-    ) -> anyhow::Result<bool> {
-        let mut expressions = xr::sys::FaceExpressionWeights2FB {
-            ty: xr::StructureType::FACE_EXPRESSION_WEIGHTS2_FB,
-            next: std::ptr::null_mut(),
-            weight_count: weights.len() as _,
-            weights: weights.as_mut_ptr(),
-            confidence_count: confidences.len() as _,
-            confidences: confidences.as_mut_ptr(),
-            is_eye_following_blendshapes_valid: xr::sys::Bool32::from_raw(0),
-            is_valid: xr::sys::Bool32::from_raw(0),
-            data_source: xr::sys::FaceTrackingDataSource2FB::VISUAL,
-            time,
-        };
-
-        let info = xr::sys::FaceExpressionInfo2FB {
-            ty: xr::StructureType::FACE_EXPRESSION_INFO2_FB,
-            next: std::ptr::null(),
-            time,
-        };
-
-        let res = unsafe {
-            (self.api.get_face_expression_weights2)(self.tracker, &info, &mut expressions)
-        };
-        if res.into_raw() != 0 {
-            anyhow::bail!("Failed to get expression weights");
-        }
-        Ok(expressions.is_valid.into_raw() != 0)
-    }
-}
-
-impl Drop for MyFaceTrackerFB {
-    fn drop(&mut self) {
-        unsafe {
-            (self.api.destroy_face_tracker2)(self.tracker);
-        }
-    }
 }

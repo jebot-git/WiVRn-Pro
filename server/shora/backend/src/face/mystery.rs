@@ -21,9 +21,14 @@ pub struct OscJsonNode {
     pub data_type: Option<Arc<str>>,
     #[serde(alias = "CONTENTS")]
     pub contents: Option<HashMap<Arc<str>, OscJsonNode>>,
+    #[serde(default, alias = "VALUE")]
+    pub value: Option<Vec<serde_json::Value>>,
 }
 
 impl OscJsonNode {
+    pub fn native_face_tracking(&self) -> Option<bool> {
+        self.get("avatarfullfacetracking")?.value.as_ref()?.first()?.as_bool()
+    }
     pub fn get(&self, path: &str) -> Option<&OscJsonNode> {
         let mut node = self;
         for part in path.split('/') {

@@ -50,7 +50,8 @@ glam = { version = "0.30", features = ["mint"] }
 mint = "0.5"
 strum = { version = "0.27", features = ["derive"] }
 mdns-sd = "0.20"
-openxr = { git = "https://github.com/galister/openxrs", rev = "17642d0ccac65dbf7e24da84db56cc500592afff", default-features = false, features = ["linked", "mint"], optional = true }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "gzip"] }
+openxr = { git = "https://github.com/Ralith/openxrs.git", rev = "d9bea09ebeb917d9eb252c3770fe77cb1175ad5f", default-features = false, features = ["linked", "mint"], optional = true }
 
 # Native HaritoraX interpreter and Shora terminal frontend.
 base64 = "0.22"

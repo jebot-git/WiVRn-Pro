@@ -11,9 +11,10 @@ use strum::IntoEnumIterator;
 use super::bundle::{AvatarBundle, PARAM_PREFIX};
 use super::config::{FaceConfig, OutputMode};
 use super::mystery::{build_params, default_params, shape_index, split_suffix, MysteryParam, OscJsonNode};
-use super::unified::{CombinedExpression, UnifiedExpressions, UnifiedTrackingData, NUM_SHAPES};
+use super::unified::{CombinedExpression, UnifiedExpressions, UnifiedTrackingData, NUM_SHAPES, NUM_VRC_SHAPES};
 
 pub enum FaceOutput {
+    VrcFaceV1,
     OscQuery(Box<[Option<MysteryParam>; NUM_SHAPES]>),
     Channels(ChannelMap),
 }
@@ -38,9 +39,9 @@ impl FaceOutput {
             let text = std::fs::read_to_string(path)
                 .with_context(|| format!("read face avatar mapping {}", path.display()))?;
             let node: OscJsonNode = serde_json::from_str(&text).context("parse face avatar OSCQuery tree")?;
-            anyhow::ensure!(node.get("parameters").is_some(),
+            anyhow::ensure!(node.get("parameters").is_some() || node.native_face_tracking().is_some(),
                 "face.avatar requires an OSCQuery /avatar tree; use face.translation_sheet for VRChat avatar JSON");
-            return Ok(Self::OscQuery(Box::new(build_params(&node))));
+            return Ok(Self::from_oscquery(&node));
         }
         if cfg.output == OutputMode::Unift {
             Ok(Self::Channels(ChannelMap::unift()))
@@ -51,17 +52,26 @@ impl FaceOutput {
     }
 
     pub fn discovers_avatar(cfg: &FaceConfig) -> bool {
-        cfg.output == OutputMode::Auto && cfg.osc_query && cfg.avatar.is_none()
+        Self::automatic(cfg) && cfg.osc_query
+    }
+
+    pub fn automatic(cfg: &FaceConfig) -> bool {
+        cfg.output == OutputMode::Auto && cfg.avatar.is_none()
             && cfg.translation_sheet.is_none()
     }
 
     pub fn from_oscquery(node: &OscJsonNode) -> Self {
-        Self::OscQuery(Box::new(build_params(node)))
+        if node.native_face_tracking() == Some(true) {
+            Self::VrcFaceV1
+        } else {
+            Self::OscQuery(Box::new(build_params(node)))
+        }
     }
 
     pub fn invalidate(&mut self, data: &mut UnifiedTrackingData) {
         data.invalidate_output();
         match self {
+            Self::VrcFaceV1 => {}
             Self::OscQuery(params) => {
                 for param in params.iter_mut().flatten() { param.invalidate(); }
             }
@@ -72,7 +82,21 @@ impl FaceOutput {
     }
 
     pub fn apply(&mut self, data: &mut UnifiedTrackingData, bundle: &mut OscBundle, active: bool) {
+        if active { data.update_eye_look_shapes(); }
         match self {
+            Self::VrcFaceV1 => {
+                // Native v1 is one OSC blob of 102 unsigned, normalized bytes.
+                // Inactive sources must clear every channel, including eyelids.
+                let bytes = if active {
+                    data.shapes[..NUM_VRC_SHAPES].iter()
+                        .map(|value| (value.clamp(0.0, 1.0) * 255.0).round() as u8)
+                        .collect()
+                } else { vec![0; NUM_VRC_SHAPES] };
+                bundle.send_tracking("/tracking/face/v1", vec![OscType::Blob(bytes)]);
+                // Reuse activity signalling without emitting legacy shape routes.
+                data.apply_tracking_flags(bundle, active);
+                data.apply_eye_tracking(bundle, true);
+            }
             Self::OscQuery(params) => data.apply_to_bundle(params, bundle, active),
             Self::Channels(mapping) => {
                 mapping.send(data, active, bundle);
@@ -238,6 +262,46 @@ mod tests {
     use super::*;
     use rosc::OscPacket;
     use serde_json::json;
+
+    #[test]
+    fn native_packet_has_upstream_byte_order_quantization_and_no_legacy_shapes() {
+        let mut output = FaceOutput::VrcFaceV1;
+        let mut data = UnifiedTrackingData::default();
+        data.setu(UnifiedExpressions::JawOpen, 0.5);
+        data.setu(UnifiedExpressions::EyeClosedRight, 2.0);
+        data.setu(UnifiedExpressions::NeckFlexLeft, -0.5);
+        data.setu(UnifiedExpressions::EyeLeftX, f32::NAN);
+        data.eyes = [Some(glam::Vec3::new(0.0, std::f32::consts::PI / 6.0, 0.0)), None];
+        let mut bundle = OscBundle::new_bundle();
+        output.apply(&mut data, &mut bundle, true);
+        let found = values(bundle);
+        let OscType::Blob(bytes) = &found["/tracking/face/v1"] else { panic!("native OSC blob missing") };
+        assert_eq!(bytes.len(), 102);
+        assert_eq!(bytes[0], 0); // EyeLookOutRight
+        assert_eq!(bytes[1], 255); // EyeLookInRight
+        assert_eq!(bytes[4], 255); // EyeLookOutLeft
+        assert_eq!(bytes[8], 255); // EyeClosedRight
+        assert_eq!(bytes[36], 128); // JawOpen
+        assert_eq!(bytes[101], 0); // NeckFlexLeft
+        assert!(!found.keys().any(|address| address.starts_with("/avatar/parameters/FT/")));
+        assert!(!found.contains_key("/tracking/eye/EyesClosedAmount"));
+        let mut stopped = OscBundle::new_bundle();
+        output.apply(&mut data, &mut stopped, false);
+        let stopped = values(stopped);
+        assert_eq!(stopped["/tracking/face/v1"], OscType::Blob(vec![0; 102]));
+        assert_eq!(stopped["/avatar/parameters/ExpressionTrackingActive"], OscType::Bool(false));
+    }
+
+    #[test]
+    fn oscquery_capability_selects_native_and_false_retains_legacy_mapping() {
+        for native in [true, false] {
+            let node = serde_json::from_value(json!({"FULL_PATH":"/avatar", "CONTENTS": {
+                "avatarfullfacetracking": {"FULL_PATH":"/avatar/avatarfullfacetracking", "VALUE":[native]},
+                "parameters": {"FULL_PATH":"/avatar/parameters", "CONTENTS":{}}
+            }})).unwrap();
+            assert!(matches!(FaceOutput::from_oscquery(&node), FaceOutput::VrcFaceV1) == native);
+        }
+    }
 
     fn values(bundle: OscBundle) -> HashMap<String, OscType> {
         bundle.content.into_iter().map(|packet| match packet {

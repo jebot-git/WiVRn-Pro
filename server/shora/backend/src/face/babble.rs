@@ -89,7 +89,8 @@ fn apply_packet(packet: &OscPacket, data: &mut UnifiedTrackingData, last_eye: &m
             let mappings = mappings_for(&message.addr);
             for mapping in &mappings {
                 data.setu(mapping.expr, if mapping.invert { 1.0 - value } else { *value });
-                if mapping.expr as usize <= UnifiedExpressions::EyeWideLeft as usize {
+                if mapping.expr as usize <= UnifiedExpressions::EyeWideLeft as usize
+                    || matches!(mapping.expr, UnifiedExpressions::EyeLeftX | UnifiedExpressions::EyeRightX | UnifiedExpressions::EyeY) {
                     *last_eye = Some(Instant::now());
                 }
             }

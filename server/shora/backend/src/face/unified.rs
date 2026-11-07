@@ -1,13 +1,13 @@
 //! Unified face/eye expression model, ported from oscavmgr's
 //! `src/core/ext_tracking/unified.rs`.
 //!
-//! The model is a flat `[f32; NUM_SHAPES]` buffer: 89 "unified" (biometric/source)
-//! shapes at indices 0..=88, followed by 56 derived "combined" shapes at
-//! 89..=144. `calc_combined` derives the combined shapes from the unified ones and
+//! The first 102 unified shapes match VRChat native face v1 byte order,
+//! followed by three legacy gaze channels and the derived combined shapes. `calc_combined` derives the combined shapes from the unified ones and
 //! `apply_to_bundle` fans each shape out to the OSC addresses mapped by an
 //! OSC-JSON avatar description (`MysteryParam`).
 
 use glam::Vec3;
+use std::f32::consts::PI;
 use rosc::{OscBundle, OscType};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -20,6 +20,8 @@ use super::mystery::MysteryParam;
 pub type FaceParams = HashMap<Arc<str>, OscType>;
 
 pub const NUM_SHAPES: usize = UnifiedExpressions::COUNT + CombinedExpression::COUNT;
+pub const NUM_VRC_SHAPES: usize = UnifiedExpressions::COUNT - 3;
+const _: () = assert!(NUM_VRC_SHAPES == 102);
 #[cfg(feature = "face-xr")]
 pub type UnifiedShapes = [f32; NUM_SHAPES];
 
@@ -415,12 +417,52 @@ impl UnifiedTrackingData {
         self.setc(CombinedExpression::Blush, new_blush);
     }
 
+    pub fn update_eye_look_shapes(&mut self) {
+        const MAX_EYE_DEFLECTION_RAD: f32 = PI / 6.0; // 30deg
+
+        let (lx, ly, rx, ry) = if let Some(left) = self.eyes[0] {
+            let right = self.eyes[1].unwrap_or(left);
+            let n = |rad: f32| rad / MAX_EYE_DEFLECTION_RAD;
+            (n(-left.y), n(left.x), n(-right.y), n(right.x))
+        } else {
+            let y = self.getu(UnifiedExpressions::EyeY);
+            (
+                self.getu(UnifiedExpressions::EyeLeftX),
+                y,
+                self.getu(UnifiedExpressions::EyeRightX),
+                y,
+            )
+        };
+
+        self.setu(UnifiedExpressions::EyeLookOutRight, rx);
+        self.setu(UnifiedExpressions::EyeLookInRight, -rx);
+        self.setu(UnifiedExpressions::EyeLookUpRight, ry);
+        self.setu(UnifiedExpressions::EyeLookDownRight, -ry);
+        self.setu(UnifiedExpressions::EyeLookOutLeft, -lx);
+        self.setu(UnifiedExpressions::EyeLookInLeft, lx);
+        self.setu(UnifiedExpressions::EyeLookUpLeft, ly);
+        self.setu(UnifiedExpressions::EyeLookDownLeft, -ly);
+    }
+
     pub fn apply_to_bundle(
         &mut self,
         params: &mut [Option<MysteryParam>; NUM_SHAPES],
         bundle: &mut OscBundle,
         active: bool,
     ) {
+        self.apply_tracking_flags(bundle, active);
+
+        for (idx, shape) in self.shapes.iter().enumerate() {
+            if let Some(param) = &mut params[idx] {
+                param.send(*shape, bundle);
+            }
+        }
+
+        self.apply_eye_tracking(bundle, params[CombinedExpression::EyeLidLeft as usize].is_some()
+            || params[UnifiedExpressions::EyeClosedLeft as usize].is_some());
+    }
+
+    pub fn apply_tracking_flags(&mut self, bundle: &mut OscBundle, active: bool) {
         let eye_active = active && self.eye_active;
         if self.eye_tracking != Some(eye_active) {
             bundle.send_parameter("EyeTrackingActive", OscType::Bool(eye_active));
@@ -435,13 +477,6 @@ impl UnifiedTrackingData {
             self.lip_tracking = Some(active);
         }
 
-        for (idx, shape) in self.shapes.iter().enumerate() {
-            if let Some(param) = &mut params[idx] {
-                param.send(*shape, bundle);
-            }
-        }
-
-        self.apply_eye_tracking(bundle, params[CombinedExpression::EyeLidLeft as usize].is_some());
     }
 
     pub fn invalidate_output(&mut self) {
@@ -477,11 +512,20 @@ impl UnifiedTrackingData {
 #[repr(usize)]
 #[derive(Debug, Clone, Copy, strum::EnumIter, EnumCount, EnumString, IntoStaticStr)]
 pub enum UnifiedExpressions {
-    EyeLeftX,
-    EyeRightX,
-    EyeY,
+    EyeLookOutRight,
+    EyeLookInRight,
+    EyeLookUpRight,
+    EyeLookDownRight,
+    EyeLookOutLeft,
+    EyeLookInLeft,
+    EyeLookUpLeft,
+    EyeLookDownLeft,
     EyeClosedRight,
     EyeClosedLeft,
+    EyeDilationRight,
+    EyeDilationLeft,
+    EyeConstrictRight,
+    EyeConstrictLeft,
     EyeSquintRight,
     EyeSquintLeft,
     EyeWideRight,
@@ -566,6 +610,15 @@ pub enum UnifiedExpressions {
     TongueFlat,
     TongueTwistRight,
     TongueTwistLeft,
+    SoftPalateClose,
+    ThroatSwallow,
+    NeckFlexRight,
+    NeckFlexLeft,
+
+    // Non-standard below
+    EyeLeftX,
+    EyeRightX,
+    EyeY,
 }
 
 #[allow(unused)]

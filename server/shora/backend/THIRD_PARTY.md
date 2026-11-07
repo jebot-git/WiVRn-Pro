@@ -50,6 +50,15 @@ commit `8e11b57b2bc2c3e752188cc71853341580377568`. Shora's port is based on
 - OSC avatar parameter mapping and bundle output.
 - OpenXR headless face/eye source.
 
+The native VRChat face v1 integration is updated through oscavmgr commit
+`c139ebce4467f3d5d3b847605d8bd538548dc697` (2026-11-01), including
+`8785f655` (native output and avatar capability handshake), `d8c428f6`
+(eye-look blendshapes), and `c139ebce` (safe OpenXR face-tracker bindings).
+The native shape enum is imported in its original order; legacy UniFT/JSON
+routing, bounded HTTP discovery, source-expiry handling and worker ownership
+remain adaptations of this embedded backend. The OpenXR dependency is pinned to
+Ralith/openxrs `d9bea09ebeb917d9eb252c3770fe77cb1175ad5f`, matching upstream.
+
 The server-specific configuration, worker lifecycle, socket handling, OSCQuery
 integration, fixed UniFT output, and VRChat avatar JSON input-route importer were
 adapted or added here. This is an embedded subset, not the

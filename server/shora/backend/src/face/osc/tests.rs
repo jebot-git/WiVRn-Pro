@@ -22,6 +22,63 @@ fn message(addr: &str, value: OscType) -> OscPacket {
     OscPacket::Message(OscMessage { addr: addr.into(), args: vec![value] })
 }
 
+fn avatar_packet(uid: &str, native: bool) -> OscPacket {
+    OscPacket::Bundle(OscBundle { timetag: (0, 1).into(), content: vec![
+        message("/avatar/change", OscType::String(uid.into())),
+        message("/avatar/name", OscType::String("Test avatar".into())),
+        message("/avatar/avatarfullfacetracking", OscType::Bool(native)),
+    ] })
+}
+
+#[test]
+fn avatar_handshake_accepts_all_orders_and_resets_interrupted_changes() {
+    let OscPacket::Bundle(packet) = avatar_packet("avtr_native", true) else { unreachable!() };
+    for order in [[0,1,2], [0,2,1], [1,0,2], [1,2,0], [2,0,1], [2,1,0]] {
+        let mut avatar = PendingAvatarChange::default();
+        for (index, item) in order.into_iter().enumerate() {
+            let OscPacket::Message(message) = &packet.content[item] else { unreachable!() };
+            assert_eq!(avatar.receive(message), index == 2);
+        }
+        assert_eq!(avatar.native, Some(true));
+    }
+    let mut avatar = PendingAvatarChange::default();
+    let mut cache = FaceParams::new();
+    let mut vsync = false;
+    assert!(handle_feedback(&avatar_packet("avtr_a", true), &mut cache, &mut vsync, &mut None, &mut avatar));
+    assert_eq!(avatar.native, Some(true));
+    handle_feedback(&message("/avatar/change", OscType::String("avtr_old_client".into())),
+        &mut cache, &mut vsync, &mut None, &mut avatar);
+    assert_eq!(avatar.native, None);
+    // A repeated uid starts a new change instead of joining stale metadata.
+    handle_feedback(&avatar_packet("avtr_b", false), &mut cache, &mut vsync, &mut None, &mut avatar);
+    assert_eq!(avatar.native, Some(false));
+}
+
+#[test]
+fn native_udp_output_switches_avatars_and_clears_expired_and_stopped_sources() {
+    let (cfg, sink) = test_config();
+    let relay = FaceRelay::start(cfg.clone()).unwrap();
+    let sender = UdpSocket::bind("127.0.0.1:0").unwrap();
+    let send = |packet: OscPacket, port| {
+        sender.send_to(&rosc::encoder::encode(&packet).unwrap(), ("127.0.0.1", port)).unwrap();
+    };
+    send(avatar_packet("avtr_native", true), cfg.osc_port);
+    send(message("/jawOpen", OscType::Float(0.5)), cfg.babble_port);
+    let mut bytes = vec![0; 102];
+    bytes[36] = 128;
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes.clone()))]);
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(vec![0; 102])),
+        ("/avatar/parameters/ExpressionTrackingActive", OscType::Bool(false))]);
+    send(message("/jawOpen", OscType::Float(0.5)), cfg.babble_port);
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes.clone()))]);
+    send(avatar_packet("avtr_legacy", false), cfg.osc_port);
+    wait_values(&sink, &[("/avatar/parameters/FT/v2/JawOpen", OscType::Float(0.5))]);
+    send(avatar_packet("avtr_native_again", true), cfg.osc_port);
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes))]);
+    drop(relay);
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(vec![0; 102]))]);
+}
+
 fn collect(packet: OscPacket, values: &mut HashMap<String, OscType>) {
     match packet {
         OscPacket::Message(message) => {
@@ -120,11 +177,11 @@ fn bundled_feedback_updates_cache_and_vsync() {
         content: vec![message("/avatar/parameters/VSync", OscType::Bool(true)),
             message("/avatar/parameters/Test", OscType::Float(0.5))],
     });
-    handle_feedback(&packet, &mut cache, &mut vsync, &mut None);
+    handle_feedback(&packet, &mut cache, &mut vsync, &mut None, &mut PendingAvatarChange::default());
     assert!(vsync);
     assert_eq!(cache["Test"], OscType::Float(0.5));
     handle_feedback(&message("/avatar/change", OscType::String("avtr_test".into())),
-        &mut cache, &mut vsync, &mut None);
+        &mut cache, &mut vsync, &mut None, &mut PendingAvatarChange::default());
     assert!(cache.is_empty());
 }
 

@@ -400,6 +400,22 @@ Stop any other relay occupying the chosen face input ports first.
 
 ### UniFT and VRChat JSON output
 
+Automatic output also supports VRChat's native face tracking. Avatars advertising
+`/avatar/avatarfullfacetracking = true` receive a 102-byte OSC blob at
+`/tracking/face/v1`, in the upstream Unified Expressions order. Capability is
+read from the OSCQuery avatar tree or the `/avatar/change`, `/avatar/name`, and
+`/avatar/avatarfullfacetracking` OSC handshake. Legacy avatars continue to use
+their OSCQuery parameter mapping; older clients sending only `/avatar/change`
+remain supported. No translation sheet or custom FT parameters are required for
+native avatars. Leave `face.output = "auto"` and remove explicit avatar/sheet
+overrides to enable automatic selection. Explicit UniFT, JSON and combined modes
+retain their configured routing.
+
+The native output includes gaze-derived eye-look shapes, clamps and rounds each
+shape to 0–255, and clears all 102 bytes on source expiry and shutdown. OSCQuery
+discovery accepts gzip and chunked responses. The OpenXR source uses the safe
+face-tracker bindings from the same OpenXR revision as oscavmgr upstream.
+
 Face output can use **UniFT (VRCFT Unified Expressions)**, a **VRChat avatar OSC
 JSON translation sheet**, or both at the same time. These are OSC output modes;
 the JSON file supplies routing information, not a JSON stream sent over UDP.
@@ -424,7 +440,7 @@ Relative mapping-file paths resolve from the server's working directory.
 
 | Mode | Behavior |
 | --- | --- |
-| `auto` (default) | Use an explicit translation sheet or OSCQuery tree, otherwise discover the avatar and keep oscavmgr's small `FT/v2/*` fallback until discovery. |
+| `auto` (default) | Use an explicit translation sheet or OSCQuery tree, otherwise detect native VRChat face tracking or discover legacy avatar routes. Keep the small `FT/v2/*` fallback until discovery. |
 | `unift` | Emit every unified and combined expression supported by this port at `/avatar/parameters/FT/v2/<Name>`, plus tracking-active flags. |
 | `json` | Emit recognized face parameters only at their configured VRChat input addresses and types. Requires a translation sheet. |
 | `both` | Emit UniFT and JSON routes together. JSON takes precedence if an address overlaps. Requires a translation sheet. |

@@ -79,7 +79,10 @@ fn node(path: &str, ty: &str) -> Value {
 fn response(path: &str, osc_port: u16) -> Option<Value> {
     let parameters = node("/avatar/parameters", "b");
     let avatar = json!({"FULL_PATH": "/avatar", "CONTENTS": {
-        "change": node("/avatar/change", "s"), "parameters": parameters
+        "change": node("/avatar/change", "s"),
+        "name": node("/avatar/name", "s"),
+        "avatarfullfacetracking": node("/avatar/avatarfullfacetracking", "b"),
+        "parameters": parameters
     }});
     match path {
         "/?HOST_INFO" => Some(json!({"NAME": NAME, "OSC_IP": "127.0.0.1",
@@ -88,6 +91,8 @@ fn response(path: &str, osc_port: u16) -> Option<Value> {
         "/" => Some(json!({"FULL_PATH": "/", "CONTENTS": {"avatar": avatar}})),
         "/avatar" => Some(avatar),
         "/avatar/change" => Some(node(path, "s")),
+        "/avatar/name" => Some(node(path, "s")),
+        "/avatar/avatarfullfacetracking" => Some(node(path, "b")),
         "/avatar/parameters" => Some(parameters),
         _ => None,
     }
