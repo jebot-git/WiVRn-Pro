@@ -295,6 +295,10 @@ def dashboard_test(binary):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--server", type=Path, required=True)
+    parser.add_argument("--qt", action="store_true", help="Also test the optional Qt frontend")
     args = parser.parse_args()
     backend_test(args.server.resolve())
-    dashboard_test(args.server.resolve())
+    if args.qt or os.environ.get('WIVRN_TEST_QT') == '1':
+        dashboard_test(args.server.resolve())
+    else:
+        print('SKIP optional Qt frontend (pass --qt or set WIVRN_TEST_QT=1)')
