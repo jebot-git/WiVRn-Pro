@@ -293,7 +293,7 @@ held, and releases on tracking loss. A closed fist still selects window grip.
 ### PyroWave desktop bitrate
 
 The desktop streaming panel exposes **PyroWave bitrate** in Mbit/s. The
-experimental preset loads 400 Mbit/s; edit this value before saving. Zero
+PyroWave preset loads 400 Mbit/s; edit this value before saving. Zero
 (**Use headset setting**) removes the desktop override. The JSON key
 `pyrowave-bitrate` accepts 1,000,000–1,000,000,000 bits/s and controls the
 aggregate target for both eyes and alpha. It applies only to PyroWave, persists
