@@ -211,11 +211,17 @@ impl RelayState {
             let active = eye || expression;
             if !active && self.last_active { self.clear_output(); }
             if active {
+                if self.last_eye && !eye {
+                    let mut neutral = OscBundle::new_bundle();
+                    neutral.send_tracking("/tracking/eye/LeftRightPitchYaw", vec![OscType::Float(0.0); 4]);
+                    neutral.send_tracking("/tracking/eye/EyesClosedAmount", vec![OscType::Float(0.0)]);
+                    send_bundle(&self.upstream, self.cfg.destination, neutral);
+                }
                 let original = self.data.clone();
                 if !matches!(self.output, Some(FaceOutput::VrcFaceV1)) {
                     self.data.calc_combined(self.last_frame.elapsed().as_secs_f32(), &self.cache);
                 }
-                self.data.mask_channels(self.cfg.eye_enabled, self.cfg.expression_enabled);
+                self.data.mask_channels(eye, expression);
                 let mut bundle = OscBundle::new_bundle();
                 self.output.as_mut().unwrap().apply(&mut self.data, &mut bundle, true);
                 send_bundle(&self.upstream, self.cfg.destination, bundle);

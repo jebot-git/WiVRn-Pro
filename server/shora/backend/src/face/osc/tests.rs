@@ -91,6 +91,30 @@ async fn independent_live_eye_expression_masks_do_not_lose_raw_values() {
     wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(both))]);
 }
 
+#[test]
+fn expired_eye_input_is_cleared_while_facial_input_remains_active() {
+    use super::super::config::OutputMode;
+    let (mut cfg, sink) = test_config(); cfg.output = OutputMode::Native;
+    let relay = FaceRelay::start(cfg.clone()).unwrap();
+    let sender = UdpSocket::bind("127.0.0.1:0").unwrap();
+    for (addr, value) in [("/LeftEyeX", 0.5), ("/jawOpen", 0.5)] {
+        sender.send_to(&rosc::encoder::encode(&message(addr, OscType::Float(value))).unwrap(), ("127.0.0.1", cfg.babble_port)).unwrap();
+    }
+    let mut both = vec![0; 102]; both[5] = 128; both[36] = 128;
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(both))]);
+    let frames = std::thread::spawn(move || {
+        let bytes = rosc::encoder::encode(&message("/jawOpen", OscType::Float(0.5))).unwrap();
+        for _ in 0..30 {
+            sender.send_to(&bytes, ("127.0.0.1", cfg.babble_port)).unwrap();
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    });
+    let mut face = vec![0; 102]; face[36] = 128;
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(face)),
+        ("/avatar/parameters/EyeTrackingActive", OscType::Bool(false))]);
+    frames.join().unwrap(); drop(relay);
+}
+
 fn test_config() -> (FaceConfig, UdpSocket) {
     let sink = UdpSocket::bind("127.0.0.1:0").unwrap();
     sink.set_read_timeout(Some(Duration::from_millis(50))).unwrap();
