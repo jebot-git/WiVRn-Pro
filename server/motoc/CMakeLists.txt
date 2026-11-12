@@ -11,6 +11,7 @@ add_custom_command(OUTPUT "${motoc_binary}"
     COMMAND ${CMAKE_COMMAND} -E env "CARGO_TARGET_DIR=${CMAKE_CURRENT_BINARY_DIR}/cargo" "CARGO_BUILD_JOBS=4"
         ${CARGO_EXECUTABLE} build ${motoc_args} --manifest-path "${CMAKE_CURRENT_SOURCE_DIR}/upstream/Cargo.toml"
     DEPENDS ${motoc_sources}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/upstream"
     VERBATIM)
 add_custom_target(wivrn-motoc ALL DEPENDS "${motoc_binary}")
 set(WIVRN_MOTOC_BUILD_PATH "${motoc_binary}" PARENT_SCOPE)
