@@ -347,9 +347,9 @@ struct Dashboard : dx::GpuWindow
 		deviceForm->choice("HaritoraX model", "/haritorax/model", {{"HaritoraX 2", "x2"}, {"HaritoraX Wireless", "wireless"}});
 		deviceForm->boolean("Enable face / eye tracking", "/face/enabled");
 		deviceForm->choice("Face source", "/face/source", {{"Babble / EyeTrackVR", "babble"}, {"OpenXR", "openxr"}});
-		deviceForm->choice("Face output", "/face/output", {{"Auto / OSCQuery", "auto"}, {"UniFT", "unift"}, {"VRChat JSON", "json"}, {"Both", "both"}});
+		deviceForm->choice("Face output", "/face/output", {{"Auto / OSCQuery", "auto"}, {"VRChat native", "native"}, {"UniFT", "unift"}, {"VRChat JSON", "json"}, {"Both", "both"}});
 		deviceForm->string("Avatar OSC translation sheet", "/face/translation_sheet");
-		auto hint = new Fl_Box(32, deviceForm->y + 12, 450, 100, "Serial ports, advanced device settings and all profile options are editable in the JSON startup profile. Save, then restart WiVRn to apply.");
+		auto hint = new Fl_Box(32, deviceForm->y + 12, 450, 140, "VRChat native sends face tracking directly without an avatar translation sheet. Auto detects native support. Serial ports and advanced settings are editable in the JSON startup profile. Save, then restart WiVRn to apply.");
 		hint->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
 		scroll->end();
 		devicesPage->begin();
@@ -819,6 +819,15 @@ struct Dashboard : dx::GpuWindow
 		if (profileBusy)
 			return;
 		auto j = deviceForm->apply(devices->json());
+		if (j.contains("face") && j["face"].is_object())
+		{
+			auto output = j["face"].value("output", std::string("auto"));
+			if (output == "native" || output == "unift")
+			{
+				j["face"].erase("translation_sheet");
+				j["face"].erase("avatar");
+			}
+		}
 		profileRequest({{"action", "save"}, {"expected", profileText}, {"profile", j}}, true);
 	}
 	void exportTuning()
@@ -952,6 +961,8 @@ try
 	window.tray = &tray;
 	if (page == "skeleton" || !screenshotFile.empty())
 		window.tabs->value(window.trackingPage);
+	if (page == "devices")
+		window.tabs->value(window.devicesPage);
 	bool hidden = (dx::dome() || forceTray) && !forceShow && screenshotFile.empty();
 	if (!hidden || earlyShow)
 		window.present();

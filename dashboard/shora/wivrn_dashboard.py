@@ -624,7 +624,7 @@ class Dashboard(HubWindow):
         self.serial.setText('; '.join(serial.get('ports', [])))
         self.model.setCurrentIndex({'x2': 1, 'wireless': 2}.get(serial.get('model'), 0))
         self.face.setCurrentIndex(1 if not face.get('enabled', False) else (3 if face.get('source') == 'openxr' else 2))
-        self.face_output.setCurrentIndex({'auto': 1, 'unift': 2, 'json': 3, 'both': 4}.get(face.get('output'), 0))
+        self.face_output.setCurrentIndex({'auto': 1, 'unift': 2, 'json': 3, 'both': 4, 'native': 5}.get(face.get('output'), 0))
         self.face_sheet.setText(face.get('translation_sheet', ''))
         self.initial_devices = self.device_values()
 
@@ -645,13 +645,13 @@ class Dashboard(HubWindow):
                 face['enabled'] = values['face'] != 1
                 if values['face'] != 1: face['source'] = ['babble', 'openxr'][values['face'] - 2]
             if 'output' in changed:
-                if values['output']: face['output'] = ['auto', 'unift', 'json', 'both'][values['output'] - 1]
+                if values['output']: face['output'] = ['auto', 'unift', 'json', 'both', 'native'][values['output'] - 1]
                 else: face.pop('output', None)
             if 'sheet' in changed:
                 if values['sheet']:
                     face['translation_sheet'] = str(Path(values['sheet']).expanduser()); face.pop('avatar', None)
                 else: face.pop('translation_sheet', None)
-            if 'output' in changed and face.get('output') == 'unift':
+            if 'output' in changed and face.get('output') in ('unift', 'native'):
                 face.pop('translation_sheet', None); face.pop('avatar', None)
             if face.get('enabled') and face.get('output') in ('json', 'both') and not face.get('translation_sheet'):
                 raise ValueError('JSON face output requires an avatar OSC JSON mapping.')

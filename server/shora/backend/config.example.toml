@@ -48,9 +48,10 @@ osc_port = 9002                       # VRChat feedback / optional VSync input
 destination = "127.0.0.1:9000"         # VRChat / compatible OSC receiver
 expose = false                       # true binds input on all IPv4 interfaces
 osc_query = true                     # local OSCQuery advertisement + avatar discovery
-output = "auto"                      # "auto", "unift", "json", or "both"
+output = "auto"                      # "auto", "native", "unift", "json", or "both"
 # translation_sheet = "examples/face/avatar-osc.json" # VRChat parameters[].input mappings
 # json/both require translation_sheet; auto uses a supplied sheet before discovery.
+# native sends /tracking/face/v1 directly; native/unift cannot use avatar mappings.
 # avatar = "/path/to/avatar-tree.json" # OSCQuery /avatar tree; overrides discovery
 
 # Save relaxed poses in Qt after full/mounting calibration, then export tuning.

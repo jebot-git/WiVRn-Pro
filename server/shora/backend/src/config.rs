@@ -136,7 +136,7 @@ pub struct Cli {
     /// OSC destination for face output (default 127.0.0.1:9000).
     #[arg(long)]
     pub face_destination: Option<std::net::SocketAddr>,
-    /// Face OSC mapping: auto, fixed UniFT, VRChat JSON, or UniFT plus JSON.
+    /// Face OSC output: auto, native VRChat, fixed UniFT, JSON, or UniFT plus JSON.
     #[arg(long, value_enum)]
     pub face_output: Option<OutputMode>,
     /// VRChat avatar OSC JSON translation sheet (uses input addresses/types).
@@ -353,7 +353,7 @@ impl Config {
         }
         if let Some(output) = cli.face_output {
             cfg.face.output = output;
-            if output == OutputMode::Unift {
+            if matches!(output, OutputMode::Unift | OutputMode::Native) {
                 cfg.face.avatar = None;
                 cfg.face.translation_sheet = None;
             }
@@ -693,6 +693,8 @@ mod tests {
 
     #[test]
     fn face_output_cli_selects_unift_and_vrchat_json() {
+        let cli = Cli::try_parse_from(["server", "--face-source", "babble", "--face-output", "native"]).unwrap();
+        assert_eq!(Config::load(&cli).unwrap().face.output, OutputMode::Native);
         let cli = Cli::try_parse_from(["server", "--face-source", "babble", "--face-output", "unift"]).unwrap();
         assert_eq!(Config::load(&cli).unwrap().face.output, OutputMode::Unift);
         let cli = Cli::try_parse_from(["server", "--face-source", "babble", "--face-output", "both",

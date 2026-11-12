@@ -13,12 +13,13 @@ pub enum Source {
     Openxr,
 }
 
-/// Automatic OSCQuery, fixed Unified Expressions, avatar JSON, or both outputs.
+/// Automatic OSCQuery, native VRChat, fixed Unified Expressions, or avatar JSON.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize, ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum OutputMode {
     #[default]
     Auto,
+    Native,
     Unift,
     Json,
     Both,
@@ -79,9 +80,9 @@ impl FaceConfig {
             anyhow::ensure!(self.translation_sheet.is_some(),
                 "face.output 'json' and 'both' require face.translation_sheet");
         }
-        if self.output == OutputMode::Unift {
+        if matches!(self.output, OutputMode::Unift | OutputMode::Native) {
             anyhow::ensure!(self.avatar.is_none() && self.translation_sheet.is_none(),
-                "face.output 'unift' cannot use an avatar mapping; use 'both' for UniFT plus JSON");
+                "face.output 'unift' and 'native' cannot use an avatar mapping; use 'both' for UniFT plus JSON");
         }
         #[cfg(not(feature = "face-xr"))]
         anyhow::ensure!(self.source != Source::Openxr,
@@ -144,6 +145,16 @@ mod tests {
         assert!(cfg.validate().is_err());
         cfg.translation_sheet = None;
         cfg.validate().unwrap();
+        cfg.output = OutputMode::Native;
+        cfg.validate().unwrap();
+        cfg.translation_sheet = Some("avatar.json".into());
+        assert!(cfg.validate().is_err());
+        cfg.translation_sheet = None;
+        cfg.avatar = Some("tree.json".into());
+        assert!(cfg.validate().is_err());
+        let native: FaceConfig = toml::from_str("enabled = true\noutput = 'native'\n").unwrap();
+        assert_eq!(native.output, OutputMode::Native);
+        native.validate().unwrap();
         assert!(toml::from_str::<FaceConfig>("output = 'typo'").is_err());
     }
 

@@ -55,6 +55,30 @@ fn avatar_handshake_accepts_all_orders_and_resets_interrupted_changes() {
 }
 
 #[test]
+fn explicit_native_udp_output_works_without_discovery_and_ignores_legacy_avatar_feedback() {
+    let (mut cfg, sink) = test_config();
+    cfg.output = super::super::config::OutputMode::Native;
+    let relay = FaceRelay::start(cfg.clone()).unwrap();
+    let sender = UdpSocket::bind("127.0.0.1:0").unwrap();
+    let send = |packet: OscPacket, port| {
+        sender.send_to(&rosc::encoder::encode(&packet).unwrap(), ("127.0.0.1", port)).unwrap();
+    };
+    send(message("/jawOpen", OscType::Float(0.5)), cfg.babble_port);
+    let mut bytes = vec![0; 102];
+    bytes[36] = 128;
+    let values = wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes.clone()))]);
+    assert!(!values.contains_key("/avatar/parameters/FT/v2/JawOpen"));
+    send(avatar_packet("avtr_legacy", false), cfg.osc_port);
+    send(message("/jawOpen", OscType::Float(0.5)), cfg.babble_port);
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes.clone()))]);
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(vec![0; 102]))]);
+    send(message("/jawOpen", OscType::Float(0.5)), cfg.babble_port);
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes))]);
+    drop(relay);
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(vec![0; 102]))]);
+}
+
+#[test]
 fn native_udp_output_switches_avatars_and_clears_expired_and_stopped_sources() {
     let (cfg, sink) = test_config();
     let relay = FaceRelay::start(cfg.clone()).unwrap();

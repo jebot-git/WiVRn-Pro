@@ -21,6 +21,9 @@ pub enum FaceOutput {
 
 impl FaceOutput {
     pub fn load(cfg: &FaceConfig) -> anyhow::Result<Self> {
+        if cfg.output == OutputMode::Native {
+            return Ok(Self::VrcFaceV1);
+        }
         if let Some(path) = &cfg.translation_sheet {
             let text = std::fs::read_to_string(path)
                 .with_context(|| format!("read face translation sheet {}", path.display()))?;
@@ -410,5 +413,8 @@ mod tests {
         cfg.translation_sheet = None;
         cfg.output = OutputMode::Unift;
         assert!(!FaceOutput::discovers_avatar(&cfg));
+        cfg.output = OutputMode::Native;
+        assert!(!FaceOutput::discovers_avatar(&cfg));
+        assert!(matches!(FaceOutput::load(&cfg).unwrap(), FaceOutput::VrcFaceV1));
     }
 }

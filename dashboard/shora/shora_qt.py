@@ -202,7 +202,7 @@ class HubWindow(QMainWindow):
         self.face = QComboBox()
         self.face.addItems(["Use config face source", "Face disabled", "Babble / EyeTrackVR", "OpenXR (face-xr build)"])
         self.face_output = QComboBox()
-        self.face_output.addItems(["Use config output", "Auto / OSCQuery", "UniFT", "VRChat JSON", "UniFT + JSON"])
+        self.face_output.addItems(["Use config output", "Auto / OSCQuery", "UniFT", "VRChat JSON", "UniFT + JSON", "VRChat native"])
         self.face_sheet = QLineEdit()
         self.face_sheet.setPlaceholderText("VRChat avatar OSC JSON file (optional)")
         self.face_sheet.setToolTip("Uses parameters[].name and input.address/type. Select JSON or UniFT + JSON, or leave output on Auto.")
@@ -226,7 +226,7 @@ class HubWindow(QMainWindow):
         sheet_browse.clicked.connect(lambda: self.browse(self.face_sheet))
         form.addWidget(sheet_browse, 5, 4)
         self.face_output.currentIndexChanged.connect(lambda index: (
-            self.face_sheet.setEnabled(index != 2), sheet_browse.setEnabled(index != 2)))
+            self.face_sheet.setEnabled(index not in (2, 5)), sheet_browse.setEnabled(index not in (2, 5))))
         self.start_button = QPushButton("Start server")
         self.start_button.setObjectName("primary")
         self.start_button.clicked.connect(self.start_server)
@@ -337,8 +337,8 @@ class HubWindow(QMainWindow):
         elif self.face.currentIndex() in (2, 3):
             args += ["--face-source", "babble" if self.face.currentIndex() == 2 else "openxr"]
         if self.face_output.currentIndex():
-            args += ["--face-output", ["auto", "unift", "json", "both"][self.face_output.currentIndex() - 1]]
-        if self.face_sheet.text().strip() and self.face_output.currentIndex() != 2:
+            args += ["--face-output", ["auto", "unift", "json", "both", "native"][self.face_output.currentIndex() - 1]]
+        if self.face_sheet.text().strip() and self.face_output.currentIndex() not in (2, 5):
             args += ["--face-translation-sheet", str(Path(self.face_sheet.text().strip()).expanduser())]
         self.logs.clear()
         self.reconnect = True
