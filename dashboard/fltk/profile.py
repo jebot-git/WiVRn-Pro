@@ -27,6 +27,12 @@ def preserve_dates(value, previous):
     return value
 
 
+def validate_profile(profile):
+    face = profile.get('face', {})
+    if face.get('enabled') and face.get('output') in ('json', 'both') and not face.get('translation_sheet'):
+        raise ValueError('VRChat JSON and Both require an avatar OSC translation sheet. Choose Auto / OSCQuery or VRChat native without a sheet.')
+
+
 def run(request):
     path = Path(request['path'])
     current = path.read_text() if path.exists() else None
@@ -36,7 +42,7 @@ def run(request):
         text = request.get('text')
         if text is None:
             text = '# WiVRn Pro tracking profile\n' + ''.join(json.dumps(k) + ' = ' + value(v) + '\n' for k, v in preserve_dates(request['profile'], tomllib.loads(current or '')).items())
-        tomllib.loads(text)
+        validate_profile(tomllib.loads(text))
         path.parent.mkdir(parents=True, exist_ok=True)
         fd, temporary = tempfile.mkstemp(prefix='.' + path.name, dir=path.parent)
         try:

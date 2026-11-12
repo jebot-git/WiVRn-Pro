@@ -2,6 +2,7 @@
 #include "gpu-window.h"
 #include "skeleton.h"
 #include "tray.h"
+#include "form.h"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Check_Button.H>
@@ -68,126 +69,6 @@ struct Editor : Fl_Text_Editor
 		return j;
 	}
 };
-struct Form
-{
-	struct Field
-	{
-		std::string path;
-		Fl_Widget * widget;
-		std::vector<Json> choices;
-		Json initial;
-		Json fallback;
-	};
-	std::deque<Field> fields;
-	int x, y, w;
-	explicit Form(int x, int y, int w) : x(x), y(y), w(w) {}
-	template <class T>
-	T * place(const char * label)
-	{
-		auto widget = new T(x, y + 22, w, 34);
-		widget->copy_label(label);
-		widget->align(FL_ALIGN_TOP_LEFT);
-		y += 68;
-		return widget;
-	}
-	void number(const char * label, const char * path, double lo, double hi, double step = 0.01)
-	{
-		auto p = place<Fl_Value_Input>(label);
-		p->range(lo, hi);
-		p->step(step);
-		fields.push_back({path, p, {}, 0, 0});
-	}
-	void boolean(const char * label, const char * path)
-	{
-		auto p = new Fl_Check_Button(x, y, w, 36, label);
-		y += 44;
-		fields.push_back({path, p, {}, false, false});
-	}
-	void string(const char * label, const char * path)
-	{
-		fields.push_back({path, place<Fl_Input>(label), {}, "", ""});
-	}
-	void choice(const char * label, const char * path, std::initializer_list<std::pair<const char *, Json>> entries)
-	{
-		auto p = place<Fl_Choice>(label);
-		std::vector<Json> values;
-		for (auto & v: entries)
-		{
-			p->add(v.first);
-			values.push_back(v.second);
-		}
-		fields.push_back({path, p, values, values.front(), values.front()});
-	}
-	Json get(const Field & f) const
-	{
-		if (auto p = dynamic_cast<Fl_Value_Input *>(f.widget))
-			return p->value();
-		if (auto p = dynamic_cast<Fl_Check_Button *>(f.widget))
-			return bool(p->value());
-		if (auto p = dynamic_cast<Fl_Input *>(f.widget))
-			return p->value();
-		auto index = static_cast<Fl_Choice *>(f.widget)->value();
-		return index >= 0 && size_t(index) < f.choices.size() ? f.choices[index] : f.initial;
-	}
-	void defaults(const Json & j)
-	{
-		for (auto & f: fields)
-		{
-			Json::json_pointer p(f.path);
-			if (j.contains(p))
-				f.fallback = j.at(p);
-		}
-	}
-	void load(const Json & j)
-	{
-		for (auto & f: fields)
-		{
-			Json::json_pointer path(f.path);
-			auto v = j.contains(path) ? j.at(path) : f.fallback;
-			if (auto p = dynamic_cast<Fl_Value_Input *>(f.widget))
-			{
-				if (v.is_number())
-					p->value(v.get<double>());
-			}
-			else if (auto p = dynamic_cast<Fl_Check_Button *>(f.widget))
-			{
-				if (v.is_boolean())
-					p->value(v.get<bool>());
-			}
-			else if (auto p = dynamic_cast<Fl_Input *>(f.widget))
-			{
-				if (v.is_string())
-					p->value(v.get<std::string>().c_str());
-			}
-			else
-			{
-				auto choice = static_cast<Fl_Choice *>(f.widget);
-				auto i = std::find(f.choices.begin(), f.choices.end(), v);
-				choice->value(i == f.choices.end() ? -1 : int(i - f.choices.begin()));
-			}
-			f.initial = get(f);
-		}
-	}
-	bool clean() const
-	{
-		return std::all_of(fields.begin(), fields.end(), [&](const Field & f) { return get(f) == f.initial; });
-	}
-	Json apply(Json j) const
-	{
-		for (auto & f: fields)
-		{
-			auto v = get(f);
-			if (v != f.initial)
-			{
-				if (v.is_null() || (f.path == "/pyrowave-bitrate" && v == 0) || (f.path == "/pyrowave-foveation" && v == -1))
-					j.erase(f.path.substr(1));
-				else
-					j[Json::json_pointer(f.path)] = v;
-			}
-		}
-		return j;
-	}
-};
 struct Dashboard : dx::GpuWindow
 {
 	std::shared_ptr<Backend> backend;
@@ -205,7 +86,7 @@ struct Dashboard : dx::GpuWindow
 	bool journalBusy = false;
 	Fl_Text_Buffer logBuffer;
 	Skeleton * skeleton;
-	Fl_Choice *calibration, *preset, *presetBackend, *keys;
+	LiteralChoice *calibration, *preset, *presetBackend, *keys;
 	Fl_Value_Input * delay;
 	Fl_Button *calibrate, *cancelCalibration, *applySettings, *saveStream, *saveDevices, *saveMotoc;
 	Form *streamForm, *trackingForm, *deviceForm, *motocForm;
@@ -260,18 +141,18 @@ struct Dashboard : dx::GpuWindow
 		streamForm->choice("Bit depth", "/bit-depth", {{"Default", nullptr}, {"8", 8}, {"10", 10}});
 		scroll->end();
 		streamPage->begin();
-		preset = new Fl_Choice(540, 272, 330, 36, "Encoder preset");
+		preset = new LiteralChoice(540, 272, 330, 36, "Encoder preset");
 		preset->align(FL_ALIGN_TOP_LEFT);
-		preset->add("Choose preset");
-		presetBackend = new Fl_Choice(878, 272, 110, 36);
-		presetBackend->add("qsv|nvenc|vaapi");
+		preset->setLabels({"Choose preset"});
+		presetBackend = new LiteralChoice(878, 272, 110, 36);
+		presetBackend->setLabels({"qsv", "nvenc", "vaapi"});
 		presetBackend->value(0);
 		button(996, 272, 170, 36, "Load preset", [this] { loadPreset(); });
 		stream = new Editor(540, 320, 628, 228);
 		stream->tooltip("Full configuration JSON. Unknown settings and custom encoder layouts are retained.");
 		saveStream = button(540, 556, 310, 36, "Save WiVRn settings", [this] { saveStreaming(); });
 		button(860, 556, 308, 36, "Reload settings", [this] { loadStreaming(latest); });
-		keys = new Fl_Choice(540, 610, 628, 36, "Paired headsets");
+		keys = new LiteralChoice(540, 610, 628, 36, "Paired headsets");
 		keys->align(FL_ALIGN_TOP_LEFT);
 		button(540, 656, 308, 36, "Pair headset (2 min)", [this] { backend->method("EnablePairing", g_variant_new("(i)", 120)); });
 		button(860, 656, 308, 36, "Disable pairing", [this] { backend->method("DisablePairing"); });
@@ -294,10 +175,9 @@ struct Dashboard : dx::GpuWindow
 		scroll = new Fl_Scroll(636, 254, 538, 574);
 		scroll->type(Fl_Scroll::VERTICAL);
 		scroll->begin();
-		calibration = new Fl_Choice(650, 278, 486, 36, "Guided calibration");
+		calibration = new LiteralChoice(650, 278, 486, 36, "Guided calibration");
 		calibration->align(FL_ALIGN_TOP_LEFT);
-		for (auto s: calibrationNames)
-			calibration->add(s);
+		calibration->setLabels(std::vector<std::string>(std::begin(calibrationNames), std::end(calibrationNames)));
 		calibration->value(0);
 		auto instructions = new Fl_Box(650, 322, 486, 70, "Stand still for standing / yaw reset. For mounting reset bend knees and lean forward in a ski pose. Save relaxed poses after standing and mounting calibration.");
 		instructions->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
@@ -532,9 +412,10 @@ struct Dashboard : dx::GpuWindow
 				if (j != keyList)
 				{
 					keyList = j;
-					keys->clear();
+					std::vector<std::string> names;
 					for (auto & k: j)
-						keys->add(k.at(0).get<std::string>().c_str());
+						names.push_back(k.at(0).get<std::string>());
+					keys->setLabels(names);
 					keys->value(0);
 				}
 			}
@@ -639,6 +520,8 @@ struct Dashboard : dx::GpuWindow
 		if (!calibrationReady)
 			return;
 		int i = calibration->value();
+		if (i < 0 || size_t(i) >= std::size(calibrationNames))
+			throw std::runtime_error("Select a calibration action first");
 		if (i <= 2)
 		{
 			const char * commands[] = {"full_reset", "yaw_reset", "mounting_reset"};
@@ -704,6 +587,7 @@ struct Dashboard : dx::GpuWindow
 	}
 	void loadPresets()
 	{
+		std::vector<std::string> labels = {"Choose preset"};
 		for (auto directory: {WIVRN_DASHBOARD_PRESETS, WIVRN_DASHBOARD_SOURCE_PRESETS})
 		{
 			if (!std::filesystem::is_directory(directory))
@@ -719,8 +603,9 @@ struct Dashboard : dx::GpuWindow
 					std::ifstream file(p);
 					Json j;
 					file >> j;
+					auto title = j.at("title").get<std::string>();
 					presets.push_back(j);
-					preset->add(j.at("title").get<std::string>().c_str());
+					labels.push_back(std::move(title));
 				}
 				catch (const std::exception & e)
 				{
@@ -728,6 +613,7 @@ struct Dashboard : dx::GpuWindow
 				}
 			break;
 		}
+		preset->setLabels(labels);
 		preset->value(0);
 	}
 	void loadPreset()

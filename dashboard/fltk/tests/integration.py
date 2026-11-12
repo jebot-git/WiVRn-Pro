@@ -157,6 +157,7 @@ class Tests(unittest.TestCase):
         self.assertEqual((self.directory / 'actions').read_text().splitlines(), ['--user restart wivrn-pro.service', '--user stop wivrn-pro.service'])
 
     def test_02_profile(self):
+        subprocess.run([BUILD / 'fltk/wivrn-dashboard-form-test'], env=self.environment, check=True, timeout=10)
         spec = importlib.util.spec_from_file_location('profile_helper', Path(__file__).parents[1] / 'profile.py')
         helper = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(helper)
@@ -168,6 +169,13 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'changed elsewhere'):
             helper.run({'path': str(path), 'action': 'save', 'expected': None, 'profile': {}})
         before = path.read_text()
+        for mode in ('json', 'both'):
+            with self.assertRaisesRegex(ValueError, 'translation sheet'):
+                helper.run({'path': str(path), 'action': 'save', 'expected': before,
+                    'profile': {'face': {'enabled': True, 'output': mode}}})
+            self.assertEqual(path.read_text(), before)
+        for mode in ('auto', 'native'):
+            self.assertIsNone(helper.validate_profile({'face': {'enabled': True, 'output': mode}}))
         with self.assertRaises(ValueError):
             helper.run({'path': str(path), 'action': 'save', 'expected': before, 'text': '[invalid'})
         self.assertEqual(path.read_text(), before)
