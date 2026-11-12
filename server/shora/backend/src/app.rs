@@ -46,7 +46,16 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
     let (commands, mut command_rx) = mpsc::channel::<Envelope>(32);
     // Claim the control endpoint before opening hardware or starting services.
     let control = if let Some(path) = &config.control_socket { Some(ControlServer::bind(path.clone()).await?) } else { None };
-    let mut face_relay = if config.face.enabled { Some(face::FaceRelay::start(config.face.clone())?) } else { None };
+    let disabled_face = || face::config::FaceConfig { enabled: false, ..config.face.clone() };
+    let mut face_relay = match face::FaceRelay::start(config.face.clone()) {
+        Ok(relay) => relay,
+        Err(error) => {
+            tracing::error!(%error, "Face/eye startup failed; body tracking remains available");
+            let relay = face::FaceRelay::start(disabled_face())?;
+            relay.report_error(format!("{error:#}"));
+            relay
+        }
+    };
     let mut hardware_config = config.haritorax.clone();
     if motoc_mode { hardware_config.enabled = false; }
     let mut acquisition = Acquisition::start(hardware_config)?;
@@ -75,9 +84,11 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
     let mut gait_output = crate::walking::Output::default();
     let mut paused = false;
     let mut hardware_ops = tokio::task::JoinSet::new();
+    let mut face_ops = tokio::task::JoinSet::new();
     loop {
         let mut pending = None;
         let mut hardware_done = None;
+        let mut face_done = None;
         let frame_due = tokio::select! {
             result = &mut shutdown => { result?; break; }
             result = services.join_next() => {
@@ -93,6 +104,9 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             }
             Some(result) = hardware_ops.join_next(), if !hardware_ops.is_empty() => {
                 hardware_done = Some(result?); false
+            }
+            Some(result) = face_ops.join_next(), if !face_ops.is_empty() => {
+                face_done = Some(result?); false
             }
             Some(command) = command_rx.recv() => { pending = Some(command); false }
             _ = tick.tick() => true,
@@ -115,7 +129,11 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             }
         }
         calib.write().unwrap().check_hmd_reference(hmd.read().unwrap().is_some());
-        if let Some(relay) = face_relay.as_mut() { relay.check_health()?; }
+        if let Err(error) = face_relay.check_health() {
+            tracing::error!(%error, "Face/eye worker failed; preserving body tracking");
+            face_relay = face::FaceRelay::start(disabled_face())?;
+            face_relay.report_error(format!("{error:#}"));
+        }
         if let Some(tui) = tui.as_mut() { tui.check_health()?; }
         if frame_due {
             for command in bridge.take_actions() { let _ = commands.try_send(command.into()); }
@@ -133,7 +151,35 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             };
             reply = envelope.reply.map(|tx| (tx, result.map_err(|e| format!("{e:#}"))));
         }
+        if let Some((envelope, result)) = face_done {
+            let envelope: Envelope = envelope;
+            let result: Result<(), String> = result;
+            status.write().unwrap().last_action = result.as_ref().map(|_| "Face/eye settings applied and saved".to_string())
+                .unwrap_or_else(|error| error.clone());
+            reply = envelope.reply.map(|tx| (tx, result));
+        }
         if let Some(envelope) = pending {
+            if let Command::SetFaceSettings { face: next } = &envelope.command {
+                let next = next.clone();
+                let operation = config.validate_face_settings(&next).and_then(|_| {
+                    anyhow::ensure!(face_ops.is_empty(), "A face/eye update is already pending");
+                    let saved_config = config.clone(); let saved_face = next.clone();
+                    face_relay.configure(next, move || saved_config.save_face_settings(&saved_face))
+                });
+                match operation {
+                    Ok(receiver) => {
+                        face_ops.spawn(async move {
+                            let result = receiver.await.unwrap_or_else(|_| Err("Face/eye controller stopped".into()));
+                            (envelope, result)
+                        });
+                    }
+                    Err(error) => {
+                        status.write().unwrap().last_action = format!("{error:#}");
+                        if let Some(tx) = envelope.reply { let _ = tx.send(Err(format!("{error:#}"))); }
+                    }
+                }
+                continue;
+            }
             if let Command::SetHaritoraSettings {tracker_mac, hardware} = envelope.command {
                 if hardware.validate().is_ok() && hardware_ops.is_empty() {
                     let mut ids = vec![tracker::TrackerId::new(tracker_mac, 0)];
@@ -158,6 +204,7 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
                 Err(anyhow::anyhow!("SlimeVR is disabled while Motoc owns the tracking bridge"))
             } else { match envelope.command.clone() {
                 Command::Status => Ok(()),
+                Command::SetFaceSettings { .. } => unreachable!("handled by the asynchronous face controller"),
                 Command::MotocCalibrate => motoc.start(true).await,
                 Command::MotocContinue => motoc.start(false).await,
                 Command::MotocStop => { motoc.stop().await; Ok(()) },
@@ -291,7 +338,10 @@ pub async fn run(config: Config) -> anyhow::Result<()> {
             snapshot.reference_needs_reset = calibration.reference_needs_reset();
             snapshot.drift_samples = reg.iter().filter(|t| calibration.has_drift_sample(t.id())).count();
             snapshot.hmd_pose_received = hmd.read().unwrap().is_some();
-            snapshot.face_active = face_relay.as_ref().is_some_and(|relay| relay.active());
+            snapshot.face = face_relay.snapshot();
+            snapshot.face_active = snapshot.face.active;
+            snapshot.face_source = if snapshot.face.settings.enabled { format!("{:?}", snapshot.face.settings.source).to_lowercase() } else {"disabled".into()};
+            snapshot.face_output = format!("{:?}", snapshot.face.settings.output).to_lowercase();
         }
         if let Some((tx, result)) = reply { let _ = tx.send(result); }
         if stop {
@@ -375,5 +425,64 @@ mod tests {
                 result.unwrap();
             }).await.unwrap();
         }
+    }
+}
+
+#[cfg(test)]
+mod live_face_tests {
+    use super::*;
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+
+    async fn request(path: &std::path::Path, command: serde_json::Value) -> serde_json::Value {
+        let mut socket = tokio::net::UnixStream::connect(path).await.unwrap();
+        let mut bytes = serde_json::to_vec(&command).unwrap(); bytes.push(b'\n');
+        socket.write_all(&bytes).await.unwrap();
+        let mut line = String::new();
+        tokio::time::timeout(Duration::from_secs(5), BufReader::new(socket).read_line(&mut line)).await.unwrap().unwrap();
+        serde_json::from_str(&line).unwrap()
+    }
+
+    #[tokio::test]
+    async fn live_face_commands_persist_without_replacing_body_state_or_worker() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("control");
+        let profile = dir.path().join("profile.toml");
+        std::fs::write(&profile, "# preserve\nheight_m = 1.89\n[face]\nenabled = false\n").unwrap();
+        let cfg = Config { tracker_port: 0, control_socket: Some(path.clone()), config_path: Some(profile.clone()),
+            solarxr_socket: dir.path().join("rpc").to_str().unwrap().into(),
+            feeder_socket: dir.path().join("input").to_str().unwrap().into(),
+            ..Config::default() };
+        let client = async {
+            for _ in 0..100 { if path.exists() { break; } tokio::time::sleep(Duration::from_millis(10)).await; }
+            let before = request(&path, serde_json::json!({"command":"status"})).await;
+            let mut face = face::config::FaceConfig::default();
+            face.output = face::config::OutputMode::Native; face.osc_query = false;
+            let feedback = std::net::UdpSocket::bind("127.0.0.1:0").unwrap();
+            let babble = std::net::UdpSocket::bind("127.0.0.1:0").unwrap();
+            let sink = std::net::UdpSocket::bind("127.0.0.1:0").unwrap();
+            face.osc_port = feedback.local_addr().unwrap().port(); face.babble_port = babble.local_addr().unwrap().port();
+            face.destination = sink.local_addr().unwrap(); drop(feedback); drop(babble);
+            for enabled in [true, false, true, false] {
+                face.enabled = enabled;
+                let response = request(&path, serde_json::json!({"command":"set_face_settings", "face":face})).await;
+                assert_eq!(response["ok"], true, "{response}");
+                assert_eq!(response["status"]["pid"], before["status"]["pid"]);
+                assert_eq!(response["status"]["settings"], before["status"]["settings"]);
+                assert_eq!(response["status"]["face"]["settings"]["enabled"], enabled);
+            }
+            let saved = std::fs::read_to_string(&profile).unwrap();
+            assert!(saved.contains("# preserve") && saved.contains("height_m = 1.89"));
+            face.enabled = true; face.output = face::config::OutputMode::Json;
+            face.translation_sheet = Some(dir.path().join("missing.json"));
+            let failed = request(&path, serde_json::json!({"command":"set_face_settings", "face":face})).await;
+            assert_eq!(failed["ok"], false);
+            assert_eq!(std::fs::read_to_string(&profile).unwrap(), saved);
+            let after = request(&path, serde_json::json!({"command":"status"})).await;
+            assert_eq!(after["status"]["pid"], before["status"]["pid"]);
+            assert_eq!(after["status"]["settings"], before["status"]["settings"]);
+            assert_eq!(request(&path, serde_json::json!({"command":"shutdown"})).await["ok"], true);
+        };
+        let (server, ()) = tokio::join!(run(cfg), client);
+        server.unwrap();
     }
 }

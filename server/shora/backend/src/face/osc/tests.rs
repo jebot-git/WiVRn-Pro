@@ -2,6 +2,95 @@ use super::*;
 use rosc::{OscMessage, OscType};
 use std::collections::HashMap;
 
+async fn configure(relay: &FaceRelay, cfg: FaceConfig) -> Result<(), String> {
+    relay.configure(cfg, || Ok(())).unwrap().await.unwrap()
+}
+
+#[tokio::test]
+async fn live_modes_preserve_acquisition_and_disabled_relay_releases_ports() {
+    use super::super::config::OutputMode;
+    let (mut cfg, sink) = test_config();
+    cfg.enabled = false;
+    cfg.output = OutputMode::Native;
+    let relay = FaceRelay::start(cfg.clone()).unwrap();
+    assert_eq!(relay.snapshot().state, "disabled");
+    cfg.enabled = true;
+    configure(&relay, cfg.clone()).await.unwrap();
+    let sender = UdpSocket::bind("127.0.0.1:0").unwrap();
+    sender.send_to(&rosc::encoder::encode(&message("/jawOpen", OscType::Float(0.5))).unwrap(),
+        ("127.0.0.1", cfg.babble_port)).unwrap();
+    let mut bytes = vec![0; 102]; bytes[36] = 128;
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes.clone()))]);
+    cfg.output = OutputMode::Unift;
+    configure(&relay, cfg.clone()).await.unwrap();
+    // No new input: replacing routing must retain the existing source and data.
+    wait_values(&sink, &[("/avatar/parameters/FT/v2/JawOpen", OscType::Float(0.5))]);
+    cfg.output = OutputMode::Native;
+    configure(&relay, cfg.clone()).await.unwrap();
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes))]);
+    cfg.enabled = false;
+    configure(&relay, cfg.clone()).await.unwrap();
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(vec![0; 102]))]);
+    let feedback = UdpSocket::bind(("127.0.0.1", cfg.osc_port)).unwrap();
+    let babble = UdpSocket::bind(("127.0.0.1", cfg.babble_port)).unwrap();
+    cfg.enabled = true;
+    assert!(configure(&relay, cfg.clone()).await.is_err());
+    assert!(!relay.snapshot().settings.enabled);
+    drop(feedback); drop(babble);
+    configure(&relay, cfg).await.unwrap();
+}
+
+#[tokio::test]
+async fn live_rejected_mapping_ports_and_persistence_keep_previous_output() {
+    use super::super::config::OutputMode;
+    use std::sync::atomic::AtomicUsize;
+    let (mut cfg, sink) = test_config(); cfg.output = OutputMode::Native;
+    let relay = FaceRelay::start(cfg.clone()).unwrap();
+    let count = Arc::new(AtomicUsize::new(0));
+    let mut bad = cfg.clone(); bad.output = OutputMode::Json;
+    bad.translation_sheet = Some("/missing-live-face-test.json".into());
+    let seen = count.clone();
+    assert!(relay.configure(bad, move || { seen.fetch_add(1, Ordering::SeqCst); Ok(()) }).unwrap().await.unwrap().is_err());
+    assert_eq!(count.load(Ordering::SeqCst), 0);
+    let busy = UdpSocket::bind("127.0.0.1:0").unwrap();
+    let mut bad = cfg.clone(); bad.osc_port = busy.local_addr().unwrap().port();
+    assert!(configure(&relay, bad).await.is_err());
+    let mut bad = cfg.clone(); bad.output = OutputMode::Unift;
+    assert!(relay.configure(bad, || anyhow::bail!("simulated profile write failure")).unwrap().await.unwrap().is_err());
+    assert_eq!(relay.snapshot().settings, cfg);
+    let sender = UdpSocket::bind("127.0.0.1:0").unwrap();
+    sender.send_to(&rosc::encoder::encode(&message("/jawOpen", OscType::Float(0.75))).unwrap(),
+        ("127.0.0.1", cfg.babble_port)).unwrap();
+    let mut bytes = vec![0; 102]; bytes[36] = 191;
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(bytes))]);
+}
+
+#[tokio::test]
+async fn independent_live_eye_expression_masks_do_not_lose_raw_values() {
+    use super::super::config::OutputMode;
+    let (mut cfg, sink) = test_config(); cfg.output = OutputMode::Native;
+    let relay = FaceRelay::start(cfg.clone()).unwrap();
+    let sender = UdpSocket::bind("127.0.0.1:0").unwrap();
+    for (addr, value) in [("/jawOpen", 0.5), ("/LeftEyeX", 0.5)] {
+        sender.send_to(&rosc::encoder::encode(&message(addr, OscType::Float(value))).unwrap(),
+            ("127.0.0.1", cfg.babble_port)).unwrap();
+    }
+    let mut both = vec![0; 102]; both[5] = 128; both[36] = 128;
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(both.clone()))]);
+    cfg.eye_enabled = false;
+    configure(&relay, cfg.clone()).await.unwrap();
+    let mut face = vec![0; 102]; face[36] = 128;
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(face))]);
+    cfg.eye_enabled = true; cfg.expression_enabled = false;
+    configure(&relay, cfg.clone()).await.unwrap();
+    let mut eyes = vec![0; 102]; eyes[5] = 128;
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(eyes)),
+        ("/avatar/parameters/ExpressionTrackingActive", OscType::Bool(false))]);
+    cfg.expression_enabled = true;
+    configure(&relay, cfg).await.unwrap();
+    wait_values(&sink, &[("/tracking/face/v1", OscType::Blob(both))]);
+}
+
 fn test_config() -> (FaceConfig, UdpSocket) {
     let sink = UdpSocket::bind("127.0.0.1:0").unwrap();
     sink.set_read_timeout(Some(Duration::from_millis(50))).unwrap();

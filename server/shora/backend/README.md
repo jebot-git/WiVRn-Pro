@@ -398,6 +398,36 @@ and disables it. `--face-destination IP:PORT` overrides the OSC destination.
 `expose = true` allows LAN input and leaves the destination unchanged.
 Stop any other relay occupying the chosen face input ports first.
 
+### Live face and eye settings
+
+The FLTK dashboard's **Devices & OSC** page provides **Apply face/eye tracking**.
+Enable/disable tracking, select OpenXR or Babble/EyeTrackVR, change output modes,
+or select eye and facial-expression output independently while WiVRn and the game
+continue running. **Reload active face/eye** discards the face-control draft.
+Headset capabilities and permissions must already be available for the session.
+
+The owner-only control socket accepts `set_face_settings` with a `face` object
+using the same fields as `[face]` in TOML. Missing fields retain the documented
+configuration defaults. Replies include `status.face.settings`, `state`
+(`disabled`, `waiting`, `active`, `error`), component activity, and errors. A saved
+configuration may be waiting for input; an acknowledged setting is not proof of
+an active sensor. Existing flat face status fields remain compatible.
+
+The persistent face worker prepares mappings and sockets before saving and
+applying a change. Failed preparation or persistence retains the previous live
+configuration. Output-only changes retain acquisition; a source change replaces
+only that source. Old output channels are neutralized when switching or stopping.
+Body tracking, calibration, service PIDs, and the compositor remain running.
+OpenXR handles are created and destroyed on the face worker. Eye/expression
+switches filter this application's output; headset permissions and other gaze
+consumers are unchanged. Native face packets always retain all 102 positions.
+
+`eye_enabled` and `expression_enabled` default to `true` for existing profiles.
+With the master `enabled` switch off, or both outputs off, the source and input
+ports are released. Changes acknowledged by the worker are saved into the face
+section while preserving other tuning and device settings. The optional Qt
+frontend's startup-profile controls remain supported.
+
 ### UniFT and VRChat JSON output
 
 Automatic output also supports VRChat's native face tracking. Avatars advertising

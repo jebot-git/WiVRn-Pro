@@ -19,6 +19,7 @@ use super::{face2_fb, FaceSource};
 pub struct OpenXrSource {
     state: Option<XrState>,
     last_attempt: Instant,
+    last_error: Option<String>,
 }
 
 impl OpenXrSource {
@@ -26,6 +27,7 @@ impl OpenXrSource {
         Self {
             state: None,
             last_attempt: Instant::now() - Duration::from_secs(20),
+            last_error: None,
         }
     }
 }
@@ -37,17 +39,23 @@ impl Default for OpenXrSource {
 }
 
 impl FaceSource for OpenXrSource {
+    fn error(&self) -> Option<&str> { self.last_error.as_deref() }
     fn name(&self) -> &'static str {
         "openxr"
     }
 
     fn receive(&mut self, data: &mut UnifiedTrackingData) -> anyhow::Result<bool> {
         data.eye_active = false;
+        data.expression_active = Some(false);
         let Some(state) = self.state.as_mut() else {
             if self.last_attempt + Duration::from_secs(15) < Instant::now() {
-                self.state = XrState::new()
-                    .map_err(|e| tracing::error!("XR: {e:#}"))
-                    .ok();
+                match XrState::new() {
+                    Ok(state) => { self.state = Some(state); self.last_error = None; }
+                    Err(error) => {
+                        tracing::error!("XR: {error:#}");
+                        self.last_error = Some(format!("{error:#}"));
+                    }
+                }
                 self.last_attempt = Instant::now();
             }
             return Ok(false);
@@ -57,6 +65,7 @@ impl FaceSource for OpenXrSource {
             Ok(valid) => Ok(valid),
             Err(e) => {
                 tracing::error!("XR: {e:#}");
+                self.last_error = Some(format!("{e:#}"));
                 self.state = None;
                 Ok(false)
             }
@@ -207,6 +216,7 @@ impl XrState {
         if let Some(face_tracker) = self.face_tracker_fb.as_ref() {
             if let Some(expression) = face_tracker.get_expression_weights(next_frame)? {
                 valid = true;
+                data.expression_active = Some(true);
                 if let Some(shapes) = face2_fb::face2_fb_to_unified(&expression.weights) {
                     data.eye_active = expression.eye_following_blendshapes_valid || data.eye_active;
                     data.shapes[..UnifiedExpressions::COUNT]

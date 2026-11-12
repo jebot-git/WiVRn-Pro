@@ -1,7 +1,7 @@
 find_package(FLTK 1.4.5 EXACT CONFIG REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(DASHBOARD_GIO REQUIRED IMPORTED_TARGET gio-2.0 gio-unix-2.0)
-pkg_check_modules(DASHBOARD_FONT REQUIRED IMPORTED_TARGET fontconfig zlib)
+pkg_check_modules(DASHBOARD_FONT REQUIRED IMPORTED_TARGET fontconfig freetype2 zlib)
 find_package(nlohmann_json REQUIRED)
 find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
 set(WIVRN_DOME_SOURCE "" CACHE PATH "DomeD source tree providing native/gpu-window.h and appearance helpers")

@@ -73,10 +73,11 @@ struct Dashboard : dx::GpuWindow
 {
 	std::shared_ptr<Backend> backend;
 	Tray * tray = nullptr;
-	bool quit = false, streamSaving = false, settingsSaving = false, profileBusy = false, motocSaving = false;
+	bool quit = false, streamSaving = false, settingsSaving = false, profileBusy = false, motocSaving = false, faceSaving = false;
 	bool trackingAvailable = false, calibrationReady = false;
 	std::string profilePath;
 	Json profileText = nullptr, latest = Json::object(), tracking = Json::object(), serviceState = Json::object();
+	Json faceSettingsBaseline = Json::object();
 	Fl_Box *status, *cards, *message, *calibrationStatus;
 	Fl_Tabs * tabs;
 	Fl_Group *streamPage, *trackingPage, *devicesPage, *logPage, *motocPage;
@@ -88,8 +89,9 @@ struct Dashboard : dx::GpuWindow
 	Skeleton * skeleton;
 	LiteralChoice *calibration, *preset, *presetBackend, *keys;
 	Fl_Value_Input * delay;
-	Fl_Button *calibrate, *cancelCalibration, *applySettings, *saveStream, *saveDevices, *saveMotoc;
-	Form *streamForm, *trackingForm, *deviceForm, *motocForm;
+	Fl_Button *calibrate, *cancelCalibration, *applySettings, *saveStream, *saveDevices, *saveMotoc, *applyFace;
+	Fl_Box *faceState;
+	Form *streamForm, *trackingForm, *deviceForm, *faceForm, *motocForm;
 	Json keyList = Json::array();
 	std::vector<Json> presets;
 	std::deque<std::function<void()>> actions;
@@ -225,20 +227,28 @@ struct Dashboard : dx::GpuWindow
 		deviceForm = new Form(32, 260, 450);
 		deviceForm->boolean("Enable HaritoraX", "/haritorax/enabled");
 		deviceForm->choice("HaritoraX model", "/haritorax/model", {{"HaritoraX 2", "x2"}, {"HaritoraX Wireless", "wireless"}});
-		deviceForm->boolean("Enable face / eye tracking", "/face/enabled");
-		deviceForm->choice("Face source", "/face/source", {{"Babble / EyeTrackVR", "babble"}, {"OpenXR", "openxr"}});
-		deviceForm->choice("Face output", "/face/output", {{"Auto / OSCQuery", "auto"}, {"VRChat native", "native"}, {"UniFT", "unift"}, {"VRChat JSON", "json"}, {"Both", "both"}});
-		deviceForm->string("Avatar OSC translation sheet", "/face/translation_sheet");
-		auto hint = new Fl_Box(32, deviceForm->y + 12, 450, 140, "VRChat native sends face tracking directly without an avatar translation sheet. Auto detects native support. Serial ports and advanced settings are editable in the JSON startup profile. Save, then restart WiVRn to apply.");
+		faceForm = new Form(32, deviceForm->y, 450);
+		faceForm->boolean("Enable face / eye tracking", "/face/enabled");
+		faceForm->boolean("Send eye tracking", "/face/eye_enabled");
+		faceForm->boolean("Send facial expressions", "/face/expression_enabled");
+		faceForm->choice("Face source", "/face/source", {{"Babble / EyeTrackVR", "babble"}, {"OpenXR", "openxr"}});
+		faceForm->choice("Face output", "/face/output", {{"Auto / OSCQuery", "auto"}, {"VRChat native", "native"}, {"UniFT", "unift"}, {"VRChat JSON", "json"}, {"Both", "both"}});
+		faceForm->string("Avatar OSC translation sheet", "/face/translation_sheet");
+		faceForm->defaults({{"face", {{"eye_enabled", true}, {"expression_enabled", true}}}});
+		auto hint = new Fl_Box(32, faceForm->y + 12, 450, 120, "Apply face/eye tracking changes while streaming. VRChat native needs no translation sheet. Serial ports and other body-device settings apply after saving the startup profile and restarting WiVRn.");
 		hint->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
 		scroll->end();
 		devicesPage->begin();
-		devices = new Editor(540, 264, 628, 300);
-		trackers = new Fl_Hold_Browser(540, 576, 628, 116);
+		devices = new Editor(540, 264, 628, 260);
+		faceState = new Fl_Box(540, 536, 628, 40, "Waiting for live face/eye settings");
+		faceState->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+		trackers = new Fl_Hold_Browser(540, 584, 628, 72);
+		applyFace = button(540, 668, 308, 36, "Apply face/eye tracking", [this] { applyFaceSettings(); });
+		button(860, 668, 308, 36, "Reload active face/eye", [this] { loadFaceSettings(); });
 		trackers->tooltip("Tracker / body ID / active / battery / source");
-		saveDevices = button(540, 708, 308, 36, "Save startup profile", [this] { saveProfile(); });
-		button(860, 708, 308, 36, "Reload startup profile", [this] { profileRequest({{"action", "load"}}, true); });
-		button(540, 754, 628, 36, "HaritoraX readback / hardware settings", [this] { hardwareDialog(); });
+		saveDevices = button(540, 714, 308, 36, "Save startup profile", [this] { saveProfile(); });
+		button(860, 714, 308, 36, "Reload startup profile", [this] { profileRequest({{"action", "load"}}, true); });
+		button(540, 760, 628, 36, "HaritoraX readback / hardware settings", [this] { hardwareDialog(); });
 		devicesPage->resizable(devices);
 		devicesPage->end();
 		logPage = new Fl_Group(16, 244, 1168, 594, "Server log");
@@ -282,7 +292,16 @@ struct Dashboard : dx::GpuWindow
 				if (ok)
 					loadTracking(tracking.value("settings", Json::object()));
 			}
-			if (cmd == "set_motoc_settings")
+			if (cmd == "set_face_settings")
+            {
+                faceSaving = false;
+                if (ok) {
+                    loadFaceSettings();
+                    if (devices->clean() && deviceForm->clean() && !profileBusy)
+                        profileRequest({{"action", "load"}}, true);
+                }
+            }
+            if (cmd == "set_motoc_settings")
 			{
 				motocSaving = false;
 				if (ok)
@@ -354,7 +373,7 @@ struct Dashboard : dx::GpuWindow
 	}
 	bool unsaved() const
 	{
-		return !stream->clean() || !streamForm->clean() || !settings->clean() || !trackingForm->clean() || !devices->clean() || !deviceForm->clean() || !motoc->clean() || !motocForm->clean();
+		return !stream->clean() || !streamForm->clean() || !settings->clean() || !trackingForm->clean() || !devices->clean() || !deviceForm->clean() || !faceForm->clean() || !motoc->clean() || !motocForm->clean();
 	}
 	void requestQuit()
 	{
@@ -461,10 +480,21 @@ struct Dashboard : dx::GpuWindow
 		enabled(calibrate, calibrationReady && !calibrationDeadline);
 		enabled(applySettings, trackingAvailable && !settingsSaving);
 		enabled(saveMotoc, trackingAvailable && !motocSaving);
+        bool liveFace = trackingAvailable && s.contains("face") && s["face"].contains("settings");
+        enabled(applyFace, liveFace && !faceSaving);
+        if (liveFace) {
+            auto face = s["face"];
+            std::string text = "Face/eye: " + face.value("state", std::string("waiting"));
+            if (face.contains("error") && face["error"].is_string()) text += " - " + face["error"].get<std::string>();
+            else if (face.contains("source_error") && face["source_error"].is_string()) text += " - " + face["source_error"].get<std::string>();
+            faceState->copy_label(text.c_str());
+            if (faceForm->clean() && !faceSaving && faceSettingsBaseline != face["settings"]) loadFaceSettings();
+        } else faceState->copy_label("Live face/eye controls require the updated running server");
 		if (!trackingAvailable)
 		{
 			settingsSaving = false;
 			motocSaving = false;
+			faceSaving = false;
 		}
 		if (trackingAvailable && settings->clean() && trackingForm->clean() && !settingsSaving && settings->expected != s["settings"])
 			loadTracking(s["settings"]);
@@ -698,13 +728,29 @@ struct Dashboard : dx::GpuWindow
 		profileBusy = true;
 		j["path"] = profilePath;
 		auto helper = std::filesystem::exists(WIVRN_DASHBOARD_PROFILE_HELPER) ? WIVRN_DASHBOARD_PROFILE_HELPER : WIVRN_DASHBOARD_SOURCE_HELPER;
-		process({WIVRN_DASHBOARD_PYTHON, helper}, j.dump(), [this, reload](const std::string & out) {profileBusy=false;auto result=Json::parse(out);if(!result.value("ok",false))throw std::runtime_error(result.value("error",std::string("Profile helper failed")));profileText=result["text"];if(reload){devices->load(result["profile"]);deviceForm->load(result["profile"]);}notice("Startup profile loaded. Saved changes apply after restarting WiVRn."); });
+		process({WIVRN_DASHBOARD_PYTHON, helper}, j.dump(), [this, reload](const std::string & out) {profileBusy=false;auto result=Json::parse(out);if(!result.value("ok",false))throw std::runtime_error(result.value("error",std::string("Profile helper failed")));profileText=result["text"];if(reload){devices->load(result["profile"]);deviceForm->load(result["profile"]);faceForm->load(result["profile"]);}notice("Startup profile loaded. Apply face/eye tracking for live changes; other device changes apply after restart."); });
 	}
+	void loadFaceSettings()
+    {
+        if (tracking.contains("face") && tracking["face"].contains("settings")) {
+            faceForm->load({{"face", tracking["face"]["settings"]}});
+            faceSettingsBaseline = tracking["face"]["settings"];
+        }
+    }
+    void applyFaceSettings()
+    {
+        if (faceSaving || !tracking.contains("face") || !tracking["face"].contains("settings")) return;
+        auto next = faceDraft(tracking["face"]["settings"], devices->json(), devices->expected, *faceForm);
+        auto mode = next.value("output", std::string("auto"));
+        if (mode == "native" || mode == "unift") { next.erase("translation_sheet"); next.erase("avatar"); }
+        faceSaving = backend->send({{"command", "set_face_settings"}, {"face", next}});
+        if (faceSaving) notice("Applying face/eye tracking without restarting WiVRn…");
+    }
 	void saveProfile()
 	{
 		if (profileBusy)
 			return;
-		auto j = deviceForm->apply(devices->json());
+		auto j = faceForm->apply(deviceForm->apply(devices->json()));
 		if (j.contains("face") && j["face"].is_object())
 		{
 			auto output = j["face"].value("output", std::string("auto"));

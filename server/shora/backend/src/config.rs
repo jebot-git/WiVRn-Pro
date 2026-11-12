@@ -253,6 +253,38 @@ impl Default for Config {
 }
 
 impl Config {
+    pub fn validate_face_settings(&self, face: &FaceConfig) -> anyhow::Result<()> {
+        face.validate()?;
+        if face.enabled {
+            anyhow::ensure!(self.tracker_port != face.osc_port,
+                "face.osc_port conflicts with the body tracker port");
+            if face.source == Source::Babble {
+                anyhow::ensure!(self.tracker_port != face.babble_port,
+                    "face.babble_port conflicts with the body tracker port");
+            }
+        }
+        Ok(())
+    }
+
+    /// Persist only the acknowledged face configuration, retaining the newest
+    /// tuning, device options, comments and CLI socket overrides.
+    pub fn save_face_settings(&self, face: &FaceConfig) -> anyhow::Result<()> {
+        use anyhow::Context;
+        use std::io::Write;
+        self.validate_face_settings(face)?;
+        let Some(path) = &self.config_path else { return Ok(()); };
+        let original = std::fs::read_to_string(path)?;
+        let _: FileConfig = toml::from_str(&original)?;
+        let mut document: toml_edit::DocumentMut = original.parse()?;
+        let value: toml_edit::DocumentMut = toml::to_string(face)?.parse()?;
+        document["face"] = toml_edit::Item::Table(value.as_table().clone());
+        let mut tmp = tempfile::NamedTempFile::new_in(path.parent().context("Profile has no parent")?)?;
+        tmp.write_all(document.to_string().as_bytes())?;
+        tmp.as_file().sync_all()?;
+        anyhow::ensure!(std::fs::read_to_string(path)? == original, "Profile changed; retry saving face settings");
+        tmp.persist(path)?;
+        Ok(())
+    }
     /// Save only tracking tuning, keeping device, OSC, assignment and socket
     /// configuration from the latest file. Never serialize CLI socket overrides.
     pub fn save_tracking_settings(&self, settings: crate::settings::TrackingSettings) -> anyhow::Result<()> {
@@ -433,6 +465,26 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn live_face_persistence_preserves_body_settings_and_validates_shared_ports() {
+        let dir = tempfile::tempdir().unwrap(); let path = dir.path().join("tracking.toml");
+        let original = "# retain body tuning\nheight_m = 1.91\ntracker_port = 7777\n[haritorax]\nenabled = false\n[face]\nenabled = false\n";
+        std::fs::write(&path, original).unwrap();
+        let config = Config::load(&Cli::parse_from(["worker", "--config", path.to_str().unwrap()])).unwrap();
+        let mut face = FaceConfig { enabled: true, output: OutputMode::Native, eye_enabled: false, ..FaceConfig::default() };
+        config.save_face_settings(&face).unwrap();
+        let saved = std::fs::read_to_string(&path).unwrap();
+        assert!(saved.contains("# retain body tuning"));
+        let loaded = Config::load(&Cli::parse_from(["worker", "--config", path.to_str().unwrap()])).unwrap();
+        assert_eq!(loaded.face, face); assert_eq!(loaded.height_m, 1.91); assert_eq!(loaded.tracker_port, 7777);
+        face.osc_port = 7777;
+        assert!(config.save_face_settings(&face).is_err());
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), saved);
+        face.osc_port = 9002; face.output = OutputMode::Json;
+        assert!(config.save_face_settings(&face).is_err());
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), saved);
+    }
+
     #[test]
     fn motoc_settings_persist_without_changing_shora_tuning() {
         let directory=tempfile::tempdir().unwrap(); let path=directory.path().join("profile.toml");

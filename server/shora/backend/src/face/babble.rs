@@ -38,6 +38,7 @@ pub struct BabbleSource {
     socket: UdpSocket,
     last_received: Option<Instant>,
     last_eye_received: Option<Instant>,
+    last_expression_received: Option<Instant>,
 }
 
 impl BabbleSource {
@@ -46,7 +47,7 @@ impl BabbleSource {
             .with_context(|| format!("bind Babble/EyeTrackVR input at {addr}"))?;
         socket.set_nonblocking(true)?;
         tracing::info!(address = %socket.local_addr()?, "Babble/EyeTrackVR input listening");
-        Ok(Self { socket, last_received: None, last_eye_received: None })
+        Ok(Self { socket, last_received: None, last_eye_received: None, last_expression_received: None })
     }
 }
 
@@ -58,7 +59,7 @@ impl FaceSource for BabbleSource {
             match self.socket.recv_from(&mut buf) {
                 Ok((size, _)) => {
                     if let Ok((_, packet)) = rosc::decoder::decode_udp(&buf[..size]) {
-                        if apply_packet(&packet, data, &mut self.last_eye_received) {
+                        if apply_packet(&packet, data, &mut self.last_eye_received, &mut self.last_expression_received) {
                             self.last_received = Some(Instant::now());
                         }
                     }
@@ -68,18 +69,19 @@ impl FaceSource for BabbleSource {
             }
         }
         data.eye_active = self.last_eye_received.is_some_and(|at| at.elapsed() < FRESH);
+        data.expression_active = Some(self.last_expression_received.is_some_and(|at| at.elapsed() < FRESH));
         Ok(self.last_received.is_some_and(|at| at.elapsed() < FRESH))
     }
 
     fn name(&self) -> &'static str { "babble" }
 }
 
-fn apply_packet(packet: &OscPacket, data: &mut UnifiedTrackingData, last_eye: &mut Option<Instant>) -> bool {
+fn apply_packet(packet: &OscPacket, data: &mut UnifiedTrackingData, last_eye: &mut Option<Instant>, last_expression: &mut Option<Instant>) -> bool {
     match packet {
         OscPacket::Bundle(bundle) => {
             let mut changed = false;
             for packet in &bundle.content {
-                changed |= apply_packet(packet, data, last_eye);
+                changed |= apply_packet(packet, data, last_eye, last_expression);
             }
             changed
         }
@@ -92,6 +94,8 @@ fn apply_packet(packet: &OscPacket, data: &mut UnifiedTrackingData, last_eye: &m
                 if mapping.expr as usize <= UnifiedExpressions::EyeWideLeft as usize
                     || matches!(mapping.expr, UnifiedExpressions::EyeLeftX | UnifiedExpressions::EyeRightX | UnifiedExpressions::EyeY) {
                     *last_eye = Some(Instant::now());
+                } else {
+                    *last_expression = Some(Instant::now());
                 }
             }
             !mappings.is_empty()

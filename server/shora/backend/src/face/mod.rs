@@ -16,11 +16,12 @@ mod face2_fb;
 #[cfg(feature = "face-xr")]
 mod openxr;
 
-pub use osc::FaceRelay;
+pub use osc::{FaceRelay, FaceStatus};
 use unified::UnifiedTrackingData;
 
 /// Construct and use sources on the relay thread; OpenXR handles are !Send.
 trait FaceSource {
     fn receive(&mut self, data: &mut UnifiedTrackingData) -> anyhow::Result<bool>;
     fn name(&self) -> &'static str;
+    fn error(&self) -> Option<&str> { None }
 }

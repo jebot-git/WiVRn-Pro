@@ -11,7 +11,7 @@ use std::f32::consts::PI;
 use rosc::{OscBundle, OscType};
 use std::collections::HashMap;
 use std::sync::Arc;
-use strum::{EnumCount, EnumString, IntoStaticStr};
+use strum::{EnumCount, EnumString, IntoStaticStr, IntoEnumIterator};
 
 use super::bundle::AvatarBundle;
 use super::mystery::MysteryParam;
@@ -42,6 +42,7 @@ pub struct UnifiedTrackingData {
     pub eyes: [Option<Vec3>; 2],
     pub shapes: [f32; NUM_SHAPES],
     pub eye_active: bool,
+    pub expression_active: Option<bool>,
     eye_tracking: Option<bool>,
     expression_tracking: Option<bool>,
     lip_tracking: Option<bool>,
@@ -53,6 +54,7 @@ impl Default for UnifiedTrackingData {
             eyes: [None, None],
             shapes: [0.0; NUM_SHAPES],
             eye_active: false,
+            expression_active: None,
             eye_tracking: None,
             expression_tracking: None,
             lip_tracking: None,
@@ -464,17 +466,18 @@ impl UnifiedTrackingData {
 
     pub fn apply_tracking_flags(&mut self, bundle: &mut OscBundle, active: bool) {
         let eye_active = active && self.eye_active;
+        let expression_active = active && self.expression_active.unwrap_or(true);
         if self.eye_tracking != Some(eye_active) {
             bundle.send_parameter("EyeTrackingActive", OscType::Bool(eye_active));
             self.eye_tracking = Some(eye_active);
         }
-        if self.expression_tracking != Some(active) {
-            bundle.send_parameter("ExpressionTrackingActive", OscType::Bool(active));
-            self.expression_tracking = Some(active);
+        if self.expression_tracking != Some(expression_active) {
+            bundle.send_parameter("ExpressionTrackingActive", OscType::Bool(expression_active));
+            self.expression_tracking = Some(expression_active);
         }
-        if self.lip_tracking != Some(active) {
-            bundle.send_parameter("LipTrackingActive", OscType::Bool(active));
-            self.lip_tracking = Some(active);
+        if self.lip_tracking != Some(expression_active) {
+            bundle.send_parameter("LipTrackingActive", OscType::Bool(expression_active));
+            self.lip_tracking = Some(expression_active);
         }
 
     }
@@ -483,6 +486,27 @@ impl UnifiedTrackingData {
         self.eye_tracking = None;
         self.expression_tracking = None;
         self.lip_tracking = None;
+    }
+
+    pub fn copy_output_cache(&mut self, other: &Self) {
+        self.eye_tracking = other.eye_tracking;
+        self.expression_tracking = other.expression_tracking;
+        self.lip_tracking = other.lip_tracking;
+    }
+
+    /// Filter a rendered frame, retaining the unfiltered acquisition state.
+    pub fn mask_channels(&mut self, eyes: bool, expressions: bool) {
+        for expression in UnifiedExpressions::iter() {
+            let eye = expression as usize <= UnifiedExpressions::EyeWideLeft as usize
+                || matches!(expression, UnifiedExpressions::EyeLeftX | UnifiedExpressions::EyeRightX | UnifiedExpressions::EyeY);
+            if (eye && !eyes) || (!eye && !expressions) { self.setu(expression, 0.0); }
+        }
+        for expression in CombinedExpression::iter() {
+            let eye = expression as usize <= CombinedExpression::EyeX as usize;
+            if (eye && !eyes) || (!eye && !expressions) { self.setc(expression, 0.0); }
+        }
+        if !eyes { self.eyes = [None, None]; self.eye_active = false; }
+        if !expressions { self.expression_active = Some(false); }
     }
 
     pub fn apply_eye_tracking(&self, bundle: &mut OscBundle, has_eyelid: bool) {

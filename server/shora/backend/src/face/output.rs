@@ -3,6 +3,7 @@
 //! VRChat's `input` routes receive our output. Its `output` routes are feedback
 //! from the avatar and must never be used as face-output destinations.
 use std::collections::{HashMap, HashSet};
+use std::io::Read;
 use anyhow::Context;
 use rosc::{OscBundle, OscType};
 use serde::Deserialize;
@@ -20,12 +21,21 @@ pub enum FaceOutput {
 }
 
 impl FaceOutput {
+    fn read_mapping(path: &std::path::Path) -> anyhow::Result<String> {
+        const LIMIT: u64 = 1024 * 1024;
+        let metadata = std::fs::metadata(path).with_context(|| format!("read face mapping {}", path.display()))?;
+        anyhow::ensure!(metadata.is_file() && metadata.len() <= LIMIT, "Face mapping must be a regular file no larger than 1 MiB");
+        let mut text = String::new();
+        std::fs::File::open(path)?.take(LIMIT + 1).read_to_string(&mut text)?;
+        anyhow::ensure!(text.len() as u64 <= LIMIT, "Face mapping exceeds 1 MiB");
+        Ok(text)
+    }
     pub fn load(cfg: &FaceConfig) -> anyhow::Result<Self> {
         if cfg.output == OutputMode::Native {
             return Ok(Self::VrcFaceV1);
         }
         if let Some(path) = &cfg.translation_sheet {
-            let text = std::fs::read_to_string(path)
+            let text = Self::read_mapping(path)
                 .with_context(|| format!("read face translation sheet {}", path.display()))?;
             let mut mapping = ChannelMap::from_avatar_json(&text)
                 .with_context(|| format!("load face translation sheet {}", path.display()))?;
@@ -39,7 +49,7 @@ impl FaceOutput {
             return Ok(Self::Channels(mapping));
         }
         if let Some(path) = &cfg.avatar {
-            let text = std::fs::read_to_string(path)
+            let text = Self::read_mapping(path)
                 .with_context(|| format!("read face avatar mapping {}", path.display()))?;
             let node: OscJsonNode = serde_json::from_str(&text).context("parse face avatar OSCQuery tree")?;
             anyhow::ensure!(node.get("parameters").is_some() || node.native_face_tracking().is_some(),

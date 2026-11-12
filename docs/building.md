@@ -46,7 +46,7 @@ FLTK 1.4.5 and DomeD appearance helpers. Qt6 is an explicit opt-in through
 Launch the installed `wivrn-pro-dashboard --show` from the desktop or DomeD XR
 session. Standalone WayVR dashboard launches are unsupported. For a server-only build,
 pass `-DWIVRN_BUILD_DASHBOARD=OFF`. The dashboard controls `wivrn-pro.service`;
-closing it leaves streaming and tracking running. WiVRn's D-Bus name and network
+closing it leaves streaming and tracking running. On Devices & OSC, Apply face/eye tracking updates the live relay and saves its settings without restarting streaming. Other startup-device changes still require a restart. WiVRn's D-Bus name and network
 port remain shared with stock WiVRn, so run only one server at a time.
 
 ## Quest Pro APK

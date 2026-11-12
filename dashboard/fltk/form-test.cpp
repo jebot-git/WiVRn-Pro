@@ -74,6 +74,20 @@ try
         "Save belly-down pose", "Save bent-knees belly pose", "Walking in place setup"});
     require(names.size() == 12, "Calibration label shifted command indices");
     for (int i = 0; i < 11; ++i) require(names.menu()[i].flags == 0, "Calibration action is not selectable");
+    Form face(0, 0, 450);
+    face.string("Mapping", "/face/translation_sheet");
+    Json old = {{"face", {{"translation_sheet", "old.json"}, {"output", "auto"}}}};
+    face.load(old);
+    static_cast<Fl_Input *>(face.fields.front().widget)->value("");
+    require(!face.apply(old)["face"].contains("translation_sheet"), "Clearing a nested optional mapping failed");
+    face.load({{"face", {{"translation_sheet", nullptr}}}});
+    require(std::string(static_cast<Fl_Input *>(face.fields.front().widget)->value()).empty(), "Null mapping did not clear its input");
+    Json active = {{"output", "native"}, {"source", "openxr"}, {"destination", "127.0.0.1:9000"}};
+    auto unchanged = faceDraft(active, old, old, face);
+    require(unchanged["output"] == "native", "Unchanged startup data undid active face output");
+    auto draft = old; draft["face"]["destination"] = "127.0.0.1:9999";
+    auto merged = faceDraft(active, draft, old, face);
+    require(merged["destination"] == "127.0.0.1:9999" && merged["source"] == "openxr", "Explicit advanced face edits did not merge");
     std::cout << "PASS: all seven form selectors save/reload; dynamic names and all eleven calibration choices preserve indices\n";
     return 0;
 }

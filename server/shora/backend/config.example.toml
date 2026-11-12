@@ -41,6 +41,9 @@ baud_rate = 500000
 # Embedded oscavmgr face/eye → OSC pipeline (disabled by default).
 # --face-source babble or --face-source openxr enables it from the CLI.
 [face]
+# Live changes are available through Apply face/eye tracking in the FLTK dashboard.
+eye_enabled = true                   # forward eye gaze / eye expression channels
+expression_enabled = true            # forward non-eye facial expressions
 enabled = false
 source = "babble"                    # "openxr" requires --features face-xr
 babble_port = 9400                    # Project Babble + EyeTrackVR input

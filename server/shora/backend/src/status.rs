@@ -43,6 +43,7 @@ pub struct StatusSnapshot {
     pub face_source: String,
     pub face_output: String,
     pub face_active: bool,
+    pub face: crate::face::FaceStatus,
     pub hmd_pose_received: bool,
     pub spatial_reference: Option<crate::spatial_reference::Health>,
     pub reference_needs_reset: bool,

@@ -12,6 +12,7 @@ use crate::status::StatusHandle;
 pub enum Command {
     Status, YawReset, FullReset, MountingReset, PauseTracking, Restart, ShutdownTrackers, Shutdown,
     SetSettings { settings: crate::settings::TrackingSettings },
+    SetFaceSettings { face: crate::face::config::FaceConfig },
     ClearDrift,
     CalibrateWalking,
     MotocCalibrate, MotocContinue, MotocStop,
@@ -33,7 +34,7 @@ fn parse_request(bytes: &[u8]) -> anyhow::Result<Command> {
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
     struct Request { command: String, motoc: Option<crate::motoc::Settings>, settings: Option<crate::settings::TrackingSettings>, pose: Option<crate::stay_aligned::PoseKind>,
-        tracker_mac:Option<[u8;6]>, hardware:Option<crate::haritorax::settings::HardwareSettings> }
+        tracker_mac:Option<[u8;6]>, hardware:Option<crate::haritorax::settings::HardwareSettings>, face:Option<crate::face::config::FaceConfig> }
     let request: Request = serde_json::from_slice(bytes)?;
     anyhow::ensure!(request.command == "set_settings" || request.settings.is_none(),
         "settings are only accepted for set_settings");
@@ -42,6 +43,7 @@ fn parse_request(bytes: &[u8]) -> anyhow::Result<Command> {
     anyhow::ensure!(request.command == "set_haritora_settings" || (request.tracker_mac.is_none() && request.hardware.is_none()),
         "hardware and tracker_mac are only accepted for set_haritora_settings");
     anyhow::ensure!(request.command == "set_motoc_settings" || request.motoc.is_none(), "motoc is only accepted for set_motoc_settings");
+    anyhow::ensure!(request.command == "set_face_settings" || request.face.is_none(), "face is only accepted for set_face_settings");
     Ok(serde_json::from_slice(bytes)?)
 }
 
@@ -129,6 +131,10 @@ mod tests {
     use super::*;
     #[test]
     fn settings_commands_are_typed_and_old_commands_remain_compatible() {
+        let face = serde_json::json!({"command":"set_face_settings", "face":crate::face::config::FaceConfig::default()});
+        assert!(matches!(parse_request(&serde_json::to_vec(&face).unwrap()).unwrap(), Command::SetFaceSettings { .. }));
+        assert!(parse_request(br#"{"command":"status","face":{}}"#).is_err());
+        assert!(parse_request(br#"{"command":"set_face_settings"}"#).is_err());
         assert_eq!(serde_json::from_str::<Command>(r#"{"command":"yaw_reset"}"#).unwrap(), Command::YawReset);
         let request = serde_json::json!({"command": "set_settings", "settings": crate::settings::TrackingSettings::default()});
         assert!(matches!(serde_json::from_value::<Command>(request).unwrap(), Command::SetSettings { .. }));

@@ -102,6 +102,7 @@ struct Form
 			}
 			else if (auto p = dynamic_cast<Fl_Input *>(f.widget))
 			{
+				if (v.is_null()) p->value("");
 				if (v.is_string())
 					p->value(v.get<std::string>().c_str());
 			}
@@ -125,8 +126,12 @@ struct Form
 			auto v = get(f);
 			if (v != f.initial)
 			{
-				if (v.is_null() || (f.path == "/pyrowave-bitrate" && v == 0) || (f.path == "/pyrowave-foveation" && v == -1))
-					j.erase(f.path.substr(1));
+				if (v.is_null() || (f.path == "/pyrowave-bitrate" && v == 0) || (f.path == "/pyrowave-foveation" && v == -1)
+				    || (f.path == "/face/translation_sheet" && v == ""))
+				{
+					auto path = Json::json_pointer(f.path);
+					if (j.contains(path.parent_pointer())) j[path.parent_pointer()].erase(path.back());
+				}
 				else
 					j[Json::json_pointer(f.path)] = v;
 			}
@@ -134,4 +139,18 @@ struct Form
 		return j;
 	}
 };
+
+// Only explicit startup-editor edits override the active face configuration.
+// Unchanged startup values must not undo newer live settings or defaults.
+inline Json faceDraft(Json active, const Json & draft, const Json & baseline, const Form & fields)
+{
+    auto proposed = draft.value("face", Json::object());
+    auto original = baseline.value("face", Json::object());
+    if (!proposed.is_object() || !original.is_object()) throw std::runtime_error("Face settings must be a JSON object");
+    for (auto it = proposed.begin(); it != proposed.end(); ++it)
+        if (!original.contains(it.key()) || original[it.key()] != it.value()) active[it.key()] = it.value();
+    for (auto it = original.begin(); it != original.end(); ++it)
+        if (!proposed.contains(it.key())) active.erase(it.key());
+    return fields.apply({{"face", active}}).at("face");
+}
 } // namespace wivrn::dashboard

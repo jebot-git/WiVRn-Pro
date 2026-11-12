@@ -4,9 +4,9 @@ use std::net::{Ipv4Addr, SocketAddr};
 use std::path::PathBuf;
 
 use clap::ValueEnum;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum Source {
     Babble,
@@ -14,7 +14,7 @@ pub enum Source {
 }
 
 /// Automatic OSCQuery, native VRChat, fixed Unified Expressions, or avatar JSON.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize, ValueEnum)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum OutputMode {
     #[default]
@@ -25,10 +25,14 @@ pub enum OutputMode {
     Both,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct FaceConfig {
     pub enabled: bool,
+    /// Forward eye gaze and eye expressions independently of other expressions.
+    pub eye_enabled: bool,
+    /// Forward non-eye expressions independently of eye tracking.
+    pub expression_enabled: bool,
     pub source: Source,
     /// Destination is independent of whether input sockets are exposed to LAN.
     pub destination: SocketAddr,
@@ -50,6 +54,8 @@ impl Default for FaceConfig {
     fn default() -> Self {
         Self {
             enabled: false,
+            eye_enabled: true,
+            expression_enabled: true,
             source: Source::Babble,
             destination: SocketAddr::from((Ipv4Addr::LOCALHOST, 9000)),
             osc_port: 9002,
