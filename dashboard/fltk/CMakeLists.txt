@@ -16,7 +16,11 @@ if(NOT EXISTS "${WIVRN_DOME_NATIVE_DIR}/gpu-window.h")
     message(FATAL_ERROR "FLTK dashboard requires DomeD appearance helpers: set WIVRN_DOME_SOURCE to its source tree")
 endif()
 add_executable(wivrn-dashboard main.cpp backend.cpp tray.cpp)
-set_target_properties(wivrn-dashboard PROPERTIES OUTPUT_NAME wivrn-pro-dashboard INSTALL_RPATH "$<TARGET_FILE_DIR:fltk::fltk-shared>")
+# Keep private FLTK installations discoverable without embedding the system
+# loader's default directories (which also fail Fedora's RPM RPATH checks).
+set(_dashboard_fltk_dir "$<TARGET_FILE_DIR:fltk::fltk-shared>")
+set_target_properties(wivrn-dashboard PROPERTIES OUTPUT_NAME wivrn-pro-dashboard
+    INSTALL_RPATH "$<$<NOT:$<IN_LIST:${_dashboard_fltk_dir},${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}>>:${_dashboard_fltk_dir}>")
 target_compile_features(wivrn-dashboard PRIVATE cxx_std_17)
 target_compile_options(wivrn-dashboard PRIVATE -Wall -Wextra)
 target_include_directories(wivrn-dashboard PRIVATE "${WIVRN_DOME_NATIVE_DIR}")
