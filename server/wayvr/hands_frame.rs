@@ -260,8 +260,14 @@ pub fn tracked_hand(joints: Option<&openxr::HandJointLocations>, previous: bool)
     });
     // Match the visible fingertip contact areas used by the keyboard. A
     // hand-width fraction can be smaller than the two fingertip radii.
-    let contacts = crate::hand_keyboard::Contacts::from_joints(j)?;
-    let trigger = contacts.pinch_ratios()[0] < if previous { 0.42 } else { 0.28 };
+    // Curled fingertips may be valid estimates rather than directly tracked.
+    // Preserve the frame detector's existing valid-joints/tracked-wrist gate;
+    // the keyboard's three-tip tracking requirement does not apply here.
+    let contact = crate::hand_keyboard::contact_radius(j[5].radius)
+        + crate::hand_keyboard::contact_radius(j[10].radius);
+    let trigger = p(5).distance(p(10)) < contact * if previous {
+        crate::hand_keyboard::RELEASE_SCALE
+    } else { 1. };
     let index = p(10) - p(7);
     let thumb = p(5) - p(7);
     let length = (7..10).map(|i| p(i).distance(p(i + 1))).sum::<f32>();
@@ -674,6 +680,11 @@ mod tests {
         assert!(!tracked_hand(Some(&joints), false).unwrap().trigger);
         joints[5].pose.position.x += 0.02;
         assert!(!tracked_hand(Some(&joints), true).unwrap().trigger);
+        let mut estimated = tracked_joints(true, false);
+        for i in [5, 10, 15, 20, 25] {
+            estimated[i].location_flags = openxr::SpaceLocationFlags::POSITION_VALID;
+        }
+        assert!(tracked_hand(Some(&estimated), false).unwrap().armable);
     }
     #[cfg(feature = "openxr")]
     #[test]

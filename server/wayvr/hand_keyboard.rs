@@ -8,6 +8,11 @@ const MAX_RADIUS: f32 = 0.020;
 const PADDING: f32 = 0.007;
 pub const RELEASE_SCALE: f32 = 1.5;
 
+pub fn contact_radius(radius: f32) -> f32 {
+    if radius.is_finite() { (radius + PADDING).clamp(MIN_RADIUS, MAX_RADIUS) }
+    else { MIN_RADIUS }
+}
+
 #[derive(Clone, Copy)]
 pub struct Contacts {
     pub tips: [Vec3A; 3],
@@ -25,11 +30,7 @@ impl Contacts {
             Vec3A::new(p.x, p.y, p.z)
         });
         if tips.iter().any(|p| !p.is_finite()) { return None; }
-        let radii = indices.map(|i| {
-            let radius = joints[i].radius;
-            if radius.is_finite() { (radius + PADDING).clamp(MIN_RADIUS, MAX_RADIUS) }
-            else { MIN_RADIUS }
-        });
+        let radii = indices.map(|i| contact_radius(joints[i].radius));
         Some(Self { tips, radii })
     }
     /// Retain the gesture detector's press/release hysteresis: 0.28 / 0.42.
