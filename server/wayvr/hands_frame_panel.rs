@@ -350,7 +350,7 @@ fn create_bookmarks(app: &mut AppState) -> anyhow::Result<OverlayWindowConfig> {
 
 #[cfg(all(test, feature = "openxr"))]
 mod tests {
-    use super::*;
+    use crate::hands_frame::tracked_hand;
     #[test]
     fn framing_hand_leaves_index_free_and_pinch_has_hysteresis() {
         use openxr::{HandJointLocation, Posef, SpaceLocationFlags as Flags, Vector3f};
@@ -395,7 +395,7 @@ mod tests {
         assert!(hand.hold && hand.armable && !hand.trigger);
         j[5].pose.position = j[10].pose.position;
         assert!(tracked_hand(Some(&j), false).unwrap().trigger);
-        j[5].pose.position.x += 0.025;
+        j[5].pose.position.x += 0.04;
         assert!(!tracked_hand(Some(&j), false).unwrap().trigger);
         assert!(tracked_hand(Some(&j), true).unwrap().trigger);
         j[15].location_flags = Flags::from_raw(0);
