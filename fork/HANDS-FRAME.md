@@ -17,6 +17,9 @@ both controllers within 35 cm, squeeze both grips, then spread them diagonally
 to define opposite frame corners. For tracked hands, curl the middle, ring and
 little fingers and use the two index-finger bases as corners; the thumb and index
 finger remain available for the confirmation pinch. Both inputs must be tracked.
+The thumb may sit diagonally to the index finger; an exact right-angle pose is
+not required. Confirmation uses the same fingertip contact areas and release
+hysteresis as the native keyboard.
 
 - Left trigger/index pinch: cycle Photo → Text/translation → 2D code.
 - Hold and release the left trigger/pinch for at least one second: toggle repeat.
@@ -62,6 +65,9 @@ frame and capture normally. No audio capture is requested. A foreground sharing
 notification remains visible. Switching back to PC scene, disabling Hands Frame,
 disconnecting the client, or revoking system consent stops display sharing.
 A missing renewal also stops the client within two seconds.
+The consent dialog can temporarily pause XR rendering. This stops framing and
+recording, but preserves the pending sharing request with image delivery disabled.
+Resume framing after accepting the dialog; it should not repeatedly request consent.
 
 Display capture includes virtual content that obscures passthrough, including
 headset UI; it cannot recover the environment hidden behind those overlays. Meta

@@ -273,57 +273,6 @@ pub fn update<O: Default>(overlays: &mut OverlayWindowManager<O>, app: &mut AppS
     }
     owned
 }
-#[cfg(feature = "openxr")]
-pub fn tracked_hand(joints: Option<&openxr::HandJointLocations>, previous: bool) -> Option<Hand> {
-    let j = joints?;
-    let flags = openxr::SpaceLocationFlags::POSITION_VALID;
-    if j.iter().any(|p| !p.location_flags.contains(flags))
-        || !j[1]
-            .location_flags
-            .contains(openxr::SpaceLocationFlags::POSITION_TRACKED)
-    {
-        return None;
-    }
-    let p = |i: usize| {
-        Vec3A::new(
-            j[i].pose.position.x,
-            j[i].pose.position.y,
-            j[i].pose.position.z,
-        )
-    };
-    if (0..26).any(|i| !p(i).is_finite()) {
-        return None;
-    }
-    let span = p(7).distance(p(22));
-    if !(0.03..=0.13).contains(&span) {
-        return None;
-    }
-    let curled = [12usize, 17, 22].iter().all(|&base| {
-        let length = (base..base + 3)
-            .map(|i| p(i).distance(p(i + 1)))
-            .sum::<f32>();
-        length > 0.025 && p(base).distance(p(base + 3)) < length * 0.75
-    });
-    let trigger = p(5).distance(p(10)) < span * if previous { 0.38 } else { 0.22 };
-    let index = p(10) - p(7);
-    let thumb = p(5) - p(7);
-    let length = (7..10).map(|i| p(i).distance(p(i + 1))).sum::<f32>();
-    let armable = curled
-        && index.length() > length * 0.85
-        && thumb.length() > span * 0.3
-        && index
-            .normalize_or_zero()
-            .dot(thumb.normalize_or_zero())
-            .abs()
-            < 0.8;
-    Some(Hand {
-        armable,
-        position: p(7),
-        hold: curled,
-        trigger,
-        valid: true,
-    })
-}
 
 fn create_bookmarks(app: &mut AppState) -> anyhow::Result<OverlayWindowConfig> {
     let mut panel = GuiPanel::new_from_template(

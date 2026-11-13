@@ -211,6 +211,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
                     log::info!("entered state {:?}", e.state());
                     xr_state.focused = e.state() == xr::SessionState::FOCUSED;
                     if !xr_state.focused {
+                        app.hands_frame.suspend();
                         input_source.reset_hands();
                         for i in 0..2 {
                             crate::backend::input::release_pointer(i, &mut overlays, &mut app);
@@ -314,7 +315,7 @@ pub fn openxr_run(args: &Args, params: RunParams) -> Result<(), BackendError> {
         if !xr_frame_state.should_render {
             app.watch_menu.close();
             app.input_state.frame_view=None;
-            app.hands_frame.model.cancel();app.hands_frame.command("cancel");
+            app.hands_frame.suspend();
             input_source.reset_hands();
             for i in 0..2 {
                 crate::backend::input::release_pointer(i, &mut overlays, &mut app);

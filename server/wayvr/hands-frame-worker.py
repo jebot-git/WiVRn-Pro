@@ -362,6 +362,12 @@ class Worker:
                         self.notice='Waiting for a fresh frame…'; return
                     raise
                 self.take(image, value['event'])
+        elif kind == 'suspend':
+            # XR may stop rendering while Android presents screen-sharing
+            # consent. Keep that request alive with frames=0; only an explicit
+            # cancel/source change/quit revokes it.
+            self.active = False; self.sample = 0.; self.pending_capture = None
+            self.stop_recording()
         elif kind == 'cancel': self.active = False; self.sharing=False; self.pending_capture=None; self.stop_recording()
         elif kind == 'quit': self.closed = True; self.active = False; self.sharing=False; self.stop_recording()
         elif kind == 'source':

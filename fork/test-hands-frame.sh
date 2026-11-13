@@ -3,8 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 -m unittest discover -s fork/tests -p test_hands_frame.py
-cargo test --locked -p wayvr --no-default-features --features openxr,wayland,x11 \
-    --manifest-path server/wayvr/upstream/Cargo.toml hands_frame
+(cd server/wayvr/upstream
+ cargo test --locked --release -p wayvr --no-default-features --features openxr,wayland,x11 hands_frame)
 # Set WIVRN_MONADO_SOURCE_DIR to a configured/pinned Monado checkout.
 if [[ -n "${WIVRN_MONADO_SOURCE_DIR:-}" ]]; then
     mkdir -p build/native-tests

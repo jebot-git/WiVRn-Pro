@@ -212,6 +212,30 @@ class CaptureReliabilityTests(unittest.TestCase):
             with self.assertRaisesRegex(worker.FrameUnavailable,'Accept screen-sharing'):
                 instance.read_source()
 
+    def test_render_pause_preserves_consent_request_without_capturing(self):
+        with self.instance() as (root,instance):
+            instance.command({'op':'source'})
+            instance.command({'op':'frame','enabled':True,'active':False,'time':time.monotonic()})
+            instance.tick()
+            lease=root/'hands-frame-headset.lease'
+            self.assertEqual(lease.read_bytes()[-1],0)
+            instance.active=True
+            instance.pending_capture=(time.monotonic()+2.,[-.5,-.5,.5,.5],'photo','capture')
+            with mock.patch.object(instance,'stop_recording') as stop:
+                instance.command({'op':'suspend'})
+                stop.assert_called_once()
+            self.assertFalse(instance.active)
+            self.assertIsNone(instance.pending_capture)
+            # The render thread may remain paused longer than a lease lifetime.
+            # The independent worker must renew permission, with frames disabled.
+            for _ in range(3):
+                instance.tick()
+                self.assertTrue(instance.sharing)
+                self.assertEqual(lease.read_bytes()[-1],0)
+            instance.command({'op':'cancel'});instance.tick()
+            self.assertFalse(lease.exists())
+            self.assertFalse(instance.sharing)
+
 
 class TranslationProviderTests(unittest.TestCase):
     instance = CaptureReliabilityTests.instance

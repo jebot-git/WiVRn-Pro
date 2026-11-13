@@ -492,7 +492,7 @@ impl OpenXrInputSource {
                     } else {
                         None
                     };
-                    pointer.frame_hand = crate::hands_frame_panel::tracked_hand(
+                    pointer.frame_hand = crate::hands_frame::tracked_hand(
                         joints.as_ref(),
                         pointer.frame_hand.is_some_and(|h| h.trigger),
                     );

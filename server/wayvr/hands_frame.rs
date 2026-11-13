@@ -227,6 +227,58 @@ impl Model {
         Update { event, owned: true }
     }
 }
+#[cfg(feature = "openxr")]
+pub fn tracked_hand(joints: Option<&openxr::HandJointLocations>, previous: bool) -> Option<Hand> {
+    let j = joints?;
+    let flags = openxr::SpaceLocationFlags::POSITION_VALID;
+    if j.iter().any(|p| !p.location_flags.contains(flags))
+        || !j[1]
+            .location_flags
+            .contains(openxr::SpaceLocationFlags::POSITION_TRACKED)
+    {
+        return None;
+    }
+    let p = |i: usize| {
+        Vec3A::new(
+            j[i].pose.position.x,
+            j[i].pose.position.y,
+            j[i].pose.position.z,
+        )
+    };
+    if (0..26).any(|i| !p(i).is_finite()) {
+        return None;
+    }
+    let span = p(7).distance(p(22));
+    if !(0.03..=0.13).contains(&span) {
+        return None;
+    }
+    let curled = [12usize, 17, 22].iter().all(|&base| {
+        let length = (base..base + 3)
+            .map(|i| p(i).distance(p(i + 1)))
+            .sum::<f32>();
+        length > 0.025 && p(base).distance(p(base + 3)) < length * 0.75
+    });
+    // Match the visible fingertip contact areas used by the keyboard. A
+    // hand-width fraction can be smaller than the two fingertip radii.
+    let contacts = crate::hand_keyboard::Contacts::from_joints(j)?;
+    let trigger = contacts.pinch_ratios()[0] < if previous { 0.42 } else { 0.28 };
+    let index = p(10) - p(7);
+    let thumb = p(5) - p(7);
+    let length = (7..10).map(|i| p(i).distance(p(i + 1))).sum::<f32>();
+    let armable = curled
+        && index.length() > length * 0.85
+        && thumb.length() > span * 0.3
+        && !trigger;
+    Some(Hand {
+        armable,
+        position: p(7),
+        hold: curled,
+        trigger,
+        valid: true,
+    })
+}
+
+
 #[derive(Clone, Default, Deserialize)]
 pub struct Status {
     #[serde(default)]
@@ -316,6 +368,13 @@ impl Feed {
                 }
             })
             .ok();
+    }
+    /// A permission dialog may suspend XR rendering. Keep its sharing request,
+    /// but release gestures and stop producing images until rendering resumes.
+    pub fn suspend(&mut self) {
+        self.model.cancel();
+        self.tail = None;
+        self.command("suspend");
     }
     pub fn capturing(&self) -> bool {
         self.enabled
@@ -534,7 +593,7 @@ fn worker(
             .unwrap_or(false);
         if matches!(
             command.get("op").and_then(|v| v.as_str()),
-            Some("cancel" | "quit")
+            Some("cancel" | "quit" | "suspend")
         ) {
             let _ = std::fs::remove_file(&lease);
         }
@@ -577,6 +636,84 @@ fn worker(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(feature = "openxr")]
+    fn tracked_joints(curled: bool, pinched: bool) -> openxr::HandJointLocations {
+        let joint = openxr::HandJointLocation {
+            location_flags: openxr::SpaceLocationFlags::POSITION_VALID
+                | openxr::SpaceLocationFlags::POSITION_TRACKED,
+            pose: openxr::Posef::IDENTITY,
+            radius: 0.005,
+        };
+        let mut joints = [joint; 26];
+        for (base, x) in [(7, 0.04), (12, 0.01), (17, -0.015), (22, -0.04)] {
+            for i in 0..4 {
+                let z = if base != 7 && curled { [0., -0.025, -0.05, -0.015][i] }
+                    else { -0.025 * i as f32 };
+                joints[base+i].pose.position = openxr::Vector3f { x, y: 0., z: -0.5+z };
+            }
+        }
+        // A natural diagonal thumb, rather than an exact right-angle finger gun.
+        joints[5].pose.position = openxr::Vector3f { x: 0.015, y: 0., z: -0.56 };
+        if pinched {
+            joints[5].pose.position = joints[10].pose.position;
+            joints[5].pose.position.x += 0.025;
+        }
+        joints
+    }
+    #[cfg(feature = "openxr")]
+    #[test]
+    fn tracked_frame_accepts_diagonal_thumb_and_visible_tip_contact() {
+        let ready = tracked_hand(Some(&tracked_joints(true, false)), false).unwrap();
+        assert!(ready.valid && ready.hold && ready.armable && !ready.trigger);
+        let mut joints = tracked_joints(true, true);
+        let pressed = tracked_hand(Some(&joints), false).unwrap();
+        assert!(pressed.trigger, "Touching fingertip contact spheres must confirm a capture");
+        assert!(!pressed.armable, "A held pinch must not arm a new frame");
+        joints[5].pose.position.x += 0.01;
+        assert!(tracked_hand(Some(&joints), true).unwrap().trigger);
+        assert!(!tracked_hand(Some(&joints), false).unwrap().trigger);
+        joints[5].pose.position.x += 0.02;
+        assert!(!tracked_hand(Some(&joints), true).unwrap().trigger);
+    }
+    #[cfg(feature = "openxr")]
+    #[test]
+    fn tracked_joint_frame_draws_and_emits_one_photo_confirmation() {
+        let mut model = Model::default();
+        let sample = |curled, pinched| {
+            let hand = tracked_hand(Some(&tracked_joints(curled, pinched)), false).unwrap();
+            let mut hands = [hand; 2];
+            hands[0].position += Vec3A::new(-0.08, 0.05, 0.);
+            hands[1].position += Vec3A::new(0.08, -0.05, 0.);
+            hands
+        };
+        model.update(0., Affine3A::IDENTITY, sample(false, false), false);
+        assert!(model.update(0.02, Affine3A::IDENTITY, sample(true, false), false).owned);
+        let mut spread = sample(true, false);
+        spread[0].position += Vec3A::new(-0.15, 0.15, 0.);
+        spread[1].position += Vec3A::new(0.15, -0.15, 0.);
+        model.update(0.04, Affine3A::IDENTITY, spread, false);
+        let rect = model.rect.unwrap();
+        assert!(rect.bounds[2]-rect.bounds[0] > 0.5 && rect.bounds[3]-rect.bounds[1] > 0.5);
+        spread[1].trigger = tracked_hand(Some(&tracked_joints(true, true)), false).unwrap().trigger;
+        model.update(0.06, Affine3A::IDENTITY, spread, false);
+        spread[1].trigger = false;
+        model.update(0.08, Affine3A::IDENTITY, spread, false);
+        let mut captures = 0;
+        for i in 1..=10 {
+            captures += usize::from(model.update(0.08+0.02*i as f64, Affine3A::IDENTITY, spread, false).event == Some("capture"));
+        }
+        assert_eq!(captures, 1);
+    }
+    #[test]
+    fn render_pause_releases_capture_but_keeps_utility_enabled() {
+        let mut feed = Feed::default();
+        feed.enabled = true;
+        feed.model.active = true;
+        feed.tail = Some(Instant::now());
+        feed.suspend();
+        assert!(feed.enabled);
+        assert!(!feed.model.reserving() && !feed.capturing());
+    }
     fn hands(hold: bool, trigger: [bool; 2]) -> [Hand; 2] {
         [
             Hand {
