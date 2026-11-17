@@ -163,7 +163,10 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
 
 	auto input = std::make_unique<PyroWave::DecoderInput>(dec);
 
-	// Timestamp completed GPU decoding; feedback is stamped at actual delivery.
+	// Timestamp one completed decode per log interval. Resetting/writing/reading
+	// queries on every frame adds driver work to the handoff without producing
+	// any additional telemetry. Feedback still waits for actual GPU completion.
+	constexpr uint64_t timing_interval = 90;
 	uint64_t decoded_count = 0;
 	float timestamp_period = application::get_physical_device_properties().limits.timestampPeriod;
 
@@ -206,8 +209,12 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
 			dec.device.resetFences(*fence);
 			cmd_buf.reset();
 			cmd_buf.begin({.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-			cmd_buf.resetQueryPool(*qp, 0, 2);
-			cmd_buf.writeTimestamp(vk::PipelineStageFlagBits::eComputeShader, *qp, 0);
+			const bool sample_timing = (decoded_count + 1) % timing_interval == 0;
+			if (sample_timing)
+			{
+				cmd_buf.resetQueryPool(*qp, 0, 2);
+				cmd_buf.writeTimestamp(vk::PipelineStageFlagBits::eComputeShader, *qp, 0);
+			}
 
 			if (item->current_layout != vk::ImageLayout::eGeneral)
 			{
@@ -256,7 +263,8 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
 				        {},
 				        barrier);
 			}
-			cmd_buf.writeTimestamp(vk::PipelineStageFlagBits::eComputeShader, *qp, 1);
+			if (sample_timing)
+				cmd_buf.writeTimestamp(vk::PipelineStageFlagBits::eComputeShader, *qp, 1);
 			cmd_buf.end();
 
 			application::get_queue().lock()->submit(
@@ -279,14 +287,20 @@ void pyrowave_decoder::worker_function(uint32_t queue_family_index)
             if (res != vk::Result::eSuccess) throw std::runtime_error("PyroWave completion fence failed");
             if (auto scene = weak_scene.lock()) scene->push_blit_handle(accumulator, std::move(handle));
 
-			std::array<uint64_t, 2> times;
-			res = (*device).getQueryPoolResults(
-			        *qp, 0, 2, sizeof(uint64_t) * 2, times.data(), sizeof(uint64_t), vk::QueryResultFlagBits::eWait | vk::QueryResultFlagBits::e64);
-			if (res == vk::Result::eSuccess)
+			++decoded_count;
+			if (sample_timing)
+			{
+				std::array<uint64_t, 2> times;
+				// The completion fence above covers both queries; no second wait
+				// is needed when retrieving the sampled result.
+				res = (*device).getQueryPoolResults(
+				        *qp, 0, 2, sizeof(uint64_t) * 2, times.data(), sizeof(uint64_t), vk::QueryResultFlagBits::e64);
+				if (res == vk::Result::eSuccess)
 				{
-                    const double gpu_ms = (times[1] - times[0]) * timestamp_period / 1e6;
-                    if (++decoded_count % 90 == 0) spdlog::info("PYROWAVE_GPU frame={} gpu_ms={} chroma=444 wavelet=haar complete=true", feedback.frame_index, gpu_ms);
-                }
+					const double gpu_ms = (times[1] - times[0]) * timestamp_period / 1e6;
+					spdlog::info("PYROWAVE_GPU frame={} gpu_ms={} chroma=444 wavelet=haar complete=true", feedback.frame_index, gpu_ms);
+				}
+			}
 		}
 		catch (std::exception & e)
 		{

@@ -56,6 +56,8 @@ void ColorConversion::convert(vk::raii::CommandBuffer & cmd, vk::ImageView rgba)
     device.updateDescriptorSets(writes, {});
     cmd.bindPipeline(vk::PipelineBindPoint::eCompute, *pipeline);
     cmd.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *layout, 0, set, {});
-    cmd.dispatch((extent.width + 7) / 8, (extent.height + 7) / 8, 1);
+    // One invocation converts a packed 2x2 quad, so an 8x8 workgroup covers
+    // 16x16 output pixels. The shader guards partially covered edge quads.
+    cmd.dispatch((extent.width + 15) / 16, (extent.height + 15) / 16, 1);
 }
 }

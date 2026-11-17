@@ -6,12 +6,25 @@ layout(set = 0, binding = 1) uniform sampler2D cb;
 layout(set = 0, binding = 2) uniform sampler2D cr;
 layout(set = 0, binding = 3, rgba8) writeonly uniform image2D rgba;
 void main() {
-    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
-    if (any(greaterThanEqual(p, imageSize(rgba)))) return;
-    int channel = (p.x & 1) | ((p.y & 1) << 1);
-    float l = texelFetch(y, p >> 1, 0)[channel];
-    float b = texelFetch(cb, p >> 1, 0)[channel] - 0.5;
-    float r = texelFetch(cr, p >> 1, 0)[channel] - 0.5;
+    // Each source texel contains one 2x2 pixel quad. Fetch its three packed
+    // planes once and convert all four pixels in the same invocation.
+    ivec2 quad = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 p = quad * 2;
+    ivec2 size = imageSize(rgba);
+    if (any(greaterThanEqual(p, size))) return;
+    vec4 l = texelFetch(y, quad, 0);
+    vec4 b = texelFetch(cb, quad, 0) - 0.5;
+    vec4 r = texelFetch(cr, quad, 0) - 0.5;
     // Full-range BT.709, with full-resolution chroma. Reprojection performs the sRGB EOTF.
-    imageStore(rgba, p, vec4(clamp(vec3(l + 1.5748*r, l - 0.187324*b - 0.468124*r, l + 1.8556*b), 0.0, 1.0), 1));
+    vec4 red = clamp(l + 1.5748*r, 0.0, 1.0);
+    vec4 green = clamp(l - 0.187324*b - 0.468124*r, 0.0, 1.0);
+    vec4 blue = clamp(l + 1.8556*b, 0.0, 1.0);
+    imageStore(rgba, p, vec4(red.x, green.x, blue.x, 1));
+    if (p.x + 1 < size.x)
+        imageStore(rgba, p + ivec2(1, 0), vec4(red.y, green.y, blue.y, 1));
+    if (p.y + 1 < size.y) {
+        imageStore(rgba, p + ivec2(0, 1), vec4(red.z, green.z, blue.z, 1));
+        if (p.x + 1 < size.x)
+            imageStore(rgba, p + ivec2(1, 1), vec4(red.w, green.w, blue.w, 1));
+    }
 }
