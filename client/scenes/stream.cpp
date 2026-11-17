@@ -1390,11 +1390,20 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
 			return;
 		}
 		current_blit_handles.fill(nullptr);
+		// Retire descriptors using immutable decoder samplers while their owners
+		// still exist. The completed blit fence and exclusive lock cover this.
+		if (defoveator)
+			defoveator->reset_pipelines();
 		retired.swap(decoders);
 		video_stream_description.reset();
 	}
+	// Blit handles borrow pool state from their decoder. Release every frame
+	// before destroying any codec; worker pushes now see empty decoders and
+	// cannot repopulate the retired frame arrays. Codec teardown joins workers.
 	for (auto & item: retired)
-		item = {};
+		item.latest_frames.fill(nullptr);
+	for (auto & item: retired)
+		item.decoder.reset();
 	decltype(decoders) replacement;
 	try
 	{
@@ -1412,8 +1421,6 @@ void scenes::stream::setup(const to_headset::video_stream_description & descript
 		std::unique_lock lock(decoder_mutex);
 		decoders.swap(replacement);
 		video_stream_description = description;
-		if (defoveator)
-			defoveator->reset_pipelines();
 	}
 }
 
