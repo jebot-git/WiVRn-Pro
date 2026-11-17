@@ -434,6 +434,8 @@ impl OpenXrInputSource {
             for i in 0..2 {
                 self.hand_input[i].set_space_drag_enabled(i == app.input_state.space_drag_hand);
                 let pointer = &mut app.input_state.pointers[i];
+                let last_pose = pointer.pose;
+                let last_raw_pose = pointer.raw_pose;
                 self.pointers[i].update(
                     pointer,
                     xr,
@@ -473,6 +475,11 @@ impl OpenXrInputSource {
                 pointer.joystick_pad = None;
                 pointer.joystick_owned = false;
                 if hand_mode {
+                    // Only a fresh joint ray replaces the hand's displayed pose.
+                    // An inactive/missing skeleton must not expose a different
+                    // controller aim pose as a neutral fallback.
+                    pointer.pose = last_pose;
+                    pointer.raw_pose = last_raw_pose;
                     let joints = if xr.focused && hmd_tracked {
                         xr.stage
                             .locate_hand_joints(
@@ -887,6 +894,10 @@ impl OpenXrPointer {
         lerp_factor: Option<f32>,
         require_tracking: bool,
     ) -> anyhow::Result<()> {
+        if require_tracking && !self.source.pose.is_active(&xr.session, xr::Path::NULL)? {
+            pointer.tracked = false;
+            return Ok(());
+        }
         let location = self.space.locate(&xr.stage, xr.predicted_display_time)?;
         let factor = lerp_factor.map(|v| (1.0 / (xr.fps / 100.0) * v).clamp(0.1, 1.0));
         if let Some((raw, filtered)) = crate::pointer_pose::update(
