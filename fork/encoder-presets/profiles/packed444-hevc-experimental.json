@@ -21,6 +21,12 @@
     "render_resolution": "Keep current headset resolution and foveation"
   },
   "notice": "Experimental full-colour transport. Requires matching server and Quest Pro client builds. Use HEVC, 8-bit and initially 72 Hz. Decoder workload is higher; sustained stereo operation and latency are not yet qualified. Save and restart WiVRn between tests to apply.",
+  "expected_target_mbps": {
+    "left_eye": 98.765432,
+    "right_eye": 98.765432,
+    "alpha": 2.469136,
+    "assumption": "Equal eye dimensions and alpha at half eye height; aggregate target, not measured bandwidth."
+  },
   "notes": [
     "Preserves full-resolution chroma sample locations using hardware 4:2:0 video decoding and GPU unpacking.",
     "Does not change headset bit rate or refresh rate automatically.",

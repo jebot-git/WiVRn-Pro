@@ -94,6 +94,15 @@ class PresetTests(unittest.TestCase):
         self.run_tool('apply', 'hevc-balanced-100', '--config', target)
         self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
 
+    def test_leaving_packed_layout_clears_it_for_hardware_and_pyrowave(self):
+        for preset in ('hevc-balanced-100', 'pyrowave-444'):
+            self.run_tool('apply', 'packed444-hevc-experimental', '--config', self.config)
+            self.assertTrue(json.loads(self.config.read_text())['packed444'])
+            self.run_tool('apply', preset, '--config', self.config)
+            saved = json.loads(self.config.read_text())
+            self.assertNotIn('packed444', saved)
+            self.assertEqual(saved['custom'], self.original['custom'])
+
     def test_all_profile_options_exist_in_installed_ffmpeg(self):
         help_text = {}
         for codec in ('h264', 'hevc'):

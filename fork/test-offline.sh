@@ -4,6 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 fork/check-policy.py
 python3 fork/check-wayvr-source.py
+python3 fork/encoder-presets/test_presets.py
 python3 fork/tests/run_python_tests.py
 if [[ ${WIVRN_TEST_QT:-0} == 1 ]]; then
   python3 -m unittest discover -s apps/mac-desktop -p "test_*.py"

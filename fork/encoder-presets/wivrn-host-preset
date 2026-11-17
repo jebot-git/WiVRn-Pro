@@ -32,6 +32,8 @@ def presets():
 
 def merge(base, preset):
     result = copy.deepcopy(base)
+    if not preset["host_config"].get("packed444", False):
+        result.pop("packed444", None)
     # Match the host's top-level replacement merge; replace the entire encoder
     # object to avoid retaining incompatible private options from another codec.
     result.update(copy.deepcopy(preset["host_config"]))
