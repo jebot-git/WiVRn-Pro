@@ -55,6 +55,8 @@ public:
 	// Present means controller emulation is enabled; value means gestures are blocked.
 	std::optional<bool> controller(unsigned hand, int64_t now) const;
 	bool controllers_enabled() const;
+	// Selected profile mode is independent of short-lived axis/button samples.
+	bool controller_profile_enabled(unsigned hand) const;
 	bool hand_tracking_enabled() const;
 };
 } // namespace wivrn

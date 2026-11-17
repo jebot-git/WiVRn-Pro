@@ -184,7 +184,7 @@
 
 ## For how much time mouse motion events should be stopped after clicking?
 ## Prevents accidental dragging various GUI elements or links, making it easier to click
-#click_freeze_time_ms: 300
+#click_freeze_time_ms: 0
 
 ## Fixes behavior when the desktop environment
 ## expects the mouse buttons to be swapped

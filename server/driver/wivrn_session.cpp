@@ -605,11 +605,11 @@ void wivrn_session::operator()(const from_headset::tracking & tracking)
 	                                (get_name(tracking.interaction_profiles[1]) == XRT_DEVICE_EXT_HAND_INTERACTION ? 2u : 0u));
 	if (left == XRT_DEVICE_EXT_HAND_INTERACTION &&
 	    (roles.left < 0 || roles.left == left_controller_index || roles.left == left_hand_interaction_index) &&
-	    (emulated_joystick(0) || hand_controller(0).has_value() || walking_enabled(0)))
+	    joystick_emulation.controller_profile_enabled(0))
 		left = XRT_DEVICE_TOUCH_CONTROLLER;
 	if (right == XRT_DEVICE_EXT_HAND_INTERACTION &&
 	    (roles.right < 0 || roles.right == right_controller_index || roles.right == right_hand_interaction_index) &&
-	    (emulated_joystick(1) || hand_controller(1).has_value() || walking_enabled(1)))
+	    joystick_emulation.controller_profile_enabled(1))
 		right = XRT_DEVICE_TOUCH_CONTROLLER;
 	if (left != roles.left_profile or right != roles.right_profile)
 	{

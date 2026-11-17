@@ -26,7 +26,6 @@ use std::{
 
 use crate::subsystem::dbus::DbusConnector;
 
-const IGNORE_PREFIX: &str = "WayVR";
 const WATCHDOG_TIMEOUT: Duration = Duration::from_secs(5);
 const POLL_TIMEOUT_MS: i32 = 20;
 
@@ -281,7 +280,7 @@ impl LibinputInterface for RestrictedInterface {
         let control_fd: OwnedFd = control_file.into();
         let mut device = EvdevDevice::from_fd(control_fd).map_err(io_errno)?;
 
-        if !should_capture_device(&device) {
+        if crate::mouse_priority::is_virtual_input(path, device.name()) || !should_capture_device(&device) {
             return Err(libc::ENODEV);
         }
 
@@ -862,13 +861,6 @@ fn accumulate_v120(remainder: &mut f64, value: f64) -> i32 {
 }
 
 fn should_capture_device(device: &EvdevDevice) -> bool {
-    if device
-        .name()
-        .is_some_and(|name| name.starts_with(IGNORE_PREFIX))
-    {
-        return false;
-    }
-
     let Some(keys) = device.supported_keys() else {
         return false;
     };

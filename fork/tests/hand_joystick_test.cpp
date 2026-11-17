@@ -61,8 +61,16 @@ int main()
 		assert(endpoint.get(0, now)->axes[0] == 0.6f);
 		assert(endpoint.get(1, now)->axes[1] == -0.4f);
 		assert(!endpoint.get(0, now + 151'000'000));
+		assert(endpoint.controller_profile_enabled(0));
+		assert(endpoint.controller_profile_enabled(1));
+		// Frame expiry neutralizes inputs, without reconfiguring the runtime's
+		// interaction profile or invalidating the hand tracker/pad mount.
+		endpoint.poll(now + 200'000'000, 3);
+		assert(!endpoint.get(0, now + 200'000'000));
+		assert(endpoint.controller_profile_enabled(0));
 		assert(!endpoint.controllers_enabled());
 		endpoint.poll(now, 1);
+		assert(!endpoint.controller_profile_enabled(1));
 		assert(!endpoint.get(1, now));
 		assert(endpoint.get(0, now));
 		put(packet, 4, 9, 4);
@@ -90,6 +98,7 @@ int main()
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
 		endpoint.poll(now, 3);
 		assert(!endpoint.get(0, now));
+		assert(!endpoint.controller_profile_enabled(0));
 		put(packet, 4, 25, 4);
 		put(packet, 32, 6, 8);
 		assert(send(fd, packet.data(), packet.size(), 0) == 40);
@@ -105,6 +114,7 @@ int main()
 		assert(endpoint.controller(0, now).value());
 		assert(!endpoint.controller(1, now).value());
 		assert(!endpoint.controller(0, now + 151'000'000));
+		assert(endpoint.controller_profile_enabled(0));
 		assert(endpoint.controllers_enabled());
 		assert(endpoint.controllers_enabled());
 		endpoint.poll(now, 0); // Mode still suppresses advertising without a tracked hand.
@@ -146,12 +156,30 @@ int main()
         endpoint.poll(now + 200'000'000, 3);
         assert(!endpoint.hand_tracking_enabled()); // mode survives input expiry
         assert(!endpoint.get(0, now + 200'000'000));
+		// Walking alone advertises only the hand(s) configured for locomotion.
+		put(packet, 4, 256, 4);
+		put(packet, 8, now + 210'000'000, 8);
+		put(packet, 32, 13, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now + 210'000'000, 3);
+		assert(endpoint.controller_profile_enabled(0));
+		assert(!endpoint.controller_profile_enabled(1));
+		put(packet, 4, 256 | 512, 4);
+		put(packet, 32, 14, 8);
+		assert(send(fd, packet.data(), packet.size(), 0) == 40);
+		endpoint.poll(now + 210'000'000, 3);
+		assert(endpoint.controller_profile_enabled(1));
+		endpoint.poll(now + 1'211'000'000, 3); // No heartbeat: restore native profiles.
+		assert(!endpoint.controller_profile_enabled(0));
+		assert(!endpoint.controller_profile_enabled(1));
         close(fd);
 		endpoint.poll(now, 3);
         assert(endpoint.hand_tracking_enabled());
 		assert(!endpoint.controller(0, now));
 		assert(!endpoint.controllers_enabled());
 		assert(!endpoint.get(0, now));
+		assert(!endpoint.controller_profile_enabled(0));
+		assert(!endpoint.controller_profile_enabled(2));
 	}
 	std::filesystem::remove_all(directory);
 }

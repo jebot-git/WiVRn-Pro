@@ -252,7 +252,7 @@ const fn def_mouse_move_interval_ms() -> i32 {
 }
 
 const fn def_click_freeze_time_ms() -> i32 {
-	300
+	0
 }
 
 const fn def_true() -> bool {

@@ -346,7 +346,7 @@ impl OverlayBackend for ScreenBackend {
 
         if pressed {
             if !app.input_state.pointers[hit.pointer].hand_tracking {
-                set_next_move(app.session.config.click_freeze_time_ms as _);
+                set_next_move(app.session.config.click_freeze_time_ms.max(0) as _);
             }
             // Place the cursor at the beam hit before delivering button-down.
             let pos = self.mouse_transform.transform_point2(hit.uv);

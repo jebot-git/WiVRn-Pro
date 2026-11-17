@@ -309,4 +309,10 @@ bool hand_joystick::controllers_enabled() const
 	// pause. The controller() input path retains its independent freshness guard.
 	return client >= 0 && command.controllers;
 }
+bool hand_joystick::controller_profile_enabled(unsigned hand) const
+{
+	std::lock_guard lock(mutex);
+	return hand < 2 && client >= 0 && (hands & (1u << hand)) &&
+	       (command.enabled || command.controllers || (command.walking && (hand == 0 || command.turning)));
+}
 } // namespace wivrn
