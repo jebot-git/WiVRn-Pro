@@ -313,6 +313,7 @@ if (WIVRN_BUILD_SERVER)
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/wivrn-pro-encoder-preset DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(PROGRAMS ../fork/encoder-presets/wivrn-host-preset DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets)
     install(FILES ../fork/encoder-presets/README.txt DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets)
+    install(FILES ../fork/PACKED444.md DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/wivrn-pro)
     install(DIRECTORY ../fork/encoder-presets/profiles DESTINATION ${CMAKE_INSTALL_DATADIR}/wivrn-pro/encoder-presets FILES_MATCHING PATTERN "*.json")
     install(FILES shora/LICENSE-APACHE shora/LICENSE-MIT shora/backend/THIRD_PARTY.md DESTINATION share/licenses/wivrn-pro/shora)
 
