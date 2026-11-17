@@ -280,7 +280,11 @@ impl LibinputInterface for RestrictedInterface {
         let control_fd: OwnedFd = control_file.into();
         let mut device = EvdevDevice::from_fd(control_fd).map_err(io_errno)?;
 
-        if crate::mouse_priority::is_virtual_input(path, device.name()) || !should_capture_device(&device) {
+        // Headset-forwarded keyboards must still reach embedded windows. Only
+        // injected pointers are excluded from physical pointer capture.
+        let injected_pointer = device.supported_keys().is_some_and(|keys| keys.contains(KeyCode::BTN_LEFT))
+            && crate::mouse_priority::is_virtual_input(path, device.name());
+        if injected_pointer || !should_capture_device(&device) {
             return Err(libc::ENODEV);
         }
 
@@ -861,6 +865,9 @@ fn accumulate_v120(remainder: &mut f64, value: f64) -> i32 {
 }
 
 fn should_capture_device(device: &EvdevDevice) -> bool {
+    if device.name().is_some_and(|name| name.starts_with("WayVR") || name.starts_with("WlxOverlay")) {
+        return false;
+    }
     let Some(keys) = device.supported_keys() else {
         return false;
     };
