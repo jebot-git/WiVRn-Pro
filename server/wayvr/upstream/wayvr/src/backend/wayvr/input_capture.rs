@@ -282,7 +282,7 @@ impl LibinputInterface for RestrictedInterface {
 
         // Headset-forwarded keyboards must still reach embedded windows. Only
         // injected pointers are excluded from physical pointer capture.
-        let injected_pointer = device.supported_keys().is_some_and(|keys| keys.contains(KeyCode::BTN_LEFT))
+        let injected_pointer = device.supported_keys().is_some_and(|keys| looks_like_mouse(&device, keys))
             && crate::mouse_priority::is_virtual_input(path, device.name());
         if injected_pointer || !should_capture_device(&device) {
             return Err(libc::ENODEV);
@@ -891,7 +891,11 @@ fn looks_like_keyboard(keys: &AttributeSetRef<KeyCode>) -> bool {
 }
 
 fn looks_like_mouse(device: &EvdevDevice, keys: &AttributeSetRef<KeyCode>) -> bool {
-    let Some(relative_axes) = device.supported_relative_axes() else {
+    looks_like_mouse_caps(device.supported_relative_axes(), keys)
+}
+
+fn looks_like_mouse_caps(relative_axes: Option<&AttributeSetRef<RelativeAxisCode>>, keys: &AttributeSetRef<KeyCode>) -> bool {
+    let Some(relative_axes) = relative_axes else {
         return false;
     };
 
@@ -966,6 +970,18 @@ impl RuntimeDeviceState {
 #[cfg(test)]
 mod routing_tests {
     use super::*;
+    #[test]
+    fn headset_keyboard_with_all_key_codes_is_not_an_injected_mouse() {
+        let mut keys = evdev::AttributeSet::<KeyCode>::new();
+        // WiVRn Keyboard enables KEY_MAX, including the BTN_MOUSE range.
+        for code in 1..=0x2ff { keys.insert(KeyCode(code)); }
+        assert!(looks_like_keyboard(&keys));
+        assert!(!looks_like_mouse_caps(None, &keys));
+        let mut axes = evdev::AttributeSet::<RelativeAxisCode>::new();
+        axes.insert(RelativeAxisCode::REL_X);
+        axes.insert(RelativeAxisCode::REL_Y);
+        assert!(looks_like_mouse_caps(Some(&axes), &keys));
+    }
     #[test]
     fn window_selection_requests_capture_and_manual_release_can_rearm() {
         let (command_tx, command_rx) = mpsc::sync_channel(8);
