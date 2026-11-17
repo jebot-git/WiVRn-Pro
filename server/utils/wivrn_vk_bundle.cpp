@@ -315,8 +315,6 @@ wivrn::vk_bundle::vk_bundle() :
             f12.storageBuffer8BitAccess = f.get<vk::PhysicalDeviceVulkan12Features>().storageBuffer8BitAccess;
             f12.shaderFloat16 = f.get<vk::PhysicalDeviceVulkan12Features>().shaderFloat16;
             auto & f13 = feat.get<vk::PhysicalDeviceVulkan13Features>();
-            f13.subgroupSizeControl = f.get<vk::PhysicalDeviceVulkan13Features>().subgroupSizeControl;
-            f13.computeFullSubgroups = f.get<vk::PhysicalDeviceVulkan13Features>().computeFullSubgroups;
             f13.maintenance4 = f.get<vk::PhysicalDeviceVulkan13Features>().maintenance4;
         }
 #endif
@@ -326,6 +324,10 @@ wivrn::vk_bundle::vk_bundle() :
 		std::get<vk::PhysicalDeviceVulkan12Features>(feat).descriptorBindingPartiallyBound = phys_feat12.descriptorBindingPartiallyBound;
 		std::get<vk::PhysicalDeviceVulkan12Features>(feat).timelineSemaphore = phys_feat12.timelineSemaphore;
 		std::get<vk::PhysicalDeviceVulkan13Features>(feat).synchronization2 = phys_feat13.synchronization2;
+        // Foveation swizzles subgroup lanes into complete 8x8 pixel tiles.
+        // Enable full subgroup support independently of the optional PyroWave codec.
+        feat.get<vk::PhysicalDeviceVulkan13Features>().subgroupSizeControl = phys_feat13.subgroupSizeControl;
+        feat.get<vk::PhysicalDeviceVulkan13Features>().computeFullSubgroups = phys_feat13.computeFullSubgroups;
 
 		if (not phys_feat13.synchronization2)
 			throw std::runtime_error("GPU does not support Vulkan synchronization2 feature");

@@ -1251,6 +1251,7 @@ std::pair<bool, std::optional<std::string>> wivrn_session::validate_headset_info
 		warn |= prev_info.stream_eye_height != info.stream_eye_height;
 
 		refuse |= prev_info.supported_codecs != info.supported_codecs;
+		refuse |= prev_info.supports_packed444 != info.supports_packed444;
 		refuse |= prev_info.bit_depth != info.bit_depth;
 
 		if (refuse)

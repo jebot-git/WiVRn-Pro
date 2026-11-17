@@ -22,6 +22,7 @@
 
 #include "driver/configuration.h"
 #include "pyrowave_foveation.h"
+#include "packed444/layout.h"
 #include "driver/wivrn_session.h"
 #include "util/u_logging.h"
 #include "utils/wivrn_vk_bundle.h"
@@ -309,8 +310,19 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 	const bool any_pyrowave = std::ranges::any_of(res, [](const auto & e) { return e.codec == pyrowave; });
 	if (any_pyrowave && !std::ranges::all_of(res, [](const auto & e) { return e.codec == pyrowave; }))
 		throw std::runtime_error("PyroWave 4:4:4 must be selected for every stream, including alpha");
+	if (config.packed444)
+	{
+		if (!info.supports_packed444)
+			throw std::runtime_error("Packed444 requires a matching client with GPU unpacking support");
+		if (std::ranges::any_of(res, [](const auto & e) { return e.codec != h264 && e.codec != h265; }))
+			throw std::runtime_error("Packed444 supports only H.264/HEVC streams");
+		if (config.bit_depth && config.bit_depth != 8)
+			throw std::runtime_error("Packed444 v1 requires 8-bit encoding");
+	}
 	auto width = align(info.stream_eye_width, 64);
 	auto height = align(info.stream_eye_height, 64);
+	if (config.packed444 && (width > 4096 || height > 4096))
+		throw std::runtime_error("Packed444 logical dimensions exceed the foveation limit; reduce stream resolution");
 	if (any_pyrowave && config.pyrowave_foveation)
 	{
 		const auto extent = pyrowave_foveated_extent(info.render_eye_width, info.render_eye_height, *config.pyrowave_foveation);
@@ -322,13 +334,16 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 
 	for (auto [i, dst]: std::ranges::enumerate_view(res))
 	{
-		dst.width = width;
+		dst.width = config.packed444 ? packed444::coded_extent(width, height).width : width;
 		dst.height = height;
+		dst.layout = config.packed444 ? video_frame_layout::packed444_v1 : video_frame_layout::standard;
 		if (i == 2) // alpha channel
 			dst.height /= 2;
 	}
 
 	auto bit_depth = config.bit_depth ? config.bit_depth : info.bit_depth;
+	if (config.packed444)
+		bit_depth = 8;
 
 	if (bit_depth and bit_depth != 8 and bit_depth != 10)
 		throw std::runtime_error("invalid bit-depth setting. supported values: 8, 10");
@@ -358,7 +373,7 @@ std::array<encoder_settings, 3> get_encoder_settings(wivrn::vk_bundle & bundle, 
 			        vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferSrc);
 			return props.maxArrayLayers >= 3 and
 			       props.maxExtent.depth >= 1 and
-			       props.maxExtent.width >= width and
+			       props.maxExtent.width >= res[0].width and
 			       props.maxExtent.height >= height;
 		}
 		catch (vk::FormatNotSupportedError &)

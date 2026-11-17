@@ -132,6 +132,7 @@ struct Dashboard : dx::GpuWindow
 		streamForm->choice("Tracking bridge (restart)", "/tracking-mode", {{"SlimeVR", "slimevr"}, {"Motoc / Lighthouse", "motoc"}});
 		streamForm->boolean("Use Lighthouse controllers", "/motoc-lighthouse-controllers");
 		streamForm->boolean("Use TCP for streaming", "/tcp-only");
+		streamForm->boolean("Packed full colour (experimental; restart)", "/packed444");
 		streamForm->boolean("Forward input devices", "/hid-forwarding");
 		streamForm->boolean("Runtime debug UI", "/debug-gui");
 		streamForm->boolean("Run bundled WayVR", "/wayvr/enabled");
@@ -653,6 +654,8 @@ struct Dashboard : dx::GpuWindow
 			return;
 		auto j = streamForm->apply(stream->json());
 		auto values = presets[i].at("host_config");
+		if (!values.value("packed444", false))
+			j.erase("packed444");
 		auto & encoder = values["encoder"];
 		if (encoder.value("codec", std::string()) != "pyrowave")
 		{

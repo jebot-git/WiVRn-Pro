@@ -32,6 +32,7 @@
 #include <array>
 #include <cmath>
 #include <ranges>
+#include <stdexcept>
 #include <vulkan/vulkan_raii.hpp>
 #include <vulkan/vulkan_structs.hpp>
 #include <openxr/openxr.h>
@@ -113,17 +114,27 @@ vk::raii::PipelineLayout make_layout(wivrn::vk_bundle & vk, vk::DescriptorSetLay
 	return res;
 }
 
-std::array<vk::raii::Pipeline, 2> make_pipelines(wivrn::vk_bundle & vk, vk::PipelineLayout layout, int32_t alpha_width, bool pyrowave444)
+std::array<vk::raii::Pipeline, 2> make_pipelines(wivrn::vk_bundle & vk, vk::PipelineLayout layout, int32_t alpha_width, bool pyrowave444, bool packed444)
 {
+	// A subgroup with inactive lanes leaves holes in the shader's lane-to-pixel
+	// swizzle. In particular, Intel can otherwise run half-populated subgroups.
+	const auto subgroup = vk.physical_device.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceSubgroupProperties>();
+	const auto subgroup_size = subgroup.get<vk::PhysicalDeviceSubgroupProperties>().subgroupSize;
+	const bool full_subgroups = vk.feat.get<vk::PhysicalDeviceVulkan13Features>().computeFullSubgroups &&
+	        subgroup_size >= 4 && 64 % subgroup_size == 0;
+	if (packed444 && !full_subgroups)
+		throw std::runtime_error("Packed444 requires full compute subgroups for complete pixel packing");
+	const auto stage_flags = full_subgroups ? vk::PipelineShaderStageCreateFlagBits::eRequireFullSubgroups : vk::PipelineShaderStageCreateFlags{};
 	auto shader = vk.load_shader("foveation");
-	auto spc = make_specialization_constants(int32_t(alpha_width), uint32_t(pyrowave444));
-	auto no_alpha = make_specialization_constants(int32_t(0), uint32_t(pyrowave444));
+	auto spc = make_specialization_constants(int32_t(alpha_width), uint32_t(pyrowave444), uint32_t(packed444));
+	auto no_alpha = make_specialization_constants(int32_t(0), uint32_t(pyrowave444), uint32_t(packed444));
 	std::array res{
 	        vk::raii::Pipeline{
 	                vk.device,
 	                nullptr,
 	                vk::ComputePipelineCreateInfo{
 	                        .stage = {
+	                                .flags = stage_flags,
 	                                .stage = vk::ShaderStageFlagBits::eCompute,
 	                                .module = *shader,
 	                                .pName = "main",
@@ -137,6 +148,7 @@ std::array<vk::raii::Pipeline, 2> make_pipelines(wivrn::vk_bundle & vk, vk::Pipe
 	                nullptr,
 	                vk::ComputePipelineCreateInfo{
 	                        .stage = {
+	                                .flags = stage_flags,
 	                                .stage = vk::ShaderStageFlagBits::eCompute,
 	                                .module = *shader,
 	                                .pName = "main",
@@ -279,7 +291,7 @@ void foveation::compute_params()
 	}
 }
 
-foveation::foveation(wivrn::vk_bundle & bundle, vk::Extent3D foveated_size, bool pyrowave444) :
+foveation::foveation(wivrn::vk_bundle & bundle, vk::Extent3D foveated_size, bool pyrowave444, bool packed444) :
         foveated_size(foveated_size),
         // normal sight line is between 10° and 15° below horizontal
         // https://apps.dtic.mil/sti/tr/pdf/AD0758339.pdf pages 393-394
@@ -300,7 +312,7 @@ foveation::foveation(wivrn::vk_bundle & bundle, vk::Extent3D foveated_size, bool
         sampler(make_sampler(bundle)),
         ds_layout(make_ds_layout(bundle)),
         layout(make_layout(bundle, ds_layout)),
-        pipeline(make_pipelines(bundle, layout, foveated_size.width / 2, pyrowave444)),
+        pipeline(make_pipelines(bundle, layout, foveated_size.width / 2, pyrowave444, packed444)),
         descriptor_pool(make_ds_pool(bundle)),
         descriptor_set(bundle.device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo{
                 .descriptorPool = descriptor_pool,

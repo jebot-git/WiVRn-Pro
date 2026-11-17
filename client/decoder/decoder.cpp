@@ -26,6 +26,7 @@
 #include "decoder/ffmpeg/ffmpeg_decoder.h"
 #endif
 #include <stdexcept>
+#include "packed444/layout.h"
 #include "application.h"
 #if WIVRN_USE_PYROWAVE
 #include "decoder/pyrowave/decoder.h"
@@ -42,6 +43,19 @@ std::shared_ptr<wivrn::decoder> wivrn::decoder::make(
         std::weak_ptr<scenes::stream> scene,
         shard_accumulator * acc)
 {
+	if (stream_index >= description.codec.size())
+		throw std::runtime_error("Invalid video stream index");
+	if (description.layout != video_frame_layout::standard && description.layout != video_frame_layout::packed444_v1)
+		throw std::runtime_error("Unsupported video frame layout");
+	if (description.layout == video_frame_layout::packed444_v1)
+	{
+		if (description.codec[stream_index] != h264 && description.codec[stream_index] != h265)
+			throw std::runtime_error("Packed444 requires H.264 or HEVC");
+		(void)packed444::coded_extent(description.width, description.height / (stream_index == 2 ? 2 : 1));
+#ifndef __ANDROID__
+		throw std::runtime_error("Packed444 GPU unpacking is implemented only for Android clients");
+#endif
+	}
 	switch (description.codec[stream_index])
 	{
 		case h264:
@@ -50,6 +64,7 @@ std::shared_ptr<wivrn::decoder> wivrn::decoder::make(
 			return std::make_shared<wivrn::android::decoder>(
 			        device,
 			        phys_dev,
+			        vk_queue_family_index,
 			        description,
 			        stream_index,
 			        scene,

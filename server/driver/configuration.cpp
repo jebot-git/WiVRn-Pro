@@ -155,6 +155,9 @@ configuration::configuration()
 	{
 		auto json = read_configuration();
 
+		if (auto it = json.find("packed444"); it != json.end())
+			packed444 = it->get<bool>();
+
 		if (auto it = json.find("pyrowave-bitrate"); it != json.end() && !it->is_null())
 		{
 			if (!it->is_number_integer() || *it < 1'000'000 || *it > 1'000'000'000)

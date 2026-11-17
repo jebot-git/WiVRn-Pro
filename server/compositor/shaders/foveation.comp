@@ -24,7 +24,9 @@
 #extension GL_KHR_shader_subgroup_basic: require
 #extension GL_KHR_shader_subgroup_shuffle_relative: require
 
-layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+// Full subgroup guarantees require the X dimension to be a multiple of the
+// subgroup size. Keep a flat 64-invocation group and swizzle it into an 8x8 tile.
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 #define MAX_DIM 4097
 #define MAX_SAMPLES 4
@@ -42,6 +44,7 @@ layout(set = 0, binding = 3) uniform writeonly restrict image2DArray chroma;
 
 layout(constant_id = 0) const int alpha_width = 0;
 layout(constant_id = 1) const bool pyrowave444 = false;
+layout(constant_id = 2) const bool packed444 = false;
 
 const mat3 color_space = mat3(
 //         R        G        B
@@ -101,8 +104,8 @@ void main()
 	// In order to know how subgroup are mapped, we have to do the swizzling ourselves
 	// in the work group.
 	uint id = gl_SubgroupID * gl_SubgroupSize + gl_SubgroupInvocationID;
-	uint iy = gl_WorkGroupID.y * gl_WorkGroupSize.y + ARmpRed8x8_y(id);
-	uint ix = gl_WorkGroupID.x * gl_WorkGroupSize.x + ARmpRed8x8_x(id);
+	uint iy = gl_WorkGroupID.y * 8u + ARmpRed8x8_y(id);
+	uint ix = gl_WorkGroupID.x * 8u + ARmpRed8x8_x(id);
 
 	uint ymin = ubo.y[MAX_DIM * iz + iy];
 	uint ymax = ubo.y[MAX_DIM * iz + iy + 1];
@@ -129,6 +132,25 @@ void main()
 	}
 	colour /= max(count, 1);
 	colour.xyz = rgb_to_ycbcr(from_linear_to_srgb(colour.rgb));
+
+    if (packed444) {
+        int width = imageSize(luma).x / 2;
+        imageStore(luma, ivec3(ix, iy, iz), vec4(colour.x));
+        imageStore(luma, ivec3(width + int(ix), iy, iz), vec4(colour.y));
+        // The lane swizzle places (x,y+1) two lanes after each even row.
+        float odd_cr = subgroupShuffleDown(colour.z, 2);
+        if ((iy & 1) == 0)
+            imageStore(chroma, ivec3(ix, iy/2, iz), vec4(colour.z, odd_cr, 0, 0));
+        vec4 sum = colour + subgroupShuffleDown(colour, 1) + subgroupShuffleDown(colour, 2) + subgroupShuffleDown(colour, 3);
+        if (alpha_width > 0 && (id % 4) == 0) {
+            int ax = alpha_width * int(iz) + int(ix/2);
+            imageStore(luma, ivec3(ax, iy/2, 2), vec4(sum.w / 4));
+            imageStore(luma, ivec3(width + ax, iy/2, 2), vec4(0.5));
+            if ((iy & 3) == 0)
+                imageStore(chroma, ivec3(ax, iy/4, 2), vec4(0.5, 0.5, 0, 0));
+        }
+        return;
+    }
 
     if (pyrowave444) {
         imageStore(luma, ivec3(ix, iy, iz), vec4(colour.xyz, 1));

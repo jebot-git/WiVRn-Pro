@@ -76,6 +76,13 @@ wivrn::video_encoder_vulkan_h264::video_encoder_vulkan_h264(
         uint8_t stream_idx,
         const encoder_settings & settings) :
         video_encoder_vulkan(vk, video_caps, encode_caps, stream_idx, settings),
+        vui{
+                .flags = {
+                        .video_signal_type_present_flag = 1,
+                        .video_full_range_flag = 1,
+                },
+                .video_format = 5,
+        },
         sps{
                 .flags =
                         {
@@ -94,7 +101,7 @@ wivrn::video_encoder_vulkan_h264::video_encoder_vulkan_h264(
                                 .qpprime_y_zero_transform_bypass_flag = 0,
                                 .frame_cropping_flag = (extent.width % 16) || (extent.height) % 16,
                                 .seq_scaling_matrix_present_flag = 0,
-                                .vui_parameters_present_flag = 0,
+                                .vui_parameters_present_flag = settings.layout == video_frame_layout::packed444_v1,
                         },
                 .profile_idc = STD_VIDEO_H264_PROFILE_IDC_BASELINE,
                 .level_idc = STD_VIDEO_H264_LEVEL_IDC_INVALID,
@@ -119,7 +126,7 @@ wivrn::video_encoder_vulkan_h264::video_encoder_vulkan_h264(
                 .reserved2 = 0,
                 .pOffsetForRefFrame = nullptr,
                 .pScalingLists = nullptr,
-                .pSequenceParameterSetVui = nullptr,
+                .pSequenceParameterSetVui = settings.layout == video_frame_layout::packed444_v1 ? &vui : nullptr,
         },
         pps{
                 .flags =

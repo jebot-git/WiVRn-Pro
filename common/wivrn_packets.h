@@ -234,6 +234,12 @@ struct video_codec_capability
 	bool operator==(const video_codec_capability &) const = default;
 };
 
+enum class video_frame_layout : uint8_t
+{
+    standard = 0,
+    packed444_v1 = 1,
+};
+
 enum class stream_tab : uint8_t
 {
 	hidden,
@@ -362,6 +368,7 @@ struct headset_info_packet
 	// htc body only
 	uint32_t num_generic_trackers;
 	std::vector<video_codec_capability> supported_codecs; // from preferred to least preferred
+	bool supports_packed444 = false; // Explicit GPU-unpacking capability, not native codec profile support.
 	std::optional<uint8_t> bit_depth;                     // explicit preference
 	std::string system_name;
 
@@ -855,6 +862,7 @@ struct video_stream_description
 	std::array<video_codec, 3> codec; // left, right, alpha
 	float frame_rate;
 	float refresh_rate;
+	video_frame_layout layout = video_frame_layout::standard;
 	uint8_t pyrowave_chroma = 1; // 4:4:4
 	uint8_t pyrowave_wavelet = 2; // lifting Haar
 	// Frames before this boundary belong to a retired encoder/decoder generation.

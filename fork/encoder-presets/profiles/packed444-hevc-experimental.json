@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "title": "Packed full colour HEVC — experimental",
+  "requires_cqp_branch": false,
+  "experimental": true,
+  "host_config": {
+    "encoder": {"encoder": "qsv", "codec": "h265", "options": {}},
+    "packed444": true,
+    "bit-depth": 8,
+    "tcp-only": false
+  },
+  "headset_settings": {
+    "instructions_only": true,
+    "bitrate_mbps": 200,
+    "refresh_rate_hz": 72,
+    "foveation_percent": null,
+    "codec": "HEVC",
+    "ten_bit_color": false,
+    "low_latency_decoding": true,
+    "application_spacewarp": false,
+    "render_resolution": "Keep current headset resolution and foveation"
+  },
+  "notice": "Experimental full-colour transport. Requires matching server and Quest Pro client builds. Use HEVC, 8-bit and initially 72 Hz. Decoder workload is higher; sustained stereo operation and latency are not yet qualified. Save and restart WiVRn between tests to apply.",
+  "notes": [
+    "Preserves full-resolution chroma sample locations using hardware 4:2:0 video decoding and GPU unpacking.",
+    "Does not change headset bit rate or refresh rate automatically.",
+    "Selecting an ordinary encoder preset clears this experimental layout."
+  ]
+}

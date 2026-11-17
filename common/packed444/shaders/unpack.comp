@@ -1,0 +1,28 @@
+#version 450
+// SPDX-License-Identifier: GPL-3.0-or-later
+layout(local_size_x = 8, local_size_y = 8) in;
+layout(set = 0, binding = 0) uniform sampler2D coded;
+layout(set = 0, binding = 1, rgba8) writeonly uniform image2D rgba;
+layout(push_constant) uniform Constants {
+    ivec2 extent;
+    ivec2 imported_extent;
+};
+
+// The immutable sampler uses RGB_IDENTITY and nearest luma/chroma filtering:
+// no matrix, clipping, or chroma range expansion may precede unpacking.
+vec4 raw_at(ivec2 p) {
+    return texture(coded, (vec2(p) + vec2(0.5)) / vec2(imported_extent));
+}
+
+void main() {
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    if (any(greaterThanEqual(p, extent))) return;
+    float y = raw_at(p).g;
+    float cb = raw_at(p + ivec2(extent.x, 0)).g - 0.5;
+    vec4 chroma = raw_at(ivec2(2 * p.x, 2 * (p.y / 2)));
+    float cr = ((p.y & 1) == 0 ? chroma.b : chroma.r) - 0.5;
+    vec3 rgb = vec3(y + 1.5748 * cr,
+                    y - 0.187324 * cb - 0.468124 * cr,
+                    y + 1.8556 * cb);
+    imageStore(rgba, p, vec4(clamp(rgb, 0.0, 1.0), 1.0));
+}

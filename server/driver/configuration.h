@@ -55,6 +55,7 @@ struct configuration
 	std::optional<uint8_t> bit_depth;
 	std::optional<uint32_t> pyrowave_bitrate;
 	std::optional<unsigned> pyrowave_foveation;
+	bool packed444 = false; // Experimental full-chroma packing over 8-bit AVC/HEVC.
 	std::optional<std::array<float, 3>> grip_surface;
 	std::vector<std::string> application;
 	bool debug_gui = false;

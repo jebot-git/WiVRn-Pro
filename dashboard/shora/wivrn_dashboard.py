@@ -302,7 +302,7 @@ class StreamingPanel(QWidget):
         self.preset_qp.setEnabled(cqp)
         pyro = bool(profile and profile['host_config']['encoder'].get('codec') == 'pyrowave')
         self.preset_backend.setEnabled(not pyro)
-        if pyro:
+        if pyro or (profile and profile['host_config'].get('packed444')):
             self.preset_notice.setText(profile['notice'])
             return
         if not profile:
@@ -324,6 +324,8 @@ class StreamingPanel(QWidget):
             # Fold unsaved controls into the draft before replacing encoder options.
             value = self.configuration()
             host = portable_preset(profile, self.preset_backend.currentText())
+            if not host.get('packed444', False):
+                value.pop('packed444', None)
             if profile['requires_cqp_branch']:
                 host['encoder']['options']['qp'] = str(self.preset_qp.value())
             value.update(host)

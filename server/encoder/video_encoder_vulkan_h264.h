@@ -29,6 +29,7 @@ namespace wivrn
 class video_encoder_vulkan_h264 : public video_encoder_vulkan
 {
 	uint16_t idr_id = 0;
+	StdVideoH264SequenceParameterSetVui vui;
 	StdVideoH264SequenceParameterSet sps;
 	StdVideoH264PictureParameterSet pps;
 

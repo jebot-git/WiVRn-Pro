@@ -21,7 +21,12 @@
 #include "application.h"
 #include "scenes/stream.h"
 #include "utils/named_thread.h"
+#include "packed444/layout.h"
+#include "packed444/unpacker.h"
+#include "vk/allocation.h"
 #include <android/hardware_buffer.h>
+#include <array>
+#include <atomic>
 #include <cassert>
 #include <magic_enum.hpp>
 #include <media/NdkImage.h>
@@ -45,6 +50,17 @@ struct wivrn::android::decoder::mapped_hardware_buffer
 	vk::Extent2D extent{};
 	vk::raii::ImageView image_view = nullptr;
 	vk::ImageLayout layout = vk::ImageLayout::eUndefined;
+};
+
+// Blit handles retain this allocation and its ordinary RGBA sampler even when
+// the decoder generation is retired before the renderer releases its frames.
+struct wivrn::android::decoder::packed_output_image
+{
+	image_allocation image;
+	vk::raii::ImageView view = nullptr;
+	std::shared_ptr<vk::raii::Sampler> sampler;
+	vk::ImageLayout layout = vk::ImageLayout::eUndefined;
+	std::atomic_bool free = true;
 };
 
 namespace
@@ -77,7 +93,7 @@ void check(media_status_t status, const char * msg)
 	}
 }
 
-struct android_blit_handle : public decoder::blit_handle
+struct android_blit_handle : public wivrn::decoder::blit_handle
 {
 	std::shared_ptr<wivrn::android::decoder::mapped_hardware_buffer> vk_data;
 	std::shared_ptr<AImageReader> image_reader;
@@ -92,10 +108,25 @@ struct android_blit_handle : public decoder::blit_handle
 	        decltype(vk_data) vk_data,
 	        decltype(image_reader) image_reader,
 	        decltype(aimage) aimage) :
-	        decoder::blit_handle(feedback, view_info, image_view, image, extent, current_layout),
+	        wivrn::decoder::blit_handle(feedback, view_info, image_view, image, extent, current_layout),
 	        vk_data(vk_data),
 	        image_reader(image_reader),
 	        aimage(std::move(aimage)) {}
+};
+
+struct packed_blit_handle : public wivrn::decoder::blit_handle
+{
+	std::shared_ptr<wivrn::android::decoder::packed_output_image> output;
+	std::shared_ptr<AImageReader> image_reader;
+	packed_blit_handle(const wivrn::from_headset::feedback & feedback,
+	                   const wivrn::to_headset::video_stream_data_shard::view_info_t & view_info,
+	                   vk::Extent2D extent,
+	                   std::shared_ptr<wivrn::android::decoder::packed_output_image> output,
+	                   std::shared_ptr<AImageReader> image_reader) :
+	        wivrn::decoder::blit_handle{feedback, view_info, *output->view, output->image,
+	                             extent, output->layout}, output(std::move(output)),
+	        image_reader(std::move(image_reader)) {}
+	~packed_blit_handle() { output->free.store(true, std::memory_order_release); }
 };
 
 } // namespace
@@ -106,16 +137,26 @@ namespace wivrn::android
 decoder::decoder(
         vk::raii::Device & device,
         vk::raii::PhysicalDevice & physical_device,
+        uint32_t queue_family_index,
         const wivrn::to_headset::video_stream_description & description,
         uint8_t stream_index,
         std::weak_ptr<scenes::stream> weak_scene,
         shard_accumulator * accumulator) :
-        stream_index(stream_index), device(device), weak_scene(weak_scene), accumulator(accumulator)
+        stream_index(stream_index), device(device), queue_family_index(queue_family_index),
+        weak_scene(weak_scene), accumulator(accumulator)
 {
 	spdlog::info("hbm_mutex.native_handle() = {}", (void *)hbm_mutex.native_handle());
 
 	auto width = description.width;
 	auto height = description.height / (stream_index == 2 ? 2 : 1);
+	packed444 = description.layout == wivrn::video_frame_layout::packed444_v1;
+	if (packed444)
+	{
+		auto coded = wivrn::packed444::coded_extent(width, height);
+		packed_extent = vk::Extent2D{uint32_t(width), uint32_t(height)};
+		width = coded.width;
+		initialize_packed_output();
+	}
 
 	AImageReader * ir;
 	check(AImageReader_newWithUsage(
@@ -146,6 +187,8 @@ decoder::decoder(
 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_HEIGHT, height);
 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_OPERATING_RATE, std::ceil(description.frame_rate));
 		AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_PRIORITY, 0);
+		if (packed444)
+			AMediaFormat_setInt32(format.get(), "color-range", 1 /* full range, no carrier remapping */);
 
 		media_codec.reset(AMediaCodec_createDecoderByType(mime(description.codec[stream_index])));
 
@@ -196,6 +239,8 @@ decoder::decoder(
 			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_HEIGHT, height);
 			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_OPERATING_RATE, std::ceil(description.frame_rate));
 			AMediaFormat_setInt32(format.get(), AMEDIAFORMAT_KEY_PRIORITY, 0);
+			if (packed444)
+				AMediaFormat_setInt32(format.get(), "color-range", 1);
 			status = AMediaCodec_configure(media_codec.get(), format.get(), window, nullptr, 0);
 		}
 		check(status, "AMediaCodec_configure");
@@ -368,6 +413,11 @@ void decoder::on_image_available(AImageReader * reader)
 	assert(info->feedback.frame_index == frame_index);
 
 	auto vk_data = map_hardware_buffer(image.get());
+	if (packed444)
+	{
+		publish_packed_image(std::move(image), std::move(vk_data), *info);
+		return;
+	}
 
 	auto handle = std::make_shared<android_blit_handle>(
 	        info->feedback,
@@ -380,6 +430,122 @@ void decoder::on_image_available(AImageReader * reader)
 	        image_reader,
 	        std::move(image));
 
+	if (auto scene = weak_scene.lock())
+		scene->push_blit_handle(accumulator, std::move(handle));
+}
+
+void decoder::initialize_packed_output()
+{
+	packed_sampler = std::make_shared<vk::raii::Sampler>(device, vk::SamplerCreateInfo{
+	        .magFilter = vk::Filter::eLinear, .minFilter = vk::Filter::eLinear,
+	        .mipmapMode = vk::SamplerMipmapMode::eNearest,
+	        .addressModeU = vk::SamplerAddressMode::eClampToEdge,
+	        .addressModeV = vk::SamplerAddressMode::eClampToEdge,
+	        .addressModeW = vk::SamplerAddressMode::eClampToEdge});
+	// Three queued display frames plus current/in-flight references leave room
+	// for a new completed frame. Never overwrite an image held by the renderer.
+	for (size_t i = 0; i < scenes::stream::image_buffer_size + 5; ++i)
+	{
+		auto image = std::make_shared<packed_output_image>();
+		image->image = image_allocation(device, vk::ImageCreateInfo{
+		        .imageType = vk::ImageType::e2D, .format = vk::Format::eR8G8B8A8Unorm,
+		        .extent = {packed_extent.width, packed_extent.height, 1},
+		        .mipLevels = 1, .arrayLayers = 1,
+		        .usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage},
+		        {.usage = VMA_MEMORY_USAGE_AUTO}, "Packed444 RGBA output");
+		image->view = device.createImageView({.image = image->image,
+		        .viewType = vk::ImageViewType::e2D, .format = vk::Format::eR8G8B8A8Unorm,
+		        .subresourceRange = {.aspectMask = vk::ImageAspectFlagBits::eColor,
+		                             .levelCount = 1, .layerCount = 1}});
+		image->sampler = packed_sampler;
+		packed_images.push_back(std::move(image));
+	}
+	packed_command_pool = device.createCommandPool({
+	        .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+	        .queueFamilyIndex = queue_family_index});
+	packed_command = std::move(device.allocateCommandBuffers({
+	        .commandPool = *packed_command_pool, .commandBufferCount = 1})[0]);
+	packed_fence = device.createFence({});
+}
+
+void decoder::publish_packed_image(AImage_ptr image,
+                                  std::shared_ptr<mapped_hardware_buffer> imported,
+                                  const frame_info & info)
+{
+	// This callback runs under image_callback->mutex, serializing descriptor,
+	// command-buffer and output-pool use with other callbacks and teardown.
+	AImageCropRect crop{};
+	check(AImage_getCropRect(image.get(), &crop), "AImage_getCropRect");
+	if (crop.left != 0 || crop.top != 0 ||
+	    crop.right != int32_t(packed_extent.width * 2) || crop.bottom != int32_t(packed_extent.height))
+		throw std::runtime_error("Packed444 decoder returned an incompatible crop rectangle");
+
+	std::shared_ptr<packed_output_image> output;
+	for (auto & candidate: packed_images)
+	{
+		if (candidate->free.exchange(false, std::memory_order_acquire))
+		{
+			output = candidate;
+			break;
+		}
+	}
+	if (!output)
+	{
+		spdlog::warn("No Packed444 output image available; dropping frame {}", info.feedback.frame_index);
+		return;
+	}
+	auto handle = std::make_shared<packed_blit_handle>(info.feedback, info.view_info, packed_extent, output, image_reader);
+	auto binding = packed_unpacker->create_binding(*imported->image_view, *output->view);
+	device.resetFences(*packed_fence);
+	packed_command.reset();
+	packed_command.begin({.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+	std::array<vk::ImageMemoryBarrier, 2> acquire{{
+	        {.srcAccessMask = vk::AccessFlagBits::eNone,
+	         .dstAccessMask = vk::AccessFlagBits::eShaderRead,
+	         .oldLayout = imported->layout, .newLayout = vk::ImageLayout::eGeneral,
+	         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_FOREIGN_EXT,
+	         .dstQueueFamilyIndex = queue_family_index, .image = *imported->vimage,
+	         .subresourceRange = {.aspectMask = vk::ImageAspectFlagBits::eColor,
+	                              .levelCount = 1, .layerCount = 1}},
+	        {.srcAccessMask = output->layout == vk::ImageLayout::eUndefined ? vk::AccessFlagBits::eNone : vk::AccessFlagBits::eShaderRead,
+	         .dstAccessMask = vk::AccessFlagBits::eShaderWrite,
+	         .oldLayout = output->layout, .newLayout = vk::ImageLayout::eGeneral,
+	         .srcQueueFamilyIndex = vk::QueueFamilyIgnored,
+	         .dstQueueFamilyIndex = vk::QueueFamilyIgnored, .image = output->image,
+	         .subresourceRange = {.aspectMask = vk::ImageAspectFlagBits::eColor,
+	                              .levelCount = 1, .layerCount = 1}},
+	}};
+	packed_command.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
+	                               vk::PipelineStageFlagBits::eComputeShader, {}, {}, {}, acquire);
+	packed_unpacker->record(packed_command, binding, imported->extent);
+	std::array<vk::ImageMemoryBarrier, 2> release{{
+	        {.srcAccessMask = vk::AccessFlagBits::eShaderRead,
+	         .dstAccessMask = vk::AccessFlagBits::eNone,
+	         .oldLayout = vk::ImageLayout::eGeneral, .newLayout = vk::ImageLayout::eGeneral,
+	         .srcQueueFamilyIndex = queue_family_index,
+	         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_FOREIGN_EXT, .image = *imported->vimage,
+	         .subresourceRange = {.aspectMask = vk::ImageAspectFlagBits::eColor,
+	                              .levelCount = 1, .layerCount = 1}},
+	        {.srcAccessMask = vk::AccessFlagBits::eShaderWrite,
+	         .dstAccessMask = vk::AccessFlagBits::eShaderRead,
+	         .oldLayout = vk::ImageLayout::eGeneral, .newLayout = vk::ImageLayout::eGeneral,
+	         .srcQueueFamilyIndex = vk::QueueFamilyIgnored,
+	         .dstQueueFamilyIndex = vk::QueueFamilyIgnored, .image = output->image,
+	         .subresourceRange = {.aspectMask = vk::ImageAspectFlagBits::eColor,
+	                              .levelCount = 1, .layerCount = 1}},
+	}};
+	packed_command.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
+	                               vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, release);
+	packed_command.end();
+	application::get_queue().lock()->submit(vk::SubmitInfo{
+	        .commandBufferCount = 1, .pCommandBuffers = &*packed_command}, *packed_fence);
+	// Retain the AImage, imported AHB memory, immutable binding and output until
+	// completion, then return the media image to its reader before rendering.
+	if (device.waitForFences(*packed_fence, true, UINT64_MAX) != vk::Result::eSuccess)
+		throw std::runtime_error("Packed444 GPU unpack completion failed");
+	imported->layout = vk::ImageLayout::eGeneral;
+	output->layout = vk::ImageLayout::eGeneral;
+	image.reset();
 	if (auto scene = weak_scene.lock())
 		scene->push_blit_handle(accumulator, std::move(handle));
 }
@@ -402,7 +568,7 @@ void decoder::create_sampler(const AHardwareBuffer_Desc & buffer_desc, vk::Andro
 	spdlog::info("  Suggested Y chroma offset: {}", vk::to_string(ahb_format.suggestedYChromaOffset));
 
 	vk::Filter yuv_filter;
-	if (ahb_format.formatFeatures & vk::FormatFeatureFlagBits::eSampledImageYcbcrConversionLinearFilter)
+	if (!packed444 && (ahb_format.formatFeatures & vk::FormatFeatureFlagBits::eSampledImageYcbcrConversionLinearFilter))
 		yuv_filter = vk::Filter::eLinear;
 	else
 		yuv_filter = vk::Filter::eNearest;
@@ -426,6 +592,12 @@ void decoder::create_sampler(const AHardwareBuffer_Desc & buffer_desc, vk::Andro
 	// suggested values from decoder don't actually read the metadata, so it's garbage
 	ycbcr_create_info.get<vk::SamplerYcbcrConversionCreateInfo>().ycbcrRange = vk::SamplerYcbcrRange::eItuFull;
 	ycbcr_create_info.get<vk::SamplerYcbcrConversionCreateInfo>().ycbcrModel = vk::SamplerYcbcrModelConversion::eYcbcr709;
+	if (packed444)
+	{
+		// Packed carrier values are data: range expansion or matrix conversion
+		// before unpacking would corrupt the independently stored colour planes.
+		ycbcr_create_info.get<vk::SamplerYcbcrConversionCreateInfo>().ycbcrModel = vk::SamplerYcbcrModelConversion::eRgbIdentity;
+	}
 
 	ycbcr_conversion = vk::raii::SamplerYcbcrConversion(device, ycbcr_create_info.get<vk::SamplerYcbcrConversionCreateInfo>());
 
@@ -470,11 +642,23 @@ std::shared_ptr<decoder::mapped_hardware_buffer> decoder::map_hardware_buffer(AI
 
 	if (!*ycbcr_sampler || memcmp(&ahb_format, &format_properties, sizeof(format_properties)))
 	{
+		if (packed444)
+		{
+			// Image callbacks serialize unpacking and wait for their own fence.
+			// Destroy immutable-sampler descriptors and imported views first.
+			packed_unpacker.reset();
+			hardware_buffer_map.clear();
+			ycbcr_sampler = nullptr;
+			ycbcr_conversion = nullptr;
+		}
 		memcpy(&ahb_format, &format_properties, sizeof(format_properties));
 		spdlog::info("decoded image size: {}x{}", buffer_desc.width, buffer_desc.height);
 		create_sampler(buffer_desc, ahb_format);
+		if (packed444)
+			packed_unpacker = std::make_unique<wivrn::packed444::Unpacker>(device, packed_extent, *ycbcr_sampler);
 		hardware_buffer_map.clear();
-		// TODO tell the reprojector to recreate the pipeline
+		// TODO recreate the normal YCbCr reprojector pipeline on a format
+		// change. Packed output keeps its ordinary RGBA sampler unchanged.
 	}
 
 	auto it = hardware_buffer_map.find(hardware_buffer);

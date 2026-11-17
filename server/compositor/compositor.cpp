@@ -745,10 +745,11 @@ void compositor::send_video_stream_description()
 
 {
 	to_headset::video_stream_description desc{
-	        .width = uint16_t(images[0].image.info().extent.width),
+	        .width = uint16_t(images[0].image.info().extent.width / (settings[0].layout == video_frame_layout::packed444_v1 ? 2 : 1)),
 	        .height = uint16_t(images[0].image.info().extent.height),
 	        .frame_rate = frame_rate.load(),
 	};
+	desc.layout = settings[0].layout;
 	desc.first_frame = video_frame_floor;
 	get_display_refresh_rate(&desc.refresh_rate);
 	static_assert(std::tuple_size_v<decltype(settings)> == std::tuple_size_v<decltype(desc.codec)>);
@@ -791,7 +792,8 @@ compositor::compositor(wivrn_session & session) :
         frame_rate(settings[0].fps),
         pacer(U_TIME_1S_IN_NS / frame_rate),
         squasher(vk, render_extent(session.get_info())),
-        foveation(vk, images[0].image.info().extent, settings[0].codec == pyrowave)
+        foveation(vk, vk::Extent3D{uint32_t(settings[0].width / (settings[0].layout == video_frame_layout::packed444_v1 ? 2 : 1)), settings[0].height, 1},
+                  settings[0].codec == pyrowave, settings[0].layout == video_frame_layout::packed444_v1)
 {
 	comp_base * c_base = this;
 	// Ensure we can safely cast pointers

@@ -379,6 +379,12 @@ std::shared_ptr<scenes::stream> scenes::stream::create(std::unique_ptr<wivrn_ses
 			info.supported_codecs = decoder::supported_codecs();
 		}
 
+#ifdef __ANDROID__
+        // Advertise only on the device whose raw AHB sampling path is qualified.
+        // Hardware H.264/HEVC profile support alone does not imply this layout.
+        info.supports_packed444 = info.client_model == "seacliff";
+#endif
+
 		return info;
 	}());
 

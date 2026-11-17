@@ -2,6 +2,7 @@
 #include "protocol_version.h"
 #include "spatial_protocol.h"
 #include "wivrn_serialization.h"
+#include "packed444/layout.h"
 #include <cassert>
 #include <iostream>
 #include <unistd.h>
@@ -85,5 +86,39 @@ int main()
 	assert(capture_copy.request_id == control_copy.request_id && capture_copy.age_ms == 123 && capture_copy.status == "ready");
 	assert(capture_copy.jpeg == std::get<wivrn::from_headset::headset_capture>(capture).jpeg);
 	std::cout << "Protocol hash: " << std::hex << wivrn::protocol_version << std::dec << "\n";
+	assert(description.layout == wivrn::video_frame_layout::standard);
+	description.layout = wivrn::video_frame_layout::packed444_v1;
+	assert(round_trip(description) == description);
+	// A legacy peer must fail protocol matching instead of displaying carrier planes.
+	struct pre_packed_description
+	{
+		uint16_t width, height;
+		std::array<wivrn::video_codec, 3> codec;
+		float frame_rate, refresh_rate;
+		uint8_t pyrowave_chroma, pyrowave_wavelet;
+		uint64_t first_frame;
+	};
+	static_assert(wivrn::serialization_type_hash<pre_packed_description>(0) !=
+	              wivrn::serialization_type_hash<wivrn::to_headset::video_stream_description>(0));
+	wivrn::from_headset::headset_info_packet info{};
+	assert(!round_trip(info).supports_packed444);
+	info.supports_packed444 = true;
+	info.supported_codecs = {{.codec = wivrn::h265, .supports_10bit = true}};
+	assert(round_trip(info).supports_packed444);
+	assert(round_trip(info).supported_codecs == info.supported_codecs);
+	using wivrn::packed444::coded_extent;
+	using wivrn::packed444::logical_extent;
+	for (auto logical: {wivrn::packed444::extent{2, 2}, {1472, 1600}, {32766, 65534}})
+	{
+		auto coded = coded_extent(logical.width, logical.height);
+		assert(logical_extent(coded.width, coded.height) == logical);
+	}
+	for (auto invalid: {std::array<uint32_t, 2>{0, 2}, {2, 0}, {3, 2}, {2, 3}, {32768, 2}, {2, 65536}})
+	{
+		bool invalid_rejected = false;
+		try { (void)coded_extent(invalid[0], invalid[1]); }
+		catch (const std::invalid_argument &) { invalid_rejected = true; }
+		assert(invalid_rejected);
+	}
 	std::cout << "Native wire round trip: " << wire.size() << " bytes, " << spans.size() << " spans; truncation rejected\n";
 }

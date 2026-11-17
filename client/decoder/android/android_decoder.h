@@ -27,6 +27,7 @@
 #include <span>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 #include <media/NdkImage.h>
 #include <media/NdkImageReader.h>
@@ -51,6 +52,7 @@ DEUGLIFY(AMediaCodec)
 namespace wivrn
 {
 class shard_accumulator;
+namespace packed444 { class Unpacker; }
 }
 
 namespace scenes
@@ -64,6 +66,7 @@ class decoder : public wivrn::decoder
 {
 public:
 	struct mapped_hardware_buffer;
+	struct packed_output_image;
 
 private:
 	uint8_t stream_index;
@@ -73,6 +76,15 @@ private:
 	vk::AndroidHardwareBufferFormatPropertiesANDROID ahb_format;
 	vk::raii::SamplerYcbcrConversion ycbcr_conversion = nullptr;
 	vk::raii::Sampler ycbcr_sampler = nullptr;
+	bool packed444 = false;
+	vk::Extent2D packed_extent{};
+	uint32_t queue_family_index = 0;
+	std::shared_ptr<vk::raii::Sampler> packed_sampler;
+	std::vector<std::shared_ptr<packed_output_image>> packed_images;
+	vk::raii::CommandPool packed_command_pool = nullptr;
+	vk::raii::CommandBuffer packed_command = nullptr;
+	vk::raii::Fence packed_fence = nullptr;
+	std::unique_ptr<wivrn::packed444::Unpacker> packed_unpacker;
 
 	std::mutex hbm_mutex;
 	// The reader may outlive this decoder through in-flight blit handles.
@@ -124,10 +136,13 @@ private:
 
 	void create_sampler(const AHardwareBuffer_Desc & buffer_desc, vk::AndroidHardwareBufferFormatPropertiesANDROID & ahb_format);
 	std::shared_ptr<mapped_hardware_buffer> map_hardware_buffer(AImage *);
+	void initialize_packed_output();
+	void publish_packed_image(AImage_ptr, std::shared_ptr<mapped_hardware_buffer>, const frame_info &);
 
 public:
 	decoder(vk::raii::Device & device,
 	        vk::raii::PhysicalDevice & physical_device,
+	        uint32_t queue_family_index,
 	        const wivrn::to_headset::video_stream_description & description,
 	        uint8_t stream_index,
 	        std::weak_ptr<scenes::stream> scene,
@@ -142,7 +157,7 @@ public:
 
 	vk::Sampler sampler() override
 	{
-		return *ycbcr_sampler;
+		return packed444 ? **packed_sampler : *ycbcr_sampler;
 	}
 
 	static void supported_codecs(std::vector<wivrn::video_codec> &);
