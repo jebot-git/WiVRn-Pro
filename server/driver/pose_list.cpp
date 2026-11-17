@@ -92,7 +92,7 @@ xrt_space_relation pose_list::extrapolate(const xrt_space_relation & a, const xr
 	return res;
 }
 
-pose_list::pose_list(wivrn::device_id id) : device(id)
+pose_list::pose_list(wivrn::device_id id, bool hold_on_loss) : hold_on_loss(hold_on_loss), device(id)
 {
 	if (auto dump = std::getenv("WIVRN_DUMP"); dump and dump == std::string_view("list"))
 		std::cerr << "WIVRN_DUMP_" << magic_enum::enum_name(id) << std::endl;
@@ -151,11 +151,15 @@ std::tuple<XrTime, xrt_space_relation, device_id> pose_list::get_pose_at(XrTime 
 	return std::tuple_cat(get_at(at_timestamp_ns), std::make_tuple(device));
 }
 
-void pose_list::reset()
+void pose_list::reset(bool preserve_pose)
 {
 	std::lock_guard lock(mutex);
 	positions.reset();
 	orientations.reset();
+	if (!preserve_pose)
+		held.reset();
+	latest_production = 0;
+	latest_flags = 0;
 }
 
 void pose_list::add_sample(XrTime production_timestamp, XrTime timestamp, const from_headset::tracking::pose & pose, const clock_offset & offset)
@@ -207,6 +211,11 @@ void pose_list::add_sample(XrTime production_timestamp, XrTime timestamp, const 
 	std::lock_guard lock(mutex);
 	positions.add_sample(position);
 	orientations.add_sample(orientation);
+	if (production_timestamp >= latest_production)
+	{
+		latest_production = production_timestamp;
+		latest_flags = pose.flags;
+	}
 
 	if (dumper)
 	{
@@ -315,6 +324,13 @@ std::pair<XrTime, xrt_space_relation> pose_list::get_at(XrTime at_timestamp_ns)
 		dumper->write(item);
 	}
 
+	if (hold_on_loss)
+	{
+		constexpr auto tracked = from_headset::pose_flags::position_tracked | from_headset::pose_flags::orientation_tracked |
+		                         from_headset::pose_flags::position_valid | from_headset::pose_flags::orientation_valid;
+		const auto age = os_monotonic_get_ns() - latest_production;
+		ret = held.apply(ret, latest_production > 0 && age >= -50'000'000 && age <= 150'000'000 && (latest_flags & tracked) == tracked, at_timestamp_ns);
+	}
 	return {position.production_timestamp, ret};
 }
 

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "polynomial_interpolator.h"
+#include "held_pose.h"
 #include "utils/csv_logger.h"
 #include "wivrn_packets.h"
 #include "xrt/xrt_defines.h"
@@ -41,6 +42,10 @@ class pose_list
 
 	polynomial_interpolator<3> positions;
 	polynomial_interpolator<4, true> orientations;
+	const bool hold_on_loss;
+	held_pose held;
+	XrTime latest_production = 0;
+	uint8_t latest_flags = 0;
 
 	struct debug_data
 	{
@@ -62,7 +67,7 @@ public:
 	static xrt_space_relation interpolate(const xrt_space_relation & a, const xrt_space_relation & b, float t);
 	static xrt_space_relation extrapolate(const xrt_space_relation & a, const xrt_space_relation & b, int64_t ta, int64_t tb, int64_t t);
 
-	pose_list(wivrn::device_id id);
+	pose_list(wivrn::device_id id, bool hold_on_loss = false);
 
 	std::pair<XrTime, XrTime> get_bounds() const;
 
@@ -71,7 +76,7 @@ public:
 
 	std::tuple<XrTime, xrt_space_relation, device_id> get_pose_at(XrTime at_timestamp_ns);
 
-	void reset();
+	void reset(bool preserve_pose = false);
 	std::pair<XrTime, xrt_space_relation> get_at(XrTime at_timestamp_ns);
 
 private:

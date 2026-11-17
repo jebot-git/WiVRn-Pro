@@ -42,6 +42,9 @@ mod hand_touch;
 mod ipc;
 #[path = "../../../mouse_priority.rs"]
 mod mouse_priority;
+#[cfg(feature = "openxr")]
+#[path = "../../../pointer_pose.rs"]
+mod pointer_pose;
 mod overlays;
 #[path = "../../../performance.rs"]
 mod performance;

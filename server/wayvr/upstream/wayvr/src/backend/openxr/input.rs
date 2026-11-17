@@ -1,12 +1,11 @@
 use std::{
     collections::HashMap,
-    mem::transmute,
     time::{Duration, Instant},
 };
 
 use glam::{Affine3A, FloatExt, Quat, Vec3, bool};
 use libmonado::{self as mnd, DeviceLogic};
-use openxr::{self as xr, Quaternionf, Vector2f, Vector3f};
+use openxr::{self as xr, Vector2f};
 use wlx_common::{
     config::HandsfreePointer,
     openxr_actions::{
@@ -42,6 +41,7 @@ pub(super) struct OpenXrInputSource {
     joystick_link: crate::hand_joystick::Link,
     hand_paths: [xr::Path; 2],
     started: Instant,
+    had_tracked_pointer: bool,
 }
 
 pub(super) struct OpenXrPointer {
@@ -361,6 +361,7 @@ impl OpenXrInputSource {
                 xr.instance.string_to_path("/user/hand/right")?,
             ],
             started: Instant::now(),
+            had_tracked_pointer: false,
         })
     }
 
@@ -612,11 +613,17 @@ impl OpenXrInputSource {
             }
         }
 
+        self.had_tracked_pointer |= any_tracked;
         // Joint gestures own hand mode, including loss/rearming; do not reintroduce
         // the old handsfree native pinch bindings as a duplicate input source.
         if xr.focused
             && (!picking_focus.is_none()
                 || (!any_tracked
+                    // A sleeping controller keeps its last pose instead of
+                    // becoming the HMD pointer. Explicit handsfree-only modes
+                    // and the window-picker remain available.
+                    && (!self.had_tracked_pointer || matches!(app.session.config.handsfree_pointer,
+                        HandsfreePointer::HmdOnly | HandsfreePointer::EyeTrackingOnly))
                     && !app
                         .input_state
                         .pointers
@@ -819,6 +826,7 @@ impl OpenXrPointer {
                     pointer,
                     xr,
                     Some(session.config.pointer_lerp_factor * 0.5),
+                    false,
                 )?;
             }
         }
@@ -865,6 +873,7 @@ impl OpenXrPointer {
             } else {
                 None
             },
+            true,
         )?;
         self.pointer_load_actions(pointer, xr, physical_inputs)?;
 
@@ -876,31 +885,15 @@ impl OpenXrPointer {
         pointer: &mut Pointer,
         xr: &XrState,
         lerp_factor: Option<f32>,
+        require_tracking: bool,
     ) -> anyhow::Result<()> {
         let location = self.space.locate(&xr.stage, xr.predicted_display_time)?;
-        if location
-            .location_flags
-            .contains(xr::SpaceLocationFlags::ORIENTATION_VALID)
-        {
-            let (cur_quat, cur_pos) = (Quat::from_affine3(&pointer.pose), pointer.pose.translation);
-
-            let (new_quat, new_pos) = unsafe {
-                (
-                    transmute::<Quaternionf, Quat>(location.pose.orientation),
-                    transmute::<Vector3f, Vec3>(location.pose.position),
-                )
-            };
-
-            pointer.raw_pose = Affine3A::from_rotation_translation(new_quat, new_pos);
-            if let Some(lerp_factor) = lerp_factor {
-                let lerp_factor = (1.0 / (xr.fps / 100.0) * lerp_factor).clamp(0.1, 1.0);
-                pointer.pose = Affine3A::from_rotation_translation(
-                    cur_quat.lerp(new_quat, lerp_factor),
-                    cur_pos.lerp(new_pos.into(), lerp_factor).into(),
-                );
-            } else {
-                pointer.pose = pointer.raw_pose; // no lerp
-            }
+        let factor = lerp_factor.map(|v| (1.0 / (xr.fps / 100.0) * v).clamp(0.1, 1.0));
+        if let Some((raw, filtered)) = crate::pointer_pose::update(
+            pointer.pose, location.pose, location.location_flags, factor, require_tracking,
+        ) {
+            pointer.raw_pose = raw;
+            pointer.pose = filtered;
             pointer.tracked = true;
         } else {
             pointer.tracked = false;

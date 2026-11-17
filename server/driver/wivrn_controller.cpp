@@ -733,11 +733,11 @@ wivrn_controller::wivrn_controller(xrt_device_name name,
                 .set_output = method_pointer<&wivrn_controller::set_output>,
                 .destroy = [](xrt_device *) {},
         },
-        grip(hand_id == 0 ? device_id::LEFT_GRIP : device_id::RIGHT_GRIP),
-        aim(hand_id == 0 ? device_id::LEFT_AIM : device_id::RIGHT_AIM),
-        palm(hand_id == 0 ? device_id::LEFT_PALM : device_id::RIGHT_PALM),
-        pinch_ext(hand_id == 0 ? device_id::LEFT_PINCH_POSE : device_id::RIGHT_PINCH_POSE),
-        poke_ext(hand_id == 0 ? device_id::LEFT_POKE : device_id::RIGHT_POKE),
+        grip(hand_id == 0 ? device_id::LEFT_GRIP : device_id::RIGHT_GRIP, true),
+        aim(hand_id == 0 ? device_id::LEFT_AIM : device_id::RIGHT_AIM, true),
+        palm(hand_id == 0 ? device_id::LEFT_PALM : device_id::RIGHT_PALM, true),
+        pinch_ext(hand_id == 0 ? device_id::LEFT_PINCH_POSE : device_id::RIGHT_PINCH_POSE, true),
+        poke_ext(hand_id == 0 ? device_id::LEFT_POKE : device_id::RIGHT_POKE, true),
         joints(hand_id),
         inputs_array(input_count, xrt_input{}),
         cnx(cnx)
@@ -1132,11 +1132,13 @@ void wivrn_controller::reset_history()
 		if (type != XRT_INPUT_TYPE_POSE && type != XRT_INPUT_TYPE_HAND_TRACKING)
 			input.value = {};
 	}
-	grip.reset();
-	aim.reset();
-	palm.reset();
-	pinch_ext.reset();
-	poke_ext.reset();
+	// Role/idle transitions clear input and prediction history, while retaining
+	// this device's last displayed pose until fresh tracking arrives.
+	grip.reset(true);
+	aim.reset(true);
+	palm.reset(true);
+	pinch_ext.reset(true);
+	poke_ext.reset(true);
 }
 
 } // namespace wivrn
